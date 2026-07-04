@@ -1,0 +1,37 @@
+# Task 3.3 — CI gate on every PR. Blocks merge unless lint, typecheck, tests,
+# and schema validation all pass. Least-privilege: read-only.
+name: Validate PR
+
+on:
+  pull_request:
+    paths:
+      - 'data/**'
+      - 'schema/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm test
+      - run: npm run validate
+      # Coverage is informational until the full changelog backfill lands in
+      # data/ (the curated seed intentionally covers only a few symbols).
+      # Flip to a blocking step (remove continue-on-error) after the initial
+      # `npm run scrape -- --all` dataset is committed.
+      - run: npm run coverage
+        continue-on-error: true
