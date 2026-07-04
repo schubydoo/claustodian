@@ -21,11 +21,12 @@
  * `--data` defaults to `data`.
  */
 import { readFile, writeFile } from 'node:fs/promises';
-import { pathToFileURL } from 'node:url';
 
 import { dump } from 'js-yaml';
 import { stringify } from 'smol-toml';
 import { glob } from 'tinyglobby';
+
+import { isMain } from './lib.js';
 
 /**
  * Serializes a value to YAML via `js-yaml`'s `dump`. YAML has a native null
@@ -134,7 +135,7 @@ async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/generate-exports.ts` or `npm run generate-exports`), not when it's
 // imported by tests or other modules.
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+if (isMain(import.meta.url)) {
   main()
     .then((code) => {
       process.exitCode = code;

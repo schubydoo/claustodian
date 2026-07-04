@@ -20,8 +20,8 @@
  *   tsx scripts/diff-snapshots.ts <prevFile> <nextFile>
  */
 import { readFile } from 'node:fs/promises';
-import { pathToFileURL } from 'node:url';
 
+import { isMain } from './lib.js';
 import type { SymbolRecord } from './scrape-changelog.js';
 
 export type { SymbolRecord };
@@ -177,7 +177,7 @@ async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/diff-snapshots.ts` or `npm run diff`), not when it's imported by
 // tests or other modules.
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+if (isMain(import.meta.url)) {
   main()
     .then((code) => {
       process.exitCode = code;

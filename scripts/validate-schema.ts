@@ -20,10 +20,10 @@
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { basename } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import type { ErrorObject, ValidateFunction } from 'ajv';
 import { glob } from 'tinyglobby';
 
+import { isMain } from './lib.js';
 import symbolSchema from '../schema/symbol.schema.json' with { type: 'json' };
 import snapshotSchema from '../schema/snapshot.schema.json' with { type: 'json' };
 import indexSchema from '../schema/index.schema.json' with { type: 'json' };
@@ -170,7 +170,7 @@ async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/validate-schema.ts` or `npm run validate`), not when it's imported
 // by tests or other modules.
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+if (isMain(import.meta.url)) {
   main()
     .then((code) => {
       process.exitCode = code;

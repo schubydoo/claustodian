@@ -22,12 +22,10 @@
  *                       (default: "data/latest.json")
  */
 import { readFile } from 'node:fs/promises';
-import { pathToFileURL } from 'node:url';
 
+import { isMain, loadChangelog } from './lib.js';
 import { extractSymbols, parseChangelog } from './scrape-changelog.js';
 import type { SymbolRecord } from './scrape-changelog.js';
-
-const CHANGELOG_URL = 'https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md';
 
 export interface MissingSymbol {
   symbol: string;
@@ -106,20 +104,6 @@ function parseArgs(argv: string[]): CliOptions {
   return options;
 }
 
-async function loadChangelog(changelogPath: string | undefined): Promise<string> {
-  if (changelogPath) {
-    return readFile(changelogPath, 'utf-8');
-  }
-
-  const response = await fetch(CHANGELOG_URL);
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch changelog from ${CHANGELOG_URL}: ${response.status} ${response.statusText}`
-    );
-  }
-  return response.text();
-}
-
 interface DatasetFile {
   symbols: SymbolRecord[];
 }
@@ -164,7 +148,7 @@ async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/check-coverage.ts` or `npm run coverage`), not when it's imported
 // by tests or other modules.
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+if (isMain(import.meta.url)) {
   main()
     .then((code) => {
       process.exitCode = code;

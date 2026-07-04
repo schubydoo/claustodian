@@ -25,11 +25,11 @@
  *                       this flag, only <dir>/index.json and <dir>/latest.json
  *                       are written (the full per-version backfill is opt-in).
  */
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 
-const CHANGELOG_URL = 'https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md';
+import { isMain, loadChangelog } from './lib.js';
+
 const SOURCE_URL = 'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md';
 const SCHEMA_VERSION = '1.0.0';
 
@@ -295,20 +295,6 @@ function parseArgs(argv: string[]): CliOptions {
   return options;
 }
 
-async function loadChangelog(changelogPath: string | undefined): Promise<string> {
-  if (changelogPath) {
-    return readFile(changelogPath, 'utf-8');
-  }
-
-  const response = await fetch(CHANGELOG_URL);
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch changelog from ${CHANGELOG_URL}: ${response.status} ${response.statusText}`
-    );
-  }
-  return response.text();
-}
-
 async function main(): Promise<number> {
   const options = parseArgs(process.argv.slice(2));
   const md = await loadChangelog(options.changelogPath);
@@ -346,7 +332,7 @@ async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/scrape-changelog.ts` or `npm run scrape`), not when it's imported
 // by tests or other modules.
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+if (isMain(import.meta.url)) {
   main()
     .then((code) => {
       process.exitCode = code;
