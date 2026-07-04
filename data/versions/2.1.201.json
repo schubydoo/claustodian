@@ -1,0 +1,54 @@
+{
+  "claudeCodeVersion": "2.1.201",
+  "schemaVersion": "1.0.0",
+  "symbols": [
+    {
+      "symbol": "/rename",
+      "type": "command",
+      "first_seen": "2.0.64",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Names the current session so it can be resumed by name (e.g. `/resume <name>` in the REPL or `claude --resume <name>` from the terminal).",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "sessions"
+    },
+    {
+      "symbol": "--fork-session",
+      "type": "cli_flag",
+      "first_seen": "2.0.73",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "When resuming or continuing a session, forks it into a new session (with a custom `--session-id`) instead of continuing in place.",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "sessions"
+    },
+    {
+      "symbol": "--safe-mode",
+      "type": "cli_flag",
+      "first_seen": "2.1.169",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Starts Claude Code with all customizations (CLAUDE.md, plugins, skills, hooks, MCP servers) disabled, for troubleshooting.",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "startup"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SAFE_MODE",
+      "type": "env_var",
+      "first_seen": "2.1.169",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Environment-variable equivalent of `--safe-mode`: starts Claude Code with all customizations disabled.",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "startup"
+    }
+  ]
+}
