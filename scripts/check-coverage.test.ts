@@ -1,3 +1,6 @@
+// Copyright 2026 Schuby
+// SPDX-License-Identifier: Apache-2.0
+
 import { describe, expect, it } from 'vitest';
 
 import { findMissingCoverage } from './check-coverage.js';

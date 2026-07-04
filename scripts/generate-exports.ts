@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// Copyright 2026 Schuby
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * Generates YAML and TOML exports from the committed JSON source of truth.
  *
@@ -117,10 +120,14 @@ async function main(): Promise<number> {
 
   for (const filePath of files) {
     await generateExportsFor(filePath);
-    console.log(`Generated ${replaceExtension(filePath, '.yaml')} and ${replaceExtension(filePath, '.toml')}`);
+    console.log(
+      `Generated ${replaceExtension(filePath, '.yaml')} and ${replaceExtension(filePath, '.toml')}`
+    );
   }
 
-  console.log(`Generated YAML and TOML exports for ${files.length} JSON file(s) under "${dataDir}".`);
+  console.log(
+    `Generated YAML and TOML exports for ${files.length} JSON file(s) under "${dataDir}".`
+  );
   return 0;
 }
 

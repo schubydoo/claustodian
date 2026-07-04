@@ -1,3 +1,6 @@
+// Copyright 2026 Schuby
+// SPDX-License-Identifier: Apache-2.0
+
 import { describe, expect, it } from 'vitest';
 
 import { buildAjv, getValidator } from './validate-schema.js';
@@ -78,7 +81,7 @@ describe('parseChangelog', () => {
 describe('extractSymbols', () => {
   it('finds cli_flag, command, and env_var tokens', () => {
     const symbols = extractSymbols(
-      'Added `--safe-mode` and `/compact` alongside `CLAUDE_CODE_SAFE_MODE`.',
+      'Added `--safe-mode` and `/compact` alongside `CLAUDE_CODE_SAFE_MODE`.'
     );
     expect(symbols).toEqual([
       { symbol: '--safe-mode', type: 'cli_flag' },

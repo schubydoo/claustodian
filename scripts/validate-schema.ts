@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// Copyright 2026 Schuby
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * CLI schema validator for Claustodian data files.
  *
@@ -77,7 +80,7 @@ export function buildAjv(): InstanceType<typeof Ajv2020> {
 
 export function getValidator(
   ajv: InstanceType<typeof Ajv2020>,
-  kind: ValidatorKind,
+  kind: ValidatorKind
 ): ValidateFunction {
   const idMap: Record<ValidatorKind, string> = {
     symbol: (symbolSchema as { $id: string }).$id,
@@ -102,10 +105,7 @@ function formatErrors(errors: ErrorObject[] | null | undefined): string[] {
   });
 }
 
-async function validateFile(
-  ajv: InstanceType<typeof Ajv2020>,
-  filePath: string,
-): Promise<boolean> {
+async function validateFile(ajv: InstanceType<typeof Ajv2020>, filePath: string): Promise<boolean> {
   const kind = schemaKindFor(filePath);
   if (!kind) {
     console.log(`SKIP ${filePath} (no matching schema route)`);
@@ -121,7 +121,7 @@ async function validateFile(
     console.log(
       `  instancePath=(root) message=could not read/parse file: ${
         err instanceof Error ? err.message : String(err)
-      }`,
+      }`
     );
     return false;
   }
@@ -149,7 +149,7 @@ async function main(): Promise<number> {
 
   if (files.length === 0) {
     console.log(
-      `No files matched pattern(s): ${effectivePatterns.join(', ')} (nothing to validate)`,
+      `No files matched pattern(s): ${effectivePatterns.join(', ')} (nothing to validate)`
     );
     return 0;
   }

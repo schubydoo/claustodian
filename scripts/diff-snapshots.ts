@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// Copyright 2026 Schuby
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * Snapshot diff utility for Claustodian.
  *
@@ -67,10 +70,7 @@ function canonicalize(record: SymbolRecord): string {
  *
  * All three result arrays are sorted deterministically by key.
  */
-export function diffSnapshots(
-  prev: SymbolCollection,
-  next: SymbolCollection,
-): SnapshotDiff {
+export function diffSnapshots(prev: SymbolCollection, next: SymbolCollection): SnapshotDiff {
   const prevByKey = new Map<string, SymbolRecord>();
   for (const record of prev.symbols) {
     prevByKey.set(keyFor(record), record);
@@ -163,7 +163,7 @@ async function main(): Promise<number> {
     next = await loadSnapshotFile(nextPath);
   } catch (err) {
     console.error(
-      `Failed to read/parse snapshot file(s): ${err instanceof Error ? err.message : String(err)}`,
+      `Failed to read/parse snapshot file(s): ${err instanceof Error ? err.message : String(err)}`
     );
     return 1;
   }

@@ -1,3 +1,6 @@
+// Copyright 2026 Schuby
+// SPDX-License-Identifier: Apache-2.0
+
 import { load } from 'js-yaml';
 import { parse } from 'smol-toml';
 import { describe, expect, it } from 'vitest';

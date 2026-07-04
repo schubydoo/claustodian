@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// Copyright 2026 Schuby
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * Coverage gate for Claustodian.
  *
@@ -24,8 +27,7 @@ import { pathToFileURL } from 'node:url';
 import { extractSymbols, parseChangelog } from './scrape-changelog.js';
 import type { SymbolRecord } from './scrape-changelog.js';
 
-const CHANGELOG_URL =
-  'https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md';
+const CHANGELOG_URL = 'https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md';
 
 export interface MissingSymbol {
   symbol: string;
@@ -49,7 +51,7 @@ function compareKeys(a: string, b: string): number {
  */
 export function findMissingCoverage(
   changelogMd: string,
-  datasetSymbols: SymbolRecord[],
+  datasetSymbols: SymbolRecord[]
 ): MissingSymbol[] {
   const known = new Set(datasetSymbols.map((record) => keyFor(record.symbol, record.type)));
 
@@ -112,7 +114,7 @@ async function loadChangelog(changelogPath: string | undefined): Promise<string>
   const response = await fetch(CHANGELOG_URL);
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch changelog from ${CHANGELOG_URL}: ${response.status} ${response.statusText}`,
+      `Failed to fetch changelog from ${CHANGELOG_URL}: ${response.status} ${response.statusText}`
     );
   }
   return response.text();
@@ -141,16 +143,14 @@ async function main(): Promise<number> {
     datasetSymbols = await loadDataset(options.datasetPath);
   } catch (err) {
     console.error(
-      `Failed to load changelog/dataset: ${err instanceof Error ? err.message : String(err)}`,
+      `Failed to load changelog/dataset: ${err instanceof Error ? err.message : String(err)}`
     );
     return 1;
   }
 
   const missing = findMissingCoverage(md, datasetSymbols);
 
-  console.log(
-    `${missing.length} changelog symbol(s) missing from ${options.datasetPath}`,
-  );
+  console.log(`${missing.length} changelog symbol(s) missing from ${options.datasetPath}`);
   if (missing.length > 0) {
     console.log('First missing symbol(s):');
     for (const { symbol, type } of missing.slice(0, 20)) {

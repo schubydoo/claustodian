@@ -1,3 +1,6 @@
+// Copyright 2026 Schuby
+// SPDX-License-Identifier: Apache-2.0
+
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { glob } from 'tinyglobby';
@@ -9,9 +12,7 @@ import { buildAjv, getValidator, schemaKindFor } from './validate-schema.js';
  * `validSymbol({...overrides})` and mutate/override just the field(s) under
  * test, so each test stays focused on one deviation from a known-good shape.
  */
-function validSymbol(
-  overrides: Record<string, unknown> = {},
-): Record<string, unknown> {
+function validSymbol(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     symbol: '--safe-mode',
     type: 'cli_flag',
@@ -27,9 +28,7 @@ function validSymbol(
   };
 }
 
-function validSnapshot(
-  overrides: Record<string, unknown> = {},
-): Record<string, unknown> {
+function validSnapshot(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     claudeCodeVersion: '2.1.201',
     schemaVersion: '1.0.0',
@@ -38,9 +37,7 @@ function validSnapshot(
   };
 }
 
-function validIndex(
-  overrides: Record<string, unknown> = {},
-): Record<string, unknown> {
+function validIndex(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     schemaVersion: '1.0.0',
     latest: '2.1.201',
@@ -76,15 +73,11 @@ describe('symbol schema', () => {
   });
 
   it('fails when provenance=changelog is paired with confidence=medium', () => {
-    expect(
-      validate(validSymbol({ provenance: 'changelog', confidence: 'medium' })),
-    ).toBe(false);
+    expect(validate(validSymbol({ provenance: 'changelog', confidence: 'medium' }))).toBe(false);
   });
 
   it('passes when provenance=binary is paired with confidence=medium', () => {
-    expect(
-      validate(validSymbol({ provenance: 'binary', confidence: 'medium' })),
-    ).toBe(true);
+    expect(validate(validSymbol({ provenance: 'binary', confidence: 'medium' }))).toBe(true);
   });
 
   it('fails when an unknown extra property is present', () => {
@@ -142,9 +135,7 @@ describe('real data files', () => {
       const validate = getValidator(ajv, kind);
       const valid = validate(data);
 
-      expect(valid, `${filePath} (${kind}): ${JSON.stringify(validate.errors)}`).toBe(
-        true,
-      );
+      expect(valid, `${filePath} (${kind}): ${JSON.stringify(validate.errors)}`).toBe(true);
     }
   });
 });

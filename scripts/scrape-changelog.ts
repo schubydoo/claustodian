@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+// Copyright 2026 Schuby
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * Changelog scraper for Claustodian.
  *
@@ -26,10 +29,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-const CHANGELOG_URL =
-  'https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md';
-const SOURCE_URL =
-  'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md';
+const CHANGELOG_URL = 'https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md';
+const SOURCE_URL = 'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md';
 const SCHEMA_VERSION = '1.0.0';
 
 /** One version's worth of raw changelog data, as parsed from the markdown. */
@@ -302,7 +303,7 @@ async function loadChangelog(changelogPath: string | undefined): Promise<string>
   const response = await fetch(CHANGELOG_URL);
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch changelog from ${CHANGELOG_URL}: ${response.status} ${response.statusText}`,
+      `Failed to fetch changelog from ${CHANGELOG_URL}: ${response.status} ${response.statusText}`
     );
   }
   return response.text();
@@ -316,9 +317,7 @@ async function main(): Promise<number> {
   const snapshots = buildSnapshots(blocks);
   const index = buildIndex(snapshots);
 
-  const sortedByVersion = [...snapshots].sort((a, b) =>
-    compareVersionsAsc(a.version, b.version),
-  );
+  const sortedByVersion = [...snapshots].sort((a, b) => compareVersionsAsc(a.version, b.version));
   const latestSnapshot = sortedByVersion[sortedByVersion.length - 1];
 
   await mkdir(options.outDir, { recursive: true });
@@ -327,10 +326,7 @@ async function main(): Promise<number> {
     const versionsDir = join(options.outDir, 'versions');
     await mkdir(versionsDir, { recursive: true });
     for (const snapshot of snapshots) {
-      await writeJson(
-        join(versionsDir, `${snapshot.version}.json`),
-        toSnapshotFile(snapshot),
-      );
+      await writeJson(join(versionsDir, `${snapshot.version}.json`), toSnapshotFile(snapshot));
     }
   }
 
@@ -341,7 +337,7 @@ async function main(): Promise<number> {
 
   const writtenCount = options.all ? snapshots.length : latestSnapshot ? 1 : 0;
   console.log(
-    `Scraped ${blocks.length} changelog version(s); wrote ${writtenCount} snapshot file(s) to ${options.outDir}`,
+    `Scraped ${blocks.length} changelog version(s); wrote ${writtenCount} snapshot file(s) to ${options.outDir}`
   );
 
   return 0;
