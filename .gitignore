@@ -1,0 +1,13 @@
+# Local Claude Code settings / agent state
+/.claude/
+
+# Working notes, plans, and scratch artifacts (not part of the published repo)
+/scratch/
+
+# Dependencies and build output
+node_modules/
+dist/
+
+# Generated data exports (built in CI from committed JSON, never hand-edited)
+data/**/*.yaml
+data/**/*.toml

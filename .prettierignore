@@ -1,0 +1,7 @@
+node_modules/
+dist/
+scratch/
+.claude/
+data/**/*.yaml
+data/**/*.toml
+package-lock.json
