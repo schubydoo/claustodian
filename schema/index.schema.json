@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schubydoo.github.io/claustodian/schema/index.schema.json",
+  "title": "Claustodian Index",
+  "description": "The rolled-up list of all Claude Code versions tracked by Claustodian (data/index.json).",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "The Claustodian data-format schema version this index conforms to."
+    },
+    "latest": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "The most recent Claude Code version tracked."
+    },
+    "versions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^\\d+\\.\\d+\\.\\d+$"
+      },
+      "uniqueItems": true,
+      "description": "All Claude Code versions tracked, each with a corresponding data/versions/X.Y.Z.json snapshot."
+    }
+  },
+  "required": ["schemaVersion", "latest", "versions"],
+  "additionalProperties": false
+}

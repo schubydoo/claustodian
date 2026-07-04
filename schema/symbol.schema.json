@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schubydoo.github.io/claustodian/schema/symbol.schema.json",
+  "title": "Claustodian Symbol Record",
+  "description": "One trackable Claude Code symbol (a CLI flag, environment variable, command, config key, or internal config flag), along with its lifecycle metadata and provenance.",
+  "type": "object",
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The exact flag/var/command/key name, e.g. \"--safe-mode\" or \"CLAUDE_CODE_SAFE_MODE\"."
+    },
+    "type": {
+      "type": "string",
+      "enum": ["cli_flag", "env_var", "command", "config_key", "internal_config_flag"],
+      "description": "The kind of symbol this record describes."
+    },
+    "first_seen": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Claude Code version where this symbol was first observed (not necessarily first existed; see project README)."
+    },
+    "removed_in": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Version where the symbol disappeared, if known; null otherwise."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "deprecated", "removed", "needs_review"],
+      "description": "Current lifecycle status of the symbol."
+    },
+    "provenance": {
+      "type": "string",
+      "enum": ["changelog", "binary"],
+      "description": "Where the symbol was found: an official changelog entry, or binary/bundle string extraction."
+    },
+    "confidence": {
+      "type": "string",
+      "enum": ["high", "medium", "low"],
+      "description": "Confidence in the accuracy of this record. Always \"high\" for changelog-sourced records."
+    },
+    "description": {
+      "type": "string",
+      "description": "Plain-language explanation of what the symbol does. May be empty for unreviewed binary finds."
+    },
+    "source_url": {
+      "oneOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Link to the changelog entry that introduced this symbol; null for binary-only finds."
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Grouping used both for topic (startup, networking, ui, filesystem, auth, ...) and for ownership/source scoping (third-party, cloud-auth, ci-detect, runtime, terminal, ...)."
+    },
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "darwin-arm64",
+          "darwin-x64",
+          "linux-arm64",
+          "linux-x64",
+          "win32-arm64",
+          "win32-x64",
+          "all"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Which os/arch target(s) this symbol was found on, or [\"all\"] if present everywhere. Optional; typically omitted or [\"all\"] for changelog-sourced entries."
+    }
+  },
+  "required": [
+    "symbol",
+    "type",
+    "first_seen",
+    "removed_in",
+    "status",
+    "provenance",
+    "confidence",
+    "description",
+    "source_url",
+    "category"
+  ],
+  "additionalProperties": false,
+  "if": {
+    "properties": {
+      "provenance": { "const": "changelog" }
+    },
+    "required": ["provenance"]
+  },
+  "then": {
+    "properties": {
+      "confidence": { "const": "high" }
+    }
+  }
+}

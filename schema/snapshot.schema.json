@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schubydoo.github.io/claustodian/schema/snapshot.schema.json",
+  "title": "Claustodian Snapshot",
+  "description": "The full set of symbols known to exist as of one specific Claude Code version. Used for both per-version files (data/versions/X.Y.Z.json) and the rolled-up alias (data/latest.json).",
+  "type": "object",
+  "properties": {
+    "claudeCodeVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "The Claude Code version this snapshot represents."
+    },
+    "schemaVersion": {
+      "type": "string",
+      "description": "The Claustodian data-format schema version this snapshot conforms to."
+    },
+    "symbols": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schubydoo.github.io/claustodian/schema/symbol.schema.json"
+      },
+      "description": "The symbol records known as of this version. May be empty."
+    }
+  },
+  "required": ["claudeCodeVersion", "schemaVersion", "symbols"],
+  "additionalProperties": false
+}
