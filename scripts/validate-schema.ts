@@ -17,6 +17,7 @@
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { basename } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import type { ErrorObject, ValidateFunction } from 'ajv';
 import { glob } from 'tinyglobby';
 
@@ -48,8 +49,9 @@ const SCHEMA_VERSION_SCHEMA = {
 } as const;
 
 type SchemaKind = 'snapshot' | 'index' | 'schema-version';
+type ValidatorKind = SchemaKind | 'symbol';
 
-function schemaKindFor(filePath: string): SchemaKind | null {
+export function schemaKindFor(filePath: string): SchemaKind | null {
   const base = basename(filePath);
   if (base === 'index.json') {
     return 'index';
@@ -63,7 +65,7 @@ function schemaKindFor(filePath: string): SchemaKind | null {
   return null;
 }
 
-function buildAjv(): InstanceType<typeof Ajv2020> {
+export function buildAjv(): InstanceType<typeof Ajv2020> {
   const ajv = new Ajv2020({ allErrors: true, strict: true });
   addFormats(ajv);
   ajv.addSchema(symbolSchema);
@@ -73,11 +75,12 @@ function buildAjv(): InstanceType<typeof Ajv2020> {
   return ajv;
 }
 
-function validatorFor(
+export function getValidator(
   ajv: InstanceType<typeof Ajv2020>,
-  kind: SchemaKind,
+  kind: ValidatorKind,
 ): ValidateFunction {
-  const idMap: Record<SchemaKind, string> = {
+  const idMap: Record<ValidatorKind, string> = {
+    symbol: (symbolSchema as { $id: string }).$id,
     snapshot: (snapshotSchema as { $id: string }).$id,
     index: (indexSchema as { $id: string }).$id,
     'schema-version': SCHEMA_VERSION_SCHEMA.$id,
@@ -123,7 +126,7 @@ async function validateFile(
     return false;
   }
 
-  const validate = validatorFor(ajv, kind);
+  const validate = getValidator(ajv, kind);
   const valid = validate(data);
   if (valid) {
     console.log(`PASS ${filePath} (${kind})`);
@@ -164,11 +167,16 @@ async function main(): Promise<number> {
   return allValid ? 0 : 1;
 }
 
-main()
-  .then((code) => {
-    process.exitCode = code;
-  })
-  .catch((err: unknown) => {
-    console.error('Unexpected error while validating schemas:', err);
-    process.exitCode = 1;
-  });
+// Only run the CLI when this file is executed directly (e.g. via `tsx
+// scripts/validate-schema.ts` or `npm run validate`), not when it's imported
+// by tests or other modules.
+if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
+  main()
+    .then((code) => {
+      process.exitCode = code;
+    })
+    .catch((err: unknown) => {
+      console.error('Unexpected error while validating schemas:', err);
+      process.exitCode = 1;
+    });
+}
