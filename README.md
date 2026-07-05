@@ -1,6 +1,6 @@
 # Claustodian
 
-A static, versioned, machine-parseable record of every Claude Code CLI flag, environment variable, command, and config key — each tagged with the version it **first appeared** in (and, when known, when it was removed). Answer *"does feature X exist in Claude Code version Y?"* by fetching a file, in any language, with no scraping.
+A static, versioned, machine-parseable record of every Claude Code CLI flag, environment variable, command, and config key — each tagged with the version it **first appeared** in (and, when known, when it was removed). Answer _"does feature X exist in Claude Code version Y?"_ by fetching a file, in any language, with no scraping.
 
 ## Why
 
@@ -27,12 +27,12 @@ A symbol is available in version Y when `first_seen <= Y` and (`removed_in` is n
 
 Stable, predictable URLs under `data/`:
 
-| Path | What |
-|---|---|
-| `data/latest.json` | Full symbol list as of the newest tracked version |
-| `data/versions/X.Y.Z.json` | Full symbol list as of version X.Y.Z |
-| `data/index.json` | All tracked versions + the latest |
-| `data/schema-version.json` | Version of this data format |
+| Path                       | What                                              |
+| -------------------------- | ------------------------------------------------- |
+| `data/latest.json`         | Full symbol list as of the newest tracked version |
+| `data/versions/X.Y.Z.json` | Full symbol list as of version X.Y.Z              |
+| `data/index.json`          | All tracked versions + the latest                 |
+| `data/schema-version.json` | Version of this data format                       |
 
 Each file is also published as `.yaml` and `.toml` (generated in CI from the JSON; JSON is the source of truth). Each record follows [`schema/symbol.schema.json`](schema/symbol.schema.json) (JSON Schema draft 2020-12):
 
@@ -82,4 +82,4 @@ npm run scrape -- --all   # (re)generate the full dataset from the changelog
 Dual-licensed:
 
 - **Code** (scripts, schema, config) — **Apache-2.0** (see `LICENSE`). Requires preserving attribution/notices; includes a patent grant.
-- **Data** (everything under `data/`) — **CC-BY-4.0** (see `LICENSE-DATA`). Use it however you like, including commercially — just credit Claustodian, e.g. *Data from Claustodian (https://github.com/schubydoo/claustodian), © 2026 Schuby, CC-BY-4.0.*
+- **Data** (everything under `data/`) — **CC-BY-4.0** (see `LICENSE-DATA`). Use it however you like, including commercially — just credit Claustodian, e.g. _Data from Claustodian (https://github.com/schubydoo/claustodian), © 2026 Schuby, CC-BY-4.0._

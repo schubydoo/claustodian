@@ -10,6 +10,7 @@ Claustodian uses only material Anthropic has **publicly published and distribute
 - Officially published release binaries (GitHub release assets and npm-published bundles).
 
 It does not use leaked or otherwise non-public material. **Do NOT contribute data derived from:**
+
 - Leaked or accidentally-exposed material (e.g. source-map leaks).
 - Any other non-public source.
 
@@ -17,10 +18,10 @@ A record whose accuracy depends on non-public material will be rejected. This po
 
 ## The two provenance lanes
 
-| Lane | `provenance` | Trust | Merge policy |
-|---|---|---|---|
-| Changelog | `changelog` | `confidence: high` | Authoritative — bot PRs are auto-mergeable once CI passes. |
-| Binary | `binary` | `confidence: medium`/`low` | Lands as `status: needs_review`; a human must confirm before it flips to `active`. |
+| Lane      | `provenance` | Trust                      | Merge policy                                                                       |
+| --------- | ------------ | -------------------------- | ---------------------------------------------------------------------------------- |
+| Changelog | `changelog`  | `confidence: high`         | Authoritative — bot PRs are auto-mergeable once CI passes.                         |
+| Binary    | `binary`     | `confidence: medium`/`low` | Lands as `status: needs_review`; a human must confirm before it flips to `active`. |
 
 Never move a `binary`/`needs_review` record to `active` without confirming the symbol against an official artifact. Keep the two lanes separate.
 
@@ -28,7 +29,7 @@ Never move a `binary`/`needs_review` record to `active` without confirming the s
 
 - JSON under `data/` is the **single source of truth**. YAML/TOML are generated in CI — never hand-edit them (they are gitignored).
 - Every record must validate against `schema/symbol.schema.json`. CI runs `npm run validate` on every PR and blocks merge on failure.
-- `first_seen` means *first observed*, not *first existed* — don't assert an earlier version than you can support from an official source.
+- `first_seen` means _first observed_, not _first existed_ — don't assert an earlier version than you can support from an official source.
 
 ## Local checks before opening a PR
 
