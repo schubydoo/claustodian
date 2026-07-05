@@ -3,6 +3,24 @@
   "private": true,
   "type": "module",
   "version": "0.0.0",
+  "description": "Versioned, machine-parseable dataset answering: does a given Claude Code CLI flag, env var, or command exist in version X? Sourced only from official public artifacts.",
+  "keywords": [
+    "claude-code",
+    "changelog",
+    "cli",
+    "dataset",
+    "provenance",
+    "versioning"
+  ],
+  "homepage": "https://schubydoo.github.io/claustodian/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/schubydoo/claustodian.git"
+  },
+  "bugs": {
+    "url": "https://github.com/schubydoo/claustodian/issues"
+  },
+  "author": "Schuby (https://github.com/schubydoo)",
   "license": "Apache-2.0",
   "engines": {
     "node": ">=20"
