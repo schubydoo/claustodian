@@ -14,15 +14,29 @@ on:
     types: [new-release]
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # Mint a claustodian-ci App token so the PR is opened by the App, not
+      # github-actions[bot]. GITHUB_TOKEN-created PRs do NOT trigger other
+      # workflows (a deliberate GitHub loop-guard), so a bot PR opened with it
+      # would never fire validate-pr / security and would sit un-mergeable. The
+      # App token has no such restriction, so the PR gets its required checks.
+      - name: Mint GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CLAUSTODIAN_CI_APP_ID }}
+          private-key: ${{ secrets.CLAUSTODIAN_CI_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20
           cache: npm
@@ -32,8 +46,9 @@ jobs:
       - name: Validate regenerated data
         run: npm run validate
       - name: Open pull request
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@c5a7806660adbe173f04e3e038b0ccdcd758773c # v6
         with:
+          token: ${{ steps.app-token.outputs.token }}
           branch: bot/changelog-update
           base: main
           title: 'chore(data): update dataset from changelog'
