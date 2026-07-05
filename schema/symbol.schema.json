@@ -67,24 +67,6 @@
       "type": "string",
       "minLength": 1,
       "description": "Grouping used both for topic (startup, networking, ui, filesystem, auth, ...) and for ownership/source scoping (third-party, cloud-auth, ci-detect, runtime, terminal, ...)."
-    },
-    "platforms": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": [
-          "darwin-arm64",
-          "darwin-x64",
-          "linux-arm64",
-          "linux-x64",
-          "win32-arm64",
-          "win32-x64",
-          "all"
-        ]
-      },
-      "minItems": 1,
-      "uniqueItems": true,
-      "description": "Which os/arch target(s) this symbol was found on, or [\"all\"] if present everywhere. Optional; typically omitted or [\"all\"] for changelog-sourced entries."
     }
   },
   "required": [
