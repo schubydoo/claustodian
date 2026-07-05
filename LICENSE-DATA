@@ -1,0 +1,35 @@
+# Data License — Creative Commons Attribution 4.0 International (CC-BY-4.0)
+
+The dataset in this repository — every file under `data/` (the JSON snapshots,
+index, and the YAML/TOML exports generated from them) — is licensed under the
+**Creative Commons Attribution 4.0 International License (CC-BY-4.0)**.
+
+You are free to:
+
+- **Share** — copy and redistribute the data in any medium or format.
+- **Adapt** — remix, transform, and build upon the data.
+- for **any purpose, including commercially.**
+
+Under the following term:
+
+- **Attribution** — You must give appropriate credit, provide a link to this
+  license, and indicate if changes were made. You may do so in any reasonable
+  manner, but not in any way that suggests the licensor endorses you or your use.
+
+**Suggested attribution:**
+
+> Data from Claustodian (https://github.com/schubydoo/claustodian),
+> © 2026 Schuby, licensed under CC-BY-4.0.
+
+The full legal text is at: https://creativecommons.org/licenses/by/4.0/legalcode
+
+---
+
+Note on scope: much of this dataset is factual (flag names, version numbers),
+and facts are generally not copyrightable. Attribution is requested as a matter
+of good practice and to honor the project's provenance chain; the CC-BY-4.0
+terms apply to the extent the compilation and any expressive content are
+protectable.
+
+The tooling that produces this data (everything outside `data/`) is licensed
+under the Apache License 2.0 — see LICENSE.
