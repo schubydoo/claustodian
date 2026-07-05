@@ -103,6 +103,13 @@ describe('extractSymbols', () => {
   it('returns an empty array when no tokens are present', () => {
     expect(extractSymbols('Nothing to see here.')).toEqual([]);
   });
+
+  it('filters denylisted false positives (errno codes, acronyms) but keeps real vars', () => {
+    const symbols = extractSymbols(
+      'Fixed `EADDRINUSE` and `JSON` parsing; respects `HOME` and `CLAUDE_CODE_SAFE_MODE`.'
+    );
+    expect(symbols.map((s) => s.symbol)).toEqual(['HOME', 'CLAUDE_CODE_SAFE_MODE']);
+  });
 });
 
 describe('buildSnapshots', () => {

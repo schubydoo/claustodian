@@ -122,6 +122,93 @@ const SYMBOL_PATTERNS: Array<[RegExp, ExtractedSymbolType]> = [
 ];
 
 /**
+ * Tokens that match the broad env_var pattern but are NOT Claude Code symbols —
+ * mostly Node/libuv error codes and generic acronyms that appear in changelog
+ * prose in backticks. Curated denylist; extend as new false positives surface.
+ * Real env vars (HOME, PATH, EDITOR, DISABLE_*, ...) are intentionally kept —
+ * they are genuine, just categorized as third-party noise downstream.
+ */
+const SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
+  // Node/libuv errno codes
+  'EACCES',
+  'EADDRINUSE',
+  'EADDRNOTAVAIL',
+  'EAGAIN',
+  'EBADF',
+  'EBUSY',
+  'ECANCELED',
+  'ECHILD',
+  'ECOMPROMISED',
+  'ECONNABORTED',
+  'ECONNREFUSED',
+  'ECONNRESET',
+  'EEXIST',
+  'EFAULT',
+  'EFBIG',
+  'EHOSTUNREACH',
+  'EINTR',
+  'EINVAL',
+  'EISCONN',
+  'EISDIR',
+  'ELOOP',
+  'EMFILE',
+  'EMSGSIZE',
+  'ENAMETOOLONG',
+  'ENETDOWN',
+  'ENETRESET',
+  'ENETUNREACH',
+  'ENFILE',
+  'ENOBUFS',
+  'ENODEV',
+  'ENOENT',
+  'ENOMEM',
+  'ENOPROTOOPT',
+  'ENOSPC',
+  'ENOSYS',
+  'ENOTCONN',
+  'ENOTDIR',
+  'ENOTEMPTY',
+  'ENOTFOUND',
+  'ENOTSOCK',
+  'ENOTSUP',
+  'EOVERFLOW',
+  'EPERM',
+  'EPIPE',
+  'EPROTO',
+  'ERANGE',
+  'EROFS',
+  'ESHUTDOWN',
+  'ESPIPE',
+  'ESRCH',
+  'ETIMEDOUT',
+  'EXDEV',
+  // formats / serialization / encodings
+  'JSON',
+  'HTML',
+  'HTTP',
+  'HTTPS',
+  'YAML',
+  'TOML',
+  'ASCII',
+  'UTF8',
+  'MIME',
+  'CRLF',
+  'ANSI',
+  'UUID',
+  'SHA256',
+  'SHASUMS',
+  // literals / keywords
+  'NULL',
+  'TRUE',
+  'FALSE',
+  // git / doc terms
+  'HEAD',
+  'README',
+  'TODO',
+  'FIXME',
+]);
+
+/**
  * Extracts backtick-delimited cli_flag / command / env_var tokens from a
  * single bullet's text. Returns unique {symbol, type} pairs ordered by where
  * they first appear in the text (left to right), regardless of which of the
@@ -134,6 +221,9 @@ export function extractSymbols(text: string): ExtractedSymbol[] {
     for (const match of text.matchAll(pattern)) {
       const symbol = match[1];
       if (symbol === undefined || match.index === undefined) {
+        continue;
+      }
+      if (SYMBOL_DENYLIST.has(symbol)) {
         continue;
       }
       found.push({ symbol, type, index: match.index });
