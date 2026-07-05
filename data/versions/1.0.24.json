@@ -1,0 +1,42 @@
+{
+  "claudeCodeVersion": "1.0.24",
+  "schemaVersion": "1.0.0",
+  "symbols": [
+    {
+      "symbol": "ANTHROPIC_MODEL",
+      "type": "env_var",
+      "first_seen": "0.2.125",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Breaking change: Bedrock ARN passed to `ANTHROPIC_MODEL` or `ANTHROPIC_SMALL_FAST_MODEL` should no longer contain an escaped slash (specify `/` instead of `%2F`)",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "ANTHROPIC_SMALL_FAST_MODEL",
+      "type": "env_var",
+      "first_seen": "0.2.125",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Breaking change: Bedrock ARN passed to `ANTHROPIC_MODEL` or `ANTHROPIC_SMALL_FAST_MODEL` should no longer contain an escaped slash (specify `/` instead of `%2F`)",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "DISABLE_INTERLEAVED_THINKING",
+      "type": "env_var",
+      "first_seen": "1.0.1",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `DISABLE_INTERLEAVED_THINKING` to give users the option to opt out of interleaved thinking.",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
+    }
+  ]
+}
