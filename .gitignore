@@ -7,6 +7,7 @@
 # Dependencies and build output
 node_modules/
 dist/
+coverage/
 
 # Generated data exports (built in CI from committed JSON, never hand-edited)
 data/**/*.yaml
