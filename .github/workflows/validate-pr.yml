@@ -11,6 +11,7 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'tsconfig.json'
+      - 'vitest.config.ts'
 
 permissions:
   contents: read
@@ -27,8 +28,20 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npx tsc --noEmit
-      - run: npm test
+      # Run tests with coverage: enforces the vitest threshold and produces
+      # coverage/lcov.info for the Codecov upload below.
+      - run: npm run test:coverage
       - run: npm run validate
       # Blocking: every symbol documented in the changelog must be present in
       # the dataset (the full backfill is committed, so this holds at 100%).
       - run: npm run coverage
+      # Report coverage to Codecov (reads codecov.yml). Uploads even if an
+      # earlier step failed so a coverage drop surfaces with the breakage.
+      # Needs the CODECOV_TOKEN secret once the Codecov app is installed.
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v5
+        with:
+          files: ./coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false

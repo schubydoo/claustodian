@@ -1,0 +1,92 @@
+# Codecov config. Coverage is REPORTED here for visibility (PR comment + trend
+# graphs + per-component breakdown); the enforced floor is the Vitest coverage
+# threshold in vitest.config.ts (statements >= 85), run in CI by the
+# `test:coverage` step in .github/workflows/validate-pr.yml on the single Ubuntu
+# cell. The `project` status mirrors that floor and stays `informational: true`
+# (nudge, never block — vitest is the source of truth). The `patch` status is a
+# real pass/fail traffic light on new-code coverage, but is not a *required*
+# check, so a red patch still leaves the merge button green unless someone adds
+# `codecov/patch` to branch protection. Coverage uploads from ONE Linux cell
+# (the `test:coverage` run), so flags / carryforward / report-merging aren't
+# needed. Codecov ingests Vitest's v8 lcov output (coverage/lcov.info) directly.
+#
+# Validate before deploying changes:
+#   curl -X POST --data-binary @codecov.yml https://api.codecov.io/validate
+
+codecov:
+  # CI uploads coverage even when a prior step fails (the `!cancelled()` guard on
+  # the upload step), on purpose: a coverage drop should surface exactly when a
+  # change breaks something. So don't gate the Codecov status on CI passing, and
+  # show coverage as soon as it's uploaded.
+  require_ci_to_pass: false
+  notify:
+    # One upload cell, so report as soon as that single build lands.
+    after_n_builds: 1
+    wait_for_ci: false # default is true — explicit so coverage shows immediately
+
+coverage:
+  precision: 2
+  round: down # a strict floor rounds down, matching the vitest threshold gate
+  range: '80...95' # red->green band tuned to a project that sits ~92%
+  status:
+    project:
+      default:
+        target: 85% # mirror the vitest statements threshold
+        threshold: 1% # tolerate sub-1% drift before flagging
+        informational: true # nudge, never block — vitest.config.ts is the source of truth
+    patch:
+      default:
+        # New-code (diff) coverage gate. 80% sits above the 85% project floor's
+        # intent for new code without being chronically red; the CLI plumbing is
+        # already covered, so new logic should land well-tested.
+        target: 80%
+        threshold: 0% # no slack — new code meets the target or the status goes red
+        informational: false # a real pass/fail traffic light (still a non-required check)
+        if_not_found: success # docs/data-only PRs upload no diff → don't block them
+
+# The per-line PR annotations are mostly visual clutter; the comment + dashboard
+# carry the signal.
+github_checks:
+  annotations: false
+
+comment:
+  # Single cell (no flags), so show the per-component breakdown instead of an
+  # empty flags panel.
+  layout: 'condensed_header, diff, components, files'
+  behavior: default # update the existing comment in place
+  require_changes: true # only comment when coverage actually moves
+  hide_project_coverage: false
+
+# Don't count test files, the generated dataset, or the static site toward
+# coverage (the vitest lcov already excludes tests; this is belt-and-suspenders).
+ignore:
+  - 'scripts/**/*.test.ts'
+  - 'data/**'
+  - 'site/**'
+
+# Per-area coverage breakdown in the dashboard + PR comment. No `statuses` are
+# defined, so components add VISIBILITY only — they do NOT create extra
+# per-component PR status checks. Keep paths in sync as scripts/ grows.
+component_management:
+  individual_components:
+    - component_id: schema_validation
+      name: schema & validation
+      paths:
+        - scripts/validate-schema.ts
+    - component_id: changelog_scraper
+      name: changelog scraper
+      paths:
+        - scripts/scrape-changelog.ts
+    - component_id: exports
+      name: export generation
+      paths:
+        - scripts/generate-exports.ts
+    - component_id: dataset_tools
+      name: dataset tools (diff / coverage)
+      paths:
+        - scripts/diff-snapshots.ts
+        - scripts/check-coverage.ts
+    - component_id: shared
+      name: shared helpers
+      paths:
+        - scripts/lib.ts

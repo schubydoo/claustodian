@@ -1,0 +1,37 @@
+{
+  "strictness": 1,
+  "fileChangeLimit": 100,
+  "triggerOnUpdates": true,
+  "statusCheck": true,
+  "statusCommentsEnabled": true,
+  "excludeAuthors": [
+    "dependabot[bot]",
+    "renovate[bot]",
+    "pre-commit-ci[bot]",
+    "github-actions[bot]",
+    "allcontributors[bot]"
+  ],
+  "summarySection": { "included": true, "collapsible": true, "defaultOpen": true },
+  "confidenceScoreSection": { "included": true, "collapsible": true, "defaultOpen": true },
+  "issuesTableSection": { "included": true, "collapsible": true, "defaultOpen": false },
+  "sequenceDiagramSection": { "included": true, "collapsible": true, "defaultOpen": false },
+  "instructions": "Claustodian is a provenance-strict dataset: its data must come ONLY from official public sources (the Claude Code changelog and officially published release binaries), never leaked or non-public material. Guard that invariant. Question every \"temporary\" workaround that has outlived its excuse.",
+  "ignorePatterns": "package-lock.json\ndata/**\ncoverage/**\ndist/**\nsite/**",
+  "rules": [
+    {
+      "id": "provenance-boundary",
+      "rule": "Data may originate ONLY from the official CHANGELOG.md and officially published release binaries (GitHub release assets, npm-published bundles). Flag any code path that could ingest leaked, source-map-derived, or otherwise non-public material, or that weakens the changelog-vs-binary provenance separation.",
+      "scope": ["scripts/**"]
+    },
+    {
+      "id": "generated-data",
+      "rule": "JSON under data/ is the generated source of truth, produced by `npm run scrape`, and YAML/TOML are build artifacts. Changes to symbol data belong in the scraper/schema, not in hand-edited data files. Don't suggest editing generated output directly.",
+      "scope": ["scripts/**", "schema/**"]
+    },
+    {
+      "id": "cli-in-process-tests",
+      "rule": "CLI entrypoints are tested in-process by calling the exported main() with process.argv set and temp dirs (see the *.cli.test.ts files) so v8 coverage counts them. Prefer that pattern over spawning subprocesses, which get zero coverage credit and can hit the network.",
+      "scope": ["scripts/**/*.test.ts"]
+    }
+  ]
+}
