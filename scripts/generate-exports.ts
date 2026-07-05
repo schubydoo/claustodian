@@ -108,7 +108,7 @@ function parseArgs(argv: string[]): { dataDir: string } {
   return { dataDir };
 }
 
-async function main(): Promise<number> {
+export async function main(): Promise<number> {
   const { dataDir } = parseArgs(process.argv.slice(2));
 
   const files = await glob(`${dataDir}/**/*.json`, { absolute: false, dot: false });

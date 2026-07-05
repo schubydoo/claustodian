@@ -140,7 +140,7 @@ async function validateFile(ajv: InstanceType<typeof Ajv2020>, filePath: string)
   return false;
 }
 
-async function main(): Promise<number> {
+export async function main(): Promise<number> {
   const patterns = process.argv.slice(2);
   const effectivePatterns = patterns.length > 0 ? patterns : ['data/**/*.json'];
 

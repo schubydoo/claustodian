@@ -420,7 +420,7 @@ function parseArgs(argv: string[]): CliOptions {
   return options;
 }
 
-async function main(): Promise<number> {
+export async function main(): Promise<number> {
   const options = parseArgs(process.argv.slice(2));
   const md = await loadChangelog(options.changelogPath);
 

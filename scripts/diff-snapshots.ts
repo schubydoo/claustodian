@@ -149,7 +149,7 @@ function printSummary(prevPath: string, nextPath: string, diff: SnapshotDiff): v
   }
 }
 
-async function main(): Promise<number> {
+export async function main(): Promise<number> {
   const [prevPath, nextPath] = process.argv.slice(2);
   if (!prevPath || !nextPath) {
     console.error('Usage: diff-snapshots <prevFile> <nextFile>');

@@ -117,7 +117,7 @@ async function loadDataset(datasetPath: string): Promise<SymbolRecord[]> {
   return data.symbols;
 }
 
-async function main(): Promise<number> {
+export async function main(): Promise<number> {
   const options = parseArgs(process.argv.slice(2));
 
   let md: string;
