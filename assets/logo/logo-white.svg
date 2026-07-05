@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 72" width="320" height="72" role="img" aria-label="claustodian">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(13,8.5)">
+    <path d="M45 18 A18 18 0 1 0 45 46" stroke="#ffffff" stroke-opacity="0.45" stroke-width="9" transform="translate(-5,-5)" />
+    <path d="M45 18 A18 18 0 1 0 45 46" stroke="#ffffff" stroke-width="9" />
+    <path d="M29 26 L36 32 L29 38" stroke="#ffffff" stroke-width="4" />
+  </g>
+  <text x="84" y="46" font-family="'Inter', 'Segoe UI', Helvetica, Arial, sans-serif" font-size="30" font-weight="700" letter-spacing="-0.5" fill="#ffffff">claustodian</text>
+</svg>

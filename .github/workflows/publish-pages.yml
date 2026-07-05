@@ -12,6 +12,8 @@ on:
     paths:
       - 'data/**'
       - 'schema/**'
+      - 'site/**'
+      - 'assets/logo/favicon.svg'
       - '.github/workflows/publish-pages.yml'
   workflow_dispatch:
 
@@ -44,6 +46,8 @@ jobs:
           mkdir -p _site
           cp -r data _site/data
           if [ -f site/index.html ]; then cp site/index.html _site/index.html; fi
+          # Favicon referenced by index.html as href="favicon.svg" (site root).
+          if [ -f assets/logo/favicon.svg ]; then cp assets/logo/favicon.svg _site/favicon.svg; fi
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:

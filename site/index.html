@@ -8,6 +8,7 @@
       name="description"
       content="Look up whether a Claude Code CLI flag, environment variable, or command exists in a given version."
     />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <style>
       :root {
         --bg: #ffffff;
@@ -56,8 +57,19 @@
         margin: 0 auto;
         padding: 2rem 1rem 4rem;
       }
-      header h1 {
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
         margin: 0 0 0.25rem;
+      }
+      .brand .logo {
+        width: 40px;
+        height: 40px;
+        flex: none;
+      }
+      header h1 {
+        margin: 0;
         font-size: 1.9rem;
         letter-spacing: -0.02em;
       }
@@ -190,7 +202,27 @@
   <body>
     <div class="wrap">
       <header>
-        <h1>Claustodian</h1>
+        <div class="brand">
+          <svg class="logo" viewBox="0 0 64 64" role="img" aria-label="Claustodian">
+            <g
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              transform="translate(5,4.5)"
+            >
+              <path
+                d="M45 18 A18 18 0 1 0 45 46"
+                stroke="var(--accent)"
+                stroke-opacity="0.4"
+                stroke-width="9"
+                transform="translate(-5,-5)"
+              />
+              <path d="M45 18 A18 18 0 1 0 45 46" stroke="var(--accent)" stroke-width="9" />
+              <path d="M29 26 L36 32 L29 38" stroke="var(--accent)" stroke-width="4" />
+            </g>
+          </svg>
+          <h1>Claustodian</h1>
+        </div>
         <p>
           Does a Claude Code flag, environment variable, or command exist in a given version? Pick a
           version, search the surface.
