@@ -7,6 +7,7 @@ import { buildAjv, getValidator } from './validate-schema.js';
 import {
   buildIndex,
   buildSnapshots,
+  categorize,
   compareVersionsAsc,
   extractSymbols,
   parseChangelog,
@@ -112,6 +113,30 @@ describe('extractSymbols', () => {
   });
 });
 
+describe('categorize', () => {
+  it('marks flags and commands as Claude Code owned', () => {
+    expect(categorize('--safe-mode', 'cli_flag')).toBe('cli');
+    expect(categorize('/rename', 'command')).toBe('command');
+  });
+
+  it('buckets env vars by ownership/source', () => {
+    expect(categorize('CLAUDE_CODE_SAFE_MODE', 'env_var')).toBe('claude-code');
+    expect(categorize('ANTHROPIC_API_KEY', 'env_var')).toBe('claude-code');
+    expect(categorize('AWS_REGION', 'env_var')).toBe('cloud');
+    expect(categorize('GITHUB_ACTIONS', 'env_var')).toBe('ci');
+    expect(categorize('CI', 'env_var')).toBe('ci');
+    expect(categorize('NODE_OPTIONS', 'env_var')).toBe('runtime');
+    expect(categorize('TERM_PROGRAM', 'env_var')).toBe('terminal');
+    expect(categorize('OTEL_LOG_LEVEL', 'env_var')).toBe('telemetry');
+    expect(categorize('HTTPS_PROXY', 'env_var')).toBe('network');
+  });
+
+  it('falls back to "other" for unrecognized env vars', () => {
+    expect(categorize('COLUMNS', 'env_var')).toBe('other');
+    expect(categorize('HOME', 'env_var')).toBe('other');
+  });
+});
+
 describe('buildSnapshots', () => {
   const blocks = parseChangelog(FIXTURE_CHANGELOG);
   const snapshots = buildSnapshots(blocks);
@@ -161,7 +186,7 @@ describe('buildSnapshots', () => {
       provenance: 'changelog',
       confidence: 'high',
       source_url: 'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md',
-      category: 'uncategorized',
+      category: 'claude-code',
     });
   });
 

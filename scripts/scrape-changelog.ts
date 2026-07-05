@@ -259,6 +259,41 @@ function compareSymbolRecords(a: SymbolRecord, b: SymbolRecord): number {
 }
 
 /**
+ * Best-effort ownership/source category, so consumers can filter Claude Code's
+ * own surface from environment variables the bundle merely references. CLI
+ * flags and commands are always Claude Code's own. Env vars are bucketed by
+ * well-known third-party prefixes; anything unrecognized stays "other" (it may
+ * still be a Claude Code var — categories are a filter aid, not a guarantee).
+ */
+const ENV_CATEGORY_RULES: ReadonlyArray<readonly [RegExp, string]> = [
+  [/^(CLAUDE|ANTHROPIC)/, 'claude-code'],
+  [
+    /^(AWS|AZURE|GOOGLE|GCLOUD|GCP|GCE|CLOUD|CLOUDSDK|GAE|K_SERVICE|K_CONFIGURATION|FUNCTION_|VERCEL|NETLIFY|RAILWAY|FLY_|RENDER|DYNO|HEROKU|WEBSITE_|CODESPACE|GITPOD|DEVPOD|DAYTONA|CODER|REPL)/,
+    'cloud',
+  ],
+  [
+    /^(GITHUB|GITLAB|BUILDKITE|CIRCLE|JENKINS|TRAVIS|APPVEYOR|TEAMCITY|DRONE|BITBUCKET|RUNNER)|^CI$/,
+    'ci',
+  ],
+  [/^(NODE|BUN|NPM|DENO|UV_|PNPM|YARN|COREPACK|GRPC)/, 'runtime'],
+  [
+    /^(TERM|ITERM|KITTY|ALACRITTY|KONSOLE|VTE|WEZTERM|COLORTERM|WT_|TMUX|ZELLIJ|TILIX|TERMINATOR|GNOME_TERMINAL|XTERM)/,
+    'terminal',
+  ],
+  [/^OTEL/, 'telemetry'],
+  [/_PROXY$|^NO_PROXY$|^ALL_PROXY$/, 'network'],
+];
+
+export function categorize(symbol: string, type: ExtractedSymbolType): string {
+  if (type === 'cli_flag') return 'cli';
+  if (type === 'command') return 'command';
+  for (const [pattern, category] of ENV_CATEGORY_RULES) {
+    if (pattern.test(symbol)) return category;
+  }
+  return 'other';
+}
+
+/**
  * Builds a cumulative, per-version snapshot of every symbol known so far.
  *
  * Iterates versions oldest -> newest (the reverse of `parseChangelog`'s
@@ -293,7 +328,7 @@ export function buildSnapshots(blocks: ChangelogBlock[]): VersionSnapshot[] {
           confidence: 'high',
           description: bulletDescription(bullet),
           source_url: SOURCE_URL,
-          category: 'uncategorized',
+          category: categorize(symbol, type),
         });
       }
     }
