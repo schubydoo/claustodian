@@ -82,6 +82,4 @@ npm run scrape -- --all   # (re)generate the full dataset from the changelog
 Dual-licensed:
 
 - **Code** (scripts, schema, config) — **Apache-2.0** (see `LICENSE`). Requires preserving attribution/notices; includes a patent grant.
-- **Data** (everything under `data/`) — **CC-BY-4.0** (see `LICENSE-DATA`). Use it however you like, including commercially — just credit Claustodian.
-
-Suggested attribution: *Data from Claustodian (https://github.com/schubydoo/claustodian), © 2026 Schuby, CC-BY-4.0.*
+- **Data** (everything under `data/`) — **CC-BY-4.0** (see `LICENSE-DATA`). Use it however you like, including commercially — just credit Claustodian, e.g. *Data from Claustodian (https://github.com/schubydoo/claustodian), © 2026 Schuby, CC-BY-4.0.*
