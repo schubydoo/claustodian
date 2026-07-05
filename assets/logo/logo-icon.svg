@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Claustodian app icon">
+  <rect width="512" height="512" rx="112" fill="#16181d" />
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(80.5,77.25) scale(6.5)">
+    <path d="M45 18 A18 18 0 1 0 45 46" stroke="#3b5bdb" stroke-width="9" transform="translate(-5,-5)" />
+    <path d="M45 18 A18 18 0 1 0 45 46" stroke="#748ffc" stroke-width="9" />
+    <path d="M29 26 L36 32 L29 38" stroke="#748ffc" stroke-width="4" />
+  </g>
+</svg>

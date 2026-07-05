@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo/logo-white.svg" />
+    <img src="assets/logo/logo-full.svg" alt="Claustodian" width="320" />
+  </picture>
+</p>
+
 # Claustodian
 
 [![Validate PR](https://github.com/schubydoo/claustodian/actions/workflows/validate-pr.yml/badge.svg)](https://github.com/schubydoo/claustodian/actions/workflows/validate-pr.yml)

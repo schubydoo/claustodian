@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Claustodian — Brand</title>
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #1a1a1a;
+        --muted: #6b7280;
+        --border: #e2e2e2;
+        --card: #fafafa;
+        --accent: #3b5bdb;
+        --accent-ghost: #b7c4fa;
+        --accent-dark: #748ffc;
+        --base: #16181d;
+        --flag: #1971c2;
+        --env: #2f9e44;
+        --cmd: #e8590c;
+        --config: #9c36b5;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--fg);
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 64px 32px 96px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding-bottom: 40px;
+        border-bottom: 1px solid var(--border);
+      }
+      header svg {
+        height: 60px;
+      }
+      h1 {
+        font-size: 15px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 0;
+        font-weight: 600;
+      }
+      .tagline {
+        margin: 4px 0 0;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+      }
+      section {
+        margin-top: 56px;
+      }
+      h2 {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+        margin: 0 0 20px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+      .tile {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 150px;
+      }
+      .tile.dark {
+        background: var(--base);
+        border-color: #2c2f36;
+      }
+      .tile.light {
+        background: var(--card);
+      }
+      .tile svg {
+        max-width: 100%;
+        max-height: 72px;
+      }
+      .label {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 10px;
+        text-align: center;
+      }
+      .cell {
+        display: flex;
+        flex-direction: column;
+      }
+      .sizes {
+        display: flex;
+        align-items: flex-end;
+        gap: 30px;
+        flex-wrap: wrap;
+      }
+      .sizes .s {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 14px;
+      }
+      .sw {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .sw .chip {
+        height: 72px;
+      }
+      .sw .meta {
+        padding: 10px 12px;
+      }
+      .sw .name {
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .sw .hex {
+        font-size: 12px;
+        color: var(--muted);
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      }
+      .rationale p {
+        line-height: 1.65;
+        color: #374151;
+        max-width: 68ch;
+      }
+      .rationale strong {
+        color: var(--fg);
+      }
+      code {
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 1px 6px;
+        font-size: 13px;
+      }
+      footer {
+        margin-top: 72px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .mono {
+        font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <svg viewBox="0 0 64 64" aria-label="Claustodian mark">
+          <g
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            transform="translate(5,4.5)"
+          >
+            <path
+              d="M45 18 A18 18 0 1 0 45 46"
+              stroke="#b7c4fa"
+              stroke-width="9"
+              transform="translate(-5,-5)"
+            />
+            <path d="M45 18 A18 18 0 1 0 45 46" stroke="#3b5bdb" stroke-width="9" />
+            <path d="M29 26 L36 32 L29 38" stroke="#3b5bdb" stroke-width="4" />
+          </g>
+        </svg>
+        <div>
+          <h1>Claustodian — Brand</h1>
+          <p class="tagline">Custodian of a versioned record.</p>
+        </div>
+      </header>
+
+      <section>
+        <h2>Primary logo</h2>
+        <div class="grid">
+          <div class="cell">
+            <div class="tile light">
+              <svg viewBox="0 0 320 72" aria-label="claustodian on light">
+                <g
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  transform="translate(13,8.5)"
+                >
+                  <path
+                    d="M45 18 A18 18 0 1 0 45 46"
+                    stroke="#b7c4fa"
+                    stroke-width="9"
+                    transform="translate(-5,-5)"
+                  />
+                  <path d="M45 18 A18 18 0 1 0 45 46" stroke="#3b5bdb" stroke-width="9" />
+                  <path d="M29 26 L36 32 L29 38" stroke="#3b5bdb" stroke-width="4" />
+                </g>
+                <text
+                  x="84"
+                  y="46"
+                  font-family="'Inter','Segoe UI',Helvetica,Arial,sans-serif"
+                  font-size="30"
+                  font-weight="700"
+                  letter-spacing="-0.5"
+                  fill="#1a1a1a"
+                >
+                  claustodian
+                </text>
+              </svg>
+            </div>
+            <div class="label">logo-full.svg &middot; on light</div>
+          </div>
+          <div class="cell">
+            <div class="tile dark">
+              <svg viewBox="0 0 320 72" aria-label="claustodian on dark">
+                <g
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  transform="translate(13,8.5)"
+                >
+                  <path
+                    d="M45 18 A18 18 0 1 0 45 46"
+                    stroke="#ffffff"
+                    stroke-opacity="0.45"
+                    stroke-width="9"
+                    transform="translate(-5,-5)"
+                  />
+                  <path d="M45 18 A18 18 0 1 0 45 46" stroke="#ffffff" stroke-width="9" />
+                  <path d="M29 26 L36 32 L29 38" stroke="#ffffff" stroke-width="4" />
+                </g>
+                <text
+                  x="84"
+                  y="46"
+                  font-family="'Inter','Segoe UI',Helvetica,Arial,sans-serif"
+                  font-size="30"
+                  font-weight="700"
+                  letter-spacing="-0.5"
+                  fill="#ffffff"
+                >
+                  claustodian
+                </text>
+              </svg>
+            </div>
+            <div class="label">logo-white.svg &middot; on dark</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>The mark &amp; scale</h2>
+        <div class="tile light" style="justify-content: flex-start">
+          <div class="sizes">
+            <div class="s">
+              <svg width="100" height="100" viewBox="0 0 64 64">
+                <g
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  transform="translate(5,4.5)"
+                >
+                  <path
+                    d="M45 18 A18 18 0 1 0 45 46"
+                    stroke="#b7c4fa"
+                    stroke-width="9"
+                    transform="translate(-5,-5)"
+                  />
+                  <path d="M45 18 A18 18 0 1 0 45 46" stroke="#3b5bdb" stroke-width="9" />
+                  <path d="M29 26 L36 32 L29 38" stroke="#3b5bdb" stroke-width="4" />
+                </g>
+              </svg>
+              <span class="label">mark 100px</span>
+            </div>
+            <div class="s">
+              <svg width="48" height="48" viewBox="0 0 64 64">
+                <g
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  transform="translate(5,4.5)"
+                >
+                  <path
+                    d="M45 18 A18 18 0 1 0 45 46"
+                    stroke="#b7c4fa"
+                    stroke-width="9"
+                    transform="translate(-5,-5)"
+                  />
+                  <path d="M45 18 A18 18 0 1 0 45 46" stroke="#3b5bdb" stroke-width="9" />
+                  <path d="M29 26 L36 32 L29 38" stroke="#3b5bdb" stroke-width="4" />
+                </g>
+              </svg>
+              <span class="label">48px</span>
+            </div>
+            <div class="s">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <g
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  transform="translate(0.6,0.5) scale(0.25)"
+                >
+                  <path d="M45 18 A18 18 0 1 0 45 46" stroke="#3b5bdb" stroke-width="10" />
+                  <path d="M29 26 L36 32 L29 38" stroke="#3b5bdb" stroke-width="5" />
+                </g>
+              </svg>
+              <span class="label">favicon 16px</span>
+            </div>
+            <div class="s">
+              <svg width="80" height="80" viewBox="0 0 512 512">
+                <rect width="512" height="512" rx="112" fill="#16181d" />
+                <g
+                  fill="none"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  transform="translate(80.5,77.25) scale(6.5)"
+                >
+                  <path
+                    d="M45 18 A18 18 0 1 0 45 46"
+                    stroke="#3b5bdb"
+                    stroke-width="9"
+                    transform="translate(-5,-5)"
+                  />
+                  <path d="M45 18 A18 18 0 1 0 45 46" stroke="#748ffc" stroke-width="9" />
+                  <path d="M29 26 L36 32 L29 38" stroke="#748ffc" stroke-width="4" />
+                </g>
+              </svg>
+              <span class="label">app icon</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Palette</h2>
+        <div class="swatches">
+          <div class="sw">
+            <div class="chip" style="background: #3b5bdb"></div>
+            <div class="meta">
+              <div class="name">Indigo (primary)</div>
+              <div class="hex">#3b5bdb</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #b7c4fa"></div>
+            <div class="meta">
+              <div class="name">Indigo ghost</div>
+              <div class="hex">#b7c4fa</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #748ffc"></div>
+            <div class="meta">
+              <div class="name">Indigo (on dark)</div>
+              <div class="hex">#748ffc</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #16181d"></div>
+            <div class="meta">
+              <div class="name">Base</div>
+              <div class="hex">#16181d</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #1a1a1a"></div>
+            <div class="meta">
+              <div class="name">Ink</div>
+              <div class="hex">#1a1a1a</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #1971c2"></div>
+            <div class="meta">
+              <div class="name">flag</div>
+              <div class="hex">#1971c2</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #2f9e44"></div>
+            <div class="meta">
+              <div class="name">env</div>
+              <div class="hex">#2f9e44</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #e8590c"></div>
+            <div class="meta">
+              <div class="name">cmd</div>
+              <div class="hex">#e8590c</div>
+            </div>
+          </div>
+          <div class="sw">
+            <div class="chip" style="background: #9c36b5"></div>
+            <div class="meta">
+              <div class="name">config</div>
+              <div class="hex">#9c36b5</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rationale">
+        <h2>Design rationale</h2>
+        <p>
+          The name fuses <strong>claustr-</strong> (the enclosure, the keeper) with
+          <strong>custodian</strong> (guardian of a record). The mark is a
+          <strong>&ldquo;C&rdquo; drawn as a fanned deck</strong> — a solid front C with a lighter C
+          held behind it (a <strong>prior version kept in the stack</strong>) — and a
+          <strong>forward chevron</strong> in its mouth (<strong
+            >progression to the next version</strong
+          >). Together: the C is the custodian/keeper, the layered deck is the versioned record, and
+          the chevron is movement through versions. The open right side keeps the silhouette a clear
+          <strong>C</strong>; at 16px the favicon drops the back layer to a single crisp C +
+          chevron.
+        </p>
+        <p>
+          <strong>Colour.</strong> A single <strong>indigo</strong> (<code>#3b5bdb</code>, with a
+          <code>#b7c4fa</code> ghost for depth, lightening to <code>#748ffc</code> on dark) carried
+          straight from the live dataset site, so the logo and the published data feel like one
+          system. Category hues (<code>flag</code>, <code>env</code>, <code>cmd</code>,
+          <code>config</code>) stay reserved for the data UI, never the logo.
+          <strong>Type.</strong> Inter Bold, lowercase, tight tracking — matching the repo/npm name
+          <code>claustodian</code>.
+        </p>
+      </section>
+
+      <section>
+        <h2>Developer reference</h2>
+        <p class="mono" style="font-size: 13px; color: var(--muted); line-height: 1.9">
+          logo-mark.svg &middot; logo-full.svg &middot; logo-wordmark.svg &middot; logo-icon.svg
+          &middot; favicon.svg &middot; logo-white.svg &middot; logo-black.svg
+        </p>
+      </section>
+
+      <footer>
+        Claustodian &middot; Apache-2.0 (code) + CC BY 4.0 (data) &middot;
+        github.com/schubydoo/claustodian
+      </footer>
+    </div>
+  </body>
+</html>

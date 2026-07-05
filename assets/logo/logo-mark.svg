@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Claustodian">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round" transform="translate(5,4.5)">
+    <path d="M45 18 A18 18 0 1 0 45 46" stroke="#b7c4fa" stroke-width="9" transform="translate(-5,-5)" />
+    <path d="M45 18 A18 18 0 1 0 45 46" stroke="#3b5bdb" stroke-width="9" />
+    <path d="M29 26 L36 32 L29 38" stroke="#3b5bdb" stroke-width="4" />
+  </g>
+</svg>
