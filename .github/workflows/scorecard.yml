@@ -1,0 +1,71 @@
+name: Scorecard
+
+# OSSF Scorecard — scores the repo's security posture (branch protection, pinned
+# deps, token permissions, code review, etc.) and uploads SARIF to code scanning,
+# plus publishes to the public OSSF report. Runs on the default branch only:
+# scorecard-action hard-fails on a tag ref, so there is deliberately NO
+# `release: [published]` trigger — the weekly cron + push:main re-score after any
+# release.
+#
+# REQUIRES:
+#   - A PUBLIC repo. `publish_results: true` and the OSSF API only work on public
+#     repos; on a private repo drop publish_results (SARIF-to-code-scanning still
+#     works with GitHub Advanced Security).
+#   - The claustodian-ci App secrets (CLAUSTODIAN_CI_APP_ID / _PRIVATE_KEY). The
+#     Branch-Protection check needs admin:read, which the default GITHUB_TOKEN
+#     lacks; we mint a short-lived App token with `administration: read` for it
+#     instead of a long-lived PAT. Scorecard runs only on same-repo events
+#     (push:main / cron / branch_protection_rule), so the secrets are always
+#     present — the GITHUB_TOKEN fallback is just belt-and-suspenders.
+
+on:
+  branch_protection_rule:
+  schedule:
+    - cron: '18 7 * * 1'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analysis:
+    name: OSSF Scorecard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      security-events: write
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Mint GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CLAUSTODIAN_CI_APP_ID }}
+          private-key: ${{ secrets.CLAUSTODIAN_CI_APP_PRIVATE_KEY }}
+          # administration:read → branch-protection rules; contents:read → repo tree.
+          permission-administration: read
+          permission-contents: read
+      - name: Run Scorecard
+        uses: ossf/scorecard-action@4eaacf0543bb3f2c246792bd56e8cdeffafb205a # v2.4.3
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+          # Short-lived App token with admin:read so the Branch-Protection check
+          # can read the branch rules (the default GITHUB_TOKEN can't).
+          repo_token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        with:
+          sarif_file: results.sarif
+          category: scorecard

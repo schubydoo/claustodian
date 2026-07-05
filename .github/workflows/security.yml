@@ -1,0 +1,189 @@
+# Consolidates claustodian's PR-gating security scanners into one file so the
+# posture is grokkable at a glance. Each scanner is its own JOB (not a step) so
+# they run in parallel, appear individually in the PR checks list, and feed the
+# single `security required checks passed` aggregator that the `main` ruleset
+# requires.
+#
+# Adapted from schubydoo/clauster's security.yml. Differences for this repo:
+#   - CodeQL language is javascript-typescript (build-mode: none — no compile
+#     step for a TS/Node repo), not python.
+#   - No trivy image scan (this repo ships no container image / Dockerfile).
+#   - No changed-code classifier composite: CI here is seconds, so scanners
+#     always run rather than skipping docs-only diffs.
+#
+# App token: the API-calling scanners mint a claustodian-ci GitHub App token
+# (higher REST limit than the 1,000/hr github-actions[bot] pool) via the
+# CLAUSTODIAN_CI_APP_ID / CLAUSTODIAN_CI_APP_PRIVATE_KEY repo secrets. The mint
+# step is same-repo-only (fork PRs lack the secrets), so it falls back to
+# GITHUB_TOKEN there. CodeQL is exempt: upload-sarif rejects App installation
+# tokens (github/codeql-action#2719), so it always uses GITHUB_TOKEN.
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    # Defaults PLUS ready_for_review so flipping a draft → ready re-dispatches
+    # this required-context workflow on the current head SHA without a push.
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: '37 4 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  codeql:
+    name: codeql analyze
+    # ALWAYS run — never gate on a docs-only classifier. The `main` ruleset's
+    # code_scanning rule treats a required CodeQL tool that produced no results
+    # (a skipped job) as unsatisfied, so a docs-only PR would sit at BLOCKED
+    # forever. Re-analysing unchanged code costs a few seconds; that keeps the
+    # code-scanning rule satisfiable on every PR.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        with:
+          languages: javascript-typescript
+          build-mode: none
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        with:
+          category: '/language:javascript-typescript'
+
+  gitleaks:
+    name: secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Mint GitHub App token
+        id: app-token
+        if: >-
+          ${{ github.event_name != 'pull_request'
+          || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CLAUSTODIAN_CI_APP_ID }}
+          private-key: ${{ secrets.CLAUSTODIAN_CI_APP_PRIVATE_KEY }}
+          permission-contents: read
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
+
+  zizmor:
+    name: workflow audit
+    # Skip on the synchronize storm (a main push fanned across open PRs): the
+    # SARIF upload is GITHUB_TOKEN-only, so re-running every push just taxes the
+    # API pool. Runs on PR open/reopen/ready + push:main + weekly cron; the
+    # aggregator (if: always()) counts a skip as passing.
+    if: github.event_name != 'pull_request' || github.event.action != 'synchronize'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Mint GitHub App token
+        id: app-token
+        if: >-
+          ${{ github.event_name != 'pull_request'
+          || github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CLAUSTODIAN_CI_APP_ID }}
+          private-key: ${{ secrets.CLAUSTODIAN_CI_APP_PRIVATE_KEY }}
+          permission-contents: read
+      - name: Set up uv
+        uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+      - name: Install zizmor
+        run: uv tool install zizmor
+      - name: Run zizmor
+        run: zizmor --format sarif . > results.sarif
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        with:
+          sarif_file: results.sarif
+          category: zizmor
+
+  dependency-review:
+    name: dependency review
+    # PR-only: compares the PR's dependency changes against known advisories.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - name: Mint GitHub App token
+        id: app-token
+        if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CLAUSTODIAN_CI_APP_ID }}
+          private-key: ${{ secrets.CLAUSTODIAN_CI_APP_PRIVATE_KEY }}
+          permission-contents: read
+          permission-pull-requests: write
+      - name: Dependency Review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: on-failure
+          repo-token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
+
+  security-required-checks-passed:
+    name: security required checks passed
+    if: always()
+    needs:
+      - codeql
+      - gitleaks
+      - zizmor
+      - dependency-review
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Check required jobs passed
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          failing=$(echo "$NEEDS_JSON" | jq -r '
+            to_entries[]
+            | select(.value.result != "success" and .value.result != "skipped")
+            | "\(.key): \(.value.result)"
+          ')
+          if [ -n "$failing" ]; then
+            echo "Failed or cancelled jobs:"
+            echo "$failing"
+            exit 1
+          fi
+          echo "All required jobs passed (or were intentionally skipped)."
