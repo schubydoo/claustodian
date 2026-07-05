@@ -44,7 +44,12 @@
         margin: 0;
         background: var(--bg);
         color: var(--fg);
-        font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        font:
+          16px/1.5 system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          sans-serif;
       }
       .wrap {
         max-width: 860px;
@@ -195,7 +200,12 @@
       <div class="controls">
         <div id="search">
           <label for="q">Search symbols</label>
-          <input id="q" type="search" placeholder="e.g. --safe-mode, CLAUDE_CODE, /rename" autocomplete="off" />
+          <input
+            id="q"
+            type="search"
+            placeholder="e.g. --safe-mode, CLAUDE_CODE, /rename"
+            autocomplete="off"
+          />
         </div>
         <div>
           <label for="version">As of version</label>
@@ -219,8 +229,8 @@
           <code>data/versions/X.Y.Z.json</code> directly, in any language.
         </p>
         <p>
-          <a href="https://github.com/schubydoo/claustodian">Source &amp; docs</a>. Unofficial;
-          not affiliated with Anthropic. Data CC-BY-4.0, code Apache-2.0.
+          <a href="https://github.com/schubydoo/claustodian">Source &amp; docs</a>. Unofficial; not
+          affiliated with Anthropic. Data CC-BY-4.0, code Apache-2.0.
         </p>
       </footer>
     </div>
@@ -269,8 +279,7 @@
         const life = document.createElement('span');
         life.className = 'lifecycle';
         if (sym.removed_in) {
-          life.innerHTML =
-            `since ${sym.first_seen} · <span class="removed">removed ${sym.removed_in}</span>`;
+          life.innerHTML = `since ${sym.first_seen} · <span class="removed">removed ${sym.removed_in}</span>`;
         } else {
           life.textContent = `since ${sym.first_seen}`;
         }
