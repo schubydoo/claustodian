@@ -1,17 +1,15 @@
 # Task 3.3 — CI gate on every PR. Blocks merge unless lint, typecheck, tests,
 # and schema validation all pass. Least-privilege: read-only.
+#
+# Runs on EVERY pull request (no path filter): the `main` ruleset requires the
+# `validate` context, and a required check that is skipped by a path filter never
+# reports — leaving the PR stuck at "Expected". Docs/asset-only PRs still run the
+# full gate (fast, and everything passes), which keeps the required check always
+# satisfiable.
 name: Validate PR
 
 on:
   pull_request:
-    paths:
-      - 'data/**'
-      - 'schema/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'tsconfig.json'
-      - 'vitest.config.ts'
 
 permissions:
   contents: read
