@@ -425,8 +425,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added the `/claude-api` skill for building applications with the Claude API and Anthropic SDK",
-      "description_source": "changelog",
+      "description": "**Skill.** Load Claude API reference material for your project's language (Python, TypeScript, Java, Go, Ruby, C#, PHP, or cURL) and Managed Agents reference. Covers tool use, streaming, batches, structured outputs, and common pitfalls. Also activates automatically when your code imports `anthropic` or `@anthropic-ai/sdk`. Run `/claude-api migrate` to upgrade existing Claude API code to a newer model: Claude asks which files to scan and which model to target, then updates model IDs, thinking configuration, and other parameters that changed between versions. Run `/claude-api managed-agents-onboard` for an interactive walkthrough that creates a new Managed Agent from scratch",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -979,7 +979,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "",
+      "description": "Toggle voice dictation, or enable it in a specific mode. Requires a Claude.ai account",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },

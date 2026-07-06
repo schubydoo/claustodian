@@ -245,6 +245,13 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--fix",
+      "type": "cli_flag",
+      "description": "**Skill.** Review the current diff for correctness bugs and for reuse, simplification, and efficiency cleanups. Pass `--fix` to apply findings to your working tree, `--comment` to post them as inline GitHub PR comments, or `ultra` to run a deep cloud review. From v2.1.154, `/simplify` runs a separate cleanup-only review that applies fixes without hunting for bugs. See Review a diff locally for effort levels and targeting",
+      "doc_min_version": "2.1.154",
+      "doc_page": "commands"
+    },
+    {
       "symbol": "--force",
       "type": "cli_flag",
       "description": "Reload all active plugins to apply pending changes without restarting. Reports counts for each reloaded component and flags any load errors. When the reload would change which MCP tools are loaded and invalidate the prompt cache, the command warns and skips unless you pass `--force`",
@@ -616,6 +623,13 @@
       "doc_page": "commands"
     },
     {
+      "symbol": "/advisor",
+      "type": "command",
+      "description": "Enable or disable the advisor tool, which consults a second model for guidance at key moments during a task. Accepts `opus`, `sonnet`, `fable` (v2.1.170+), or a full model ID. Without an argument, opens a picker. Requires Claude Code v2.1.98 or later",
+      "doc_min_version": "2.1.98",
+      "doc_page": "commands"
+    },
+    {
       "symbol": "/agents",
       "type": "command",
       "description": "As of v2.1.198, running `/agents` prints a reminder to ask Claude to create or manage subagents, or to edit `.claude/agents/` or `~/.claude/agents/` directly. On v2.1.197 and earlier, opens an interactive interface for creating and managing subagent configurations",
@@ -679,9 +693,23 @@
       "doc_page": "commands"
     },
     {
+      "symbol": "/claude-api",
+      "type": "command",
+      "description": "**Skill.** Load Claude API reference material for your project's language (Python, TypeScript, Java, Go, Ruby, C#, PHP, or cURL) and Managed Agents reference. Covers tool use, streaming, batches, structured outputs, and common pitfalls. Also activates automatically when your code imports `anthropic` or `@anthropic-ai/sdk`. Run `/claude-api migrate` to upgrade existing Claude API code to a newer model: Claude asks which files to scan and which model to target, then updates model IDs, thinking configuration, and other parameters that changed between versions. Run `/claude-api managed-agents-onboard` for an interactive walkthrough that creates a new Managed Agent from scratch",
+      "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
       "symbol": "/clear",
       "type": "command",
       "description": "Start a new conversation with empty context. The previous conversation stays available in `/resume`. Pass a name to label the previous conversation in the `/resume` picker. To free up context while continuing the same conversation, use `/compact` instead. Aliases: `/reset`, `/new`",
+      "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
+      "symbol": "/color",
+      "type": "command",
+      "description": "Set the prompt bar color for the current session. Available colors: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan`. Use `default` to reset, or run with no argument to pick a random color. When Remote Control is connected, the color syncs to claude.ai/code",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -777,6 +805,13 @@
       "doc_page": "commands"
     },
     {
+      "symbol": "/effort",
+      "type": "command",
+      "description": "Set the model effort level. Accepts `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`; available levels depend on the model, and `max` and `ultracode` are session-only. `ultracode` is a Claude Code setting that combines `xhigh` reasoning with automatic workflow orchestration. `auto` resets to the model default. Without an argument, opens an interactive slider; use left and right arrows to pick a level and `Enter` to apply. Takes effect immediately without waiting for the current response to finish",
+      "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
       "symbol": "/exit",
       "type": "command",
       "description": "Exit the CLI. In an attached background session, this detaches and the session keeps running. Alias: `/quit`",
@@ -787,6 +822,13 @@
       "symbol": "/export",
       "type": "command",
       "description": "Export the current conversation as plain text. With a filename, writes directly to that file. Without, opens a dialog to copy to clipboard or save to a file",
+      "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
+      "symbol": "/fast",
+      "type": "command",
+      "description": "Toggle fast mode on or off",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -823,6 +865,13 @@
       "type": "command",
       "description": "Spawn a forked subagent: a background subagent that inherits the full conversation and works on the directive while you keep going. Its result returns to your conversation when it finishes. To switch into a copy of the conversation yourself, use `/branch`. Before v2.1.161, `/fork` is an alias for `/branch`",
       "doc_min_version": "2.1.161",
+      "doc_page": "commands"
+    },
+    {
+      "symbol": "/goal",
+      "type": "command",
+      "description": "Set a goal: Claude keeps working across turns until the condition is met. With no argument, shows the current or most recently achieved goal. `clear`, `stop`, `off`, `reset`, `none`, or `cancel` removes an active goal early",
+      "doc_min_version": null,
       "doc_page": "commands"
     },
     {
@@ -906,6 +955,13 @@
       "symbol": "/loop",
       "type": "command",
       "description": "**Skill.** Run a prompt repeatedly while the session stays open. Omit the interval and Claude self-paces between iterations. Omit the prompt and, where available, Claude runs an autonomous maintenance check or the prompt in `.claude/loop.md`. Example: `/loop 5m check if the deploy finished`. See Run prompts on a schedule. Alias: `/proactive`",
+      "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
+      "symbol": "/mcp",
+      "type": "command",
+      "description": "Manage MCP server connections and OAuth authentication. Run with no argument to open the interactive list, pass `reconnect <server>` to reconnect one disconnected server, or pass `enable`/`disable` with a server name or `all` to change connection state without opening the dialog",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1211,6 +1267,13 @@
       "doc_page": "commands"
     },
     {
+      "symbol": "/tui",
+      "type": "command",
+      "description": "Set the terminal UI renderer and relaunch into it with your conversation intact. `fullscreen` enables the flicker-free alt-screen renderer. With no argument, prints the active renderer",
+      "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
       "symbol": "/ultraplan",
       "type": "command",
       "description": "Draft a plan in an ultraplan session, review it in your browser, then execute remotely or send it back to your terminal",
@@ -1256,6 +1319,13 @@
       "symbol": "/vim",
       "type": "command",
       "description": "Removed in v2.1.92. To toggle between Vim and Normal editing modes, use `/config` → Editor mode",
+      "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
+      "symbol": "/voice",
+      "type": "command",
+      "description": "Toggle voice dictation, or enable it in a specific mode. Requires a Claude.ai account",
       "doc_min_version": null,
       "doc_page": "commands"
     },
