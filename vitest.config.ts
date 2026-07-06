@@ -1,11 +1,15 @@
 // Copyright 2026 Schuby
 // SPDX-License-Identifier: Apache-2.0
 
-import { defineConfig } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
     passWithNoTests: true,
+    // Only this checkout's own suite should run. Exclude `.claude/` so a linked
+    // git worktree (e.g. `.claude/worktrees/*`, which carries its own copy of
+    // `scripts/**/*.test.ts`) isn't discovered and double-counted locally.
+    exclude: [...configDefaults.exclude, '.claude/**'],
     // In CI, also emit a JUnit report alongside the console output so
     // codecov/test-results-action can upload it for Test Analytics (flaky/
     // failed-test tracking). Kept CI-only to avoid a stray file locally,
