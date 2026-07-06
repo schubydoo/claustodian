@@ -172,11 +172,11 @@ export function officialSourcePages(): string[] {
 }
 
 /**
- * Provenance guard for a docs index: its `source_pages` must be exactly the
- * official Claude Code docs URLs and every `doc_page` must be an official page
- * slug. This keeps the `docs` provenance lane honest — an arbitrary `--docs`
- * file can't be published as `provenance: "docs"` with fabricated official
- * source URLs; only the committed output of `fetch-docs` passes.
+ * Integrity guard for the committed docs index: its `source_pages` must be
+ * exactly the official Claude Code docs URLs and every `doc_page` must be an
+ * official page slug. Catches a hand-edited or corrupted `data/docs.json`
+ * before its entries are published as `provenance: "docs"` with real-looking
+ * `code.claude.com/docs` source URLs.
  */
 export function assertOfficialDocs(docs: DocsIndex): void {
   const expected = officialSourcePages();

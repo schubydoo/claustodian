@@ -14,11 +14,17 @@
  * from our knowledge, since we have no reliable "this was removed" signal
  * from prose alone).
  *
+ * The docs lane is always read from the committed `data/docs.json` (produced by
+ * `npm run fetch-docs` from the official docs pages) — it is not CLI-overridable,
+ * so generated data can't attribute arbitrary local content to the docs lane.
+ *
  * Usage:
  *   tsx scripts/scrape-changelog.ts [--changelog <path>] [--out <dir>] [--all]
  *
- *   --changelog <path>  Read the changelog from a local file instead of
- *                       fetching https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
+ *   --changelog <path>  Read the changelog from a local file instead of fetching
+ *                       the official CHANGELOG.md. For in-process CLI tests only:
+ *                       refused when --out is the committed "data" directory, so
+ *                       the shipped dataset is always from the official fetch.
  *   --out <dir>         Output directory (default: "data")
  *   --all               Write every version's snapshot under <dir>/versions/,
  *                       plus <dir>/index.json and <dir>/latest.json. Without
@@ -493,8 +499,7 @@ export function buildEnrichedSnapshots(
  * that drops every docs-only symbol and reverts descriptions to changelog text)
  * that still passes validation. docs.json is committed and produced by
  * `npm run fetch-docs`; its absence during a scrape is an error, not a
- * fall-back. For an intentional changelog-only build, point `--docs` at a file
- * containing `{"symbols":[]}`.
+ * fall-back.
  */
 export async function loadDocsIndex(path: string): Promise<DocsIndex> {
   return JSON.parse(await readFile(path, 'utf-8')) as DocsIndex;
@@ -505,15 +510,13 @@ export async function loadDocsIndex(path: string): Promise<DocsIndex> {
  * fetch-docs succeeded but an upstream table-shape change stopped the parser
  * from matching anything, so `symbols` is `[]`. Enriching against that silently
  * drops every docs-only symbol and description while validation still passes,
- * producing valid-but-incomplete data. Throws unless the caller explicitly
- * opted into a changelog-only build.
+ * producing valid-but-incomplete data. Throws so the scrape fails loudly.
  */
-export function assertNonEmptyDocs(docs: DocsIndex, allowEmpty: boolean, path: string): void {
-  if (!allowEmpty && docs.symbols.length === 0) {
+export function assertNonEmptyDocs(docs: DocsIndex, path: string): void {
+  if (docs.symbols.length === 0) {
     throw new Error(
       `Docs index ${path} has 0 symbols — the docs parser likely broke on an upstream ` +
-        `table-shape change. Re-run "npm run fetch-docs" and inspect it, or pass ` +
-        `--allow-empty-docs for an intentional changelog-only build.`
+        `table-shape change. Re-run "npm run fetch-docs" and inspect it.`
     );
   }
 }
@@ -567,21 +570,19 @@ async function writeJson(filePath: string, data: unknown): Promise<void> {
   await writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf-8');
 }
 
+/** The committed docs lane — the only docs source; not CLI-overridable. */
+const DOCS_PATH = 'data/docs.json';
+/** The committed data directory; regenerating it must use canonical sources. */
+const COMMITTED_DATA_DIR = 'data';
+
 interface CliOptions {
   changelogPath?: string;
-  docsPath: string;
   outDir: string;
   all: boolean;
-  allowEmptyDocs: boolean;
 }
 
 function parseArgs(argv: string[]): CliOptions {
-  const options: CliOptions = {
-    outDir: 'data',
-    docsPath: 'data/docs.json',
-    all: false,
-    allowEmptyDocs: false,
-  };
+  const options: CliOptions = { outDir: 'data', all: false };
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -589,12 +590,6 @@ function parseArgs(argv: string[]): CliOptions {
       const value = argv[i + 1];
       if (value !== undefined) {
         options.changelogPath = value;
-        i++;
-      }
-    } else if (arg === '--docs') {
-      const value = argv[i + 1];
-      if (value !== undefined) {
-        options.docsPath = value;
         i++;
       }
     } else if (arg === '--out') {
@@ -605,25 +600,42 @@ function parseArgs(argv: string[]): CliOptions {
       }
     } else if (arg === '--all') {
       options.all = true;
-    } else if (arg === '--allow-empty-docs') {
-      options.allowEmptyDocs = true;
     }
   }
 
   return options;
 }
 
+/**
+ * Provenance guard: the committed dataset must be regenerated only from
+ * canonical sources — the official changelog fetch and the committed
+ * `data/docs.json`. `--changelog` (a local file, for in-process CLI tests that
+ * write to a scratch `--out`) is refused when the target is the committed
+ * `data/` directory, so shipped data can't be produced from a local override.
+ */
+export function assertCanonicalSourcesForCommittedData(
+  outDir: string,
+  changelogPath: string | undefined
+): void {
+  if (outDir === COMMITTED_DATA_DIR && changelogPath !== undefined) {
+    throw new Error(
+      `Refusing to regenerate the committed ${COMMITTED_DATA_DIR}/ directory from a local ` +
+        `--changelog override; the shipped dataset must come from the official CHANGELOG.md ` +
+        `fetch. Use --changelog only with a scratch --out (as the CLI tests do).`
+    );
+  }
+}
+
 export async function main(): Promise<number> {
   const options = parseArgs(process.argv.slice(2));
+  assertCanonicalSourcesForCommittedData(options.outDir, options.changelogPath);
   const md = await loadChangelog(options.changelogPath);
 
   const blocks = parseChangelog(md);
-  const docs = await loadDocsIndex(options.docsPath);
-  assertNonEmptyDocs(docs, options.allowEmptyDocs, options.docsPath);
-  // A populated docs lane must actually be the official docs (guards --docs).
-  if (docs.symbols.length > 0) {
-    assertOfficialDocs(docs);
-  }
+  const docs = await loadDocsIndex(DOCS_PATH);
+  assertNonEmptyDocs(docs, DOCS_PATH);
+  // Defense-in-depth integrity check on the committed docs.json.
+  assertOfficialDocs(docs);
   const snapshots = buildEnrichedSnapshots(blocks, docs);
   const index = buildIndex(snapshots);
 

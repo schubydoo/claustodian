@@ -7,6 +7,7 @@ import { buildAjv, getValidator } from './validate-schema.js';
 import { rm, writeFile } from 'node:fs/promises';
 
 import {
+  assertCanonicalSourcesForCommittedData,
   assertNonEmptyDocs,
   buildEnrichedSnapshots,
   buildIndex,
@@ -384,15 +385,27 @@ describe('assertNonEmptyDocs', () => {
     ],
   };
 
-  it('throws on a valid-but-empty docs index in the normal path', () => {
-    expect(() => assertNonEmptyDocs(empty, false, 'data/docs.json')).toThrow(/0 symbols/);
-  });
-
-  it('allows an empty docs index only with the explicit opt-out', () => {
-    expect(() => assertNonEmptyDocs(empty, true, 'data/docs.json')).not.toThrow();
+  it('throws on a valid-but-empty docs index', () => {
+    expect(() => assertNonEmptyDocs(empty, 'data/docs.json')).toThrow(/0 symbols/);
   });
 
   it('passes for a populated docs index', () => {
-    expect(() => assertNonEmptyDocs(nonEmpty, false, 'data/docs.json')).not.toThrow();
+    expect(() => assertNonEmptyDocs(nonEmpty, 'data/docs.json')).not.toThrow();
+  });
+});
+
+describe('assertCanonicalSourcesForCommittedData', () => {
+  it('refuses --changelog when regenerating the committed data/ directory', () => {
+    expect(() => assertCanonicalSourcesForCommittedData('data', '/tmp/local.md')).toThrow(
+      /committed data\/ directory/
+    );
+  });
+
+  it('allows --changelog when writing to a scratch --out (as the CLI tests do)', () => {
+    expect(() => assertCanonicalSourcesForCommittedData('/tmp/out', '/tmp/local.md')).not.toThrow();
+  });
+
+  it('allows the official fetch (no --changelog) into the committed directory', () => {
+    expect(() => assertCanonicalSourcesForCommittedData('data', undefined)).not.toThrow();
   });
 });
