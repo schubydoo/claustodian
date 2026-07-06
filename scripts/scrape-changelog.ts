@@ -486,13 +486,24 @@ export function buildEnrichedSnapshots(
   return assembleSnapshots(enrichSymbols(collected, docs, latest), blocks);
 }
 
-/** Loads `data/docs.json`; returns an empty index if the file is absent. */
+/**
+ * Loads `data/docs.json`. A *missing* file yields an empty index (the docs
+ * lane is optional and may not exist on a first run); any other failure —
+ * malformed/truncated JSON, a permission error — throws, so a corrupt docs
+ * index fails the scrape loudly instead of silently dropping every docs symbol
+ * and reverting descriptions to changelog text while validation still passes.
+ */
 export async function loadDocsIndex(path: string): Promise<DocsIndex> {
+  let raw: string;
   try {
-    return JSON.parse(await readFile(path, 'utf-8')) as DocsIndex;
-  } catch {
-    return { $generated_by: '', source_pages: [], symbols: [] };
+    raw = await readFile(path, 'utf-8');
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return { $generated_by: '', source_pages: [], symbols: [] };
+    }
+    throw error;
   }
+  return JSON.parse(raw) as DocsIndex;
 }
 
 function parseVersionParts(version: string): [number, number, number] {

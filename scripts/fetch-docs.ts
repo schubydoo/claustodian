@@ -114,10 +114,12 @@ export function parseDocPage(page: string, markdown: string): DocEntry[] {
   const entries: DocEntry[] = [];
   for (const line of markdown.split('\n')) {
     if (!/^\s*\|/.test(line) || /^\s*\|\s*:?-{2,}/.test(line)) continue;
+    // Split on unescaped pipes only, then unescape `\|` back to a literal pipe,
+    // so a cell containing `foo \| bar` isn't silently truncated at the pipe.
     const cells = line
-      .split('|')
+      .split(/(?<!\\)\|/)
       .slice(1, -1)
-      .map((c) => c.trim());
+      .map((c) => c.trim().replace(/\\\|/g, '|'));
     if (cells.length < 2) continue;
 
     const sym = symbolFromCell(cells[0] ?? '');

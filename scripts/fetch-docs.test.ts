@@ -128,3 +128,21 @@ describe('main (mocked fetch)', () => {
     await expect(main(['/tmp/claustodian-fetch-docs.err.json'])).rejects.toThrow(/Failed to fetch/);
   });
 });
+
+describe('parseDocPage — escaped pipes', () => {
+  it('keeps a description containing escaped pipes intact (not truncated)', () => {
+    const entries = parseDocPage('cli-reference', '| `--fmt` | outputs a \\| b \\| c |');
+    expect(entries[0]?.description).toBe('outputs a | b | c');
+  });
+
+  it('handles an escaped pipe inside the symbol cell', () => {
+    const entries = parseDocPage(
+      'commands',
+      '| `/advisor [model\\|off]` | Enable the advisor tool |'
+    );
+    expect(entries[0]).toMatchObject({
+      symbol: '/advisor',
+      description: 'Enable the advisor tool',
+    });
+  });
+});

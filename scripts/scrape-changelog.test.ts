@@ -4,6 +4,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildAjv, getValidator } from './validate-schema.js';
+import { rm, writeFile } from 'node:fs/promises';
+
 import {
   buildEnrichedSnapshots,
   buildIndex,
@@ -14,6 +16,7 @@ import {
   enrichSymbols,
   extractSymbols,
   isIntroducingBullet,
+  loadDocsIndex,
   parseChangelog,
 } from './scrape-changelog.js';
 import type { DocsIndex } from './fetch-docs.js';
@@ -354,5 +357,19 @@ describe('enrichSymbols', () => {
       snaps.find((s) => s.version === v)?.symbols.map((x) => x.symbol) ?? [];
     expect(at('2.0.0')).not.toContain('--docsonly');
     expect(at('2.1.0')).toContain('--docsonly');
+  });
+});
+
+describe('loadDocsIndex', () => {
+  it('returns an empty index when the file is absent (docs lane is optional)', async () => {
+    const index = await loadDocsIndex('/tmp/claustodian-no-such-docs.json');
+    expect(index.symbols).toEqual([]);
+  });
+
+  it('throws on a malformed docs file instead of silently degrading', async () => {
+    const path = '/tmp/claustodian-bad-docs.json';
+    await writeFile(path, '{ not valid json', 'utf8');
+    await expect(loadDocsIndex(path)).rejects.toThrow();
+    await rm(path, { force: true });
   });
 });
