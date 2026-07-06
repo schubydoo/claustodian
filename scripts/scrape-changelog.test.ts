@@ -361,9 +361,8 @@ describe('enrichSymbols', () => {
 });
 
 describe('loadDocsIndex', () => {
-  it('returns an empty index when the file is absent (docs lane is optional)', async () => {
-    const index = await loadDocsIndex('/tmp/claustodian-no-such-docs.json');
-    expect(index.symbols).toEqual([]);
+  it('throws when the docs index is absent (committed + required, never silently empty)', async () => {
+    await expect(loadDocsIndex('/tmp/claustodian-no-such-docs.json')).rejects.toThrow();
   });
 
   it('throws on a malformed docs file instead of silently degrading', async () => {

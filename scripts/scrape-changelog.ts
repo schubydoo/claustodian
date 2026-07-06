@@ -487,23 +487,17 @@ export function buildEnrichedSnapshots(
 }
 
 /**
- * Loads `data/docs.json`. A *missing* file yields an empty index (the docs
- * lane is optional and may not exist on a first run); any other failure —
- * malformed/truncated JSON, a permission error — throws, so a corrupt docs
- * index fails the scrape loudly instead of silently dropping every docs symbol
- * and reverting descriptions to changelog text while validation still passes.
+ * Loads `data/docs.json`, the committed docs lane. ANY failure — a missing
+ * file, malformed/truncated JSON, a permission error — throws, so the scrape
+ * fails loudly rather than silently regenerating an incomplete dataset (one
+ * that drops every docs-only symbol and reverts descriptions to changelog text)
+ * that still passes validation. docs.json is committed and produced by
+ * `npm run fetch-docs`; its absence during a scrape is an error, not a
+ * fall-back. For an intentional changelog-only build, point `--docs` at a file
+ * containing `{"symbols":[]}`.
  */
 export async function loadDocsIndex(path: string): Promise<DocsIndex> {
-  let raw: string;
-  try {
-    raw = await readFile(path, 'utf-8');
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return { $generated_by: '', source_pages: [], symbols: [] };
-    }
-    throw error;
-  }
-  return JSON.parse(raw) as DocsIndex;
+  return JSON.parse(await readFile(path, 'utf-8')) as DocsIndex;
 }
 
 function parseVersionParts(version: string): [number, number, number] {
