@@ -1,8 +1,9 @@
 // Copyright 2026 Schuby
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, expect, it } from 'vitest';
-import { buildDocsIndex, parseDocPage, symbolFromCell } from './fetch-docs.js';
+import { readFile, rm } from 'node:fs/promises';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { buildDocsIndex, main, parseDocPage, symbolFromCell } from './fetch-docs.js';
 
 describe('symbolFromCell', () => {
   it('recognizes a CLI flag', () => {
@@ -99,5 +100,31 @@ describe('buildDocsIndex', () => {
     const index = buildDocsIndex(pages);
     expect(index.symbols[0]?.doc_min_version).toBe('2.1.50');
     expect(index.symbols[0]?.description).toBe('no version here');
+  });
+});
+
+describe('main (mocked fetch)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('fetches the pages and writes a docs index', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, text: async () => '| `--mock` | A mocked flag |' }))
+    );
+    const out = '/tmp/claustodian-fetch-docs.test.json';
+    await main([out]);
+    const index = JSON.parse(await readFile(out, 'utf8'));
+    expect(index.symbols.some((s: { symbol: string }) => s.symbol === '--mock')).toBe(true);
+    await rm(out, { force: true });
+  });
+
+  it('throws on a non-ok response', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: false, status: 404, statusText: 'Not Found' }))
+    );
+    await expect(main(['/tmp/claustodian-fetch-docs.err.json'])).rejects.toThrow(/Failed to fetch/);
   });
 });

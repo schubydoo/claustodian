@@ -5,13 +5,18 @@ import { describe, expect, it } from 'vitest';
 
 import { buildAjv, getValidator } from './validate-schema.js';
 import {
+  buildEnrichedSnapshots,
   buildIndex,
   buildSnapshots,
   categorize,
+  collectChangelogSymbols,
   compareVersionsAsc,
+  enrichSymbols,
   extractSymbols,
+  isIntroducingBullet,
   parseChangelog,
 } from './scrape-changelog.js';
+import type { DocsIndex } from './fetch-docs.js';
 
 /**
  * A small fixture changelog, newest-first (matching upstream's real
@@ -219,5 +224,135 @@ describe('numeric version ordering', () => {
     expect(index.versions).toEqual(['2.1.10', '2.1.9', '2.0.64']);
     expect(index.latest).toBe('2.1.10');
     expect(index.schemaVersion).toBe('1.0.0');
+  });
+});
+
+const docsIndex = (symbols: DocsIndex['symbols']): DocsIndex => ({
+  $generated_by: 'test',
+  source_pages: [],
+  symbols,
+});
+
+describe('isIntroducingBullet', () => {
+  it('detects introducing verbs and rejects incidental ones', () => {
+    expect(isIntroducingBullet('- Added `--foo` flag')).toBe(true);
+    expect(isIntroducingBullet('- New `--bar` option')).toBe(true);
+    expect(isIntroducingBullet('- Fixed a crash when using `--foo`')).toBe(false);
+    expect(isIntroducingBullet('- Improved `--foo` output')).toBe(false);
+  });
+});
+
+describe('enrichSymbols', () => {
+  const blocks = [
+    { version: '2.1.0', bullets: ['- Improved `--incident` behavior'] },
+    {
+      version: '2.0.0',
+      bullets: [
+        '- Added `--intro` flag',
+        '- Fixed a bug with `--incident`',
+        '- Fixed `--anchored`',
+        '- Fixed `--nodoc`',
+      ],
+    },
+  ];
+  const docs = docsIndex([
+    {
+      symbol: '--intro',
+      type: 'cli_flag',
+      description: 'Intro',
+      doc_min_version: null,
+      doc_page: 'cli-reference',
+    },
+    {
+      symbol: '--incident',
+      type: 'cli_flag',
+      description: 'Incident',
+      doc_min_version: null,
+      doc_page: 'cli-reference',
+    },
+    {
+      symbol: '--anchored',
+      type: 'cli_flag',
+      description: 'Anchored',
+      doc_min_version: '1.0.0',
+      doc_page: 'cli-reference',
+    },
+    {
+      symbol: '--docsonly',
+      type: 'cli_flag',
+      description: 'DocsOnly',
+      doc_min_version: '2.0.5',
+      doc_page: 'cli-reference',
+    },
+    {
+      symbol: '--docsnomin',
+      type: 'cli_flag',
+      description: 'DocsNoMin',
+      doc_min_version: null,
+      doc_page: 'cli-reference',
+    },
+  ]);
+  const records = enrichSymbols(collectChangelogSymbols(blocks), docs, '2.1.0');
+  const m = new Map(records.map((r) => [r.symbol, r]));
+
+  it('uses the docs description and keeps a high, non-estimated first_seen for an introducing symbol', () => {
+    const r = m.get('--intro');
+    expect(r).toMatchObject({
+      description: 'Intro',
+      description_source: 'docs',
+      provenance: 'changelog',
+      first_seen: '2.0.0',
+      confidence: 'high',
+    });
+    expect(r?.first_seen_estimated).toBeUndefined();
+  });
+
+  it('flags an incidental changelog symbol estimated/medium even with a docs description', () => {
+    expect(m.get('--incident')).toMatchObject({
+      description: 'Incident',
+      description_source: 'docs',
+      confidence: 'medium',
+      first_seen_estimated: true,
+      first_seen: '2.0.0',
+    });
+  });
+
+  it('pulls first_seen earlier from an authoritative docs min-version', () => {
+    const r = m.get('--anchored');
+    expect(r).toMatchObject({ first_seen: '1.0.0', confidence: 'high' });
+    expect(r?.first_seen_estimated).toBeUndefined();
+  });
+
+  it('leaves an incidental symbol with no docs an empty description and no source', () => {
+    const r = m.get('--nodoc');
+    expect(r?.description).toBe('');
+    expect(r && 'description_source' in r).toBe(false);
+    expect(r).toMatchObject({ confidence: 'medium', first_seen_estimated: true });
+  });
+
+  it('adds a docs-only symbol with an authoritative first_seen from its min-version', () => {
+    expect(m.get('--docsonly')).toMatchObject({
+      provenance: 'docs',
+      first_seen: '2.0.5',
+      confidence: 'high',
+      description_source: 'docs',
+    });
+  });
+
+  it('adds a docs-only symbol without a min-version as estimated at the latest version', () => {
+    expect(m.get('--docsnomin')).toMatchObject({
+      provenance: 'docs',
+      first_seen: '2.1.0',
+      confidence: 'medium',
+      first_seen_estimated: true,
+    });
+  });
+
+  it('places docs-only symbols in snapshots from their first_seen onward', () => {
+    const snaps = buildEnrichedSnapshots(blocks, docs);
+    const at = (v: string) =>
+      snaps.find((s) => s.version === v)?.symbols.map((x) => x.symbol) ?? [];
+    expect(at('2.0.0')).not.toContain('--docsonly');
+    expect(at('2.1.0')).toContain('--docsonly');
   });
 });

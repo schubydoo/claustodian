@@ -25,12 +25,14 @@
  *                       this flag, only <dir>/index.json and <dir>/latest.json
  *                       are written (the full per-version backfill is opt-in).
  */
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import type { DocsIndex } from './fetch-docs.js';
 import { isMain, loadChangelog } from './lib.js';
 
 const SOURCE_URL = 'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md';
+const DOCS_PAGE_BASE = 'https://code.claude.com/docs/en/';
 const SCHEMA_VERSION = '1.0.0';
 
 /** One version's worth of raw changelog data, as parsed from the markdown. */
@@ -51,11 +53,13 @@ export interface SymbolRecord {
   symbol: string;
   type: 'cli_flag' | 'env_var' | 'command' | 'config_key' | 'internal_config_flag';
   first_seen: string;
+  first_seen_estimated?: boolean;
   removed_in: string | null;
   status: 'active' | 'deprecated' | 'removed' | 'needs_review';
-  provenance: 'changelog' | 'binary';
+  provenance: 'changelog' | 'docs' | 'binary';
   confidence: 'high' | 'medium' | 'low';
   description: string;
+  description_source?: 'docs' | 'changelog';
   source_url: string | null;
   category: string;
 }
@@ -293,51 +297,202 @@ export function categorize(symbol: string, type: ExtractedSymbolType): string {
   return 'other';
 }
 
+/** A bullet that *introduces* a symbol (vs. names it incidentally in a fix). */
+const INTRODUCING_RE =
+  /^\s*(add|added|adds|new|introduce|introduced|introduces|now support|added support|support for)\b/i;
+
+export function isIntroducingBullet(bullet: string): boolean {
+  return INTRODUCING_RE.test(bulletDescription(bullet));
+}
+
+interface CollectedSymbol {
+  record: SymbolRecord;
+  introducing: boolean;
+}
+
 /**
- * Builds a cumulative, per-version snapshot of every symbol known so far.
- *
- * Iterates versions oldest -> newest (the reverse of `parseChangelog`'s
- * newest-first file order). For each version, any symbol extracted from its
- * bullets that hasn't been seen before is registered with `first_seen` set
- * to that version and `description` set to the exact bullet text it was
- * found in (minus the leading "- "). Once registered, a symbol's
- * first_seen/description never change on re-mention. Each version's
- * snapshot contains every symbol known as of (and including) that version,
- * sorted deterministically by type then symbol name.
+ * Collects every changelog symbol, oldest -> newest, registering it on first
+ * appearance with `first_seen` = that version and `description` = the bullet
+ * text. Also flags whether that first bullet *introduces* the symbol (vs. names
+ * it incidentally), which enrichment uses to judge first_seen confidence. First
+ * registration wins; re-mentions never change a symbol.
  */
-export function buildSnapshots(blocks: ChangelogBlock[]): VersionSnapshot[] {
+export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, CollectedSymbol> {
   const oldestFirst = [...blocks].reverse();
-  const known = new Map<string, SymbolRecord>();
-  const snapshots: VersionSnapshot[] = [];
+  const known = new Map<string, CollectedSymbol>();
 
   for (const block of oldestFirst) {
     for (const bullet of block.bullets) {
-      const symbols = extractSymbols(bullet);
-      for (const { symbol, type } of symbols) {
+      for (const { symbol, type } of extractSymbols(bullet)) {
         const key = `${type}:${symbol}`;
         if (known.has(key)) {
           continue;
         }
         known.set(key, {
-          symbol,
-          type,
-          first_seen: block.version,
-          removed_in: null,
-          status: 'active',
-          provenance: 'changelog',
-          confidence: 'high',
-          description: bulletDescription(bullet),
-          source_url: SOURCE_URL,
-          category: categorize(symbol, type),
+          introducing: isIntroducingBullet(bullet),
+          record: {
+            symbol,
+            type,
+            first_seen: block.version,
+            removed_in: null,
+            status: 'active',
+            provenance: 'changelog',
+            confidence: 'high',
+            description: bulletDescription(bullet),
+            source_url: SOURCE_URL,
+            category: categorize(symbol, type),
+          },
         });
       }
     }
-
-    const symbolsSnapshot = [...known.values()].sort(compareSymbolRecords);
-    snapshots.push({ version: block.version, symbols: symbolsSnapshot });
   }
 
-  return snapshots;
+  return known;
+}
+
+/**
+ * Assembles cumulative per-version snapshots from a finalized symbol list: each
+ * version's snapshot holds every symbol whose `first_seen` is <= that version,
+ * sorted deterministically by type then symbol name.
+ */
+export function assembleSnapshots(
+  records: SymbolRecord[],
+  blocks: ChangelogBlock[]
+): VersionSnapshot[] {
+  const versionsOldestFirst = blocks
+    .map((block) => block.version)
+    .sort((a, b) => compareVersionsAsc(a, b));
+
+  return versionsOldestFirst.map((version) => ({
+    version,
+    symbols: records
+      .filter((record) => compareVersionsAsc(record.first_seen, version) <= 0)
+      .sort(compareSymbolRecords),
+  }));
+}
+
+/**
+ * Changelog-only snapshots (no docs overlay): every symbol keeps its observed
+ * first_seen, the bullet as its description, and confidence "high". Kept for the
+ * pure changelog contract and its tests; production uses buildEnrichedSnapshots.
+ */
+export function buildSnapshots(blocks: ChangelogBlock[]): VersionSnapshot[] {
+  const records = [...collectChangelogSymbols(blocks).values()].map(
+    (collected) => collected.record
+  );
+  return assembleSnapshots(records, blocks);
+}
+
+/** Canonical key order + omits the optional fields when they don't apply. */
+function finalizeRecord(input: SymbolRecord & { first_seen_estimated: boolean }): SymbolRecord {
+  return {
+    symbol: input.symbol,
+    type: input.type,
+    first_seen: input.first_seen,
+    ...(input.first_seen_estimated ? { first_seen_estimated: true } : {}),
+    removed_in: input.removed_in,
+    status: input.status,
+    provenance: input.provenance,
+    confidence: input.confidence,
+    description: input.description,
+    ...(input.description_source ? { description_source: input.description_source } : {}),
+    source_url: input.source_url,
+    category: input.category,
+  };
+}
+
+/**
+ * Overlays the official docs lane onto the collected changelog symbols and adds
+ * docs-only symbols. Description priority: docs -> introducing bullet -> empty.
+ * `first_seen`: a docs `min-version` (authoritative) or an introducing bullet
+ * anchors it (confidence "high"); an incidental-only mention or a docs page
+ * without a min-version leaves it an upper bound (`first_seen_estimated`,
+ * confidence "medium") for the binary lane to correct.
+ */
+export function enrichSymbols(
+  collected: Map<string, CollectedSymbol>,
+  docs: DocsIndex,
+  latestVersion: string
+): SymbolRecord[] {
+  const docByKey = new Map(docs.symbols.map((entry) => [`${entry.type}:${entry.symbol}`, entry]));
+  const records: SymbolRecord[] = [];
+
+  for (const [key, { record, introducing }] of collected) {
+    const doc = docByKey.get(key);
+    const observed = record.first_seen;
+    let firstSeen = observed;
+    let estimated: boolean;
+    if (doc?.doc_min_version) {
+      // earliest evidence wins if the changelog observed it before the doc's min-version
+      firstSeen =
+        compareVersionsAsc(doc.doc_min_version, observed) < 0 ? doc.doc_min_version : observed;
+      estimated = false;
+    } else {
+      estimated = !introducing;
+    }
+    const description = doc ? doc.description : introducing ? record.description : '';
+    records.push(
+      finalizeRecord({
+        symbol: record.symbol,
+        type: record.type,
+        first_seen: firstSeen,
+        first_seen_estimated: estimated,
+        removed_in: null,
+        status: 'active',
+        provenance: 'changelog',
+        confidence: estimated ? 'medium' : 'high',
+        description,
+        description_source: doc ? 'docs' : description ? 'changelog' : undefined,
+        source_url: record.source_url,
+        category: record.category,
+      })
+    );
+  }
+
+  for (const entry of docs.symbols) {
+    if (collected.has(`${entry.type}:${entry.symbol}`)) {
+      continue;
+    }
+    const hasMin = Boolean(entry.doc_min_version);
+    records.push(
+      finalizeRecord({
+        symbol: entry.symbol,
+        type: entry.type,
+        first_seen: hasMin ? (entry.doc_min_version as string) : latestVersion,
+        first_seen_estimated: !hasMin,
+        removed_in: null,
+        status: 'active',
+        provenance: 'docs',
+        confidence: hasMin ? 'high' : 'medium',
+        description: entry.description,
+        description_source: 'docs',
+        source_url: `${DOCS_PAGE_BASE}${entry.doc_page}.md`,
+        category: categorize(entry.symbol, entry.type),
+      })
+    );
+  }
+
+  return records;
+}
+
+/** Production snapshots: changelog symbols enriched with the official docs lane. */
+export function buildEnrichedSnapshots(
+  blocks: ChangelogBlock[],
+  docs: DocsIndex
+): VersionSnapshot[] {
+  const collected = collectChangelogSymbols(blocks);
+  const latest =
+    blocks.map((block) => block.version).sort((a, b) => compareVersionsAsc(b, a))[0] ?? '';
+  return assembleSnapshots(enrichSymbols(collected, docs, latest), blocks);
+}
+
+/** Loads `data/docs.json`; returns an empty index if the file is absent. */
+export async function loadDocsIndex(path: string): Promise<DocsIndex> {
+  try {
+    return JSON.parse(await readFile(path, 'utf-8')) as DocsIndex;
+  } catch {
+    return { $generated_by: '', source_pages: [], symbols: [] };
+  }
 }
 
 function parseVersionParts(version: string): [number, number, number] {
@@ -391,12 +546,13 @@ async function writeJson(filePath: string, data: unknown): Promise<void> {
 
 interface CliOptions {
   changelogPath?: string;
+  docsPath: string;
   outDir: string;
   all: boolean;
 }
 
 function parseArgs(argv: string[]): CliOptions {
-  const options: CliOptions = { outDir: 'data', all: false };
+  const options: CliOptions = { outDir: 'data', docsPath: 'data/docs.json', all: false };
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -404,6 +560,12 @@ function parseArgs(argv: string[]): CliOptions {
       const value = argv[i + 1];
       if (value !== undefined) {
         options.changelogPath = value;
+        i++;
+      }
+    } else if (arg === '--docs') {
+      const value = argv[i + 1];
+      if (value !== undefined) {
+        options.docsPath = value;
         i++;
       }
     } else if (arg === '--out') {
@@ -425,7 +587,8 @@ export async function main(): Promise<number> {
   const md = await loadChangelog(options.changelogPath);
 
   const blocks = parseChangelog(md);
-  const snapshots = buildSnapshots(blocks);
+  const docs = await loadDocsIndex(options.docsPath);
+  const snapshots = buildEnrichedSnapshots(blocks, docs);
   const index = buildIndex(snapshots);
 
   const sortedByVersion = [...snapshots].sort((a, b) => compareVersionsAsc(a.version, b.version));
