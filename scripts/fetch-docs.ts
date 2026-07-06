@@ -110,16 +110,43 @@ export function symbolFromCell(cell: string): { symbol: string; type: DocSymbolT
  * line (not a `|:---|` separator) whose first cell names a symbol; the second
  * cell is its description.
  */
+/**
+ * Splits a Markdown table row into cells on the pipes that are real column
+ * delimiters — a `|` counts only when it is neither escaped (`\|`) nor inside an
+ * inline-code span (between backticks). So a cell like `` `model|fallback` `` or
+ * `a \| b` stays whole instead of being truncated at the pipe. Escaped pipes are
+ * unescaped to a literal `|` in the returned cells.
+ */
+export function splitTableRow(line: string): string[] {
+  const cells: string[] = [];
+  let current = '';
+  let inCode = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '\\' && line[i + 1] === '|') {
+      current += '|';
+      i++;
+    } else if (ch === '`') {
+      inCode = !inCode;
+      current += ch;
+    } else if (ch === '|' && !inCode) {
+      cells.push(current);
+      current = '';
+    } else {
+      current += ch;
+    }
+  }
+  cells.push(current);
+  return cells;
+}
+
 export function parseDocPage(page: string, markdown: string): DocEntry[] {
   const entries: DocEntry[] = [];
   for (const line of markdown.split('\n')) {
     if (!/^\s*\|/.test(line) || /^\s*\|\s*:?-{2,}/.test(line)) continue;
-    // Split on unescaped pipes only, then unescape `\|` back to a literal pipe,
-    // so a cell containing `foo \| bar` isn't silently truncated at the pipe.
-    const cells = line
-      .split(/(?<!\\)\|/)
+    const cells = splitTableRow(line)
       .slice(1, -1)
-      .map((c) => c.trim().replace(/\\\|/g, '|'));
+      .map((c) => c.trim());
     if (cells.length < 2) continue;
 
     const sym = symbolFromCell(cells[0] ?? '');

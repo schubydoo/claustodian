@@ -9,6 +9,7 @@ import {
   main,
   officialSourcePages,
   parseDocPage,
+  splitTableRow,
   symbolFromCell,
 } from './fetch-docs.js';
 
@@ -136,7 +137,29 @@ describe('main (mocked fetch)', () => {
   });
 });
 
-describe('parseDocPage — escaped pipes', () => {
+describe('splitTableRow', () => {
+  const cells = (line: string) =>
+    splitTableRow(line)
+      .slice(1, -1)
+      .map((c) => c.trim());
+
+  it('splits on real column delimiters', () => {
+    expect(cells('| a | b | c |')).toEqual(['a', 'b', 'c']);
+  });
+
+  it('does not split on an escaped pipe, and unescapes it', () => {
+    expect(cells('| a | b \\| c |')).toEqual(['a', 'b | c']);
+  });
+
+  it('does not split on a pipe inside an inline-code span', () => {
+    expect(cells('| a | uses `model|fallback` here |')).toEqual([
+      'a',
+      'uses `model|fallback` here',
+    ]);
+  });
+});
+
+describe('parseDocPage — pipe handling', () => {
   it('keeps a description containing escaped pipes intact (not truncated)', () => {
     const entries = parseDocPage('cli-reference', '| `--fmt` | outputs a \\| b \\| c |');
     expect(entries[0]?.description).toBe('outputs a | b | c');
@@ -150,6 +173,14 @@ describe('parseDocPage — escaped pipes', () => {
     expect(entries[0]).toMatchObject({
       symbol: '/advisor',
       description: 'Enable the advisor tool',
+    });
+  });
+
+  it('keeps a description with an UNescaped pipe inside inline code intact', () => {
+    const entries = parseDocPage('cli-reference', '| `--model` | pick `sonnet|opus|fable` model |');
+    expect(entries[0]).toMatchObject({
+      symbol: '--model',
+      description: 'pick `sonnet|opus|fable` model',
     });
   });
 });
