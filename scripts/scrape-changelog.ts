@@ -14,20 +14,27 @@
  * from our knowledge, since we have no reliable "this was removed" signal
  * from prose alone).
  *
+ * The docs lane is always read from the committed `data/docs.json` (produced by
+ * `npm run fetch-docs` from the official docs pages) — it is not CLI-overridable,
+ * so generated data can't attribute arbitrary local content to the docs lane.
+ *
  * Usage:
  *   tsx scripts/scrape-changelog.ts [--changelog <path>] [--out <dir>] [--all]
  *
- *   --changelog <path>  Read the changelog from a local file instead of
- *                       fetching https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
+ *   --changelog <path>  Read the changelog from a local file instead of fetching
+ *                       the official CHANGELOG.md. For in-process CLI tests only:
+ *                       refused when --out is the committed "data" directory, so
+ *                       the shipped dataset is always from the official fetch.
  *   --out <dir>         Output directory (default: "data")
  *   --all               Write every version's snapshot under <dir>/versions/,
  *                       plus <dir>/index.json and <dir>/latest.json. Without
  *                       this flag, only <dir>/index.json and <dir>/latest.json
  *                       are written (the full per-version backfill is opt-in).
  */
-import { mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { join, resolve } from 'node:path';
 
+import { assertOfficialDocs, DOCS_BASE, type DocsIndex } from './fetch-docs.js';
 import { isMain, loadChangelog } from './lib.js';
 
 const SOURCE_URL = 'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md';
@@ -51,11 +58,13 @@ export interface SymbolRecord {
   symbol: string;
   type: 'cli_flag' | 'env_var' | 'command' | 'config_key' | 'internal_config_flag';
   first_seen: string;
+  first_seen_estimated?: boolean;
   removed_in: string | null;
   status: 'active' | 'deprecated' | 'removed' | 'needs_review';
-  provenance: 'changelog' | 'binary';
+  provenance: 'changelog' | 'docs' | 'binary';
   confidence: 'high' | 'medium' | 'low';
   description: string;
+  description_source?: 'docs' | 'changelog';
   source_url: string | null;
   category: string;
 }
@@ -293,51 +302,222 @@ export function categorize(symbol: string, type: ExtractedSymbolType): string {
   return 'other';
 }
 
+/** A bullet that *introduces* a symbol (vs. names it incidentally in a fix). */
+const INTRODUCING_RE =
+  /^\s*(add|added|adds|new|introduce|introduced|introduces|now support|added support|support for)\b/i;
+
+export function isIntroducingBullet(bullet: string): boolean {
+  return INTRODUCING_RE.test(bulletDescription(bullet));
+}
+
+interface CollectedSymbol {
+  record: SymbolRecord;
+  introducing: boolean;
+}
+
 /**
- * Builds a cumulative, per-version snapshot of every symbol known so far.
- *
- * Iterates versions oldest -> newest (the reverse of `parseChangelog`'s
- * newest-first file order). For each version, any symbol extracted from its
- * bullets that hasn't been seen before is registered with `first_seen` set
- * to that version and `description` set to the exact bullet text it was
- * found in (minus the leading "- "). Once registered, a symbol's
- * first_seen/description never change on re-mention. Each version's
- * snapshot contains every symbol known as of (and including) that version,
- * sorted deterministically by type then symbol name.
+ * Collects every changelog symbol, oldest -> newest, registering it on first
+ * appearance with `first_seen` = that version and `description` = the bullet
+ * text. Also flags whether that first bullet *introduces* the symbol (vs. names
+ * it incidentally), which enrichment uses to judge first_seen confidence. First
+ * registration wins; re-mentions never change a symbol.
  */
-export function buildSnapshots(blocks: ChangelogBlock[]): VersionSnapshot[] {
+export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, CollectedSymbol> {
   const oldestFirst = [...blocks].reverse();
-  const known = new Map<string, SymbolRecord>();
-  const snapshots: VersionSnapshot[] = [];
+  const known = new Map<string, CollectedSymbol>();
 
   for (const block of oldestFirst) {
     for (const bullet of block.bullets) {
-      const symbols = extractSymbols(bullet);
-      for (const { symbol, type } of symbols) {
+      for (const { symbol, type } of extractSymbols(bullet)) {
         const key = `${type}:${symbol}`;
         if (known.has(key)) {
           continue;
         }
         known.set(key, {
-          symbol,
-          type,
-          first_seen: block.version,
-          removed_in: null,
-          status: 'active',
-          provenance: 'changelog',
-          confidence: 'high',
-          description: bulletDescription(bullet),
-          source_url: SOURCE_URL,
-          category: categorize(symbol, type),
+          introducing: isIntroducingBullet(bullet),
+          record: {
+            symbol,
+            type,
+            first_seen: block.version,
+            removed_in: null,
+            status: 'active',
+            provenance: 'changelog',
+            confidence: 'high',
+            description: bulletDescription(bullet),
+            source_url: SOURCE_URL,
+            category: categorize(symbol, type),
+          },
         });
       }
     }
-
-    const symbolsSnapshot = [...known.values()].sort(compareSymbolRecords);
-    snapshots.push({ version: block.version, symbols: symbolsSnapshot });
   }
 
-  return snapshots;
+  return known;
+}
+
+/**
+ * Assembles cumulative per-version snapshots from a finalized symbol list: each
+ * version's snapshot holds every symbol whose `first_seen` is <= that version,
+ * sorted deterministically by type then symbol name.
+ */
+export function assembleSnapshots(
+  records: SymbolRecord[],
+  blocks: ChangelogBlock[]
+): VersionSnapshot[] {
+  const versionsOldestFirst = blocks
+    .map((block) => block.version)
+    .sort((a, b) => compareVersionsAsc(a, b));
+
+  return versionsOldestFirst.map((version) => ({
+    version,
+    symbols: records
+      .filter((record) => compareVersionsAsc(record.first_seen, version) <= 0)
+      .sort(compareSymbolRecords),
+  }));
+}
+
+/**
+ * Changelog-only snapshots (no docs overlay): every symbol keeps its observed
+ * first_seen, the bullet as its description, and confidence "high". Kept for the
+ * pure changelog contract and its tests; production uses buildEnrichedSnapshots.
+ */
+export function buildSnapshots(blocks: ChangelogBlock[]): VersionSnapshot[] {
+  const records = [...collectChangelogSymbols(blocks).values()].map(
+    (collected) => collected.record
+  );
+  return assembleSnapshots(records, blocks);
+}
+
+/** Canonical key order + omits the optional fields when they don't apply. */
+function finalizeRecord(input: SymbolRecord & { first_seen_estimated: boolean }): SymbolRecord {
+  return {
+    symbol: input.symbol,
+    type: input.type,
+    first_seen: input.first_seen,
+    ...(input.first_seen_estimated ? { first_seen_estimated: true } : {}),
+    removed_in: input.removed_in,
+    status: input.status,
+    provenance: input.provenance,
+    confidence: input.confidence,
+    description: input.description,
+    ...(input.description_source ? { description_source: input.description_source } : {}),
+    source_url: input.source_url,
+    category: input.category,
+  };
+}
+
+/**
+ * Overlays the official docs lane onto the collected changelog symbols and adds
+ * docs-only symbols. Description priority: docs -> introducing bullet -> empty.
+ * `first_seen`: a docs `min-version` (authoritative) or an introducing bullet
+ * anchors it (confidence "high"); an incidental-only mention or a docs page
+ * without a min-version leaves it an upper bound (`first_seen_estimated`,
+ * confidence "medium") for the binary lane to correct.
+ */
+export function enrichSymbols(
+  collected: Map<string, CollectedSymbol>,
+  docs: DocsIndex,
+  latestVersion: string
+): SymbolRecord[] {
+  const docByKey = new Map(docs.symbols.map((entry) => [`${entry.type}:${entry.symbol}`, entry]));
+  const records: SymbolRecord[] = [];
+
+  for (const [key, { record, introducing }] of collected) {
+    const doc = docByKey.get(key);
+    const observed = record.first_seen;
+    let firstSeen = observed;
+    let estimated: boolean;
+    if (doc?.doc_min_version) {
+      // earliest evidence wins if the changelog observed it before the doc's min-version
+      firstSeen =
+        compareVersionsAsc(doc.doc_min_version, observed) < 0 ? doc.doc_min_version : observed;
+      estimated = false;
+    } else {
+      estimated = !introducing;
+    }
+    const description = doc ? doc.description : introducing ? record.description : '';
+    records.push(
+      finalizeRecord({
+        symbol: record.symbol,
+        type: record.type,
+        first_seen: firstSeen,
+        first_seen_estimated: estimated,
+        removed_in: null,
+        status: 'active',
+        provenance: 'changelog',
+        confidence: estimated ? 'medium' : 'high',
+        description,
+        description_source: doc ? 'docs' : description ? 'changelog' : undefined,
+        source_url: record.source_url,
+        category: record.category,
+      })
+    );
+  }
+
+  for (const entry of docs.symbols) {
+    if (collected.has(`${entry.type}:${entry.symbol}`)) {
+      continue;
+    }
+    const hasMin = Boolean(entry.doc_min_version);
+    records.push(
+      finalizeRecord({
+        symbol: entry.symbol,
+        type: entry.type,
+        first_seen: hasMin ? (entry.doc_min_version as string) : latestVersion,
+        first_seen_estimated: !hasMin,
+        removed_in: null,
+        status: 'active',
+        provenance: 'docs',
+        confidence: hasMin ? 'high' : 'medium',
+        description: entry.description,
+        description_source: 'docs',
+        source_url: `${DOCS_BASE}${entry.doc_page}.md`,
+        category: categorize(entry.symbol, entry.type),
+      })
+    );
+  }
+
+  return records;
+}
+
+/** Production snapshots: changelog symbols enriched with the official docs lane. */
+export function buildEnrichedSnapshots(
+  blocks: ChangelogBlock[],
+  docs: DocsIndex
+): VersionSnapshot[] {
+  const collected = collectChangelogSymbols(blocks);
+  const latest =
+    blocks.map((block) => block.version).sort((a, b) => compareVersionsAsc(b, a))[0] ?? '';
+  return assembleSnapshots(enrichSymbols(collected, docs, latest), blocks);
+}
+
+/**
+ * Loads `data/docs.json`, the committed docs lane. ANY failure — a missing
+ * file, malformed/truncated JSON, a permission error — throws, so the scrape
+ * fails loudly rather than silently regenerating an incomplete dataset (one
+ * that drops every docs-only symbol and reverts descriptions to changelog text)
+ * that still passes validation. docs.json is committed and produced by
+ * `npm run fetch-docs`; its absence during a scrape is an error, not a
+ * fall-back.
+ */
+export async function loadDocsIndex(path: string): Promise<DocsIndex> {
+  return JSON.parse(await readFile(path, 'utf-8')) as DocsIndex;
+}
+
+/**
+ * Guards the normal scrape path against a *valid but empty* docs index — e.g.
+ * fetch-docs succeeded but an upstream table-shape change stopped the parser
+ * from matching anything, so `symbols` is `[]`. Enriching against that silently
+ * drops every docs-only symbol and description while validation still passes,
+ * producing valid-but-incomplete data. Throws so the scrape fails loudly.
+ */
+export function assertNonEmptyDocs(docs: DocsIndex, path: string): void {
+  if (docs.symbols.length === 0) {
+    throw new Error(
+      `Docs index ${path} has 0 symbols — the docs parser likely broke on an upstream ` +
+        `table-shape change. Re-run "npm run fetch-docs" and inspect it.`
+    );
+  }
 }
 
 function parseVersionParts(version: string): [number, number, number] {
@@ -389,6 +569,11 @@ async function writeJson(filePath: string, data: unknown): Promise<void> {
   await writeFile(filePath, `${JSON.stringify(data, null, 2)}\n`, 'utf-8');
 }
 
+/** The committed docs lane — the only docs source; not CLI-overridable. */
+const DOCS_PATH = 'data/docs.json';
+/** The committed data directory; regenerating it must use canonical sources. */
+const COMMITTED_DATA_DIR = 'data';
+
 interface CliOptions {
   changelogPath?: string;
   outDir: string;
@@ -420,12 +605,40 @@ function parseArgs(argv: string[]): CliOptions {
   return options;
 }
 
+/**
+ * Provenance guard: the committed dataset must be regenerated only from
+ * canonical sources — the official changelog fetch and the committed
+ * `data/docs.json`. `--changelog` (a local file, for in-process CLI tests that
+ * write to a scratch `--out`) is refused when the target is the committed
+ * `data/` directory, so shipped data can't be produced from a local override.
+ */
+export function assertCanonicalSourcesForCommittedData(
+  outDir: string,
+  changelogPath: string | undefined
+): void {
+  // Resolve both paths so equivalent spellings (data, data/, ./data, an absolute
+  // path) are all caught, not just the literal string.
+  const writesCommittedData = resolve(outDir) === resolve(COMMITTED_DATA_DIR);
+  if (writesCommittedData && changelogPath !== undefined) {
+    throw new Error(
+      `Refusing to regenerate the committed ${COMMITTED_DATA_DIR}/ directory from a local ` +
+        `--changelog override; the shipped dataset must come from the official CHANGELOG.md ` +
+        `fetch. Use --changelog only with a scratch --out (as the CLI tests do).`
+    );
+  }
+}
+
 export async function main(): Promise<number> {
   const options = parseArgs(process.argv.slice(2));
+  assertCanonicalSourcesForCommittedData(options.outDir, options.changelogPath);
   const md = await loadChangelog(options.changelogPath);
 
   const blocks = parseChangelog(md);
-  const snapshots = buildSnapshots(blocks);
+  const docs = await loadDocsIndex(DOCS_PATH);
+  assertNonEmptyDocs(docs, DOCS_PATH);
+  // Defense-in-depth integrity check on the committed docs.json.
+  assertOfficialDocs(docs);
+  const snapshots = buildEnrichedSnapshots(blocks, docs);
   const index = buildIndex(snapshots);
 
   const sortedByVersion = [...snapshots].sort((a, b) => compareVersionsAsc(a.version, b.version));

@@ -14,12 +14,12 @@
   "confidenceScoreSection": { "included": true, "collapsible": true, "defaultOpen": true },
   "issuesTableSection": { "included": true, "collapsible": true, "defaultOpen": false },
   "sequenceDiagramSection": { "included": true, "collapsible": true, "defaultOpen": false },
-  "instructions": "Claustodian is a provenance-strict dataset: its data must come ONLY from official public sources (the Claude Code changelog and officially published release binaries), never leaked or non-public material. Guard that invariant. Question every \"temporary\" workaround that has outlived its excuse.",
+  "instructions": "Claustodian is a provenance-strict dataset: its data must come ONLY from official, first-party, public sources (the Claude Code changelog, the official Claude Code documentation pages at code.claude.com/docs, and officially published release binaries), never leaked, source-map-derived, or otherwise non-public material. Guard that invariant. Question every \"temporary\" workaround that has outlived its excuse.",
   "ignorePatterns": "package-lock.json\ndata/**\ncoverage/**\ndist/**",
   "rules": [
     {
       "id": "provenance-boundary",
-      "rule": "Data may originate ONLY from the official CHANGELOG.md and officially published release binaries (GitHub release assets, npm-published bundles). Flag any code path that could ingest leaked, source-map-derived, or otherwise non-public material, or that weakens the changelog-vs-binary provenance separation.",
+      "rule": "Data may originate ONLY from official, first-party, public Anthropic sources: the official CHANGELOG.md, the official Claude Code documentation pages (code.claude.com/docs), and officially published release binaries (GitHub release assets, npm-published bundles). These map to the `provenance` values `changelog`, `docs`, and `binary` respectively. Flag any code path that could ingest leaked, source-map-derived, or otherwise non-public material, or that blurs which lane a record came from.",
       "scope": ["scripts/**"]
     },
     {

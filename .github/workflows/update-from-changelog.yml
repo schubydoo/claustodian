@@ -41,6 +41,11 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # Regenerate the docs lane from the official pages in this same run, so the
+      # scrape enriches against freshly-fetched official docs — a hand-edited
+      # committed data/docs.json can't reach the shipped dataset via this bot.
+      - name: Refresh docs index from official pages
+        run: npm run fetch-docs
       - name: Scrape changelog into data/
         run: npm run scrape -- --all
       - name: Validate regenerated data

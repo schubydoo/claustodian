@@ -1,0 +1,56 @@
+# Weekly refresh of the docs lane. Re-fetches the official Claude Code
+# reference pages into data/docs.json, regenerates the dataset (the scraper
+# overlays docs descriptions + min-version first_seen onto the changelog
+# symbols), validates, and opens a PR on any change. Docs evolve independently
+# of releases, so this runs on a schedule rather than the release trigger.
+name: Refresh docs lane
+
+on:
+  schedule:
+    - cron: '43 6 * * 1' # weekly, Monday 06:43 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      # App token so the PR is opened by claustodian-ci (triggers required checks;
+      # GITHUB_TOKEN-created PRs do not).
+      - name: Mint GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ secrets.CLAUSTODIAN_CI_APP_ID }}
+          private-key: ${{ secrets.CLAUSTODIAN_CI_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Refresh docs index (data/docs.json)
+        run: npm run fetch-docs
+      - name: Regenerate dataset with the refreshed docs
+        run: npm run scrape -- --all
+      - name: Validate regenerated data
+        run: npm run validate
+      - name: Open pull request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          branch: bot/docs-refresh
+          base: main
+          title: 'chore(data): refresh docs lane'
+          commit-message: 'chore(data): refresh docs lane'
+          body: |
+            Automated refresh of the docs lane from the official Claude Code
+            reference pages (`provenance: docs`). Regenerated `data/docs.json`
+            and the dataset. Review the diff before merge.
+          labels: automated, docs

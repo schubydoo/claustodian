@@ -72,10 +72,13 @@ Each file is also published as `.yaml` and `.toml` (generated in CI from the JSO
 
 Every record carries a `provenance`:
 
-- **`changelog`** — extracted from the official `CHANGELOG.md`. Authoritative; always `confidence: high`.
+- **`changelog`** — extracted from the official `CHANGELOG.md`. Authoritative for existence.
+- **`docs`** — from the official Claude Code documentation pages (`code.claude.com/docs`). Supplies the authoritative description and, where a page states a `min-version`, an anchored `first_seen`.
 - **`binary`** — extracted from published release binaries (a later phase). Starts as `status: needs_review` until a human confirms it.
 
-**Claustodian uses only material Anthropic has publicly published and distributed** — the changelog and official release binaries. It does not use leaked or otherwise non-public material. See CONTRIBUTING.
+`first_seen_estimated: true` flags records whose `first_seen` is an upper bound (an incidental changelog mention or a docs page with no `min-version`); those carry `confidence: medium` until the binary lane confirms them.
+
+**Claustodian uses only material Anthropic has publicly published and distributed** — the changelog, the official docs pages, and official release binaries. It does not use leaked or otherwise non-public material. See CONTRIBUTING.
 
 ## Status
 

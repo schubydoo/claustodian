@@ -18,7 +18,7 @@
     "first_seen": {
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Claude Code version where this symbol was first observed (not necessarily first existed; see project README)."
+      "description": "Claude Code version where this symbol was first observed (not necessarily first existed; see project README). When `first_seen_estimated` is true this is an upper bound, not a confirmed introduction."
     },
     "removed_in": {
       "oneOf": [
@@ -39,17 +39,26 @@
     },
     "provenance": {
       "type": "string",
-      "enum": ["changelog", "binary"],
-      "description": "Where the symbol was found: an official changelog entry, or binary/bundle string extraction."
+      "enum": ["changelog", "docs", "binary"],
+      "description": "Where the symbol's existence was established: an official changelog entry, an official docs reference page, or binary/bundle string extraction."
     },
     "confidence": {
       "type": "string",
       "enum": ["high", "medium", "low"],
-      "description": "Confidence in the accuracy of this record. Always \"high\" for changelog-sourced records."
+      "description": "Confidence in the accuracy of this record. \"high\" when first_seen is anchored (an introducing changelog bullet or an official docs min-version); \"medium\" when first_seen is an estimate (see first_seen_estimated)."
     },
     "description": {
       "type": "string",
-      "description": "Plain-language explanation of what the symbol does. May be empty for unreviewed binary finds."
+      "description": "Plain-language explanation of what the symbol does. Sourced from official docs when available (see description_source); may be empty when no authoritative description exists yet."
+    },
+    "description_source": {
+      "type": "string",
+      "enum": ["docs", "changelog"],
+      "description": "Where `description` came from: an official docs page, or an introducing changelog bullet. Absent when the description is empty."
+    },
+    "first_seen_estimated": {
+      "type": "boolean",
+      "description": "True when `first_seen` is an upper bound (the symbol was observed by that version but its true introduction is unconfirmed), e.g. a symbol only ever named incidentally in the changelog or documented without a min-version. Corrected by the binary lane. Absent means false."
     },
     "source_url": {
       "oneOf": [
@@ -84,13 +93,13 @@
   "additionalProperties": false,
   "if": {
     "properties": {
-      "provenance": { "const": "changelog" }
+      "first_seen_estimated": { "const": true }
     },
-    "required": ["provenance"]
+    "required": ["first_seen_estimated"]
   },
   "then": {
     "properties": {
-      "confidence": { "const": "high" }
+      "confidence": { "enum": ["medium", "low"] }
     }
   }
 }

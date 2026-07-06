@@ -72,8 +72,20 @@ describe('symbol schema', () => {
     expect(validate(validSymbol({ first_seen: '2.1' }))).toBe(false);
   });
 
-  it('fails when provenance=changelog is paired with confidence=medium', () => {
-    expect(validate(validSymbol({ provenance: 'changelog', confidence: 'medium' }))).toBe(false);
+  it('allows changelog with confidence=medium when first_seen is estimated', () => {
+    expect(
+      validate(
+        validSymbol({ provenance: 'changelog', confidence: 'medium', first_seen_estimated: true })
+      )
+    ).toBe(true);
+  });
+
+  it('fails when first_seen_estimated=true is paired with confidence=high', () => {
+    expect(validate(validSymbol({ first_seen_estimated: true, confidence: 'high' }))).toBe(false);
+  });
+
+  it('accepts the docs provenance and description_source', () => {
+    expect(validate(validSymbol({ provenance: 'docs', description_source: 'docs' }))).toBe(true);
   });
 
   it('passes when provenance=binary is paired with confidence=medium', () => {

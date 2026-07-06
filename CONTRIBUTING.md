@@ -7,6 +7,7 @@ Thanks for helping keep Claude Code's surface documented. Please read the proven
 Claustodian uses only material Anthropic has **publicly published and distributed**:
 
 - The official `CHANGELOG.md` in `anthropics/claude-code`.
+- The official Claude Code documentation pages (`code.claude.com/docs`).
 - Officially published release binaries (GitHub release assets and npm-published bundles).
 
 It does not use leaked or otherwise non-public material. **Do NOT contribute data derived from:**
@@ -16,14 +17,15 @@ It does not use leaked or otherwise non-public material. **Do NOT contribute dat
 
 A record whose accuracy depends on non-public material will be rejected. This policy is what lets consumers trust the dataset and cite it; a single tainted entry undermines the whole thing.
 
-## The two provenance lanes
+## The three provenance lanes
 
-| Lane      | `provenance` | Trust                      | Merge policy                                                                       |
-| --------- | ------------ | -------------------------- | ---------------------------------------------------------------------------------- |
-| Changelog | `changelog`  | `confidence: high`         | Authoritative — bot PRs are auto-mergeable once CI passes.                         |
-| Binary    | `binary`     | `confidence: medium`/`low` | Lands as `status: needs_review`; a human must confirm before it flips to `active`. |
+| Lane      | `provenance` | Trust                      | Merge policy                                                                                                                                                                                                     |
+| --------- | ------------ | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Changelog | `changelog`  | `confidence: high`         | Authoritative — bot PRs are auto-mergeable once CI passes.                                                                                                                                                       |
+| Docs      | `docs`       | `high` / `medium`          | Official docs pages; supply authoritative descriptions and, via a doc `min-version`, an anchored `first_seen`. Absent a min-version, `first_seen` is an estimate (`first_seen_estimated`, `confidence: medium`). |
+| Binary    | `binary`     | `confidence: medium`/`low` | Lands as `status: needs_review`; a human must confirm before it flips to `active`.                                                                                                                               |
 
-Never move a `binary`/`needs_review` record to `active` without confirming the symbol against an official artifact. Keep the two lanes separate.
+`first_seen_estimated: true` marks an upper bound (an incidental changelog mention, or a docs page with no min-version); the binary lane confirms these. Never move a `binary`/`needs_review` record to `active` without confirming the symbol against an official artifact. Keep the lanes distinct.
 
 ## Data contract
 
