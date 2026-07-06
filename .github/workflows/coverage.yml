@@ -50,3 +50,7 @@ jobs:
         uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1
         with:
           files: ./test-report.junit.xml
+          # Fail loudly like the coverage upload above: a missing report or
+          # rejected upload must not silently seed an empty Test Analytics
+          # baseline and leave future PRs without a comparison history.
+          fail_ci_if_error: true
