@@ -32,10 +32,13 @@ jobs:
       - run: npm ci
       # Produces coverage/lcov.info and re-enforces the vitest threshold on main.
       - run: npm run test:coverage
+      # Public repo → tokenless upload (no CODECOV_TOKEN secret exists). This
+      # workflow's entire purpose is to seed the Codecov baseline, so a failed
+      # upload must fail LOUDLY (fail_ci_if_error) — otherwise main coverage and
+      # the badge go silently missing with a green check. No `!cancelled()` guard:
+      # only a successful test:coverage should ever seed the baseline.
       - name: Upload coverage to Codecov
-        if: ${{ !cancelled() }}
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         with:
           files: ./coverage/lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: false
+          fail_ci_if_error: true
