@@ -137,7 +137,7 @@ const SYMBOL_PATTERNS: Array<[RegExp, ExtractedSymbolType]> = [
  * Real env vars (HOME, PATH, EDITOR, DISABLE_*, ...) are intentionally kept —
  * they are genuine, just categorized as third-party noise downstream.
  */
-const SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
+export const SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   // Node/libuv errno codes
   'EACCES',
   'EADDRINUSE',
