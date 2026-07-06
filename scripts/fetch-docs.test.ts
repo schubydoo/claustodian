@@ -78,6 +78,11 @@ describe('parseDocPage', () => {
     const entry = parseDocPage('p', md2)[0];
     expect(entry?.description).toBe('See the docs for details');
   });
+
+  it('unescapes markdown backslash escapes so the literal backslash never surfaces', () => {
+    const entry = parseDocPage('env-vars', '| `ANTHROPIC_SMALL_FAST_MODEL` | \\[DEPRECATED] a\\_b |')[0];
+    expect(entry?.description).toBe('[DEPRECATED] a_b');
+  });
 });
 
 describe('buildDocsIndex', () => {

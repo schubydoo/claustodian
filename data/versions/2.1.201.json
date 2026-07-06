@@ -3553,7 +3553,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "\\[DEPRECATED] Name of Haiku-class model for background tasks",
+      "description": "[DEPRECATED] Name of Haiku-class model for background tasks",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -4102,7 +4102,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Passphrase for encrypted CLAUDE\\_CODE\\_CLIENT\\_KEY (optional)",
+      "description": "Passphrase for encrypted CLAUDE_CODE_CLIENT_KEY (optional)",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"

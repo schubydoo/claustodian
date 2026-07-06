@@ -66,11 +66,18 @@ export interface DocsIndex {
   symbols: DocEntry[];
 }
 
-/** Strip doc-only noise from a cell: MDX comment blocks and `[text](url)` links. */
+/**
+ * Strip doc-only noise from a cell: MDX comment blocks, `[text](url)` links, and
+ * Markdown backslash escapes (`\[`, `\*`, `` \` ``, …). Unescaping runs last so an
+ * escaped bracket isn't first mistaken for link syntax; the character class is
+ * CommonMark's ASCII-punctuation set. Without it a doc cell like `\[DEPRECATED]`
+ * would surface the literal backslash in the published description.
+ */
 function cleanCell(cell: string): string {
   return cell
     .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/\\([!-/:-@[-`{-~])/g, '$1')
     .replace(/\s+/g, ' ')
     .trim();
 }
