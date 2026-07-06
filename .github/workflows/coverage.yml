@@ -1,0 +1,44 @@
+# Coverage baseline for the default branch. `validate-pr.yml` uploads coverage on
+# every PR, but Codecov also needs a report for each `main` commit — without one
+# the web app shows no `main` branch, project-trend deltas on PRs have no base to
+# compare against, and the coverage badge can't render. This runs the same
+# single-cell coverage build on push to `main` (and on demand) purely to keep
+# that baseline current. Enforcement still lives in the vitest threshold; this
+# job exists for Codecov visibility, not as a gate.
+#
+# No path filter on purpose: every `main` commit should carry a coverage report
+# so the next PR always has a base, even after a docs/data-only squash-merge.
+name: Coverage
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Produces coverage/lcov.info and re-enforces the vitest threshold on main.
+      - run: npm run test:coverage
+      # Public repo → tokenless upload (no CODECOV_TOKEN secret exists). This
+      # workflow's entire purpose is to seed the Codecov baseline, so a failed
+      # upload must fail LOUDLY (fail_ci_if_error) — otherwise main coverage and
+      # the badge go silently missing with a green check. No `!cancelled()` guard:
+      # only a successful test:coverage should ever seed the baseline.
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: true

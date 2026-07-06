@@ -37,11 +37,13 @@ jobs:
       - run: npm run coverage
       # Report coverage to Codecov (reads codecov.yml). Uploads even if an
       # earlier step failed so a coverage drop surfaces with the breakage.
-      # Needs the CODECOV_TOKEN secret once the Codecov app is installed.
+      # Public repo → tokenless upload (no CODECOV_TOKEN secret). Unlike
+      # coverage.yml, fail_ci_if_error stays false here on purpose: a flaky
+      # Codecov upload must never block a PR merge — the vitest threshold is the
+      # real gate, and patch coverage is a non-required signal.
       - name: Upload coverage to Codecov
         if: ${{ !cancelled() }}
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         with:
           files: ./coverage/lcov.info
-          token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
