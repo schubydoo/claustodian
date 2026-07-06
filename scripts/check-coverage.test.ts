@@ -77,4 +77,20 @@ describe('findMissingCoverage', () => {
       { symbol: '--turbo', type: 'cli_flag' },
     ]);
   });
+
+  it('does not demand symbols the scraper legitimately excludes (subprocess/phantom flags)', () => {
+    // The gate must agree with collectChangelogSymbols: a subprocess tool's own
+    // example flags and the phantom `--compact` are never expected in the dataset.
+    const changelog = `## 2.1.30
+
+- Added support for additional \`git log\` flags in read-only mode (e.g., \`--topo-order\`, \`--cherry-pick\`)
+
+## 2.1.72
+
+- Fixed \`--continue\` not resuming after \`--compact\`
+`;
+    // Dataset intentionally lacks the git flags and --compact, but has --continue.
+    const dataset: SymbolRecord[] = [makeSymbol({ symbol: '--continue', type: 'cli_flag' })];
+    expect(findMissingCoverage(changelog, dataset)).toEqual([]);
+  });
 });
