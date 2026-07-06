@@ -83,6 +83,16 @@ describe('parseDocPage', () => {
     const entry = parseDocPage('env-vars', '| `ANTHROPIC_SMALL_FAST_MODEL` | \\[DEPRECATED] a\\_b |')[0];
     expect(entry?.description).toBe('[DEPRECATED] a_b');
   });
+
+  it('keeps a backslash literal inside an inline code span (not treated as an escape)', () => {
+    const entry = parseDocPage('env-vars', '| `--xray` | uses `foo\\_bar` as a key |')[0];
+    expect(entry?.description).toBe('uses `foo\\_bar` as a key');
+  });
+
+  it('does not resurrect a deliberately-escaped link into active markdown', () => {
+    const entry = parseDocPage('env-vars', '| `--xray` | see \\[text\\]\\(url\\) here |')[0];
+    expect(entry?.description).toBe('see text here');
+  });
 });
 
 describe('buildDocsIndex', () => {

@@ -66,20 +66,39 @@ export interface DocsIndex {
   symbols: DocEntry[];
 }
 
+/** Strip `[text](url)` links to their text. Runs on the whole cell because link
+ * text frequently contains a code span (`` [`setting`](url) `` in these docs). */
+function stripLinks(s: string): string {
+  return s.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+}
+
+/** Unescape Markdown backslash escapes (`\[`, `\*`, `\_`, …) but ONLY outside
+ * inline code spans — a backslash between backticks is literal in Markdown, not
+ * an escape, so `` `foo\_bar` `` keeps its backslash. Odd split segments are the
+ * code spans; they pass through untouched. The class is CommonMark's ASCII
+ * punctuation set. */
+function unescapeOutsideCode(s: string): string {
+  return s
+    .split(/(`[^`]*`)/)
+    .map((seg, i) => (i % 2 === 1 ? seg : seg.replace(/\\([!-/:-@[-`{-~])/g, '$1')))
+    .join('');
+}
+
 /**
- * Strip doc-only noise from a cell: MDX comment blocks, `[text](url)` links, and
- * Markdown backslash escapes (`\[`, `\*`, `` \` ``, …). Unescaping runs last so an
- * escaped bracket isn't first mistaken for link syntax; the character class is
- * CommonMark's ASCII-punctuation set. Without it a doc cell like `\[DEPRECATED]`
- * would surface the literal backslash in the published description.
+ * Reduce a raw Markdown table cell to the plain text we publish as a description:
+ * drop MDX comment blocks, strip `[text](url)` links, and unescape backslash
+ * escapes outside code spans.
+ *
+ * Links are stripped, then escapes unescaped, then links stripped AGAIN: the
+ * second pass catches a deliberately-escaped `\[text\]\(url\)` that the unescape
+ * turns back into `[text](url)` — otherwise it would be published as an active
+ * link the official docs had intentionally inert. MDX comments go first (they
+ * never hold real text).
  */
 function cleanCell(cell: string): string {
-  return cell
-    .replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    .replace(/\\([!-/:-@[-`{-~])/g, '$1')
-    .replace(/\s+/g, ' ')
-    .trim();
+  const withoutComments = cell.replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
+  const cleaned = stripLinks(unescapeOutsideCode(stripLinks(withoutComments)));
+  return cleaned.replace(/\s+/g, ' ').trim();
 }
 
 /** An official introduction version, if the cell states one. */
