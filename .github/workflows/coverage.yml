@@ -46,10 +46,14 @@ jobs:
       # test history to compare against. Like the upload above, this only runs
       # after a green test:coverage (no `!cancelled()`): on `main` a broken test
       # run should fail loudly, not quietly seed a baseline from a failure.
+      # Same codecov-action as the coverage upload above, with
+      # report_type: test_results (no standalone test-results-action needed —
+      # report_type was added to codecov-action in v5).
       - name: Upload test results to Codecov
-        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         with:
           files: ./test-report.junit.xml
+          report_type: test_results
           # Fail loudly like the coverage upload above: a missing report or
           # rejected upload must not silently seed an empty Test Analytics
           # baseline and leave future PRs without a comparison history.
