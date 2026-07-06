@@ -42,17 +42,19 @@ export interface BundleSymbol {
 
 /** How far back to look for a flag's own-evidence marker. */
 const FLAG_EVIDENCE_WINDOW = 95;
-/** How far to look around a command's `type:` for its `name`/`description`. */
-const COMMAND_BACK = 250;
+/** Cap on how far past a `type:` marker to read a command's fields — used only
+ * for the last object, which has no following marker to bound it. */
 const COMMAND_FWD = 450;
 
 /**
  * A flag literal is Claude Code's own when, just before one of its occurrences,
- * the code either registers it with commander or inspects `process.argv` for it.
- * Both are self-referential — a subprocess/browser flag never appears this way.
+ * the code registers it with commander (`.option`/`.addOption`) or inspects
+ * `process.argv` for it. Both are self-referential — a subprocess/browser flag
+ * never appears this way. Deliberately tight: it must be literal `process.argv`
+ * (not some unrelated local/property named `argv`), and there is no bare
+ * `.includes("--x")` clause, which could match a subprocess argument array.
  */
-const FLAG_OWN_EVIDENCE =
-  /\.(?:option|addOption)\([^)]{0,85}$|argv[\s\S]{0,70}$|\b(?:includes|indexOf|startsWith)\(\s*["'`]$/;
+const FLAG_OWN_EVIDENCE = /\.(?:option|addOption)\([^)]{0,85}$|process\.argv[\s\S]{0,70}$/;
 
 /** `process.env.NAME` and `process.env["NAME"]` — the positive signal for env. */
 const ENV_ACCESS: readonly RegExp[] = [
@@ -62,22 +64,13 @@ const ENV_ACCESS: readonly RegExp[] = [
 
 /** Command-registry object marker: `type:"local"|"prompt"|"local-jsx"`. */
 const COMMAND_TYPE = /type:\s*["'`](?:local|prompt|local-jsx)["'`]/g;
-const COMMAND_NAME = /name:\s*["'`]([a-z][a-z0-9:-]+)["'`]/g;
-const COMMAND_DESC = /description:\s*["'`]((?:[^"'`\\]|\\.)*)["'`]/g;
-
-/** The capture of `re`'s match whose position is closest to `rel` in `window`. */
-function nearest(window: string, re: RegExp, rel: number): string | undefined {
-  let best = Infinity;
-  let value: string | undefined;
-  for (const m of window.matchAll(re)) {
-    const d = Math.abs((m.index ?? 0) - rel);
-    if (d < best) {
-      best = d;
-      value = m[1];
-    }
-  }
-  return value;
-}
+/** Command name — the SAME grammar as the changelog/docs lanes
+ * (`[a-z][a-z0-9-]+`, no `:`), so a binary find coalesces with the other lanes
+ * instead of forking a divergent `/ns:cmd` symbol. A namespaced name won't
+ * match here (skipped, not truncated). Non-global: we take the first in-object
+ * match. */
+const COMMAND_NAME = /name:\s*["'`]([a-z][a-z0-9-]+)["'`]/;
+const COMMAND_DESC = /description:\s*["'`]((?:[^"'`\\]|\\.)*)["'`]/;
 
 /** Env vars whose existence we assert from the bundle, keyed by access syntax. */
 export function extractEnvVars(src: string): Map<string, string> {
@@ -117,18 +110,20 @@ export function extractFlags(src: string): Map<string, Evidence> {
  */
 export function extractCommands(src: string): Map<string, string | undefined> {
   const out = new Map<string, string | undefined>(); // "/name" -> description
-  for (const anchor of src.matchAll(COMMAND_TYPE)) {
-    if (anchor.index === undefined) continue;
-    const lo = Math.max(0, anchor.index - COMMAND_BACK);
-    const window = src.slice(lo, anchor.index + COMMAND_FWD);
-    const rel = anchor.index - lo;
+  const anchors = [...src.matchAll(COMMAND_TYPE)];
+  for (let i = 0; i < anchors.length; i++) {
+    const start = anchors[i]?.index;
+    if (start === undefined) continue;
+    // Read only THIS object's fields: from its `type:` marker up to the next
+    // command marker (capped), so an adjacent command's name/description can't
+    // cross over. Fields (name, description) follow `type:` within the object.
+    const bound = Math.min(anchors[i + 1]?.index ?? src.length, start + COMMAND_FWD);
+    const object = src.slice(start, bound);
 
-    // the name and description belonging to THIS object are the ones nearest the
-    // type marker — a fixed window can otherwise reach into a neighbouring object
-    const name = nearest(window, COMMAND_NAME, rel);
+    const name = object.match(COMMAND_NAME)?.[1];
     if (!name) continue;
     const key = `/${name}`;
-    const desc = nearest(window, COMMAND_DESC, rel);
+    const desc = object.match(COMMAND_DESC)?.[1];
     // first definition wins, but let a later one fill in a missing description
     if (!out.has(key)) out.set(key, desc);
     else if (out.get(key) === undefined && desc) out.set(key, desc);

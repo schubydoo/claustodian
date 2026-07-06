@@ -61,6 +61,13 @@ describe('extractFlags — positive evidence only', () => {
     const src = 'spawn(g,["log","--format"]);/*...*/.option("--format <f>","output format")';
     expect(extractFlags(src).get('--format')).toBe('registration');
   });
+
+  it('does not re-scan a flag already confirmed as own', () => {
+    // registered first, then reappears — the second occurrence is skipped
+    const flags = extractFlags('.option("--verbose","desc");const x=["--verbose"];');
+    expect(flags.get('--verbose')).toBe('registration');
+    expect(flags.size).toBe(1);
+  });
 });
 
 describe('extractCommands — registry objects', () => {
@@ -77,6 +84,24 @@ describe('extractCommands — registry objects', () => {
     const cmds = extractCommands('fetch("/guardrails");let p="/evaluation-jobs";');
     expect(cmds.size).toBe(0);
   });
+
+  it('skips a type marker with no resolvable command name', () => {
+    expect(extractCommands('{type:"local",foo:"bar"}').size).toBe(0);
+  });
+
+  it('does not fork a namespaced command name with a colon', () => {
+    // grammar matches the other lanes ([a-z0-9-]); a `ns:cmd` name is skipped,
+    // not truncated to `/ns` or emitted as a divergent `/ns:cmd`.
+    expect(extractCommands('{type:"local",name:"model:switch"}').size).toBe(0);
+  });
+
+  it('lets a later definition backfill a missing description', () => {
+    // two definitions of /dup, far enough apart that neither window reaches the
+    // other's fields: the first has no description, the second supplies one.
+    const src =
+      '{type:"local",name:"dup"}' + 'x'.repeat(600) + '{type:"local",name:"dup",description:"filled in"}';
+    expect(extractCommands(src).get('/dup')).toBe('filled in');
+  });
 });
 
 describe('extractBundleSymbols', () => {
@@ -91,6 +116,13 @@ describe('extractBundleSymbols', () => {
       { symbol: '--verbose', type: 'cli_flag', category: 'cli', evidence: 'registration' },
       { symbol: '/bug', type: 'command', category: 'command', evidence: 'command-registry', description: 'file a bug' },
       { symbol: 'CLAUDE_CODE_X', type: 'env_var', category: 'claude-code', evidence: 'process-env' },
+    ]);
+  });
+
+  it('omits the description field for a command that has none', () => {
+    const out = extractBundleSymbols('{type:"local",name:"status"}');
+    expect(out).toEqual([
+      { symbol: '/status', type: 'command', category: 'command', evidence: 'command-registry' },
     ]);
   });
 });
