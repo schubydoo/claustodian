@@ -48,10 +48,16 @@ jobs:
           files: ./coverage/lcov.info
           fail_ci_if_error: false
       # Upload JUnit results to Codecov Test Analytics (flaky/failed-test
-      # tracking). `!cancelled()` so failing tests still report — capturing the
-      # failure is the whole point. Tokenless like the coverage upload above.
+      # tracking). Same codecov-action as the coverage upload above, just with
+      # report_type: test_results — the standalone test-results-action isn't
+      # needed (report_type was added to codecov-action in v5). `!cancelled()`
+      # so failing tests still report — capturing the failure is the whole point.
+      # Tokenless, and fail_ci_if_error stays false on PRs: a flaky upload must
+      # not block a merge.
       - name: Upload test results to Codecov
         if: ${{ !cancelled() }}
-        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
         with:
           files: ./test-report.junit.xml
+          report_type: test_results
+          fail_ci_if_error: false
