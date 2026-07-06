@@ -500,6 +500,24 @@ export async function loadDocsIndex(path: string): Promise<DocsIndex> {
   return JSON.parse(await readFile(path, 'utf-8')) as DocsIndex;
 }
 
+/**
+ * Guards the normal scrape path against a *valid but empty* docs index — e.g.
+ * fetch-docs succeeded but an upstream table-shape change stopped the parser
+ * from matching anything, so `symbols` is `[]`. Enriching against that silently
+ * drops every docs-only symbol and description while validation still passes,
+ * producing valid-but-incomplete data. Throws unless the caller explicitly
+ * opted into a changelog-only build.
+ */
+export function assertNonEmptyDocs(docs: DocsIndex, allowEmpty: boolean, path: string): void {
+  if (!allowEmpty && docs.symbols.length === 0) {
+    throw new Error(
+      `Docs index ${path} has 0 symbols — the docs parser likely broke on an upstream ` +
+        `table-shape change. Re-run "npm run fetch-docs" and inspect it, or pass ` +
+        `--allow-empty-docs for an intentional changelog-only build.`
+    );
+  }
+}
+
 function parseVersionParts(version: string): [number, number, number] {
   const parts = version.split('.').map((part) => Number(part));
   return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0];
@@ -554,10 +572,16 @@ interface CliOptions {
   docsPath: string;
   outDir: string;
   all: boolean;
+  allowEmptyDocs: boolean;
 }
 
 function parseArgs(argv: string[]): CliOptions {
-  const options: CliOptions = { outDir: 'data', docsPath: 'data/docs.json', all: false };
+  const options: CliOptions = {
+    outDir: 'data',
+    docsPath: 'data/docs.json',
+    all: false,
+    allowEmptyDocs: false,
+  };
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -581,6 +605,8 @@ function parseArgs(argv: string[]): CliOptions {
       }
     } else if (arg === '--all') {
       options.all = true;
+    } else if (arg === '--allow-empty-docs') {
+      options.allowEmptyDocs = true;
     }
   }
 
@@ -593,6 +619,7 @@ export async function main(): Promise<number> {
 
   const blocks = parseChangelog(md);
   const docs = await loadDocsIndex(options.docsPath);
+  assertNonEmptyDocs(docs, options.allowEmptyDocs, options.docsPath);
   const snapshots = buildEnrichedSnapshots(blocks, docs);
   const index = buildIndex(snapshots);
 

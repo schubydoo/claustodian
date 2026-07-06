@@ -7,6 +7,7 @@ import { buildAjv, getValidator } from './validate-schema.js';
 import { rm, writeFile } from 'node:fs/promises';
 
 import {
+  assertNonEmptyDocs,
   buildEnrichedSnapshots,
   buildIndex,
   buildSnapshots,
@@ -370,5 +371,28 @@ describe('loadDocsIndex', () => {
     await writeFile(path, '{ not valid json', 'utf8');
     await expect(loadDocsIndex(path)).rejects.toThrow();
     await rm(path, { force: true });
+  });
+});
+
+describe('assertNonEmptyDocs', () => {
+  const empty: DocsIndex = { $generated_by: '', source_pages: [], symbols: [] };
+  const nonEmpty: DocsIndex = {
+    $generated_by: '',
+    source_pages: [],
+    symbols: [
+      { symbol: '--x', type: 'cli_flag', description: 'x', doc_min_version: null, doc_page: 'p' },
+    ],
+  };
+
+  it('throws on a valid-but-empty docs index in the normal path', () => {
+    expect(() => assertNonEmptyDocs(empty, false, 'data/docs.json')).toThrow(/0 symbols/);
+  });
+
+  it('allows an empty docs index only with the explicit opt-out', () => {
+    expect(() => assertNonEmptyDocs(empty, true, 'data/docs.json')).not.toThrow();
+  });
+
+  it('passes for a populated docs index', () => {
+    expect(() => assertNonEmptyDocs(nonEmpty, false, 'data/docs.json')).not.toThrow();
   });
 });
