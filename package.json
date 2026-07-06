@@ -35,6 +35,7 @@
     "typecheck": "tsc --noEmit",
     "validate": "tsx scripts/validate-schema.ts \"data/**/*.json\"",
     "fetch-docs": "tsx scripts/fetch-docs.ts",
+    "backfill-binary": "tsx scripts/backfill-binary.ts",
     "scrape": "tsx scripts/scrape-changelog.ts",
     "diff": "tsx scripts/diff-snapshots.ts",
     "coverage": "tsx scripts/check-coverage.ts",

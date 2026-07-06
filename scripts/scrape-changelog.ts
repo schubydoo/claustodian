@@ -34,8 +34,18 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
+import {
+  assertBinaryObservations,
+  binaryEnvCategory,
+  type BinaryObservations,
+  isPublishableBinaryEnv,
+  loadBinaryObservations,
+} from './binary-lane.js';
 import { assertOfficialDocs, DOCS_BASE, type DocsIndex } from './fetch-docs.js';
-import { isMain, loadChangelog } from './lib.js';
+import { compareVersionsAsc, type ExtractedSymbolType, isMain, loadChangelog } from './lib.js';
+
+// Re-exported from lib for existing importers (tests, extract-bundle, etc.).
+export { compareVersionsAsc, type ExtractedSymbolType };
 
 const SOURCE_URL = 'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md';
 const SCHEMA_VERSION = '1.0.0';
@@ -45,8 +55,6 @@ export interface ChangelogBlock {
   version: string;
   bullets: string[];
 }
-
-export type ExtractedSymbolType = 'cli_flag' | 'command' | 'env_var';
 
 export interface ExtractedSymbol {
   symbol: string;
@@ -437,8 +445,10 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
 
 /**
  * Assembles cumulative per-version snapshots from a finalized symbol list: each
- * version's snapshot holds every symbol whose `first_seen` is <= that version,
- * sorted deterministically by type then symbol name.
+ * version's snapshot holds every symbol live at that version — `first_seen` <=
+ * version AND (no `removed_in`, or version is before it) — sorted deterministically
+ * by type then symbol name. `removed_in` is currently only set by the binary lane's
+ * cliff-aware removal detection; changelog/docs records leave it null.
  */
 export function assembleSnapshots(
   records: SymbolRecord[],
@@ -448,11 +458,13 @@ export function assembleSnapshots(
     .map((block) => block.version)
     .sort((a, b) => compareVersionsAsc(a, b));
 
+  const liveAt = (record: SymbolRecord, version: string): boolean =>
+    compareVersionsAsc(record.first_seen, version) <= 0 &&
+    (record.removed_in === null || compareVersionsAsc(version, record.removed_in) < 0);
+
   return versionsOldestFirst.map((version) => ({
     version,
-    symbols: records
-      .filter((record) => compareVersionsAsc(record.first_seen, version) <= 0)
-      .sort(compareSymbolRecords),
+    symbols: records.filter((record) => liveAt(record, version)).sort(compareSymbolRecords),
   }));
 }
 
@@ -560,15 +572,94 @@ export function enrichSymbols(
   return records;
 }
 
-/** Production snapshots: changelog symbols enriched with the official docs lane. */
+/**
+ * Overlays the binary lane onto the changelog+docs records. Two effects, both
+ * grounded in positive extraction evidence (the symbol literally appeared in that
+ * version's bundle):
+ *
+ *  - first_seen correction — when the binary observed a shared symbol EARLIER
+ *    than its current first_seen, the earlier version wins and the upper-bound
+ *    flag is cleared (confidence -> high). Same "earliest evidence wins" rule the
+ *    docs overlay applies to a doc min-version.
+ *  - binary-only additions — a symbol no other lane knows is appended as
+ *    provenance:"binary" / status:"needs_review" (null source_url, empty
+ *    description, confidence "medium"), carrying the observation's conservative
+ *    `removed_in` (null unless it cleanly disappeared pre-cliff). Env vars are
+ *    gated to first-party ones (isPublishableBinaryEnv); flags and commands are
+ *    all first-party by the extractor's registration/registry evidence.
+ *
+ * Shared (changelog/docs) records keep their own removed_in — the binary lane
+ * only corrects first_seen upward-in-time on them, never their lifecycle end;
+ * the changelog stays the sole removal authority for confirmed symbols.
+ */
+export function enrichWithBinary(
+  records: SymbolRecord[],
+  binary: BinaryObservations
+): SymbolRecord[] {
+  const observedByKey = new Map(binary.symbols.map((obs) => [`${obs.type}:${obs.symbol}`, obs]));
+
+  const merged = records.map((record) => {
+    const obs = observedByKey.get(`${record.type}:${record.symbol}`);
+    if (!obs || compareVersionsAsc(obs.first_seen, record.first_seen) >= 0) {
+      return record;
+    }
+    // Binary saw the symbol earlier than any other lane — earliest evidence wins.
+    return finalizeRecord({
+      ...record,
+      first_seen: obs.first_seen,
+      first_seen_estimated: false,
+      confidence: 'high',
+    });
+  });
+
+  const known = new Set(records.map((record) => `${record.type}:${record.symbol}`));
+  for (const obs of binary.symbols) {
+    if (known.has(`${obs.type}:${obs.symbol}`)) {
+      continue;
+    }
+    const baseCategory = categorize(obs.symbol, obs.type);
+    if (obs.type === 'env_var' && !isPublishableBinaryEnv(obs.symbol, baseCategory)) {
+      // An external env var Claude Code merely reads — left unpublished by omission.
+      continue;
+    }
+    merged.push(
+      finalizeRecord({
+        symbol: obs.symbol,
+        type: obs.type,
+        first_seen: obs.first_seen,
+        first_seen_estimated: false,
+        removed_in: obs.removed_in,
+        status: 'needs_review',
+        provenance: 'binary',
+        confidence: 'medium',
+        description: '',
+        source_url: null,
+        category:
+          obs.type === 'env_var' ? binaryEnvCategory(obs.symbol, baseCategory) : baseCategory,
+      })
+    );
+  }
+
+  return merged;
+}
+
+/**
+ * Production snapshots: changelog symbols enriched with the official docs lane,
+ * then overlaid with the binary lane when `binary` observations are supplied.
+ * The binary overlay is optional so the changelog+docs contract (and its tests)
+ * stays exercisable on its own; production always supplies it.
+ */
 export function buildEnrichedSnapshots(
   blocks: ChangelogBlock[],
-  docs: DocsIndex
+  docs: DocsIndex,
+  binary?: BinaryObservations
 ): VersionSnapshot[] {
   const collected = collectChangelogSymbols(blocks);
   const latest =
     blocks.map((block) => block.version).sort((a, b) => compareVersionsAsc(b, a))[0] ?? '';
-  return assembleSnapshots(enrichSymbols(collected, docs, latest), blocks);
+  const enriched = enrichSymbols(collected, docs, latest);
+  const withBinary = binary ? enrichWithBinary(enriched, binary) : enriched;
+  return assembleSnapshots(withBinary, blocks);
 }
 
 /**
@@ -598,20 +689,6 @@ export function assertNonEmptyDocs(docs: DocsIndex, path: string): void {
         `table-shape change. Re-run "npm run fetch-docs" and inspect it.`
     );
   }
-}
-
-function parseVersionParts(version: string): [number, number, number] {
-  const parts = version.split('.').map((part) => Number(part));
-  return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0];
-}
-
-/** Numeric semver comparison (2.1.9 < 2.1.10), ascending. */
-export function compareVersionsAsc(a: string, b: string): number {
-  const [a1, a2, a3] = parseVersionParts(a);
-  const [b1, b2, b3] = parseVersionParts(b);
-  if (a1 !== b1) return a1 - b1;
-  if (a2 !== b2) return a2 - b2;
-  return a3 - b3;
 }
 
 /**
@@ -651,6 +728,8 @@ async function writeJson(filePath: string, data: unknown): Promise<void> {
 
 /** The committed docs lane — the only docs source; not CLI-overridable. */
 const DOCS_PATH = 'data/docs.json';
+/** The committed binary lane — the distilled binary evidence; not CLI-overridable. */
+const BINARY_OBSERVATIONS_PATH = 'data/binary-observations.json';
 /** The committed data directory; regenerating it must use canonical sources. */
 const COMMITTED_DATA_DIR = 'data';
 
@@ -718,7 +797,9 @@ export async function main(): Promise<number> {
   assertNonEmptyDocs(docs, DOCS_PATH);
   // Defense-in-depth integrity check on the committed docs.json.
   assertOfficialDocs(docs);
-  const snapshots = buildEnrichedSnapshots(blocks, docs);
+  const binary = await loadBinaryObservations(BINARY_OBSERVATIONS_PATH);
+  assertBinaryObservations(binary, BINARY_OBSERVATIONS_PATH);
+  const snapshots = buildEnrichedSnapshots(blocks, docs, binary);
   const index = buildIndex(snapshots);
 
   const sortedByVersion = [...snapshots].sort((a, b) => compareVersionsAsc(a.version, b.version));
