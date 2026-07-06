@@ -744,18 +744,18 @@ function parseArgs(argv: string[]): CliOptions {
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
-    if (arg === '--changelog') {
+    if (arg === '--changelog' || arg === '--out') {
       const value = argv[i + 1];
-      if (value !== undefined) {
-        options.changelogPath = value;
-        i++;
+      // Error rather than silently dropping the flag: a bare `--out` (no path)
+      // would otherwise fall through to the default outDir "data" and silently
+      // regenerate the committed dataset (assertCanonicalSourcesForCommittedData
+      // only guards the --changelog case). Mirrors backfill-binary.ts parseArgs.
+      if (value === undefined) {
+        throw new Error(`${arg} requires a path argument (e.g. "${arg} <path>").`);
       }
-    } else if (arg === '--out') {
-      const value = argv[i + 1];
-      if (value !== undefined) {
-        options.outDir = value;
-        i++;
-      }
+      if (arg === '--changelog') options.changelogPath = value;
+      else options.outDir = value;
+      i++;
     } else if (arg === '--all') {
       options.all = true;
     }
