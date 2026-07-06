@@ -42,3 +42,11 @@ jobs:
         with:
           files: ./coverage/lcov.info
           fail_ci_if_error: true
+      # Seed Codecov Test Analytics' default-branch baseline so PR runs have a
+      # test history to compare against. Like the upload above, this only runs
+      # after a green test:coverage (no `!cancelled()`): on `main` a broken test
+      # run should fail loudly, not quietly seed a baseline from a failure.
+      - name: Upload test results to Codecov
+        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1
+        with:
+          files: ./test-report.junit.xml

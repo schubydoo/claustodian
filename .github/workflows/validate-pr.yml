@@ -47,3 +47,11 @@ jobs:
         with:
           files: ./coverage/lcov.info
           fail_ci_if_error: false
+      # Upload JUnit results to Codecov Test Analytics (flaky/failed-test
+      # tracking). `!cancelled()` so failing tests still report — capturing the
+      # failure is the whole point. Tokenless like the coverage upload above.
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@0fa95f0e1eeaafde2c782583b36b28ad0d8c77d3 # v1
+        with:
+          files: ./test-report.junit.xml
