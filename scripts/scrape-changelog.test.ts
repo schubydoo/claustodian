@@ -16,6 +16,7 @@ import {
   collectChangelogSymbols,
   compareVersionsAsc,
   enrichSymbols,
+  enrichWithBinary,
   extractSymbols,
   isIntroducingBullet,
   isSubprocessFlagBullet,
@@ -24,6 +25,8 @@ import {
   parseChangelog,
 } from './scrape-changelog.js';
 import type { DocsIndex } from './fetch-docs.js';
+import type { SymbolRecord } from './scrape-changelog.js';
+import type { BinaryObservation, BinaryObservations } from './binary-lane.js';
 
 /**
  * A small fixture changelog, newest-first (matching upstream's real
@@ -458,6 +461,166 @@ describe('enrichSymbols', () => {
       snaps.find((s) => s.version === v)?.symbols.map((x) => x.symbol) ?? [];
     expect(at('2.0.0')).not.toContain('--docsonly');
     expect(at('2.1.0')).toContain('--docsonly');
+  });
+});
+
+describe('enrichWithBinary', () => {
+  const record = (over: Partial<SymbolRecord>): SymbolRecord => ({
+    symbol: '--x',
+    type: 'cli_flag',
+    first_seen: '1.0.0',
+    removed_in: null,
+    status: 'active',
+    provenance: 'changelog',
+    confidence: 'high',
+    description: 'd',
+    source_url: 'https://example/u',
+    category: 'cli',
+    ...over,
+  });
+  const binary = (
+    symbols: Array<Omit<BinaryObservation, 'removed_in'> & { removed_in?: string | null }>
+  ): BinaryObservations => ({
+    $generated_by: 'scripts/backfill-binary.ts',
+    source: 'binary',
+    note: '',
+    observedVersions: [],
+    symbols: symbols.map((s) => ({ removed_in: null, ...s })),
+  });
+  const byKey = (records: SymbolRecord[]) =>
+    new Map(records.map((r) => [`${r.type}:${r.symbol}`, r]));
+
+  it('corrects a shared symbol earlier and clears the estimated flag (confidence high)', () => {
+    const out = enrichWithBinary(
+      [record({ symbol: '--print', first_seen: '2.1.0', first_seen_estimated: true, confidence: 'medium' })],
+      binary([{ symbol: '--print', type: 'cli_flag', first_seen: '0.2.9', last_seen: '2.1.201' }])
+    );
+    const r = byKey(out).get('cli_flag:--print');
+    expect(r).toMatchObject({ first_seen: '0.2.9', confidence: 'high', provenance: 'changelog' });
+    expect(r?.first_seen_estimated).toBeUndefined();
+  });
+
+  it('does not touch first_seen when the binary observed the symbol no earlier', () => {
+    const input = [record({ symbol: '--foo', first_seen: '1.0.0' })];
+    const out = enrichWithBinary(
+      input,
+      binary([{ symbol: '--foo', type: 'cli_flag', first_seen: '2.0.0', last_seen: '2.1.0' }])
+    );
+    expect(byKey(out).get('cli_flag:--foo')?.first_seen).toBe('1.0.0');
+  });
+
+  it('never sets removed_in from the binary lane', () => {
+    const out = enrichWithBinary(
+      [record({ symbol: '--foo', first_seen: '2.0.0', first_seen_estimated: true, confidence: 'medium' })],
+      binary([{ symbol: '--foo', type: 'cli_flag', first_seen: '1.0.0', last_seen: '1.5.0' }])
+    );
+    // last_seen 1.5.0 is well before the record's world, yet removed_in stays null.
+    expect(byKey(out).get('cli_flag:--foo')?.removed_in).toBeNull();
+  });
+
+  it('appends a binary-only flag as provenance:binary / needs_review with a null source', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([{ symbol: '--mcp-debug', type: 'cli_flag', first_seen: '2.1.83', last_seen: '2.1.201' }])
+    );
+    expect(byKey(out).get('cli_flag:--mcp-debug')).toEqual({
+      symbol: '--mcp-debug',
+      type: 'cli_flag',
+      first_seen: '2.1.83',
+      removed_in: null,
+      status: 'needs_review',
+      provenance: 'binary',
+      confidence: 'medium',
+      description: '',
+      source_url: null,
+      category: 'cli',
+    });
+  });
+
+  it('appends a binary-only command', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([{ symbol: '/bashes', type: 'command', first_seen: '2.1.0', last_seen: '2.1.201' }])
+    );
+    expect(byKey(out).get('command:/bashes')).toMatchObject({
+      provenance: 'binary',
+      status: 'needs_review',
+      source_url: null,
+    });
+  });
+
+  it('appends a first-party (CLAUDE_-prefixed) binary-only env var', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([{ symbol: 'CLAUDE_CODE_ENTRYPOINT', type: 'env_var', first_seen: '0.2.89', last_seen: '2.1.201' }])
+    );
+    expect(byKey(out).get('env_var:CLAUDE_CODE_ENTRYPOINT')).toMatchObject({
+      provenance: 'binary',
+      status: 'needs_review',
+      category: 'claude-code',
+      first_seen: '0.2.89',
+    });
+  });
+
+  it('recategorizes a promote-cc env var to claude-code and publishes it', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([{ symbol: 'ENABLE_PLUGINS', type: 'env_var', first_seen: '2.1.0', last_seen: '2.1.201' }])
+    );
+    expect(byKey(out).get('env_var:ENABLE_PLUGINS')).toMatchObject({
+      provenance: 'binary',
+      category: 'claude-code',
+    });
+  });
+
+  it('leaves an external env var (CC merely reads) unpublished', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([
+        { symbol: 'PATH', type: 'env_var', first_seen: '0.2.9', last_seen: '2.1.201' },
+        { symbol: 'ALIYUN_REGION_ID', type: 'env_var', first_seen: '1.0.0', last_seen: '2.1.201' },
+      ])
+    );
+    expect(out).toEqual([]);
+  });
+
+  it('carries a conservative removed_in onto a binary-only addition', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([
+        { symbol: '--gone', type: 'cli_flag', first_seen: '1.0.0', last_seen: '1.0.4', removed_in: '1.0.5' },
+      ])
+    );
+    expect(byKey(out).get('cli_flag:--gone')?.removed_in).toBe('1.0.5');
+  });
+
+  it('drops a removed binary symbol from snapshots at and after its removed_in', () => {
+    const blocks = [
+      { version: '1.0.0', bullets: [] },
+      { version: '1.0.5', bullets: [] },
+      { version: '1.0.9', bullets: [] },
+    ];
+    const snaps = buildEnrichedSnapshots(
+      blocks,
+      docsIndex([]),
+      binary([
+        { symbol: '--gone', type: 'cli_flag', first_seen: '1.0.0', last_seen: '1.0.4', removed_in: '1.0.5' },
+      ])
+    );
+    const at = (v: string) =>
+      snaps.find((s) => s.version === v)?.symbols.map((x) => x.symbol) ?? [];
+    expect(at('1.0.0')).toContain('--gone');
+    expect(at('1.0.5')).not.toContain('--gone');
+    expect(at('1.0.9')).not.toContain('--gone');
+  });
+
+  it('does not re-add a symbol another lane already published', () => {
+    const out = enrichWithBinary(
+      [record({ symbol: '--print', type: 'cli_flag', first_seen: '1.0.0', provenance: 'changelog' })],
+      binary([{ symbol: '--print', type: 'cli_flag', first_seen: '1.0.0', last_seen: '2.1.201' }])
+    );
+    expect(out.filter((r) => r.symbol === '--print')).toHaveLength(1);
+    expect(out[0]?.provenance).toBe('changelog');
   });
 });
 

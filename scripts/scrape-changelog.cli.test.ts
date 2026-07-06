@@ -122,4 +122,12 @@ describe('scrape-changelog main()', () => {
     expect(index.latest).toBe('');
     await expect(readFile(join(outDir, 'latest.json'), 'utf-8')).rejects.toThrow();
   });
+
+  it('errors on a bare --out (no path) instead of silently regenerating committed data/', async () => {
+    await expect(withArgv(['--out'], main)).rejects.toThrow('--out requires a path');
+  });
+
+  it('errors on a bare --changelog (no path)', async () => {
+    await expect(withArgv(['--changelog'], main)).rejects.toThrow('--changelog requires a path');
+  });
 });

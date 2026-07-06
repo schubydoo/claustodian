@@ -75,15 +75,28 @@ Every record carries a `provenance`:
 
 - **`changelog`** — extracted from the official `CHANGELOG.md`. Authoritative for existence.
 - **`docs`** — from the official Claude Code documentation pages (`code.claude.com/docs`). Supplies the authoritative description and, where a page states a `min-version`, an anchored `first_seen`.
-- **`binary`** — extracted from published release binaries (a later phase). Starts as `status: needs_review` until a human confirms it.
+- **`binary`** — extracted from published release binaries by positive-evidence detection: CLI flags (commander registration or `process.argv` checks), environment variables (`process.env` access), and **built-in commands from the bundled command registry**. Every binary find starts as `status: needs_review` until a human confirms it; `first_seen` (and a conservative, cliff-aware `removed_in`) come from the versions it was actually observed in.
 
 `first_seen_estimated: true` flags records whose `first_seen` is an upper bound (an incidental changelog mention or a docs page with no `min-version`); those carry `confidence: medium` until the binary lane confirms them.
+
+> **Coverage limitation — commands.** The binary lane sees only Claude Code's **built-in** command registry. **Skill- and plugin-provided slash-commands (e.g. `/schedule`, `/loop`) are not captured** — they are registered through a separate mechanism the extractor does not scan. A skill-command's absence from the dataset is **not** evidence it never existed. (Roadmap item — see Status.)
 
 **Claustodian uses only material Anthropic has publicly published and distributed** — the changelog, the official docs pages, and official release binaries. It does not use leaked or otherwise non-public material. See CONTRIBUTING.
 
 ## Status
 
-v1.0 covers the **changelog lane**: the schema + validator, the changelog scraper, and Pages publishing. Undocumented-symbol coverage (binary extraction) and a self-extracted historical backlog are planned follow-ups.
+Three lanes feed the dataset today:
+
+- **changelog lane** — schema + validator, the changelog scraper, and Pages publishing.
+- **docs lane** — official docs descriptions and anchored `first_seen` from `min-version` annotations.
+- **binary lane** — undocumented-symbol coverage from release binaries (flags, env vars, built-in commands), plus `first_seen` corrections and conservative cliff-aware removal detection. Binary finds ship as `status: needs_review`.
+
+### Roadmap / backlog
+
+- **Extract skill- and plugin-provided commands** (e.g. `/schedule`, `/loop`) — currently missed because the binary lane only reads the built-in command registry. Evaluate parsing skill/plugin command manifests in a future release.
+- Teach the extractor **subcommand flags** and **commander built-ins** (`--help`, `--version`).
+- Fix the **~2.1.160 extraction-recall regression** to tighten late-era per-version accuracy.
+- Detect explicit **changelog removals** so `removed_in` can be set on confirmed (changelog/docs) symbols, not just binary-only ones.
 
 ## Development
 
