@@ -171,6 +171,9 @@
       }
       .lifecycle {
         margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
         font-size: 0.8rem;
         color: var(--muted);
       }
@@ -179,19 +182,54 @@
         color: var(--fg);
         font-size: 0.92rem;
       }
-      .removed {
-        color: var(--cmd);
-        font-weight: 600;
-      }
-      .est {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-        color: var(--muted);
-        border: 1px solid var(--border);
+      /* first_seen chip — confidence is visual weight: solid = confirmed,
+         dashed + muted = estimated (an upper bound; see the footer legend). */
+      .seen {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.3rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.76rem;
         border-radius: 999px;
-        padding: 0 0.35rem;
+        padding: 0.12rem 0.55rem;
+      }
+      .seen .lbl,
+      .removed .lbl {
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.75;
+      }
+      .seen--confirmed {
+        border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+        background: color-mix(in srgb, var(--accent) 12%, transparent);
+        color: var(--fg);
+      }
+      .seen--est {
+        border: 1px dashed var(--border);
+        background: transparent;
+        color: var(--muted);
         cursor: help;
+      }
+      .removed {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.3rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.76rem;
+        border-radius: 999px;
+        padding: 0.12rem 0.55rem;
+        border: 1px solid color-mix(in srgb, var(--cmd) 45%, transparent);
+        background: color-mix(in srgb, var(--cmd) 12%, transparent);
+        color: var(--cmd);
+      }
+      .removed .lbl {
+        opacity: 0.85;
       }
       footer {
         margin-top: 2.5rem;
@@ -261,12 +299,14 @@
 
       <footer>
         <p>
-          A symbol is available in version Y when <code>first_seen &le; Y</code> and it hasn't been
-          removed. <code>first_seen</code> is the earliest version Claustodian <em>observed</em> a
-          symbol, not a guarantee of its true origin. An <span class="est">est.</span> marker means
-          <code>first_seen</code> is an upper bound — the symbol was documented or mentioned only
-          incidentally, so its true introduction is unconfirmed (the binary lane will pin it).
-          Descriptions come from Anthropic's official docs where available.
+          <span class="seen seen--confirmed"><span class="lbl">since</span>X</span> is the earliest
+          version Claustodian observed a symbol; it's available in any version Y where
+          <code>first_seen &le; Y</code> and it hasn't been removed. A dashed
+          <span class="seen seen--est"><span class="lbl">since</span>&le;X</span> chip marks an
+          <em>estimated</em> <code>first_seen</code> — an upper bound from an incidental mention or a
+          doc with no stated introduction version, so the true version may be earlier (the binary
+          lane will pin it). Solid chips are confirmed. Descriptions come from Anthropic's official
+          docs where available.
         </p>
         <p>
           Raw data: <a href="data/latest.json">latest.json</a> ·
@@ -323,16 +363,17 @@
 
         const life = document.createElement('span');
         life.className = 'lifecycle';
-        // "since X" is a confirmed introduction; "by X" is an upper bound
-        // (first_seen_estimated — the true introduction is unconfirmed).
+        // One verb everywhere ("since"); confidence is the chip's styling.
+        // A confirmed first_seen is a solid chip; an estimated one is a dashed
+        // chip prefixed with "≤" — an upper bound, so the true version may be
+        // earlier (the binary lane will pin it).
         const seen = sym.first_seen_estimated
-          ? `by ${sym.first_seen} <span class="est" title="first_seen is an upper bound (estimated); the binary lane will confirm it">est.</span>`
-          : `since ${sym.first_seen}`;
-        if (sym.removed_in) {
-          life.innerHTML = `${seen} · <span class="removed">removed ${sym.removed_in}</span>`;
-        } else {
-          life.innerHTML = seen;
-        }
+          ? `<span class="seen seen--est" title="Estimated: first_seen is an upper bound — the true version may be earlier. The binary lane will pin it."><span class="lbl">since</span>≤${sym.first_seen}</span>`
+          : `<span class="seen seen--confirmed"><span class="lbl">since</span>${sym.first_seen}</span>`;
+        const removed = sym.removed_in
+          ? `<span class="removed"><span class="lbl">removed</span>${sym.removed_in}</span>`
+          : '';
+        life.innerHTML = seen + removed;
         row.appendChild(life);
         li.appendChild(row);
 

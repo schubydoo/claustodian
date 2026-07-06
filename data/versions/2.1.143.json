@@ -2175,7 +2175,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "\\[DEPRECATED] Name of Haiku-class model for background tasks",
+      "description": "[DEPRECATED] Name of Haiku-class model for background tasks",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
