@@ -273,6 +273,14 @@ describe('isSubprocessFlagBullet', () => {
     expect(subprocessFlagExamples('- Added a `--git-notes` flag for git integration').size).toBe(0);
   });
 
+  it('subprocessFlagExamples collects only cli_flag tokens from the clause', () => {
+    // A clause mixing a flag with a non-flag token exercises both branches; only
+    // the flag is returned.
+    const mixed =
+      '- Added support for additional `git` flags (e.g., `--topo-order` via the `/git` helper)';
+    expect([...subprocessFlagExamples(mixed)]).toEqual(['--topo-order']);
+  });
+
   it('collectChangelogSymbols drops the git flags but keeps other symbols', () => {
     const blocks = [
       { version: '2.1.30', bullets: [gitBullet, '- Added `--safe-mode` and `CLAUDE_CODE_X`'] },
@@ -302,10 +310,15 @@ describe('isSubprocessFlagBullet', () => {
     expect(keys).toContain('cli_flag:--continue');
   });
 
-  it('keeps `--compact` if a bullet genuinely introduces it as a flag', () => {
-    const blocks = [{ version: '2.1.80', bullets: ['- Added a `--compact` flag to shrink output'] }];
-    const keys = [...collectChangelogSymbols(blocks).keys()];
-    expect(keys).toContain('cli_flag:--compact');
+  it('keeps `--compact` when a bullet introduces it, incl. natural "supports" wording', () => {
+    for (const bullet of [
+      '- Added a `--compact` flag to shrink output',
+      '- Now supports `--compact` mode',
+      '- Supports `--compact` natively',
+    ]) {
+      const keys = [...collectChangelogSymbols([{ version: '2.1.80', bullets: [bullet] }]).keys()];
+      expect(keys).toContain('cli_flag:--compact');
+    }
   });
 });
 
