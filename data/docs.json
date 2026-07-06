@@ -1591,7 +1591,7 @@
     {
       "symbol": "ANTHROPIC_SMALL_FAST_MODEL",
       "type": "env_var",
-      "description": "\\[DEPRECATED] Name of Haiku-class model for background tasks",
+      "description": "[DEPRECATED] Name of Haiku-class model for background tasks",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -1843,7 +1843,7 @@
     {
       "symbol": "CLAUDE_CODE_CLIENT_KEY_PASSPHRASE",
       "type": "env_var",
-      "description": "Passphrase for encrypted CLAUDE\\_CODE\\_CLIENT\\_KEY (optional)",
+      "description": "Passphrase for encrypted CLAUDE_CODE_CLIENT_KEY (optional)",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
