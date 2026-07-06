@@ -281,6 +281,25 @@ describe('isSubprocessFlagBullet', () => {
     expect([...subprocessFlagExamples(mixed)]).toEqual(['--topo-order']);
   });
 
+  it('subprocessFlagExamples stops at the closing paren, ignoring trailing flags', () => {
+    const trailing =
+      '- Added support for additional `git` flags (e.g., `--topo-order`) and added `--foo`';
+    expect([...subprocessFlagExamples(trailing)]).toEqual(['--topo-order']); // not --foo
+  });
+
+  it('subprocessFlagExamples handles an unclosed "(e.g., …" clause', () => {
+    const unclosed = '- Added `git` flags (e.g., `--topo-order`';
+    expect([...subprocessFlagExamples(unclosed)]).toEqual(['--topo-order']);
+  });
+
+  it('collectChangelogSymbols keeps a first-party flag that trails the example clause', () => {
+    const trailing =
+      '- Added support for additional `git` flags (e.g., `--topo-order`) and added `--foo`';
+    const keys = [...collectChangelogSymbols([{ version: '2.1.41', bullets: [trailing] }]).keys()];
+    expect(keys).toContain('cli_flag:--foo');
+    expect(keys).not.toContain('cli_flag:--topo-order');
+  });
+
   it('collectChangelogSymbols drops the git flags but keeps other symbols', () => {
     const blocks = [
       { version: '2.1.30', bullets: [gitBullet, '- Added `--safe-mode` and `CLAUDE_CODE_X`'] },
@@ -303,18 +322,23 @@ describe('isSubprocessFlagBullet', () => {
     expect(keys).not.toContain('cli_flag:--cherry-pick');
   });
 
-  it('drops the phantom `--compact` when only mentioned incidentally (the /compact command)', () => {
-    const blocks = [{ version: '2.1.72', bullets: ['- Fixed `--continue` not resuming after `--compact`'] }];
-    const keys = [...collectChangelogSymbols(blocks).keys()];
-    expect(keys).not.toContain('cli_flag:--compact');
-    expect(keys).toContain('cli_flag:--continue');
+  it('drops the phantom `--compact` when written as prose (the /compact command)', () => {
+    for (const bullet of [
+      '- Fixed `--continue` not resuming after `--compact`',
+      '- Improved messaging shown during `--compact`',
+    ]) {
+      const keys = [...collectChangelogSymbols([{ version: '2.1.72', bullets: [bullet] }]).keys()];
+      expect(keys).not.toContain('cli_flag:--compact');
+    }
   });
 
-  it('keeps `--compact` when a bullet introduces it, incl. natural "supports" wording', () => {
+  it('keeps `--compact` when a bullet introduces it, across natural wording', () => {
     for (const bullet of [
       '- Added a `--compact` flag to shrink output',
       '- Now supports `--compact` mode',
-      '- Supports `--compact` natively',
+      '- Expose `--compact` as a standalone CLI flag',
+      '- Make `--compact` available for scripting',
+      '- `--compact`: new flag for compact output',
     ]) {
       const keys = [...collectChangelogSymbols([{ version: '2.1.80', bullets: [bullet] }]).keys()];
       expect(keys).toContain('cli_flag:--compact');

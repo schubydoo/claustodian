@@ -341,11 +341,12 @@ export function subprocessFlagExamples(bullet: string): ReadonlySet<string> {
   if (!isSubprocessFlagBullet(bullet)) {
     return flags;
   }
-  // isSubprocessFlagBullet guarantees an "(e.g., …)" clause; take from it to the
-  // end of the bullet (the example list is always bullet-terminal) so only the
-  // example flags are captured — a real first-party flag earlier in the bullet
-  // sits before the clause and is left for normal extraction.
-  const clause = bullet.slice(bullet.toLowerCase().indexOf('(e.g.,'));
+  // isSubprocessFlagBullet guarantees an "(e.g., …)" clause. Bound the clause to
+  // its closing ")" so only the example flags are captured — a real first-party
+  // flag before OR after the parenthetical is left for normal extraction.
+  const start = bullet.toLowerCase().indexOf('(e.g.,');
+  const close = bullet.indexOf(')', start);
+  const clause = bullet.slice(start, close === -1 ? undefined : close + 1);
   for (const { symbol, type } of extractSymbols(clause)) {
     if (type === 'cli_flag') {
       flags.add(symbol);
@@ -355,29 +356,22 @@ export function subprocessFlagExamples(bullet: string): ReadonlySet<string> {
 }
 
 /**
- * Flags the changelog only ever names incidentally — never in a bullet that
- * introduces them as a flag — and which no released binary defines. Born from
- * prose that writes `--compact` for the `/compact` command ("… not resuming …
- * after `--compact`"); the real symbol is the `/compact` command (confirmed
- * absent from every released binary via the binary lane). Suppressed ONLY when
- * the bullet does not look like it introduces the flag, so a genuine future
- * introduction still lands with its real first_seen rather than being masked.
+ * Flag tokens the changelog sometimes writes as prose rather than as a real
+ * flag, and which no released binary defines. Each maps to a regex matching
+ * ONLY that phantom usage, so the token is kept by default and dropped only on
+ * a match — we would rather keep a real flag than mask one.
+ *
+ * `--compact`: the changelog writes it for the `/compact` command / compaction
+ * *event* ("… not resuming … after `--compact`") — always as the object of a
+ * preposition, never introduced as a flag. The real symbol is the `/compact`
+ * command (confirmed absent from every released binary via the binary lane).
+ * The regex matches the token only when a preposition immediately precedes it,
+ * so a genuine introduction ("Added `--compact`", "Expose `--compact` as a
+ * flag", "`--compact`: new flag") is left untouched and keeps its first_seen.
  */
-const PHANTOM_FLAGS_UNLESS_INTRODUCED: ReadonlySet<string> = new Set(['--compact']);
-
-/**
- * Deliberately broader than isIntroducingBullet (which also gates first_seen
- * confidence and must stay stable): also recognizes "supports"/"now supports"/
- * "enables" and other natural introduction wording. Used only as the *keep*
- * condition for PHANTOM_FLAGS_UNLESS_INTRODUCED — we would rather keep a real
- * flag than mask it, so this errs toward "introducing".
- */
-const FLAG_INTRODUCTION_RE =
-  /^\s*(add(s|ed)?|new|introduce[sd]?|(now )?support(s|ed|ing)?|enable[sd]?|allows?)\b/i;
-
-function introducesFlag(bullet: string): boolean {
-  return FLAG_INTRODUCTION_RE.test(bulletDescription(bullet));
-}
+const PHANTOM_FLAG_PROSE_USAGE: ReadonlyMap<string, RegExp> = new Map([
+  ['--compact', /\b(?:after|before|during|following|upon|from|on|via)\s+`--compact`/i],
+]);
 
 interface CollectedSymbol {
   record: SymbolRecord;
@@ -407,10 +401,11 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
           if (subprocessExampleFlags.has(symbol)) {
             continue;
           }
-          // Phantom flag the changelog only names incidentally — drop it unless
-          // this bullet looks like it introduces the flag (see
-          // PHANTOM_FLAGS_UNLESS_INTRODUCED / introducesFlag).
-          if (PHANTOM_FLAGS_UNLESS_INTRODUCED.has(symbol) && !introducesFlag(bullet)) {
+          // Phantom flag the changelog writes as prose (e.g. `--compact` for the
+          // /compact command) — drop it only in that incidental usage, never
+          // when the bullet actually introduces it (see PHANTOM_FLAG_PROSE_USAGE).
+          const phantomUsage = PHANTOM_FLAG_PROSE_USAGE.get(symbol);
+          if (phantomUsage !== undefined && phantomUsage.test(bullet)) {
             continue;
           }
         }
