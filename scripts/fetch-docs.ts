@@ -163,6 +163,42 @@ export function buildDocsIndex(pages: Array<{ page: string; markdown: string }>)
   };
 }
 
+/** The official docs page slugs. A `doc_page` outside this set is not first-party. */
+export const OFFICIAL_DOC_PAGES: ReadonlySet<string> = new Set(DOC_PAGES);
+
+/** The exact `source_pages` a fetch-docs-produced index carries. */
+export function officialSourcePages(): string[] {
+  return DOC_PAGES.map((p) => `${DOCS_BASE}${p}.md`);
+}
+
+/**
+ * Provenance guard for a docs index: its `source_pages` must be exactly the
+ * official Claude Code docs URLs and every `doc_page` must be an official page
+ * slug. This keeps the `docs` provenance lane honest — an arbitrary `--docs`
+ * file can't be published as `provenance: "docs"` with fabricated official
+ * source URLs; only the committed output of `fetch-docs` passes.
+ */
+export function assertOfficialDocs(docs: DocsIndex): void {
+  const expected = officialSourcePages();
+  const sourcesMatch =
+    docs.source_pages.length === expected.length &&
+    expected.every((url, i) => docs.source_pages[i] === url);
+  if (!sourcesMatch) {
+    throw new Error(
+      'Docs index source_pages do not match the official Claude Code documentation pages ' +
+        '(code.claude.com/docs); refusing to publish it as provenance:"docs". ' +
+        'Regenerate with "npm run fetch-docs".'
+    );
+  }
+  for (const entry of docs.symbols) {
+    if (!OFFICIAL_DOC_PAGES.has(entry.doc_page)) {
+      throw new Error(
+        `Docs entry ${entry.symbol} references a non-official doc_page "${entry.doc_page}".`
+      );
+    }
+  }
+}
+
 async function fetchPage(page: string): Promise<{ page: string; markdown: string }> {
   const url = `${DOCS_BASE}${page}.md`;
   const response = await fetch(url);

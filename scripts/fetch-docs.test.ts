@@ -3,7 +3,14 @@
 
 import { readFile, rm } from 'node:fs/promises';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildDocsIndex, main, parseDocPage, symbolFromCell } from './fetch-docs.js';
+import {
+  assertOfficialDocs,
+  buildDocsIndex,
+  main,
+  officialSourcePages,
+  parseDocPage,
+  symbolFromCell,
+} from './fetch-docs.js';
 
 describe('symbolFromCell', () => {
   it('recognizes a CLI flag', () => {
@@ -144,5 +151,46 @@ describe('parseDocPage — escaped pipes', () => {
       symbol: '/advisor',
       description: 'Enable the advisor tool',
     });
+  });
+});
+
+describe('assertOfficialDocs', () => {
+  const official = officialSourcePages();
+  const entry = (doc_page: string) => ({
+    symbol: '--x',
+    type: 'cli_flag' as const,
+    description: 'x',
+    doc_min_version: null,
+    doc_page,
+  });
+
+  it('accepts an index with official source_pages and doc_pages', () => {
+    expect(() =>
+      assertOfficialDocs({
+        $generated_by: '',
+        source_pages: official,
+        symbols: [entry('cli-reference')],
+      })
+    ).not.toThrow();
+  });
+
+  it('rejects an index whose source_pages are not the official docs URLs', () => {
+    expect(() =>
+      assertOfficialDocs({
+        $generated_by: '',
+        source_pages: ['https://evil.example/docs.md'],
+        symbols: [],
+      })
+    ).toThrow(/source_pages/);
+  });
+
+  it('rejects an entry referencing a non-official doc_page', () => {
+    expect(() =>
+      assertOfficialDocs({
+        $generated_by: '',
+        source_pages: official,
+        symbols: [entry('not-a-real-page')],
+      })
+    ).toThrow(/non-official doc_page/);
   });
 });

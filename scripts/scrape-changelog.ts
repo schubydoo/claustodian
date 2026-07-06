@@ -28,7 +28,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import type { DocsIndex } from './fetch-docs.js';
+import { assertOfficialDocs, type DocsIndex } from './fetch-docs.js';
 import { isMain, loadChangelog } from './lib.js';
 
 const SOURCE_URL = 'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md';
@@ -620,6 +620,10 @@ export async function main(): Promise<number> {
   const blocks = parseChangelog(md);
   const docs = await loadDocsIndex(options.docsPath);
   assertNonEmptyDocs(docs, options.allowEmptyDocs, options.docsPath);
+  // A populated docs lane must actually be the official docs (guards --docs).
+  if (docs.symbols.length > 0) {
+    assertOfficialDocs(docs);
+  }
   const snapshots = buildEnrichedSnapshots(blocks, docs);
   const index = buildIndex(snapshots);
 
