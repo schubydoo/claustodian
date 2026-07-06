@@ -19,6 +19,7 @@ import {
   extractSymbols,
   isIntroducingBullet,
   isSubprocessFlagBullet,
+  subprocessFlagExamples,
   loadDocsIndex,
   parseChangelog,
 } from './scrape-changelog.js';
@@ -261,6 +262,17 @@ describe('isSubprocessFlagBullet', () => {
     expect(isSubprocessFlagBullet('- Added `/plugin list` with `--enabled`/`--disabled` filters')).toBe(false);
   });
 
+  it('subprocessFlagExamples returns only the flags inside the "(e.g., …)" clause', () => {
+    expect([...subprocessFlagExamples(gitBullet)].sort()).toEqual([
+      '--cherry-pick',
+      '--format',
+      '--raw',
+      '--topo-order',
+    ]);
+    // not a subprocess-flag bullet → empty
+    expect(subprocessFlagExamples('- Added a `--git-notes` flag for git integration').size).toBe(0);
+  });
+
   it('collectChangelogSymbols drops the git flags but keeps other symbols', () => {
     const blocks = [
       { version: '2.1.30', bullets: [gitBullet, '- Added `--safe-mode` and `CLAUDE_CODE_X`'] },
@@ -274,11 +286,26 @@ describe('isSubprocessFlagBullet', () => {
     expect(keys).toContain('env_var:CLAUDE_CODE_X');
   });
 
-  it('denylists the phantom `--compact` flag (it is the /compact command)', () => {
+  it('keeps a real first-party flag that shares a bullet with subprocess example flags', () => {
+    const mixed =
+      '- Added `--foo` for Claude Code and support for additional `git` flags (e.g., `--topo-order`, `--cherry-pick`)';
+    const keys = [...collectChangelogSymbols([{ version: '2.1.40', bullets: [mixed] }]).keys()];
+    expect(keys).toContain('cli_flag:--foo'); // outside the (e.g., …) clause → kept
+    expect(keys).not.toContain('cli_flag:--topo-order'); // inside → dropped
+    expect(keys).not.toContain('cli_flag:--cherry-pick');
+  });
+
+  it('drops the phantom `--compact` when only mentioned incidentally (the /compact command)', () => {
     const blocks = [{ version: '2.1.72', bullets: ['- Fixed `--continue` not resuming after `--compact`'] }];
     const keys = [...collectChangelogSymbols(blocks).keys()];
     expect(keys).not.toContain('cli_flag:--compact');
     expect(keys).toContain('cli_flag:--continue');
+  });
+
+  it('keeps `--compact` if a bullet genuinely introduces it as a flag', () => {
+    const blocks = [{ version: '2.1.80', bullets: ['- Added a `--compact` flag to shrink output'] }];
+    const keys = [...collectChangelogSymbols(blocks).keys()];
+    expect(keys).toContain('cli_flag:--compact');
   });
 });
 

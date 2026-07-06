@@ -215,11 +215,6 @@ export const SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   'README',
   'TODO',
   'FIXME',
-  // Not a Claude Code CLI flag: the changelog writes `--compact` when referring
-  // to the `/compact` command / compaction feature ("Fixed `--continue` not
-  // resuming ... after `--compact`"); no such flag exists (confirmed absent from
-  // every released binary). The real symbol is the `/compact` command.
-  '--compact',
 ]);
 
 /**
@@ -332,6 +327,46 @@ export function isSubprocessFlagBullet(bullet: string): boolean {
   return SUBPROCESS_FLAG_BULLET.test(bullet);
 }
 
+/**
+ * The `--flag` tokens a subprocess-flag bullet lists inside its trailing
+ * "(e.g., …)" example clause — the subprocess tool's own flags, which must not
+ * be extracted as Claude Code `cli_flag` symbols. Scoped to just that
+ * parenthetical (not the whole bullet), so a genuine first-party flag appearing
+ * elsewhere in the same bullet — e.g. "Added `--foo` for Claude Code and more
+ * `git` flags (e.g., `--topo-order`)" — is still recorded. Empty set for any
+ * bullet that isn't a subprocess-flag bullet.
+ */
+export function subprocessFlagExamples(bullet: string): ReadonlySet<string> {
+  const match = SUBPROCESS_FLAG_BULLET.exec(bullet);
+  if (match === null) {
+    return new Set();
+  }
+  const start = bullet.toLowerCase().indexOf('(e.g.,', match.index);
+  if (start === -1) {
+    return new Set();
+  }
+  const close = bullet.indexOf(')', start);
+  const span = bullet.slice(start, close === -1 ? bullet.length : close);
+  const flags = new Set<string>();
+  for (const { symbol, type } of extractSymbols(span)) {
+    if (type === 'cli_flag') {
+      flags.add(symbol);
+    }
+  }
+  return flags;
+}
+
+/**
+ * Flags the changelog only ever names incidentally — never in an introducing
+ * ("Added …") bullet — and which no released binary defines. Born from prose
+ * that writes `--compact` for the `/compact` command ("… not resuming … after
+ * `--compact`"); the real symbol is the `/compact` command (confirmed absent
+ * from every released binary via the binary lane). Suppressed ONLY in
+ * non-introducing bullets, so a genuine future "Added a `--compact` flag" still
+ * lands with its real first_seen rather than being globally masked.
+ */
+const PHANTOM_FLAGS_UNLESS_INTRODUCED: ReadonlySet<string> = new Set(['--compact']);
+
 interface CollectedSymbol {
   record: SymbolRecord;
   introducing: boolean;
@@ -350,19 +385,28 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
 
   for (const block of oldestFirst) {
     for (const bullet of block.bullets) {
-      const subprocessFlagBullet = isSubprocessFlagBullet(bullet);
+      const subprocessExampleFlags = subprocessFlagExamples(bullet);
+      const introducing = isIntroducingBullet(bullet);
       for (const { symbol, type } of extractSymbols(bullet)) {
-        // Flags a bullet lists as a subprocess tool's own (git's, etc.) are not
-        // Claude Code's — skip them (other symbol types in the bullet still count).
-        if (type === 'cli_flag' && subprocessFlagBullet) {
-          continue;
+        if (type === 'cli_flag') {
+          // A subprocess tool's own flags, listed in this bullet's "(e.g., …)"
+          // example clause, are not Claude Code's — skip just those (a real
+          // first-party flag elsewhere in the bullet still counts).
+          if (subprocessExampleFlags.has(symbol)) {
+            continue;
+          }
+          // Phantom flag the changelog only names incidentally — drop it unless
+          // this bullet actually introduces it (see PHANTOM_FLAGS_UNLESS_INTRODUCED).
+          if (PHANTOM_FLAGS_UNLESS_INTRODUCED.has(symbol) && !introducing) {
+            continue;
+          }
         }
         const key = `${type}:${symbol}`;
         if (known.has(key)) {
           continue;
         }
         known.set(key, {
-          introducing: isIntroducingBullet(bullet),
+          introducing,
           record: {
             symbol,
             type,
