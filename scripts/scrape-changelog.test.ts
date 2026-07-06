@@ -395,10 +395,12 @@ describe('assertNonEmptyDocs', () => {
 });
 
 describe('assertCanonicalSourcesForCommittedData', () => {
-  it('refuses --changelog when regenerating the committed data/ directory', () => {
-    expect(() => assertCanonicalSourcesForCommittedData('data', '/tmp/local.md')).toThrow(
-      /committed data\/ directory/
-    );
+  it('refuses --changelog for the committed dir under any spelling (data, data/, ./data)', () => {
+    for (const spelling of ['data', 'data/', './data', './data/']) {
+      expect(() => assertCanonicalSourcesForCommittedData(spelling, '/tmp/local.md')).toThrow(
+        /committed data\/ directory/
+      );
+    }
   });
 
   it('allows --changelog when writing to a scratch --out (as the CLI tests do)', () => {

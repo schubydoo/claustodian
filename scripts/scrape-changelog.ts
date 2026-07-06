@@ -32,13 +32,12 @@
  *                       are written (the full per-version backfill is opt-in).
  */
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
-import { assertOfficialDocs, type DocsIndex } from './fetch-docs.js';
+import { assertOfficialDocs, DOCS_BASE, type DocsIndex } from './fetch-docs.js';
 import { isMain, loadChangelog } from './lib.js';
 
 const SOURCE_URL = 'https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md';
-const DOCS_PAGE_BASE = 'https://code.claude.com/docs/en/';
 const SCHEMA_VERSION = '1.0.0';
 
 /** One version's worth of raw changelog data, as parsed from the markdown. */
@@ -472,7 +471,7 @@ export function enrichSymbols(
         confidence: hasMin ? 'high' : 'medium',
         description: entry.description,
         description_source: 'docs',
-        source_url: `${DOCS_PAGE_BASE}${entry.doc_page}.md`,
+        source_url: `${DOCS_BASE}${entry.doc_page}.md`,
         category: categorize(entry.symbol, entry.type),
       })
     );
@@ -617,7 +616,10 @@ export function assertCanonicalSourcesForCommittedData(
   outDir: string,
   changelogPath: string | undefined
 ): void {
-  if (outDir === COMMITTED_DATA_DIR && changelogPath !== undefined) {
+  // Resolve both paths so equivalent spellings (data, data/, ./data, an absolute
+  // path) are all caught, not just the literal string.
+  const writesCommittedData = resolve(outDir) === resolve(COMMITTED_DATA_DIR);
+  if (writesCommittedData && changelogPath !== undefined) {
     throw new Error(
       `Refusing to regenerate the committed ${COMMITTED_DATA_DIR}/ directory from a local ` +
         `--changelog override; the shipped dataset must come from the official CHANGELOG.md ` +

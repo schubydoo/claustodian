@@ -19,7 +19,7 @@
 import { writeFile } from 'node:fs/promises';
 import { isMain } from './lib.js';
 
-const DOCS_BASE = 'https://code.claude.com/docs/en/';
+export const DOCS_BASE = 'https://code.claude.com/docs/en/';
 
 /** Reference pages, in priority order — the first page to define a symbol wins. */
 export const DOC_PAGES = [
