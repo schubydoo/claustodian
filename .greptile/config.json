@@ -1,6 +1,5 @@
 {
   "strictness": 1,
-  "fileChangeLimit": 100,
   "triggerOnUpdates": true,
   "statusCheck": true,
   "statusCommentsEnabled": true,
@@ -16,7 +15,7 @@
   "issuesTableSection": { "included": true, "collapsible": true, "defaultOpen": false },
   "sequenceDiagramSection": { "included": true, "collapsible": true, "defaultOpen": false },
   "instructions": "Claustodian is a provenance-strict dataset: its data must come ONLY from official public sources (the Claude Code changelog and officially published release binaries), never leaked or non-public material. Guard that invariant. Question every \"temporary\" workaround that has outlived its excuse.",
-  "ignorePatterns": "package-lock.json\ndata/**\ncoverage/**\ndist/**\nsite/**",
+  "ignorePatterns": "package-lock.json\ndata/**\ncoverage/**\ndist/**",
   "rules": [
     {
       "id": "provenance-boundary",
