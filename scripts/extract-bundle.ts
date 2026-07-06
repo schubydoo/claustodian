@@ -47,14 +47,16 @@ const FLAG_EVIDENCE_WINDOW = 95;
 const COMMAND_FWD = 450;
 
 /**
- * A flag literal is Claude Code's own when, just before one of its occurrences,
- * the code registers it with commander (`.option`/`.addOption`) or inspects
- * `process.argv` for it. Both are self-referential — a subprocess/browser flag
- * never appears this way. Deliberately tight: it must be literal `process.argv`
- * (not some unrelated local/property named `argv`), and there is no bare
- * `.includes("--x")` clause, which could match a subprocess argument array.
+ * A flag literal is Claude Code's own when it is either the argument of a
+ * commander registration (`.option`/`.addOption`) or the argument of a
+ * `process.argv` membership check (`.includes`/`.indexOf`, optionally after a
+ * `.slice(n)`). Both are self-referential — a subprocess/browser flag never
+ * appears this way. The argv branch requires the flag to be *inside* the
+ * membership call, not merely near a `process.argv` token: an unrelated
+ * `process.argv.slice(2)` sitting close to a `spawn(g,["--x"])` must not count.
  */
-const FLAG_OWN_EVIDENCE = /\.(?:option|addOption)\([^)]{0,85}$|process\.argv[\s\S]{0,70}$/;
+const FLAG_OWN_EVIDENCE =
+  /\.(?:option|addOption)\([^)]{0,85}$|process\.argv(?:\.slice\(\s*\d*\s*\))?\.(?:includes|indexOf)\(\s*["'`]$/;
 
 /** `process.env.NAME` and `process.env["NAME"]` — the positive signal for env. */
 const ENV_ACCESS: readonly RegExp[] = [

@@ -40,9 +40,19 @@ describe('extractFlags — positive evidence only', () => {
     expect(flags.get('--mcp-debug')).toBe('registration');
   });
 
-  it('includes flags read from process.argv', () => {
-    const flags = extractFlags('if(process.argv.includes("--print"))doPrint();');
+  it('includes flags read from a process.argv membership check', () => {
+    const src =
+      'if(process.argv.includes("--print"))x();const i=process.argv.slice(2).indexOf("--verbose");';
+    const flags = extractFlags(src);
     expect(flags.get('--print')).toBe('argv');
+    expect(flags.get('--verbose')).toBe('argv');
+  });
+
+  it('does not treat a flag merely near an unrelated process.argv read as own', () => {
+    // process.argv.slice(2) is not a membership check for --abbrev-ref, which is
+    // a git subprocess arg — it must not be emitted with argv evidence
+    const src = 'let n=process.argv.slice(2);spawn(g,["rev-parse","--abbrev-ref","HEAD"]);';
+    expect(extractFlags(src).has('--abbrev-ref')).toBe(false);
   });
 
   it('EXCLUDES flags passed to a subprocess (no own-evidence)', () => {
