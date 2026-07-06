@@ -215,6 +215,11 @@ export const SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   'README',
   'TODO',
   'FIXME',
+  // Not a Claude Code CLI flag: the changelog writes `--compact` when referring
+  // to the `/compact` command / compaction feature ("Fixed `--continue` not
+  // resuming ... after `--compact`"); no such flag exists (confirmed absent from
+  // every released binary). The real symbol is the `/compact` command.
+  '--compact',
 ]);
 
 /**
@@ -310,6 +315,23 @@ export function isIntroducingBullet(bullet: string): boolean {
   return INTRODUCING_RE.test(bulletDescription(bullet));
 }
 
+/**
+ * A bullet that documents support for a *subprocess tool's own* flags (git's,
+ * etc.), listing them as examples — those flags belong to that tool, not Claude
+ * Code, so they must not be extracted as `cli_flag` symbols. The tell is a tool
+ * name + "flags" + an "(e.g., …)" example list, e.g. the 2.1.30 bullet "Added
+ * support for additional `git log` and `git show` flags in read-only mode (e.g.,
+ * `--topo-order`, `--cherry-pick`, `--format`, `--raw`)" — which wrongly seeded
+ * `--topo-order`/`--cherry-pick`/`--format`/`--raw` (confirmed via the binary
+ * lane, which never observes them). Deliberately narrow so it can't suppress a
+ * genuine "Added a `--foo` flag for git integration"-style bullet.
+ */
+const SUBPROCESS_FLAG_BULLET = /\b(?:git|gh|npm|node|docker|ripgrep|rg)\b[^.]*\bflags?\b[^.]*\(e\.g\.,/i;
+
+export function isSubprocessFlagBullet(bullet: string): boolean {
+  return SUBPROCESS_FLAG_BULLET.test(bullet);
+}
+
 interface CollectedSymbol {
   record: SymbolRecord;
   introducing: boolean;
@@ -328,7 +350,13 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
 
   for (const block of oldestFirst) {
     for (const bullet of block.bullets) {
+      const subprocessFlagBullet = isSubprocessFlagBullet(bullet);
       for (const { symbol, type } of extractSymbols(bullet)) {
+        // Flags a bullet lists as a subprocess tool's own (git's, etc.) are not
+        // Claude Code's — skip them (other symbol types in the bullet still count).
+        if (type === 'cli_flag' && subprocessFlagBullet) {
+          continue;
+        }
         const key = `${type}:${symbol}`;
         if (known.has(key)) {
           continue;

@@ -18,6 +18,7 @@ import {
   enrichSymbols,
   extractSymbols,
   isIntroducingBullet,
+  isSubprocessFlagBullet,
   loadDocsIndex,
   parseChangelog,
 } from './scrape-changelog.js';
@@ -244,6 +245,40 @@ describe('isIntroducingBullet', () => {
     expect(isIntroducingBullet('- New `--bar` option')).toBe(true);
     expect(isIntroducingBullet('- Fixed a crash when using `--foo`')).toBe(false);
     expect(isIntroducingBullet('- Improved `--foo` output')).toBe(false);
+  });
+});
+
+describe('isSubprocessFlagBullet', () => {
+  const gitBullet =
+    '- Added support for additional `git log` and `git show` flags in read-only mode (e.g., `--topo-order`, `--cherry-pick`, `--format`, `--raw`)';
+
+  it('flags a bullet that lists a subprocess tool’s own flags as examples', () => {
+    expect(isSubprocessFlagBullet(gitBullet)).toBe(true);
+  });
+
+  it('does not flag a genuine Claude Code flag bullet', () => {
+    expect(isSubprocessFlagBullet('- Added a `--git-notes` flag for git integration')).toBe(false);
+    expect(isSubprocessFlagBullet('- Added `/plugin list` with `--enabled`/`--disabled` filters')).toBe(false);
+  });
+
+  it('collectChangelogSymbols drops the git flags but keeps other symbols', () => {
+    const blocks = [
+      { version: '2.1.30', bullets: [gitBullet, '- Added `--safe-mode` and `CLAUDE_CODE_X`'] },
+    ];
+    const keys = [...collectChangelogSymbols(blocks).keys()];
+    for (const f of ['--topo-order', '--cherry-pick', '--format', '--raw']) {
+      expect(keys).not.toContain(`cli_flag:${f}`);
+    }
+    // a real flag / env var in the same block is unaffected
+    expect(keys).toContain('cli_flag:--safe-mode');
+    expect(keys).toContain('env_var:CLAUDE_CODE_X');
+  });
+
+  it('denylists the phantom `--compact` flag (it is the /compact command)', () => {
+    const blocks = [{ version: '2.1.72', bullets: ['- Fixed `--continue` not resuming after `--compact`'] }];
+    const keys = [...collectChangelogSymbols(blocks).keys()];
+    expect(keys).not.toContain('cli_flag:--compact');
+    expect(keys).toContain('cli_flag:--continue');
   });
 });
 
