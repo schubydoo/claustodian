@@ -9,6 +9,9 @@ node_modules/
 dist/
 coverage/
 
+# JUnit test report (emitted in CI for Codecov Test Analytics)
+test-report.junit.xml
+
 # Generated data exports (built in CI from committed JSON, never hand-edited)
 data/**/*.yaml
 data/**/*.toml
