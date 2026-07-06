@@ -183,6 +183,16 @@
         color: var(--cmd);
         font-weight: 600;
       }
+      .est {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--muted);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 0 0.35rem;
+        cursor: help;
+      }
       footer {
         margin-top: 2.5rem;
         padding-top: 1rem;
@@ -253,7 +263,10 @@
         <p>
           A symbol is available in version Y when <code>first_seen &le; Y</code> and it hasn't been
           removed. <code>first_seen</code> is the earliest version Claustodian <em>observed</em> a
-          symbol, not a guarantee of its true origin.
+          symbol, not a guarantee of its true origin. An <span class="est">est.</span> marker means
+          <code>first_seen</code> is an upper bound — the symbol was documented or mentioned only
+          incidentally, so its true introduction is unconfirmed (the binary lane will pin it).
+          Descriptions come from Anthropic's official docs where available.
         </p>
         <p>
           Raw data: <a href="data/latest.json">latest.json</a> ·
@@ -310,10 +323,15 @@
 
         const life = document.createElement('span');
         life.className = 'lifecycle';
+        // "since X" is a confirmed introduction; "by X" is an upper bound
+        // (first_seen_estimated — the true introduction is unconfirmed).
+        const seen = sym.first_seen_estimated
+          ? `by ${sym.first_seen} <span class="est" title="first_seen is an upper bound (estimated); the binary lane will confirm it">est.</span>`
+          : `since ${sym.first_seen}`;
         if (sym.removed_in) {
-          life.innerHTML = `since ${sym.first_seen} · <span class="removed">removed ${sym.removed_in}</span>`;
+          life.innerHTML = `${seen} · <span class="removed">removed ${sym.removed_in}</span>`;
         } else {
-          life.textContent = `since ${sym.first_seen}`;
+          life.innerHTML = seen;
         }
         row.appendChild(life);
         li.appendChild(row);
