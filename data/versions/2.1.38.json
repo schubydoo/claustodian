@@ -56,19 +56,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--cherry-pick",
-      "type": "cli_flag",
-      "first_seen": "2.1.30",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Added support for additional `git log` and `git show` flags in read-only mode (e.g., `--topo-order`, `--cherry-pick`, `--format`, `--raw`)",
-      "description_source": "changelog",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--client-id",
       "type": "cli_flag",
       "first_seen": "2.1.30",
@@ -132,19 +119,6 @@
       "confidence": "high",
       "description": "When resuming, create a new session ID instead of reusing the original (use with `--resume` or `--continue`)",
       "description_source": "docs",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
-      "symbol": "--format",
-      "type": "cli_flag",
-      "first_seen": "2.1.30",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Added support for additional `git log` and `git show` flags in read-only mode (e.g., `--topo-order`, `--cherry-pick`, `--format`, `--raw`)",
-      "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -229,19 +203,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--raw",
-      "type": "cli_flag",
-      "first_seen": "2.1.30",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Added support for additional `git log` and `git show` flags in read-only mode (e.g., `--topo-order`, `--cherry-pick`, `--format`, `--raw`)",
-      "description_source": "changelog",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--replay-user-messages",
       "type": "cli_flag",
       "first_seen": "1.0.86",
@@ -320,19 +281,6 @@
       "confidence": "high",
       "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for all, or tool names like `\"Bash,Edit,Read\"`. MCP tools are not affected; to deny those too, use `--disallowedTools \"mcp__*\"`, or pass `--strict-mcp-config` without `--mcp-config` so no MCP servers load",
       "description_source": "docs",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
-      "symbol": "--topo-order",
-      "type": "cli_flag",
-      "first_seen": "2.1.30",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Added support for additional `git log` and `git show` flags in read-only mode (e.g., `--topo-order`, `--cherry-pick`, `--format`, `--raw`)",
-      "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },

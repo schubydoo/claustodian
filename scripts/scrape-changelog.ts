@@ -310,6 +310,69 @@ export function isIntroducingBullet(bullet: string): boolean {
   return INTRODUCING_RE.test(bulletDescription(bullet));
 }
 
+/**
+ * A bullet that documents support for a *subprocess tool's own* flags (git's,
+ * etc.), listing them as examples — those flags belong to that tool, not Claude
+ * Code, so they must not be extracted as `cli_flag` symbols. The tell is a tool
+ * name + "flags" + an "(e.g., …)" example list, e.g. the 2.1.30 bullet "Added
+ * support for additional `git log` and `git show` flags in read-only mode (e.g.,
+ * `--topo-order`, `--cherry-pick`, `--format`, `--raw`)" — which wrongly seeded
+ * `--topo-order`/`--cherry-pick`/`--format`/`--raw` (confirmed via the binary
+ * lane, which never observes them). Deliberately narrow so it can't suppress a
+ * genuine "Added a `--foo` flag for git integration"-style bullet.
+ */
+const SUBPROCESS_FLAG_BULLET = /\b(?:git|gh|npm|node|docker|ripgrep|rg)\b[^.]*\bflags?\b[^.]*\(e\.g\.,/i;
+
+export function isSubprocessFlagBullet(bullet: string): boolean {
+  return SUBPROCESS_FLAG_BULLET.test(bullet);
+}
+
+/**
+ * The `--flag` tokens a subprocess-flag bullet lists inside its trailing
+ * "(e.g., …)" example clause — the subprocess tool's own flags, which must not
+ * be extracted as Claude Code `cli_flag` symbols. Scoped to just that
+ * parenthetical (not the whole bullet), so a genuine first-party flag appearing
+ * elsewhere in the same bullet — e.g. "Added `--foo` for Claude Code and more
+ * `git` flags (e.g., `--topo-order`)" — is still recorded. Empty set for any
+ * bullet that isn't a subprocess-flag bullet.
+ */
+export function subprocessFlagExamples(bullet: string): ReadonlySet<string> {
+  const flags = new Set<string>();
+  if (!isSubprocessFlagBullet(bullet)) {
+    return flags;
+  }
+  // isSubprocessFlagBullet guarantees an "(e.g., …)" clause. Bound the clause to
+  // its closing ")" so only the example flags are captured — a real first-party
+  // flag before OR after the parenthetical is left for normal extraction.
+  const start = bullet.toLowerCase().indexOf('(e.g.,');
+  const close = bullet.indexOf(')', start);
+  const clause = bullet.slice(start, close === -1 ? undefined : close + 1);
+  for (const { symbol, type } of extractSymbols(clause)) {
+    if (type === 'cli_flag') {
+      flags.add(symbol);
+    }
+  }
+  return flags;
+}
+
+/**
+ * Flag tokens the changelog sometimes writes as prose rather than as a real
+ * flag, and which no released binary defines. Each maps to a regex matching
+ * ONLY that phantom usage, so the token is kept by default and dropped only on
+ * a match — we would rather keep a real flag than mask one.
+ *
+ * `--compact`: the changelog writes it for the `/compact` command / compaction
+ * *event* ("… not resuming … after `--compact`") — always as the object of a
+ * preposition, never introduced as a flag. The real symbol is the `/compact`
+ * command (confirmed absent from every released binary via the binary lane).
+ * The regex matches the token only when a preposition immediately precedes it,
+ * so a genuine introduction ("Added `--compact`", "Expose `--compact` as a
+ * flag", "`--compact`: new flag") is left untouched and keeps its first_seen.
+ */
+const PHANTOM_FLAG_PROSE_USAGE: ReadonlyMap<string, RegExp> = new Map([
+  ['--compact', /\b(?:after|before|during|following|upon|from|on|via)\s+`--compact`/i],
+]);
+
 interface CollectedSymbol {
   record: SymbolRecord;
   introducing: boolean;
@@ -328,13 +391,30 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
 
   for (const block of oldestFirst) {
     for (const bullet of block.bullets) {
+      const subprocessExampleFlags = subprocessFlagExamples(bullet);
+      const introducing = isIntroducingBullet(bullet);
       for (const { symbol, type } of extractSymbols(bullet)) {
+        if (type === 'cli_flag') {
+          // A subprocess tool's own flags, listed in this bullet's "(e.g., …)"
+          // example clause, are not Claude Code's — skip just those (a real
+          // first-party flag elsewhere in the bullet still counts).
+          if (subprocessExampleFlags.has(symbol)) {
+            continue;
+          }
+          // Phantom flag the changelog writes as prose (e.g. `--compact` for the
+          // /compact command) — drop it only in that incidental usage, never
+          // when the bullet actually introduces it (see PHANTOM_FLAG_PROSE_USAGE).
+          const phantomUsage = PHANTOM_FLAG_PROSE_USAGE.get(symbol);
+          if (phantomUsage !== undefined && phantomUsage.test(bullet)) {
+            continue;
+          }
+        }
         const key = `${type}:${symbol}`;
         if (known.has(key)) {
           continue;
         }
         known.set(key, {
-          introducing: isIntroducingBullet(bullet),
+          introducing,
           record: {
             symbol,
             type,

@@ -5,13 +5,17 @@
 /**
  * Coverage gate for Claustodian.
  *
- * Every symbol mentioned in the upstream changelog should show up somewhere
- * in the committed dataset. This script re-parses the changelog with the
- * same extraction logic the scraper uses (`parseChangelog` + `extractSymbols`
- * from `scrape-changelog.ts`) and reports any `type:symbol` that the scraper
- * silently failed to carry into the dataset — the CI guard against a
- * regression in the scraper (or a hand-edited dataset) quietly dropping
- * symbols the changelog documents.
+ * Every symbol the scraper extracts from the upstream changelog should show up
+ * somewhere in the committed dataset. This script re-parses the changelog with
+ * the *same* symbol-inclusion logic the scraper uses (`parseChangelog` +
+ * `collectChangelogSymbols` from `scrape-changelog.ts`) and reports any
+ * `type:symbol` that the scraper silently failed to carry into the dataset —
+ * the CI guard against a regression in the scraper (or a hand-edited dataset)
+ * quietly dropping symbols the changelog documents. Using
+ * `collectChangelogSymbols` (rather than the broader raw `extractSymbols`) keeps
+ * this gate in agreement with what the scraper legitimately excludes — a
+ * subprocess tool's own example flags (git's, etc.) and phantom flags — so it
+ * doesn't demand symbols that aren't Claude Code's.
  *
  * Usage:
  *   tsx scripts/check-coverage.ts [--changelog <path>] [--dataset <path>]
@@ -24,7 +28,7 @@
 import { readFile } from 'node:fs/promises';
 
 import { isMain, loadChangelog } from './lib.js';
-import { extractSymbols, parseChangelog } from './scrape-changelog.js';
+import { collectChangelogSymbols, parseChangelog } from './scrape-changelog.js';
 import type { SymbolRecord } from './scrape-changelog.js';
 
 export interface MissingSymbol {
@@ -54,21 +58,14 @@ export function findMissingCoverage(
   const known = new Set(datasetSymbols.map((record) => keyFor(record.symbol, record.type)));
 
   const blocks = parseChangelog(changelogMd);
-  const seen = new Set<string>();
   const missing: MissingSymbol[] = [];
 
-  for (const block of blocks) {
-    for (const bullet of block.bullets) {
-      for (const { symbol, type } of extractSymbols(bullet)) {
-        const key = keyFor(symbol, type);
-        if (seen.has(key)) {
-          continue;
-        }
-        seen.add(key);
-        if (!known.has(key)) {
-          missing.push({ symbol, type });
-        }
-      }
+  // collectChangelogSymbols already dedupes (first appearance wins) and applies
+  // the scraper's exclusions, so we just diff its symbol set against the dataset.
+  for (const { record } of collectChangelogSymbols(blocks).values()) {
+    const key = keyFor(record.symbol, record.type);
+    if (!known.has(key)) {
+      missing.push({ symbol: record.symbol, type: record.type });
     }
   }
 
