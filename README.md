@@ -9,6 +9,7 @@
 
 [![Validate PR](https://github.com/schubydoo/claustodian/actions/workflows/validate-pr.yml/badge.svg)](https://github.com/schubydoo/claustodian/actions/workflows/validate-pr.yml)
 [![Security](https://github.com/schubydoo/claustodian/actions/workflows/security.yml/badge.svg)](https://github.com/schubydoo/claustodian/actions/workflows/security.yml)
+[![codecov](https://codecov.io/gh/schubydoo/claustodian/branch/main/graph/badge.svg)](https://codecov.io/gh/schubydoo/claustodian)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/schubydoo/claustodian/badge)](https://scorecard.dev/viewer/?uri=github.com/schubydoo/claustodian)
 [![Code: Apache-2.0](https://img.shields.io/badge/code-Apache--2.0-blue.svg)](LICENSE)
 [![Data: CC BY 4.0](https://img.shields.io/badge/data-CC--BY--4.0-blue.svg)](LICENSE-DATA)
