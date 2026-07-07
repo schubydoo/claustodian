@@ -48,8 +48,11 @@ const FLAG_EVIDENCE_WINDOW = 95;
 const COMMAND_FWD = 450;
 /** Cap on how far *before* a `type:` marker to read a command's fields, for the
  * "type-last" objects where name/description precede type (e.g. /vim, /rewind).
- * Bounded and stopped at the previous object's closing brace so no bleed-in. */
-const COMMAND_BACK = 300;
+ * Bounded and stopped at the object's own opening brace (depth-aware) so no
+ * bleed-in. Sized to clear a computed-description getter body between `name:` and
+ * a trailing `type:` — e.g. `/sandbox`, whose `get description(){…}` puts `name:`
+ * ~626 chars back; a tighter cap silently dropped it (see extract-bundle.test). */
+const COMMAND_BACK = 700;
 
 /**
  * A flag literal is Claude Code's own when the code positively inspects it —

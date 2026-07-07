@@ -161,6 +161,18 @@ describe('extractCommands — registry objects', () => {
     expect(extractCommands(src).get('/vim')).toBe('toggle');
   });
 
+  it('recovers a type-last command whose long get-description() getter pushes name past the back-window', () => {
+    // real /sandbox shape: a computed `get description(){…}` (~480 chars) sits
+    // between `name:` and a trailing `type:"local-jsx"`, putting `name:` ~520
+    // chars back — beyond the old COMMAND_BACK=300 that silently dropped it.
+    const getter =
+      'get description(){let s="sandbox";' + 'if(cond)s+=" enabled";'.repeat(20) + 'return s}';
+    const src = `{name:"sandbox",${getter},argumentHint:'exclude',immediate:!0,type:"local-jsx",load:()=>y}`;
+    const cmds = extractCommands(src);
+    expect(cmds.has('/sandbox')).toBe(true);
+    expect(cmds.get('/sandbox')).toBeUndefined(); // computed getter → no static description
+  });
+
   it('keeps a forward description for a "type-middle" object (name before, description after)', () => {
     // {name:…,type:…,description:…}: name precedes the marker (→ backward scan),
     // but the description follows it (→ forward window); the backward branch must
