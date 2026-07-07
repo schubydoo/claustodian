@@ -17,8 +17,14 @@
  *   - flags   — commander registration (`.option`/`.addOption`) OR argv
  *               inspection (`process.argv.includes/indexOf("--foo")`). A git or
  *               browser flag never appears in either.
- *   - env     — `process.env.X` access. Categorized (own / provider / noise) via
- *               the shared classifier; obvious noise dropped via the denylist.
+ *   - env     — `process.env.X` access, OR an accessor-map getter entry
+ *               `NAME:()=>…` (CC reads many vars through a generated getter map,
+ *               not inline). The map shape alone is not proof — it also holds
+ *               non-env constants (`NEVER`, `NUMBER_FORMAT_RANGES`: ~43% of
+ *               matches) — so accessor-map entries are admitted ONLY when the
+ *               classifier rates them first-party `claude-code` (CLAUDE_/ANTHROPIC_).
+ *               All env symbols are categorized (own / provider / noise); noise
+ *               dropped via the denylist.
  *   - command — the command-registry objects `{type,name,description,…}`; these
  *               are explicit definitions, and the description comes free.
  *
@@ -29,7 +35,12 @@ import { categorize, SYMBOL_DENYLIST, type ExtractedSymbolType } from './scrape-
 
 /** How a candidate earned inclusion — recorded so the review queue can triage. */
 export type Evidence =
-  'registration' | 'argv' | 'process-env' | 'command-registry' | 'skill-registry';
+  | 'registration'
+  | 'argv'
+  | 'process-env'
+  | 'accessor-map'
+  | 'command-registry'
+  | 'skill-registry';
 
 export interface BundleSymbol {
   symbol: string;
@@ -48,26 +59,43 @@ const FLAG_EVIDENCE_WINDOW = 95;
 const COMMAND_FWD = 450;
 /** Cap on how far *before* a `type:` marker to read a command's fields, for the
  * "type-last" objects where name/description precede type (e.g. /vim, /rewind).
- * Bounded and stopped at the previous object's closing brace so no bleed-in. */
-const COMMAND_BACK = 300;
+ * Bounded and stopped at the object's own opening brace (depth-aware) so no
+ * bleed-in. Sized to clear a computed-description getter body between `name:` and
+ * a trailing `type:` — e.g. `/sandbox`, whose `get description(){…}` puts `name:`
+ * ~626 chars back; a tighter cap silently dropped it (see extract-bundle.test). */
+const COMMAND_BACK = 700;
 
 /**
- * A flag literal is Claude Code's own when it is either the argument of a
- * commander registration (`.option`/`.addOption`) or the argument of a
- * `process.argv` membership check (`.includes`/`.indexOf`, optionally after a
- * `.slice(n)`). Both are self-referential — a subprocess/browser flag never
- * appears this way. The argv branch requires the flag to be *inside* the
- * membership call, not merely near a `process.argv` token: an unrelated
- * `process.argv.slice(2)` sitting close to a `spawn(g,["--x"])` must not count.
+ * A flag literal is Claude Code's own when the code positively inspects it —
+ * one of:
+ *   - commander registration: `.option(…)` / `.addOption(…)` (the flag is the arg);
+ *   - `process.argv` membership: `.includes`/`.indexOf` (optionally after `.slice(n)`);
+ *   - args-array predicate: `.find`/`.some`/`.filter((o)=>o==="--flag" …)`, including
+ *     `||`/`&&`-chained comparisons in the same predicate (e.g.
+ *     `t.slice(1).find((o)=>o==="--enabled"||o==="--disabled")`).
+ * All are self-referential — a subprocess/browser flag never appears this way.
+ * Each branch requires the flag to be *inside* the check, not merely near it:
+ * an unrelated `process.argv.slice(2)` next to a `spawn(g,["--x"])` must not
+ * count, and a foreign flag array literal (`new RegExp(["--write","--fix"])`)
+ * has no membership call or `===` comparison, so it is correctly ignored.
  */
 const FLAG_OWN_EVIDENCE =
-  /\.(?:option|addOption)\([^)]{0,85}$|process\.argv(?:\.slice\(\s*\d*\s*\))?\.(?:includes|indexOf)\(\s*["'`]$/;
+  /\.(?:option|addOption)\([^)]{0,85}$|process\.argv(?:\.slice\(\s*\d*\s*\))?\.(?:includes|indexOf)\(\s*["'`]$|\.(?:find|some|filter)\([\s\S]{0,80}?\b\w+\s*===?\s*["'`]$/;
 
 /** `process.env.NAME` and `process.env["NAME"]` — the positive signal for env. */
 const ENV_ACCESS: readonly RegExp[] = [
   /process\.env\.([A-Z][A-Z0-9_]+)/g,
   /process\.env\[\s*["'`]([A-Z][A-Z0-9_]+)["'`]/g,
 ];
+
+/**
+ * Accessor-map getter entry `{ …, NAME:()=>fn, … }` — CC exposes many env vars
+ * through a generated getter map rather than reading `process.env.NAME` inline.
+ * Anchored to an object-key position (`{`/`,` before the name) so it can't match
+ * mid-identifier. The value is a zero-arg arrow; what follows is unconstrained
+ * (`()=>x` or `()=>{…}`).
+ */
+const ENV_ACCESSOR = /[{,]\s*([A-Z][A-Z0-9_]{2,}):\s*\(\)\s*=>/g;
 
 /** Command-registry object marker: `type:"local"|"prompt"|"local-jsx"`. */
 const COMMAND_TYPE = /type:\s*["'`](?:local|prompt|local-jsx)["'`]/g;
@@ -110,6 +138,27 @@ export function extractEnvVars(src: string): Map<string, string> {
       if (!name || SYMBOL_DENYLIST.has(name)) continue;
       out.set(name, categorize(name, 'env_var'));
     }
+  }
+  return out;
+}
+
+/**
+ * Env vars CC reads through an accessor-map getter (`NAME:()=>…`). Admitted ONLY
+ * when the classifier rates the name first-party `claude-code` — the getter map
+ * also holds unrelated ALL-CAPS constants (~43% of raw matches: `NEVER`,
+ * `BROWSER_TOOLS`, `NUMBER_FORMAT_RANGES`, …), and the getter body (a minified
+ * ref) does not itself prove a `process.env` read. The `claude-code` gate is the
+ * positive first-party signal that keeps this provenance-clean; everything else
+ * is left to the direct `process.env.X` path or dropped.
+ */
+export function extractAccessorEnvVars(src: string): Map<string, string> {
+  const out = new Map<string, string>(); // symbol -> category
+  for (const m of src.matchAll(ENV_ACCESSOR)) {
+    const name = m[1];
+    if (!name || SYMBOL_DENYLIST.has(name)) continue;
+    const category = categorize(name, 'env_var');
+    if (category !== 'claude-code') continue;
+    out.set(name, category);
   }
   return out;
 }
@@ -247,8 +296,15 @@ export function extractSkillCommands(src: string): Map<string, string | undefine
 /** Full extraction: every own-evidenced symbol, sorted by type then symbol. */
 export function extractBundleSymbols(src: string): BundleSymbol[] {
   const symbols: BundleSymbol[] = [];
-  for (const [symbol, category] of extractEnvVars(src)) {
+  const envReads = extractEnvVars(src);
+  for (const [symbol, category] of envReads) {
     symbols.push({ symbol, type: 'env_var', category, evidence: 'process-env' });
+  }
+  // Accessor-map getters fill in first-party env vars CC never reads inline. A
+  // direct `process.env.X` read is the stronger signal, so it wins when both exist.
+  for (const [symbol, category] of extractAccessorEnvVars(src)) {
+    if (envReads.has(symbol)) continue;
+    symbols.push({ symbol, type: 'env_var', category, evidence: 'accessor-map' });
   }
   for (const [symbol, evidence] of extractFlags(src)) {
     symbols.push({ symbol, type: 'cli_flag', category: categorize(symbol, 'cli_flag'), evidence });

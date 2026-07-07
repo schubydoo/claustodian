@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  extractAccessorEnvVars,
   extractBundleSymbols,
   extractCommands,
   extractEnvVars,
@@ -33,6 +34,39 @@ describe('extractEnvVars', () => {
   });
 });
 
+describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
+  it('captures claude-code NAME:()=> getter entries', () => {
+    const env = extractAccessorEnvVars('let E={CLAUDE_CODE_FOO:()=>x,ANTHROPIC_BAR:()=>y};');
+    expect(env.get('CLAUDE_CODE_FOO')).toBe('claude-code');
+    expect(env.get('ANTHROPIC_BAR')).toBe('claude-code');
+  });
+
+  it('gates out non-first-party getters (constants + provider vars)', () => {
+    // the real accessor map also holds ALL-CAPS constants and provider vars;
+    // the claude-code gate must exclude every one of them.
+    const env = extractAccessorEnvVars('{NEVER:()=>0,BROWSER_TOOLS:()=>t,NODE_OPTIONS:()=>o,AWS_REGION:()=>r}');
+    expect(env.size).toBe(0);
+  });
+
+  it('still applies the denylist', () => {
+    expect(extractAccessorEnvVars('{JSON:()=>0,CLAUDE_REAL:()=>1}').has('JSON')).toBe(false);
+  });
+
+  it('anchors to object-key position, not mid-identifier', () => {
+    expect(extractAccessorEnvVars('{a:1,CLAUDE_CODE_X:()=>1}').has('CLAUDE_CODE_X')).toBe(true);
+    expect(extractAccessorEnvVars('{myCLAUDE_CODE_Y:()=>1}').has('CLAUDE_CODE_Y')).toBe(false);
+  });
+
+  it('tags accessor-map-only vars in the bundle; a direct read wins and is not duplicated', () => {
+    const src =
+      'process.env.CLAUDE_CODE_READ;let E={CLAUDE_CODE_READ:()=>1,CLAUDE_CODE_GETTER_ONLY:()=>2};';
+    const syms = extractBundleSymbols(src);
+    expect(syms.find((x) => x.symbol === 'CLAUDE_CODE_READ')?.evidence).toBe('process-env');
+    expect(syms.find((x) => x.symbol === 'CLAUDE_CODE_GETTER_ONLY')?.evidence).toBe('accessor-map');
+    expect(syms.filter((x) => x.symbol === 'CLAUDE_CODE_READ')).toHaveLength(1);
+  });
+});
+
 describe('extractFlags — positive evidence only', () => {
   it('includes flags registered with commander (.option / .addOption)', () => {
     const src = '.option("--fallback-model <m>","use m").addOption(new e7("--mcp-debug"))';
@@ -47,6 +81,24 @@ describe('extractFlags — positive evidence only', () => {
     const flags = extractFlags(src);
     expect(flags.get('--print')).toBe('argv');
     expect(flags.get('--verbose')).toBe('argv');
+  });
+
+  it('includes flags checked via a .find/.some/.filter args predicate (incl. ||-chained)', () => {
+    // the exact minified shape from the bundle for `claude mcp ls --enabled/--disabled`
+    const src = 'let n=t.slice(1).find((o)=>o==="--enabled"||o==="--disabled");';
+    const flags = extractFlags(src);
+    expect(flags.get('--enabled')).toBe('argv');
+    expect(flags.get('--disabled')).toBe('argv');
+  });
+
+  it('does not treat a foreign flag array/regex literal as own-evidence', () => {
+    // formatter-detection regex from the bundle: a bare array of third-party tool
+    // flags with no membership call or `===` comparison — must be ignored.
+    const src = 'Cef=new RegExp(["--write","--fix","--in-place","--auto-correct"]);';
+    const flags = extractFlags(src);
+    expect(flags.has('--fix')).toBe(false);
+    expect(flags.has('--write')).toBe(false);
+    expect(flags.has('--in-place')).toBe(false);
   });
 
   it('does not treat a flag merely near an unrelated process.argv read as own', () => {
@@ -141,6 +193,18 @@ describe('extractCommands — registry objects', () => {
   it('handles a type-last object with a block-body field before the marker', () => {
     const src = '{name:"vim",isEnabled:()=>{return on},description:"toggle",type:"local"}';
     expect(extractCommands(src).get('/vim')).toBe('toggle');
+  });
+
+  it('recovers a type-last command whose long get-description() getter pushes name past the back-window', () => {
+    // real /sandbox shape: a computed `get description(){…}` (~480 chars) sits
+    // between `name:` and a trailing `type:"local-jsx"`, putting `name:` ~520
+    // chars back — beyond the old COMMAND_BACK=300 that silently dropped it.
+    const getter =
+      'get description(){let s="sandbox";' + 'if(cond)s+=" enabled";'.repeat(20) + 'return s}';
+    const src = `{name:"sandbox",${getter},argumentHint:'exclude',immediate:!0,type:"local-jsx",load:()=>y}`;
+    const cmds = extractCommands(src);
+    expect(cmds.has('/sandbox')).toBe(true);
+    expect(cmds.get('/sandbox')).toBeUndefined(); // computed getter → no static description
   });
 
   it('keeps a forward description for a "type-middle" object (name before, description after)', () => {
