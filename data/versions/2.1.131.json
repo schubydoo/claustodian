@@ -2052,12 +2052,11 @@
     {
       "symbol": "/doctor",
       "type": "command",
-      "first_seen": "2.0.12",
-      "first_seen_estimated": true,
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Diagnose and verify your Claude Code installation and settings. Results show with status icons. Press `f` to have Claude fix any reported issues",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
@@ -2643,7 +2642,7 @@
     {
       "symbol": "/release-notes",
       "type": "command",
-      "first_seen": "2.1.84",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",

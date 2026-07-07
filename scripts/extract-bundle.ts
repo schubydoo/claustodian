@@ -143,26 +143,59 @@ export function extractFlags(src: string): Map<string, Evidence> {
  * Each direction stops at an object boundary so an adjacent command can't bleed
  * in. Names are slash-less in source; we restore the `/`.
  */
+
+/** Index of the object's own closing brace, scanning forward from inside it at
+ * `from`; brace-depth-aware so inner `{…}` (block-body fields) don't end it
+ * early. Returns `cap` (clamped to the source length) if no such brace is found. */
+function objectCloseFrom(src: string, from: number, cap: number): number {
+  const limit = Math.min(cap, src.length);
+  let depth = 0;
+  for (let i = from; i < limit; i++) {
+    const c = src[i];
+    if (c === '{') depth++;
+    else if (c === '}') {
+      if (depth === 0) return i;
+      depth--;
+    }
+  }
+  return limit;
+}
+
+/** Index just inside the object's own opening brace, scanning backward from
+ * inside it at `to`; brace-depth-aware. Returns `floor` (clamped to 0) if no
+ * such brace is found. */
+function objectOpenFrom(src: string, to: number, floor: number): number {
+  const limit = Math.max(floor, 0);
+  let depth = 0;
+  for (let i = to - 1; i >= limit; i--) {
+    const c = src[i];
+    if (c === '}') depth++;
+    else if (c === '{') {
+      if (depth === 0) return i + 1;
+      depth--;
+    }
+  }
+  return limit;
+}
+
 export function extractCommands(src: string): Map<string, string | undefined> {
   const out = new Map<string, string | undefined>(); // "/name" -> description
   for (const anchor of src.matchAll(COMMAND_TYPE)) {
     const t = anchor.index;
     if (t === undefined) continue;
 
-    // Forward: from the marker to this object's closing brace (capped).
-    const fwdCap = Math.min(t + COMMAND_FWD, src.length);
-    let fwdEnd = src.indexOf('}', t);
-    if (fwdEnd === -1 || fwdEnd > fwdCap) fwdEnd = fwdCap;
-    const forward = src.slice(t, fwdEnd);
+    // Forward: from the marker to this object's own closing brace (capped),
+    // depth-aware so a block-body field (e.g. `isEnabled:()=>{…}`) before `name:`
+    // doesn't cut the window at its inner `}`.
+    const forward = src.slice(t, objectCloseFrom(src, t, t + COMMAND_FWD));
     let name = forward.match(COMMAND_NAME)?.[1];
     let desc = forward.match(COMMAND_DESC)?.[1];
 
     // No name after the marker → type-last object; read the fields before it,
-    // back to the previous object's closing brace (capped), so a neighbour can't
-    // bleed in.
+    // back to this object's own opening brace (capped, depth-aware), so a
+    // neighbour can't bleed in.
     if (!name) {
-      const prevClose = src.lastIndexOf('}', t - 1);
-      const backStart = Math.max(prevClose + 1, t - COMMAND_BACK, 0);
+      const backStart = objectOpenFrom(src, t, t - COMMAND_BACK);
       const before = src.slice(backStart, t);
       name = before.match(COMMAND_NAME)?.[1];
       // Keep a forward-window description if the pre-type slice has none (a

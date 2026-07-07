@@ -131,6 +131,18 @@ describe('extractCommands — registry objects', () => {
     expect(cmds.size).toBe(2);
   });
 
+  it('does not truncate the forward window at a block-body field before name', () => {
+    // a brace-bodied field before `name:` must not cut the object early (the
+    // depth-aware close skips the inner `}`).
+    const src = '{type:"local",isEnabled:()=>{return active},name:"cmd",description:"d"}';
+    expect(extractCommands(src).get('/cmd')).toBe('d');
+  });
+
+  it('handles a type-last object with a block-body field before the marker', () => {
+    const src = '{name:"vim",isEnabled:()=>{return on},description:"toggle",type:"local"}';
+    expect(extractCommands(src).get('/vim')).toBe('toggle');
+  });
+
   it('keeps a forward description for a "type-middle" object (name before, description after)', () => {
     // {name:…,type:…,description:…}: name precedes the marker (→ backward scan),
     // but the description follows it (→ forward window); the backward branch must

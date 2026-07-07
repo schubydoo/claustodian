@@ -1924,7 +1924,7 @@
     {
       "symbol": "/doctor",
       "type": "command",
-      "first_seen": "2.1.84",
+      "first_seen": "0.2.9",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -2195,6 +2195,13 @@
       "removed_in": "2.1.91"
     },
     {
+      "symbol": "/parallel-agents",
+      "type": "command",
+      "first_seen": "0.2.72",
+      "last_seen": "0.2.74",
+      "removed_in": "0.2.76"
+    },
+    {
       "symbol": "/passes",
       "type": "command",
       "first_seen": "2.0.45",
@@ -2288,7 +2295,7 @@
     {
       "symbol": "/release-notes",
       "type": "command",
-      "first_seen": "2.1.84",
+      "first_seen": "0.2.9",
       "last_seen": "2.1.201",
       "removed_in": null
     },
