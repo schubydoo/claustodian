@@ -40,9 +40,29 @@ describe('symbolFromCell', () => {
     expect(symbolFromCell('`PATH`')).toBeNull();
   });
 
+  it('skips the SKILL concept-label false positive (denylist)', () => {
+    expect(symbolFromCell('`SKILL`')).toBeNull();
+  });
+
   it('returns null for a `claude subcommand` row and for prose', () => {
     expect(symbolFromCell('`claude auth login`')).toBeNull();
     expect(symbolFromCell('Start interactive session')).toBeNull();
+  });
+
+  it('does NOT treat an embedded slash in a path/capability as a command', () => {
+    // the /channel, /foo, /src, /secrets fakes: a leading segment precedes the `/`,
+    // so these are prose about channels/plugins/tools, not slash commands.
+    expect(symbolFromCell('`claude/channel`')).toBeNull();
+    expect(symbolFromCell('`commands/foo`')).toBeNull();
+    expect(symbolFromCell('`tools/src`')).toBeNull();
+    expect(symbolFromCell('`.claude/settings.json`')).toBeNull();
+  });
+
+  it('still recognizes a leading slash command with surrounding text', () => {
+    expect(symbolFromCell('`/compact` clears history')).toEqual({
+      symbol: '/compact',
+      type: 'command',
+    });
   });
 });
 
@@ -80,7 +100,10 @@ describe('parseDocPage', () => {
   });
 
   it('unescapes markdown backslash escapes so the literal backslash never surfaces', () => {
-    const entry = parseDocPage('env-vars', '| `ANTHROPIC_SMALL_FAST_MODEL` | \\[DEPRECATED] a\\_b |')[0];
+    const entry = parseDocPage(
+      'env-vars',
+      '| `ANTHROPIC_SMALL_FAST_MODEL` | \\[DEPRECATED] a\\_b |'
+    )[0];
     expect(entry?.description).toBe('[DEPRECATED] a_b');
   });
 

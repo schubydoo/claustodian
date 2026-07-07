@@ -679,13 +679,6 @@
       "doc_page": "commands"
     },
     {
-      "symbol": "/channel",
-      "type": "command",
-      "description": "`object`",
-      "doc_min_version": null,
-      "doc_page": "channels-reference"
-    },
-    {
       "symbol": "/chrome",
       "type": "command",
       "description": "Configure Claude in Chrome settings",
@@ -852,13 +845,6 @@
       "description": "Toggle the focus view, which shows only your last prompt, a one-line tool-call summary with edit diffstats, and the final response. As of v2.1.198, the tool-call summary also counts the subagents launched in the turn and collapses completed background-task notifications into a single count. The selection persists across sessions; set `viewMode` in settings to override it. Only available in fullscreen rendering",
       "doc_min_version": "2.1.198",
       "doc_page": "commands"
-    },
-    {
-      "symbol": "/foo",
-      "type": "command",
-      "description": "A plain skill named `foo`",
-      "doc_min_version": null,
-      "doc_page": "plugins-reference"
     },
     {
       "symbol": "/fork",
@@ -1094,7 +1080,7 @@
     {
       "symbol": "/review",
       "type": "command",
-      "description": "Review a GitHub pull request by number, using the same review engine as `/code-review`. With no arguments, lists open PRs to pick from. For a cloud-based review, see `/code-review ultra`",
+      "description": "Review a GitHub pull request by number. With no argument, lists open PRs to pick from. For a cloud-based review, see `/code-review ultra`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1141,25 +1127,11 @@
       "doc_page": "commands"
     },
     {
-      "symbol": "/secrets",
-      "type": "command",
-      "description": "Read, Grep, Glob, LSP",
-      "doc_min_version": null,
-      "doc_page": "tools-reference"
-    },
-    {
       "symbol": "/security-review",
       "type": "command",
       "description": "Analyze pending changes on the current branch for security vulnerabilities. Reviews the git diff and identifies risks like injection, auth issues, and data exposure",
       "doc_min_version": null,
       "doc_page": "commands"
-    },
-    {
-      "symbol": "/settings",
-      "type": "command",
-      "description": "You, in every project",
-      "doc_min_version": null,
-      "doc_page": "env-vars"
     },
     {
       "symbol": "/setup-bedrock",
@@ -1188,13 +1160,6 @@
       "description": "List available skills. As of v2.1.121, type to filter the list by name. Press `t` to sort by token count. Press `Space` to cycle a skill's visibility to Claude and the `/` menu, then `Enter` to save",
       "doc_min_version": "2.1.121",
       "doc_page": "commands"
-    },
-    {
-      "symbol": "/src",
-      "type": "command",
-      "description": "Edit, Write, NotebookEdit",
-      "doc_min_version": null,
-      "doc_page": "tools-reference"
     },
     {
       "symbol": "/stats",
@@ -3187,7 +3152,7 @@
     {
       "symbol": "OTEL_LOG_TOOL_DETAILS",
       "type": "env_var",
-      "description": "Set to `1` to include tool input arguments, MCP server names, raw error strings on tool failures, the refusal `category` on `api_refusal` events, and other tool details in OpenTelemetry traces and logs. Disabled by default to protect PII. See Monitoring",
+      "description": "Set to `1` to include tool input arguments, MCP server names, user-authored workflow names, raw error strings on tool failures, the refusal `category` on `api_refusal` events, and other tool details in OpenTelemetry traces and logs. Disabled by default to protect PII. See Monitoring",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
