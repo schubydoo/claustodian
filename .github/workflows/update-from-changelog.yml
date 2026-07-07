@@ -50,6 +50,12 @@ jobs:
         run: npm run scrape -- --all
       - name: Validate regenerated data
         run: npm run validate
+      # Blocking here: the dataset was just regenerated from the live changelog in
+      # this run, so it must cover every changelog symbol. This is the drift gate
+      # (moved off per-PR validate, where it wrongly failed unrelated PRs on any
+      # upstream release).
+      - name: Verify regenerated dataset covers the changelog
+        run: npm run coverage
       - name: Open pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8
         with:
