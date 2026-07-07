@@ -1292,7 +1292,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Review a GitHub pull request by number, using the same review engine as `/code-review`. With no arguments, lists open PRs to pick from. For a cloud-based review, see `/code-review ultra`",
+      "description": "Review a GitHub pull request by number. With no argument, lists open PRs to pick from. For a cloud-based review, see `/code-review ultra`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
