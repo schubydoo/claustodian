@@ -7,12 +7,13 @@ leaked, source-map-derived, or otherwise non-public material. Question every "te
 workaround that has outlived its excuse.
 
 > `.greptile/config.json` `ignorePatterns` already excludes `data/**`, `coverage/**`, and
-> `dist/**` from review, so these rules apply to reviewed source (primarily `scripts/**`).
-> Each rule states its own **Applies to**, since `rules.md` is global (no glob scope).
+> `dist/**` from review, so these rules apply to reviewed source (primarily `scripts/**`, plus
+> `schema/**` where a rule concerns the symbol-record shape). Each rule states its own
+> **Applies to**, since `rules.md` is global (no glob scope).
 
 ## Provenance boundary — the source, not the label
 
-**Applies to:** `scripts/**`
+**Applies to:** `scripts/**`, `schema/**`
 
 Ingested Anthropic data must originate ONLY from official, first-party, public lanes — the
 changelog (`CHANGELOG.md`), the docs (`code.claude.com/docs`), or officially published release
@@ -44,7 +45,7 @@ async function fetchFromMirror() {
 
 ## Generated data is the build's output, not a hand-edited file
 
-**Applies to:** `scripts/**`
+**Applies to:** `scripts/**`, `schema/**`
 
 Symbol data under `data/` is produced wholesale by `npm run scrape` from official sources. Code
 must write `data/` only through the scraper/build pipeline; symbol changes belong in the scraper
