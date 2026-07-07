@@ -302,7 +302,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Review a GitHub pull request by number, using the same review engine as `/code-review`. With no arguments, lists open PRs to pick from. For a cloud-based review, see `/code-review ultra`",
+      "description": "Review a GitHub pull request by number. With no argument, lists open PRs to pick from. For a cloud-based review, see `/code-review ultra`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -316,6 +316,19 @@
       "provenance": "changelog",
       "confidence": "high",
       "description": "Configure terminal keybindings for Shift+Enter and other shortcuts. Only visible in terminals that need it, like VS Code, Cursor, Devin Desktop, Alacritty, or Zed",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/vim",
+      "type": "command",
+      "first_seen": "0.2.19",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Removed in v2.1.92. To toggle between Vim and Normal editing modes, use `/config` → Editor mode",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"

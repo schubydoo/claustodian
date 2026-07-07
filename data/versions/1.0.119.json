@@ -619,6 +619,19 @@
       "category": "command"
     },
     {
+      "symbol": "/context",
+      "type": "command",
+      "first_seen": "1.0.86",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Visualize current context usage as a colored grid. Shows optimization suggestions for context-heavy tools, memory bloat, and capacity warnings. In fullscreen mode the per-item breakdown is collapsed to keep the grid visible. Pass `all` to expand it",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
       "symbol": "/cost",
       "type": "command",
       "first_seen": "0.2.9",
@@ -908,7 +921,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Review a GitHub pull request by number, using the same review engine as `/code-review`. With no arguments, lists open PRs to pick from. For a cloud-based review, see `/code-review ultra`",
+      "description": "Review a GitHub pull request by number. With no argument, lists open PRs to pick from. For a cloud-based review, see `/code-review ultra`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -1012,6 +1025,19 @@
       "provenance": "changelog",
       "confidence": "high",
       "description": "Open the upgrade page to switch to a higher plan tier",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/vim",
+      "type": "command",
+      "first_seen": "0.2.19",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Removed in v2.1.92. To toggle between Vim and Normal editing modes, use `/config` → Editor mode",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"

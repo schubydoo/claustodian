@@ -50,6 +50,10 @@ const ENV_DENYLIST = new Set([
   'TMPDIR',
   'EDITOR',
   'VISUAL',
+  // Not an OS var: a docs-prose concept label the env matcher grabbed from a
+  // plugins-reference skill-type table (`| SKILL | A plain skill named foo |`).
+  // A stopgap until conceptual pages are curated out (see roadmap).
+  'SKILL',
 ]);
 
 export interface DocEntry {
@@ -117,12 +121,16 @@ function minVersion(cell: string): string | null {
 export function symbolFromCell(cell: string): { symbol: string; type: DocSymbolType } | null {
   const backtick = cell.match(/`([^`]+)`/);
   if (!backtick) return null;
-  const inner = backtick[1] ?? '';
+  const inner = (backtick[1] ?? '').trim();
 
   const flag = inner.match(/(--[a-z][a-z0-9-]+)/);
   if (flag?.[1]) return { symbol: flag[1], type: 'cli_flag' };
 
-  const command = inner.match(/(\/[a-z][a-z0-9-]+)/);
+  // A slash command names the WHOLE cell (`/compact`, optionally `/compact <arg>`)
+  // — anchored at the start. An embedded slash in a path or capability name
+  // (`claude/channel`, `commands/foo`, `tools/src`) has a leading segment before
+  // the `/`, so it is prose about channels/plugins/tools, not a command.
+  const command = inner.match(/^(\/[a-z][a-z0-9-]+)/);
   if (command?.[1]) return { symbol: command[1], type: 'command' };
 
   const env = inner.match(/\b([A-Z][A-Z0-9_]{3,})\b/);

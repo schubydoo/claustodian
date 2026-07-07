@@ -7,6 +7,7 @@ import {
   extractCommands,
   extractEnvVars,
   extractFlags,
+  extractSkillCommands,
 } from './extract-bundle.js';
 
 describe('extractEnvVars', () => {
@@ -58,7 +59,9 @@ describe('extractFlags — positive evidence only', () => {
   it('EXCLUDES flags passed to a subprocess (no own-evidence)', () => {
     // git args array and a browser flag map — the exact minified shapes from the
     // real bundle; neither carries registration or argv evidence.
-    const src = 'await w1(D7(),["rev-parse","--abbrev-ref","--symbolic-full-name"]);' + 'let $={chrome:"--incognito",brave:"--incognito",firefox:"--private-window"};';
+    const src =
+      'await w1(D7(),["rev-parse","--abbrev-ref","--symbolic-full-name"]);' +
+      'let $={chrome:"--incognito",brave:"--incognito",firefox:"--private-window"};';
     const flags = extractFlags(src);
     expect(flags.has('--abbrev-ref')).toBe(false);
     expect(flags.has('--symbolic-full-name')).toBe(false);
@@ -105,12 +108,104 @@ describe('extractCommands — registry objects', () => {
     expect(extractCommands('{type:"local",name:"model:switch"}').size).toBe(0);
   });
 
+  it('reads a "type-last" object where name/description precede the type marker', () => {
+    // real minified shape (/vim): fields first, `type:` last.
+    const src =
+      '{name:"vim",description:"Toggle between Vim and Normal editing modes",isEnabled:()=>!0,type:"local"}';
+    expect(extractCommands(src).get('/vim')).toBe('Toggle between Vim and Normal editing modes');
+  });
+
+  it('reads a type-last object with description before the name', () => {
+    // /rewind shape: {description:…,name:…,aliases:[…],type:"local"}
+    const src =
+      '{description:"Restore to a previous point",name:"rewind",aliases:["undo"],type:"local"}';
+    expect(extractCommands(src).get('/rewind')).toBe('Restore to a previous point');
+  });
+
+  it('does not bleed a neighbour’s fields into a type-last object', () => {
+    const src =
+      '{type:"local",name:"first",description:"one"},{name:"second",description:"two",type:"local"}';
+    const cmds = extractCommands(src);
+    expect(cmds.get('/first')).toBe('one');
+    expect(cmds.get('/second')).toBe('two');
+    expect(cmds.size).toBe(2);
+  });
+
+  it('keeps a forward description for a "type-middle" object (name before, description after)', () => {
+    // {name:…,type:…,description:…}: name precedes the marker (→ backward scan),
+    // but the description follows it (→ forward window); the backward branch must
+    // not clobber the forward description with undefined.
+    const src = '{name:"mid",type:"local",description:"middle desc"}';
+    expect(extractCommands(src).get('/mid')).toBe('middle desc');
+  });
+
   it('lets a later definition backfill a missing description', () => {
     // two definitions of /dup, far enough apart that neither window reaches the
     // other's fields: the first has no description, the second supplies one.
     const src =
-      '{type:"local",name:"dup"}' + 'x'.repeat(600) + '{type:"local",name:"dup",description:"filled in"}';
+      '{type:"local",name:"dup"}' +
+      'x'.repeat(600) +
+      '{type:"local",name:"dup",description:"filled in"}';
     expect(extractCommands(src).get('/dup')).toBe('filled in');
+  });
+});
+
+describe('extractSkillCommands — skill/menu registry', () => {
+  it('reads a menuDescription command and restores the slash', () => {
+    // real minified shape: FACTORY({name:"x",menuDescription:"…",aliases:[…]})
+    const src =
+      'Fc({name:"loop",menuDescription:"Repeat a prompt or command on an interval",aliases:["proactive"]})';
+    expect(extractSkillCommands(src).get('/loop')).toBe(
+      'Repeat a prompt or command on an interval'
+    );
+  });
+
+  it('reads a whenToUse skill via its get-description accessor', () => {
+    const src =
+      'H2({name:"dream",get description(){return"Dream up ideas"},whenToUse:"when the user asks"})';
+    expect(extractSkillCommands(src).get('/dream')).toBe('Dream up ideas');
+  });
+
+  it('reads a plain description when there is no menuDescription', () => {
+    const src =
+      'wCt({name:"schedule",aliases:["routines"],description:"Create and manage scheduled agents",whenToUse:"x"})';
+    expect(extractSkillCommands(src).get('/schedule')).toBe('Create and manage scheduled agents');
+  });
+
+  it('prefers the menuDescription string over a plain description', () => {
+    const src =
+      'Fc({name:"design",menuDescription:"menu string",description:"long form",whenToUse:"x"})';
+    expect(extractSkillCommands(src).get('/design')).toBe('menu string');
+  });
+
+  it('lets a later definition backfill a missing description', () => {
+    // two /loop registrations far apart: the first carries only whenToUse (no
+    // readable description), the second supplies the menu string.
+    const src =
+      'H2({name:"loop",whenToUse:"x"})' +
+      'y'.repeat(600) +
+      'Fc({name:"loop",menuDescription:"Repeat on an interval"})';
+    expect(extractSkillCommands(src).get('/loop')).toBe('Repeat on an interval');
+  });
+
+  it('does NOT treat a highlight.js language grammar as a command (aliases is not a marker)', () => {
+    // the crmsh false positive: name + aliases but no menuDescription/whenToUse.
+    const src =
+      'return{name:"crmsh",aliases:["crm","pcmk"],case_insensitive:!0,keywords:{keyword:"node primitive"}}';
+    expect(extractSkillCommands(src).has('/crmsh')).toBe(false);
+    expect(extractSkillCommands(src).size).toBe(0);
+  });
+
+  it('does not let an adjacent object’s marker bleed across the window', () => {
+    // a bare `name:` grammar object, far from the only marker, must not be caught.
+    const src = '{name:"grammar"}' + 'x'.repeat(500) + 'Fc({name:"real",menuDescription:"m"})';
+    const cmds = extractSkillCommands(src);
+    expect(cmds.has('/grammar')).toBe(false);
+    expect(cmds.get('/real')).toBe('m');
+  });
+
+  it('skips a namespaced name with a colon (grammar parity with the other lanes)', () => {
+    expect(extractSkillCommands('Fc({name:"ns:cmd",menuDescription:"m"})').size).toBe(0);
   });
 });
 
@@ -124,8 +219,19 @@ describe('extractBundleSymbols', () => {
     const out = extractBundleSymbols(src);
     expect(out).toEqual([
       { symbol: '--verbose', type: 'cli_flag', category: 'cli', evidence: 'registration' },
-      { symbol: '/bug', type: 'command', category: 'command', evidence: 'command-registry', description: 'file a bug' },
-      { symbol: 'CLAUDE_CODE_X', type: 'env_var', category: 'claude-code', evidence: 'process-env' },
+      {
+        symbol: '/bug',
+        type: 'command',
+        category: 'command',
+        evidence: 'command-registry',
+        description: 'file a bug',
+      },
+      {
+        symbol: 'CLAUDE_CODE_X',
+        type: 'env_var',
+        category: 'claude-code',
+        evidence: 'process-env',
+      },
     ]);
   });
 
@@ -134,5 +240,40 @@ describe('extractBundleSymbols', () => {
     expect(out).toEqual([
       { symbol: '/status', type: 'command', category: 'command', evidence: 'command-registry' },
     ]);
+  });
+
+  it('adds a skill-registry command the built-in registry misses', () => {
+    const out = extractBundleSymbols(
+      'Fc({name:"claude-in-chrome",menuDescription:"Let Claude use Chrome"})'
+    );
+    expect(out).toEqual([
+      {
+        symbol: '/claude-in-chrome',
+        type: 'command',
+        category: 'command',
+        evidence: 'skill-registry',
+        description: 'Let Claude use Chrome',
+      },
+    ]);
+  });
+
+  it('does not duplicate a command registered in BOTH registries (built-in wins)', () => {
+    const src =
+      '{type:"local",name:"loop",description:"builtin"}' +
+      'x'.repeat(600) +
+      'Fc({name:"loop",menuDescription:"menu"})';
+    const loops = extractBundleSymbols(src).filter((s) => s.symbol === '/loop');
+    expect(loops).toHaveLength(1);
+    expect(loops[0]?.evidence).toBe('command-registry');
+    expect(loops[0]?.description).toBe('builtin');
+  });
+
+  it('backfills a missing built-in description from the skill registry (no duplicate)', () => {
+    const src =
+      '{type:"local",name:"loop"}' + 'x'.repeat(600) + 'Fc({name:"loop",menuDescription:"menu"})';
+    const loops = extractBundleSymbols(src).filter((s) => s.symbol === '/loop');
+    expect(loops).toHaveLength(1);
+    expect(loops[0]?.evidence).toBe('command-registry');
+    expect(loops[0]?.description).toBe('menu');
   });
 });
