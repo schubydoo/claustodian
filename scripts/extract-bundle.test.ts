@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  extractAccessorEnvVars,
   extractBundleSymbols,
   extractCommands,
   extractEnvVars,
@@ -30,6 +31,39 @@ describe('extractEnvVars', () => {
     expect(env.has('ENOENT')).toBe(false);
     expect(env.has('JSON')).toBe(false);
     expect(env.has('CLAUDE_REAL')).toBe(true);
+  });
+});
+
+describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
+  it('captures claude-code NAME:()=> getter entries', () => {
+    const env = extractAccessorEnvVars('let E={CLAUDE_CODE_FOO:()=>x,ANTHROPIC_BAR:()=>y};');
+    expect(env.get('CLAUDE_CODE_FOO')).toBe('claude-code');
+    expect(env.get('ANTHROPIC_BAR')).toBe('claude-code');
+  });
+
+  it('gates out non-first-party getters (constants + provider vars)', () => {
+    // the real accessor map also holds ALL-CAPS constants and provider vars;
+    // the claude-code gate must exclude every one of them.
+    const env = extractAccessorEnvVars('{NEVER:()=>0,BROWSER_TOOLS:()=>t,NODE_OPTIONS:()=>o,AWS_REGION:()=>r}');
+    expect(env.size).toBe(0);
+  });
+
+  it('still applies the denylist', () => {
+    expect(extractAccessorEnvVars('{JSON:()=>0,CLAUDE_REAL:()=>1}').has('JSON')).toBe(false);
+  });
+
+  it('anchors to object-key position, not mid-identifier', () => {
+    expect(extractAccessorEnvVars('{a:1,CLAUDE_CODE_X:()=>1}').has('CLAUDE_CODE_X')).toBe(true);
+    expect(extractAccessorEnvVars('{myCLAUDE_CODE_Y:()=>1}').has('CLAUDE_CODE_Y')).toBe(false);
+  });
+
+  it('tags accessor-map-only vars in the bundle; a direct read wins and is not duplicated', () => {
+    const src =
+      'process.env.CLAUDE_CODE_READ;let E={CLAUDE_CODE_READ:()=>1,CLAUDE_CODE_GETTER_ONLY:()=>2};';
+    const syms = extractBundleSymbols(src);
+    expect(syms.find((x) => x.symbol === 'CLAUDE_CODE_READ')?.evidence).toBe('process-env');
+    expect(syms.find((x) => x.symbol === 'CLAUDE_CODE_GETTER_ONLY')?.evidence).toBe('accessor-map');
+    expect(syms.filter((x) => x.symbol === 'CLAUDE_CODE_READ')).toHaveLength(1);
   });
 });
 
