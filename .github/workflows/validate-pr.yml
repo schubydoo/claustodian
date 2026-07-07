@@ -32,9 +32,15 @@ jobs:
       # coverage/lcov.info for the Codecov upload below.
       - run: npm run test:coverage
       - run: npm run validate
-      # Blocking: every symbol documented in the changelog must be present in
-      # the dataset (the full backfill is committed, so this holds at 100%).
-      - run: npm run coverage
+      # Non-blocking drift signal. This compares the LIVE upstream CHANGELOG.md
+      # against the committed dataset, so a new upstream release adds symbols the
+      # committed data hasn't caught up on yet — which must not fail an unrelated
+      # PR. Drift reconciliation is owned by the hourly check-new-release detector
+      # + the update-from-changelog bot, where this same check runs as a BLOCKING
+      # gate (the bot regenerates data/ in that run, so coverage must hold there).
+      - name: Changelog coverage (informational)
+        run: npm run coverage
+        continue-on-error: true
       # Report coverage to Codecov (reads codecov.yml). Uploads even if an
       # earlier step failed so a coverage drop surfaces with the breakage.
       # Public repo → tokenless upload (no CODECOV_TOKEN secret). Unlike
