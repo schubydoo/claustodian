@@ -223,6 +223,10 @@ export const SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   'README',
   'TODO',
   'FIXME',
+  // OS/shell env — CC reads it but does not OWN it (e.g. a changelog bullet like
+  // "agents inheriting a stale `PATH` from the daemon"). The binary lane already
+  // observes-but-omits these from the published set; the changelog lane must too.
+  'PATH',
 ]);
 
 /**

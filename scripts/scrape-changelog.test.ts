@@ -120,9 +120,9 @@ describe('extractSymbols', () => {
     expect(extractSymbols('Nothing to see here.')).toEqual([]);
   });
 
-  it('filters denylisted false positives (errno codes, acronyms) but keeps real vars', () => {
+  it('filters denylisted false positives (errno codes, acronyms, PATH) but keeps real vars', () => {
     const symbols = extractSymbols(
-      'Fixed `EADDRINUSE` and `JSON` parsing; respects `HOME` and `CLAUDE_CODE_SAFE_MODE`.'
+      'Fixed `EADDRINUSE` and `JSON` parsing; a stale `PATH`; respects `HOME` and `CLAUDE_CODE_SAFE_MODE`.'
     );
     expect(symbols.map((s) => s.symbol)).toEqual(['HOME', 'CLAUDE_CODE_SAFE_MODE']);
   });
