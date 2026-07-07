@@ -15,27 +15,5 @@
   "issuesTableSection": { "included": true, "collapsible": true, "defaultOpen": false },
   "sequenceDiagramSection": { "included": true, "collapsible": true, "defaultOpen": false },
   "instructions": "Claustodian is a provenance-strict dataset: its data must come ONLY from official, first-party, public sources (the Claude Code changelog, the official Claude Code documentation pages at code.claude.com/docs, and officially published release binaries), never leaked, source-map-derived, or otherwise non-public material. Guard that invariant. Question every \"temporary\" workaround that has outlived its excuse.",
-  "ignorePatterns": "package-lock.json\ndata/**\ncoverage/**\ndist/**",
-  "rules": [
-    {
-      "id": "provenance-boundary",
-      "rule": "Data may originate ONLY from official, first-party, public Anthropic sources: the official CHANGELOG.md, the official Claude Code documentation pages (code.claude.com/docs), and officially published release binaries (GitHub release assets, npm-published bundles). These map to the `provenance` values `changelog`, `docs`, and `binary` respectively. Flag any code path that could ingest leaked, source-map-derived, or otherwise non-public material, or that blurs which lane a record came from.",
-      "scope": ["scripts/**"]
-    },
-    {
-      "id": "generated-data",
-      "rule": "JSON under data/ is the generated source of truth, produced by `npm run scrape`, and YAML/TOML are build artifacts. Changes to symbol data belong in the scraper/schema, not in hand-edited data files. Don't suggest editing generated output directly.",
-      "scope": ["scripts/**", "schema/**"]
-    },
-    {
-      "id": "cli-in-process-tests",
-      "rule": "CLI entrypoints are tested in-process by calling the exported main() with process.argv set and temp dirs (see the *.cli.test.ts files) so v8 coverage counts them. Prefer that pattern over spawning subprocesses, which get zero coverage credit and can hit the network.",
-      "scope": ["scripts/**/*.test.ts"]
-    },
-    {
-      "id": "binary-archive-trust-model",
-      "rule": "Where provenance/officialness is ESTABLISHED vs CONSUMED. The binary archive (scratch/binaries/ — gitignored, ~139 GB, never a CI input) is acquired and verified against Anthropic's officially-published checksums (each compiled release's SHASUMS256.txt and npm bundle integrity) at ACQUISITION time; the per-version SHA256SUMS files inside the archive ARE those official checksums. Downstream maintainer-local tools that consume the archive (e.g. scripts/reextract-binaries.ts, scripts/backfill-binary.ts) establish provenance by that acquisition-time verification and add a local integrity check (re-hashing bundles against the committed SHA256SUMS) on top. They do NOT — and are not expected to — re-fetch official checksums or re-download binaries on every run. Do NOT flag these tools for 'trusting a checksum file from the local archive', 'unofficial source', or similar: their --archive/--out arguments are maintainer-supplied on the maintainer's own machine, not untrusted external or network input, so supply-chain / path-injection threat models that assume an external adversary controls those paths do not apply. Still DO flag a genuinely new external/network ingestion path, anything that would let non-first-party content into data/, or blurring of which lane a record came from.",
-      "scope": ["scripts/**"]
-    }
-  ]
+  "ignorePatterns": "package-lock.json\ndata/**\ncoverage/**\ndist/**"
 }
