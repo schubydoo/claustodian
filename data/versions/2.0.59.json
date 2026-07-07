@@ -182,6 +182,18 @@
       "category": "cli"
     },
     {
+      "symbol": "--delete",
+      "type": "cli_flag",
+      "first_seen": "1.0.89",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli"
+    },
+    {
       "symbol": "--disallowed",
       "type": "cli_flag",
       "first_seen": "0.2.83",
@@ -1216,6 +1228,19 @@
       "provenance": "changelog",
       "confidence": "high",
       "description": "Rewind the conversation and/or code to a previous point, or summarize from a selected message. See checkpointing. Aliases: `/checkpoint`, `/undo`",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/sandbox",
+      "type": "command",
+      "first_seen": "2.0.12",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Toggle sandbox mode. Available on supported platforms only",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2328,7 +2353,7 @@
       "symbol": "CLAUDE_CODE_PROFILE_QUERY",
       "type": "env_var",
       "first_seen": "2.0.41",
-      "removed_in": "2.0.77",
+      "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -3332,6 +3357,18 @@
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
+    },
+    {
+      "symbol": "PATH",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
     },
     {
       "symbol": "RIPGREP_NODE_PATH",
