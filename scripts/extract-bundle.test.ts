@@ -49,6 +49,24 @@ describe('extractFlags — positive evidence only', () => {
     expect(flags.get('--verbose')).toBe('argv');
   });
 
+  it('includes flags checked via a .find/.some/.filter args predicate (incl. ||-chained)', () => {
+    // the exact minified shape from the bundle for `claude mcp ls --enabled/--disabled`
+    const src = 'let n=t.slice(1).find((o)=>o==="--enabled"||o==="--disabled");';
+    const flags = extractFlags(src);
+    expect(flags.get('--enabled')).toBe('argv');
+    expect(flags.get('--disabled')).toBe('argv');
+  });
+
+  it('does not treat a foreign flag array/regex literal as own-evidence', () => {
+    // formatter-detection regex from the bundle: a bare array of third-party tool
+    // flags with no membership call or `===` comparison — must be ignored.
+    const src = 'Cef=new RegExp(["--write","--fix","--in-place","--auto-correct"]);';
+    const flags = extractFlags(src);
+    expect(flags.has('--fix')).toBe(false);
+    expect(flags.has('--write')).toBe(false);
+    expect(flags.has('--in-place')).toBe(false);
+  });
+
   it('does not treat a flag merely near an unrelated process.argv read as own', () => {
     // process.argv.slice(2) is not a membership check for --abbrev-ref, which is
     // a git subprocess arg — it must not be emitted with argv evidence

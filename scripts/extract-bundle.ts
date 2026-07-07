@@ -52,16 +52,21 @@ const COMMAND_FWD = 450;
 const COMMAND_BACK = 300;
 
 /**
- * A flag literal is Claude Code's own when it is either the argument of a
- * commander registration (`.option`/`.addOption`) or the argument of a
- * `process.argv` membership check (`.includes`/`.indexOf`, optionally after a
- * `.slice(n)`). Both are self-referential — a subprocess/browser flag never
- * appears this way. The argv branch requires the flag to be *inside* the
- * membership call, not merely near a `process.argv` token: an unrelated
- * `process.argv.slice(2)` sitting close to a `spawn(g,["--x"])` must not count.
+ * A flag literal is Claude Code's own when the code positively inspects it —
+ * one of:
+ *   - commander registration: `.option(…)` / `.addOption(…)` (the flag is the arg);
+ *   - `process.argv` membership: `.includes`/`.indexOf` (optionally after `.slice(n)`);
+ *   - args-array predicate: `.find`/`.some`/`.filter((o)=>o==="--flag" …)`, including
+ *     `||`/`&&`-chained comparisons in the same predicate (e.g.
+ *     `t.slice(1).find((o)=>o==="--enabled"||o==="--disabled")`).
+ * All are self-referential — a subprocess/browser flag never appears this way.
+ * Each branch requires the flag to be *inside* the check, not merely near it:
+ * an unrelated `process.argv.slice(2)` next to a `spawn(g,["--x"])` must not
+ * count, and a foreign flag array literal (`new RegExp(["--write","--fix"])`)
+ * has no membership call or `===` comparison, so it is correctly ignored.
  */
 const FLAG_OWN_EVIDENCE =
-  /\.(?:option|addOption)\([^)]{0,85}$|process\.argv(?:\.slice\(\s*\d*\s*\))?\.(?:includes|indexOf)\(\s*["'`]$/;
+  /\.(?:option|addOption)\([^)]{0,85}$|process\.argv(?:\.slice\(\s*\d*\s*\))?\.(?:includes|indexOf)\(\s*["'`]$|\.(?:find|some|filter)\([\s\S]{0,80}?\b\w+\s*===?\s*["'`]$/;
 
 /** `process.env.NAME` and `process.env["NAME"]` — the positive signal for env. */
 const ENV_ACCESS: readonly RegExp[] = [
