@@ -527,6 +527,18 @@
       "category": "network"
     },
     {
+      "symbol": "PATH",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
+    },
+    {
       "symbol": "USE_BUILTIN_RIPGREP",
       "type": "env_var",
       "first_seen": "0.2.9",

@@ -189,20 +189,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--any",
-      "type": "cli_flag",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Stop the background-session supervisor and the sessions it hosts. Pass `--keep-workers` to leave background sessions running so the next supervisor reconnects to them. `--any` confirms stopping an on-demand supervisor, which is the default. Use this to recover from an unresponsive supervisor",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--append-system-prompt",
       "type": "cli_flag",
       "first_seen": "0.2.117",
@@ -795,20 +781,6 @@
       "description": "Move per-machine sections from the system prompt (working directory, environment info, memory paths, git-repo flag) into the first user message. Improves prompt-cache reuse across different users and machines running the same task. Only applies with the default system prompt; ignored when `--system-prompt` or `--system-prompt-file` is set. Use with `-p` for scripted, multi-user workloads",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
-      "symbol": "--exec",
-      "type": "cli_flag",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Run a shell command as a PTY-backed background job instead of starting a Claude session. Use with `--bg` to launch from the shell",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
     },
     {
@@ -2077,20 +2049,6 @@
       "description": "Enable verbose logging, shows full turn-by-turn output. Overrides the `viewMode` setting for this session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
-      "symbol": "--version",
-      "type": "cli_flag",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Output the version number",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
     },
     {
@@ -4260,20 +4218,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "ANTHROPIC_CUSTOM_MODEL_OPTION_SUPPORTED_CAPABILITIES",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "See Model configuration",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "claude-code"
-    },
-    {
       "symbol": "ANTHROPIC_DEFAULT_FABLE_MODEL",
       "type": "env_var",
       "first_seen": "2.1.170",
@@ -4307,20 +4251,6 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "See Model configuration",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "claude-code"
-    },
-    {
-      "symbol": "ANTHROPIC_DEFAULT_FABLE_MODEL_SUPPORTED_CAPABILITIES",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
       "description": "See Model configuration",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
@@ -4366,20 +4296,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "ANTHROPIC_DEFAULT_HAIKU_MODEL_SUPPORTED_CAPABILITIES",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "See Model configuration",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "claude-code"
-    },
-    {
       "symbol": "ANTHROPIC_DEFAULT_OPUS_MODEL",
       "type": "env_var",
       "first_seen": "1.0.87",
@@ -4419,20 +4335,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "ANTHROPIC_DEFAULT_OPUS_MODEL_SUPPORTED_CAPABILITIES",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "See Model configuration",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "claude-code"
-    },
-    {
       "symbol": "ANTHROPIC_DEFAULT_SONNET_MODEL",
       "type": "env_var",
       "first_seen": "1.0.87",
@@ -4466,20 +4368,6 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "See Model configuration",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "claude-code"
-    },
-    {
-      "symbol": "ANTHROPIC_DEFAULT_SONNET_MODEL_SUPPORTED_CAPABILITIES",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
       "description": "See Model configuration",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
@@ -5504,20 +5392,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_ARTIFACT_AUTO_OPEN",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Set to `0` to stop Claude Code from opening the browser automatically when a new artifact is published. Republishing an existing artifact does not open the browser regardless of this setting",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_ATTRIBUTION_HEADER",
       "type": "env_var",
       "first_seen": "2.1.15",
@@ -6003,20 +5877,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_DISABLE_ARTIFACT",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Set to `1` to disable the Artifact tool, which publishes session output as a private web page on claude.ai. Equivalent to the `disableArtifact` setting",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_DISABLE_ATTACHMENTS",
       "type": "env_var",
       "first_seen": "1.0.128",
@@ -6241,11 +6101,11 @@
       "first_seen": "2.1.89",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` to disable mouse tracking in fullscreen rendering. Keyboard scrolling with `PgUp` and `PgDn` still works. Use this to keep your terminal's native copy-on-select behavior",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -8448,20 +8308,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_SYNC_SKILLS_INSTALL_TIMEOUT_MS",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Timeout in milliseconds for a mid-session skills resync when `CLAUDE_CODE_SYNC_SKILLS` is set (default: 30000). Bounds the download triggered when the host requests a skill reload during the session. When exceeded, the resync stops and remaining downloads continue in the background",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_SYNC_SKILLS_WAIT_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "2.1.149",
@@ -8989,20 +8835,6 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "Set to `1` to stop in-flight background work instead of carrying it over when you background a session by pressing `←` or with `/background`. Claude Code asks you to confirm before backgrounding, then stops the tasks that would otherwise carry over. Requires Claude Code v2.1.195 or later",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_EFFORT",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Set automatically in Bash tool subprocesses and hook commands to the active effort level for the turn: `low`, `medium`, `high`, `xhigh`, or `max`. Ultracode is not a distinct level and reports as `xhigh`. Matches the `effort.level` field passed to hooks. Only set when the current model supports the effort parameter",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -10418,20 +10250,6 @@
       "category": "telemetry"
     },
     {
-      "symbol": "OTEL_METRICS_INCLUDE_ACCOUNT_UUID",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Set to `false` to exclude account UUID from metrics attributes (default: included). See Monitoring",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "telemetry"
-    },
-    {
       "symbol": "OTEL_METRICS_INCLUDE_ENTRYPOINT",
       "type": "env_var",
       "first_seen": "2.1.152",
@@ -10453,34 +10271,6 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "As of v2.1.161, Claude Code attaches `OTEL_RESOURCE_ATTRIBUTES` keys to metric datapoint labels. Set to `false` to exclude them (default: included). See Monitoring",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "telemetry"
-    },
-    {
-      "symbol": "OTEL_METRICS_INCLUDE_SESSION_ID",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Set to `false` to exclude session ID from metrics attributes (default: included). See Monitoring",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "telemetry"
-    },
-    {
-      "symbol": "OTEL_METRICS_INCLUDE_VERSION",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Set to `true` to include Claude Code version in metrics attributes (default: excluded). See Monitoring",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "telemetry"
@@ -10509,6 +10299,18 @@
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
+    },
+    {
+      "symbol": "PATH",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
     },
     {
       "symbol": "SCREENSHOT_DIR",
@@ -10786,20 +10588,6 @@
       "category": "other"
     },
     {
-      "symbol": "VERTEX_REGION_CLAUDE_4_5_OPUS",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Override region for Claude Opus 4.5 when using Google Cloud's Agent Platform",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "other"
-    },
-    {
       "symbol": "VERTEX_REGION_CLAUDE_4_5_SONNET",
       "type": "env_var",
       "first_seen": "2.0.0",
@@ -10808,34 +10596,6 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "Override region for Claude Sonnet 4.5 when using Google Cloud's Agent Platform",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "other"
-    },
-    {
-      "symbol": "VERTEX_REGION_CLAUDE_4_6_OPUS",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Override region for Claude Opus 4.6 when using Google Cloud's Agent Platform",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "other"
-    },
-    {
-      "symbol": "VERTEX_REGION_CLAUDE_4_6_SONNET",
-      "type": "env_var",
-      "first_seen": "2.1.202",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "Override region for Claude Sonnet 4.6 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
