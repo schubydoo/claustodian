@@ -216,6 +216,18 @@
       "category": "cli"
     },
     {
+      "symbol": "--background",
+      "type": "cli_flag",
+      "first_seen": "2.1.119",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli"
+    },
+    {
       "symbol": "--bare",
       "type": "cli_flag",
       "first_seen": "2.1.81",
@@ -244,7 +256,7 @@
     {
       "symbol": "--bg",
       "type": "cli_flag",
-      "first_seen": "2.1.144",
+      "first_seen": "2.1.119",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -509,6 +521,18 @@
       "symbol": "--deep-link-repo",
       "type": "cli_flag",
       "first_seen": "2.1.81",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli"
+    },
+    {
+      "symbol": "--delete",
+      "type": "cli_flag",
+      "first_seen": "1.0.89",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -1391,6 +1415,18 @@
       "category": "cli"
     },
     {
+      "symbol": "--routine",
+      "type": "cli_flag",
+      "first_seen": "2.1.119",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli"
+    },
+    {
       "symbol": "--scope",
       "type": "cli_flag",
       "first_seen": "0.2.9",
@@ -1407,6 +1443,18 @@
       "symbol": "--sdk-url",
       "type": "cli_flag",
       "first_seen": "1.0.124",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli"
+    },
+    {
+      "symbol": "--server-option",
+      "type": "cli_flag",
+      "first_seen": "2.1.92",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -1701,6 +1749,18 @@
       "description": "Enable verbose logging, shows full turn-by-turn output. Overrides the `viewMode` setting for this session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli"
+    },
+    {
+      "symbol": "--watch",
+      "type": "cli_flag",
+      "first_seen": "2.1.27",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "cli"
     },
     {
@@ -2926,12 +2986,11 @@
     {
       "symbol": "/sandbox",
       "type": "command",
-      "first_seen": "2.1.20",
-      "first_seen_estimated": true,
+      "first_seen": "2.0.12",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Toggle sandbox mode. Available on supported platforms only",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
@@ -4199,6 +4258,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_AGENT",
+      "type": "env_var",
+      "first_seen": "2.1.119",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_AGENTS_SELECT",
       "type": "env_var",
       "first_seen": "2.1.119",
@@ -4252,6 +4323,54 @@
       "symbol": "CLAUDE_AGENT_SDK_VERSION",
       "type": "env_var",
       "first_seen": "1.0.128",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_AI_INFERENCE_SCOPE",
+      "type": "env_var",
+      "first_seen": "2.1.48",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_AI_OAUTH_SCOPES",
+      "type": "env_var",
+      "first_seen": "2.1.48",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_AI_PROFILE_SCOPE",
+      "type": "env_var",
+      "first_seen": "2.1.64",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_API_SKILL_DESCRIPTION",
+      "type": "env_var",
+      "first_seen": "2.1.108",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -5250,11 +5369,11 @@
       "first_seen": "2.1.89",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` to disable mouse tracking in fullscreen rendering. Keyboard scrolling with `PgUp` and `PgDn` still works. Use this to keep your terminal's native copy-on-select behavior",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -5834,6 +5953,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_GB_BASE_URL",
+      "type": "env_var",
+      "first_seen": "2.1.64",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_GIT_BASH_PATH",
       "type": "env_var",
       "first_seen": "1.0.49",
@@ -6174,6 +6305,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_MID_CONVERSATION_SYSTEM",
+      "type": "env_var",
+      "first_seen": "2.1.136",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_NATIVE_CURSOR",
       "type": "env_var",
       "first_seen": "2.1.136",
@@ -6379,6 +6522,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_PLAN_MODE_INTERVIEW_PHASE",
+      "type": "env_var",
+      "first_seen": "2.1.16",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_PLAN_MODE_REQUIRED",
       "type": "env_var",
       "first_seen": "2.0.70",
@@ -6533,6 +6688,18 @@
       "symbol": "CLAUDE_CODE_PROACTIVE",
       "type": "env_var",
       "first_seen": "2.1.128",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_PROFILE_QUERY",
+      "type": "env_var",
+      "first_seen": "2.0.41",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -7003,6 +7170,30 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SKILL_DESCRIPTION",
+      "type": "env_var",
+      "first_seen": "2.1.154",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SKILL_NAME",
+      "type": "env_var",
+      "first_seen": "2.1.154",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SKIP_ANTHROPIC_AWS_AUTH",
       "type": "env_var",
       "first_seen": "2.1.90",
@@ -7445,6 +7636,18 @@
       "symbol": "CLAUDE_CODE_TUI_JUST_SWITCHED",
       "type": "env_var",
       "first_seen": "2.1.110",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_TWO_STAGE_CLASSIFIER",
+      "type": "env_var",
+      "first_seen": "2.1.71",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -9062,6 +9265,18 @@
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
+    },
+    {
+      "symbol": "PATH",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
     },
     {
       "symbol": "SCREENSHOT_DIR",

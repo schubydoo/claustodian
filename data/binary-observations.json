@@ -615,7 +615,7 @@
     {
       "symbol": "--background",
       "type": "cli_flag",
-      "first_seen": "2.1.187",
+      "first_seen": "2.1.119",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -636,7 +636,7 @@
     {
       "symbol": "--bg",
       "type": "cli_flag",
-      "first_seen": "2.1.187",
+      "first_seen": "2.1.119",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -802,6 +802,13 @@
       "removed_in": null
     },
     {
+      "symbol": "--delete",
+      "type": "cli_flag",
+      "first_seen": "1.0.89",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "--description",
       "type": "cli_flag",
       "first_seen": "2.1.157",
@@ -812,6 +819,13 @@
       "symbol": "--disable-slash-commands",
       "type": "cli_flag",
       "first_seen": "2.0.60",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "--disabled",
+      "type": "cli_flag",
+      "first_seen": "2.1.163",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -868,6 +882,13 @@
       "symbol": "--enable-auto-mode",
       "type": "cli_flag",
       "first_seen": "2.1.71",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "--enabled",
+      "type": "cli_flag",
+      "first_seen": "2.1.163",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -1264,6 +1285,13 @@
       "removed_in": null
     },
     {
+      "symbol": "--pool",
+      "type": "cli_flag",
+      "first_seen": "2.1.172",
+      "last_seen": "2.1.173",
+      "removed_in": null
+    },
+    {
       "symbol": "--port",
       "type": "cli_flag",
       "first_seen": "2.1.64",
@@ -1383,6 +1411,13 @@
       "removed_in": null
     },
     {
+      "symbol": "--routine",
+      "type": "cli_flag",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "--runs",
       "type": "cli_flag",
       "first_seen": "2.1.198",
@@ -1414,6 +1449,13 @@
       "symbol": "--sdk-url",
       "type": "cli_flag",
       "first_seen": "1.0.124",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "--server-option",
+      "type": "cli_flag",
+      "first_seen": "2.1.92",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -1596,6 +1638,13 @@
       "symbol": "--verbose",
       "type": "cli_flag",
       "first_seen": "0.2.9",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "--watch",
+      "type": "cli_flag",
+      "first_seen": "2.1.27",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -2366,6 +2415,13 @@
       "symbol": "/run-skill-generator",
       "type": "command",
       "first_seen": "2.1.163",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "/sandbox",
+      "type": "command",
+      "first_seen": "2.0.12",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -3521,13 +3577,34 @@
       "symbol": "CLAUDECODE",
       "type": "env_var",
       "first_seen": "2.1.40",
-      "last_seen": "2.1.74",
-      "removed_in": "2.1.75"
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_AFK_COUNTDOWN_MS",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_AFK_TIMEOUT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "last_seen": "2.1.201",
+      "removed_in": null
     },
     {
       "symbol": "CLAUDE_AFTER_LAST_COMPACT",
       "type": "env_var",
       "first_seen": "2.1.40",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_AGENT",
+      "type": "env_var",
+      "first_seen": "2.1.119",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -3567,10 +3644,38 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_AI_INFERENCE_SCOPE",
+      "type": "env_var",
+      "first_seen": "2.1.48",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_AI_OAUTH_SCOPES",
+      "type": "env_var",
+      "first_seen": "2.1.48",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_AI_PROFILE_SCOPE",
+      "type": "env_var",
+      "first_seen": "2.1.64",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_API_SKILL_DESCRIPTION",
+      "type": "env_var",
+      "first_seen": "2.1.108",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "2.1.113",
-      "last_seen": "2.1.177",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -3584,6 +3689,13 @@
       "symbol": "CLAUDE_AUTO_BACKGROUND_TASKS",
       "type": "env_var",
       "first_seen": "2.1.47",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_AX_SCREEN_READER",
+      "type": "env_var",
+      "first_seen": "2.1.181",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -3637,6 +3749,13 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_BG_POST_CLEAR_RESPAWN",
+      "type": "env_var",
+      "first_seen": "2.1.193",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_BG_PTY_AUTH",
       "type": "env_var",
       "first_seen": "2.1.169",
@@ -3682,13 +3801,27 @@
       "symbol": "CLAUDE_BG_STARTUP_WEDGE_MS",
       "type": "env_var",
       "first_seen": "2.1.129",
-      "last_seen": "2.1.177",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_BG_TCC_DISCLAIMED",
       "type": "env_var",
       "first_seen": "2.1.143",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_BRIDGE_BASE_URL",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_BRIDGE_OAUTH_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -3714,6 +3847,13 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_BRIDGE_SESSION_INGRESS_URL",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_BRIDGE_USE_CCR_V2",
       "type": "env_var",
       "first_seen": "2.1.70",
@@ -3728,6 +3868,13 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CHROME_CLASSIFIER_FLOOR",
+      "type": "env_var",
+      "first_seen": "2.1.187",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CHROME_PERMISSION_MODE",
       "type": "env_var",
       "first_seen": "2.1.26",
@@ -3735,10 +3882,17 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CLIENT_PRESENCE_FILE",
+      "type": "env_var",
+      "first_seen": "2.1.181",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_ACCESSIBILITY",
       "type": "env_var",
       "first_seen": "2.0.77",
-      "last_seen": "2.1.161",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -3759,6 +3913,13 @@
       "symbol": "CLAUDE_CODE_ACTION",
       "type": "env_var",
       "first_seen": "0.2.114",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_ACT_DONT_REDERIVE",
+      "type": "env_var",
+      "first_seen": "2.1.162",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -3808,7 +3969,7 @@
       "symbol": "CLAUDE_CODE_AGENT_LIST_IN_MESSAGES",
       "type": "env_var",
       "first_seen": "2.1.84",
-      "last_seen": "2.1.161",
+      "last_seen": "2.1.177",
       "removed_in": null
     },
     {
@@ -3875,9 +4036,51 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_ARTIFACT",
+      "type": "env_var",
+      "first_seen": "2.1.166",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_ARTIFACTS_API_BASE_URL",
+      "type": "env_var",
+      "first_seen": "2.1.181",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_ARTIFACT_AUTO_OPEN",
+      "type": "env_var",
+      "first_seen": "2.1.172",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_ARTIFACT_DIRECT_UPLOAD",
+      "type": "env_var",
+      "first_seen": "2.1.172",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_ARTIFACT_MCP",
+      "type": "env_var",
+      "first_seen": "2.1.172",
+      "last_seen": "2.1.173",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_ATTRIBUTION_HEADER",
       "type": "env_var",
       "first_seen": "2.1.15",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_AUTH_FAIL_EXIT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.163",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -3892,7 +4095,21 @@
       "symbol": "CLAUDE_CODE_AUTO_CONNECT_IDE",
       "type": "env_var",
       "first_seen": "1.0.35",
-      "last_seen": "2.1.161",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_AUTO_MODE_EXTERNAL_PERMISSIONS",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_AUTO_MODE_MODEL",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -3931,6 +4148,20 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_BG_CLASSIFIER_MODEL",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_BG_TASKS_REPORT_RUNNING",
+      "type": "env_var",
+      "first_seen": "2.1.181",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_BIRTHDAY_HAT",
       "type": "env_var",
       "first_seen": "2.1.42",
@@ -3955,7 +4186,7 @@
       "symbol": "CLAUDE_CODE_BRIEF",
       "type": "env_var",
       "first_seen": "2.1.72",
-      "last_seen": "2.1.161",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -3969,7 +4200,7 @@
       "symbol": "CLAUDE_CODE_BUBBLEWRAP",
       "type": "env_var",
       "first_seen": "2.0.52",
-      "last_seen": "2.1.161",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -3983,6 +4214,13 @@
       "symbol": "CLAUDE_CODE_CERT_STORE",
       "type": "env_var",
       "first_seen": "2.1.101",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_CHILD_SESSION",
+      "type": "env_var",
+      "first_seen": "2.1.172",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -4011,7 +4249,7 @@
       "symbol": "CLAUDE_CODE_CLIENT_KEY_PASSPHRASE",
       "type": "env_var",
       "first_seen": "1.0.36",
-      "last_seen": "2.1.199",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -4080,7 +4318,7 @@
     {
       "symbol": "CLAUDE_CODE_DD_ERROR_TRACKING_FLUSH_INTERVAL_MS",
       "type": "env_var",
-      "first_seen": "2.1.191",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -4102,13 +4340,27 @@
       "symbol": "CLAUDE_CODE_DEBUG_REPAINTS",
       "type": "env_var",
       "first_seen": "2.1.83",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_DECSTBM",
       "type": "env_var",
       "first_seen": "2.1.113",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_DESIGN_OAUTH_CLIENT_ID",
+      "type": "env_var",
+      "first_seen": "2.1.178",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_DEV_RAW_CHANGELOG_URL",
+      "type": "env_var",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -4162,6 +4414,13 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_ARTIFACT",
+      "type": "env_var",
+      "first_seen": "2.1.172",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_ATTACHMENTS",
       "type": "env_var",
       "first_seen": "1.0.128",
@@ -4186,7 +4445,28 @@
       "symbol": "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS",
       "type": "env_var",
       "first_seen": "2.1.4",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_BG_EXIT_HANDOFF",
+      "type": "env_var",
+      "first_seen": "2.1.196",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP",
+      "type": "env_var",
+      "first_seen": "2.1.193",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_BUNDLED_SKILLS",
+      "type": "env_var",
+      "first_seen": "2.1.169",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -4253,6 +4533,13 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_FAST_MODE",
       "type": "env_var",
       "first_seen": "2.1.39",
@@ -4263,14 +4550,14 @@
       "symbol": "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY",
       "type": "env_var",
       "first_seen": "2.0.22",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING",
       "type": "env_var",
       "first_seen": "1.0.128",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -4288,6 +4575,13 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_LAUNCH_COMPOSER",
+      "type": "env_var",
+      "first_seen": "2.1.186",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_LEGACY_MODEL_REMAP",
       "type": "env_var",
       "first_seen": "2.1.68",
@@ -4295,10 +4589,38 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_MEMORY_BULK_INFLATE",
+      "type": "env_var",
+      "first_seen": "2.1.161",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_MEMORY_PERIODIC_RESYNC",
+      "type": "env_var",
+      "first_seen": "2.1.178",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_MOUSE",
       "type": "env_var",
       "first_seen": "2.1.89",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_MOUSE_CLICKS",
+      "type": "env_var",
+      "first_seen": "2.1.195",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_NESTED_CHAIN_IDLE",
+      "type": "env_var",
+      "first_seen": "2.1.200",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -4312,6 +4634,13 @@
       "symbol": "CLAUDE_CODE_DISABLE_NONSTREAMING_FALLBACK",
       "type": "env_var",
       "first_seen": "2.1.83",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_NOTIFICATION_PRESENCE_CHECK",
+      "type": "env_var",
+      "first_seen": "2.1.193",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -4337,10 +4666,17 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_REFUSAL_FALLBACK",
+      "type": "env_var",
+      "first_seen": "2.1.161",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_TERMINAL_TITLE",
       "type": "env_var",
       "first_seen": "1.0.52",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -4354,13 +4690,20 @@
       "symbol": "CLAUDE_CODE_DISABLE_VIRTUAL_SCROLL",
       "type": "env_var",
       "first_seen": "2.1.72",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_DISABLE_WORKFLOWS",
       "type": "env_var",
       "first_seen": "2.1.152",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_WORKING_SYNC",
+      "type": "env_var",
+      "first_seen": "2.1.198",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -4375,7 +4718,7 @@
       "symbol": "CLAUDE_CODE_EAGER_FLUSH",
       "type": "env_var",
       "first_seen": "2.1.32",
-      "last_seen": "2.1.161",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -4438,7 +4781,21 @@
       "symbol": "CLAUDE_CODE_ENABLE_CFC",
       "type": "env_var",
       "first_seen": "2.0.71",
-      "last_seen": "2.1.161",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_ENABLE_DESIGN_MCP",
+      "type": "env_var",
+      "first_seen": "2.1.179",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_ENABLE_DESIGN_SYNC",
+      "type": "env_var",
+      "first_seen": "2.1.166",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -4477,11 +4834,25 @@
       "removed_in": "2.0.59"
     },
     {
+      "symbol": "CLAUDE_CODE_ENABLE_LAUNCH_COMPOSER",
+      "type": "env_var",
+      "first_seen": "2.1.193",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_ENABLE_MENU_KIND_LANES",
+      "type": "env_var",
+      "first_seen": "2.1.163",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_ENABLE_OPUS_4_7_FAST_MODE",
       "type": "env_var",
       "first_seen": "2.1.129",
-      "last_seen": "2.1.141",
-      "removed_in": "2.1.142"
+      "last_seen": "2.1.201",
+      "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_ENABLE_PROCESS_CLAUDE_RULES",
@@ -4501,6 +4872,13 @@
       "symbol": "CLAUDE_CODE_ENABLE_PROXY_AUTH_HELPER",
       "type": "env_var",
       "first_seen": "2.1.111",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_ENABLE_REMOTE_RECAP",
+      "type": "env_var",
+      "first_seen": "2.1.174",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -4596,6 +4974,13 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_EXPERIMENTAL_OBSERVER_AGENTS",
+      "type": "env_var",
+      "first_seen": "2.1.200",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_EXTRA_BODY",
       "type": "env_var",
       "first_seen": "0.2.45",
@@ -4610,6 +4995,13 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_FABLE_BRIDGE_DIALOG_TIMEOUT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.178",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS",
       "type": "env_var",
       "first_seen": "2.0.77",
@@ -4617,17 +5009,31 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_FORCE_BRIDGE",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_FORCE_EVALUATE_MEMORY",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_FORCE_FULLSCREEN_UPSELL",
       "type": "env_var",
       "first_seen": "2.1.110",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_FORCE_FULL_LOGO",
       "type": "env_var",
       "first_seen": "2.0.11",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -4645,9 +5051,37 @@
       "removed_in": "2.0.32"
     },
     {
+      "symbol": "CLAUDE_CODE_FORCE_MEMORY_SURVEY",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_FORCE_MEMORY_WRITE_SURVEY",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.161",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_FORCE_MID_CONVERSATION_SYSTEM",
       "type": "env_var",
       "first_seen": "2.1.154",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_FORCE_SESSION_PERSISTENCE",
+      "type": "env_var",
+      "first_seen": "2.1.169",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_FORCE_STRIKETHROUGH",
+      "type": "env_var",
+      "first_seen": "2.1.186",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -4661,7 +5095,7 @@
     {
       "symbol": "CLAUDE_CODE_FORCE_TIP_ID",
       "type": "env_var",
-      "first_seen": "2.1.193",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -4673,18 +5107,67 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_FORK_SUBAGENT_DEFAULT_ON",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.162",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_FRAME",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.170",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_FRAME_AUTO_OPEN",
+      "type": "env_var",
+      "first_seen": "2.1.166",
+      "last_seen": "2.1.170",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_FRAME_MCP",
+      "type": "env_var",
+      "first_seen": "2.1.169",
+      "last_seen": "2.1.170",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_FRAME_MODE",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.162",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_FRAME_TIMING_LOG",
       "type": "env_var",
       "first_seen": "2.1.74",
-      "last_seen": "2.1.193",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_FRAME_TIMING_SAMPLE_EVERY",
+      "type": "env_var",
+      "first_seen": "2.1.195",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_GB_BASE_URL",
       "type": "env_var",
       "first_seen": "2.1.64",
-      "last_seen": "2.1.75",
-      "removed_in": "2.1.76"
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_GB_REFRESH_INTERVAL_MS",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_GIT_BASH_PATH",
@@ -4715,10 +5198,31 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_GZIP_REQUEST_BODIES",
+      "type": "env_var",
+      "first_seen": "2.1.199",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_HFI_BEARER_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_HIDE_CWD",
       "type": "env_var",
       "first_seen": "2.1.119",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_HIDE_SETTINGS_HINT",
+      "type": "env_var",
+      "first_seen": "2.1.174",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -4732,6 +5236,13 @@
       "symbol": "CLAUDE_CODE_HOST_AUTH_REFRESH_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "2.1.145",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_HOST_CREDS_FILE",
+      "type": "env_var",
+      "first_seen": "2.1.198",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -4802,7 +5313,21 @@
       "symbol": "CLAUDE_CODE_IS_COWORK",
       "type": "env_var",
       "first_seen": "2.1.32",
-      "last_seen": "2.1.161",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_JSONL_TRANSCRIPT",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_KB_COHESION_FIXES",
+      "type": "env_var",
+      "first_seen": "2.1.162",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -4830,6 +5355,13 @@
       "symbol": "CLAUDE_CODE_LOOP_PERSISTENT",
       "type": "env_var",
       "first_seen": "2.1.129",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_MANAGED_SETTINGS_PATH",
+      "type": "env_var",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -4876,6 +5408,13 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_MCP_INSTR_DELTA",
       "type": "env_var",
       "first_seen": "2.1.70",
@@ -4883,11 +5422,39 @@
       "removed_in": "2.1.91"
     },
     {
+      "symbol": "CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT",
+      "type": "env_var",
+      "first_seen": "2.1.187",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_MEMORY_WRITE_SURVEY_TIMEOUT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.161",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_MID_CONVERSATION_SYSTEM",
       "type": "env_var",
       "first_seen": "2.1.136",
-      "last_seen": "2.1.153",
-      "removed_in": "2.1.154"
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_MOCK_REMOTE_SETTINGS",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_MOCK_TRIAL",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_NATIVE_CURSOR",
@@ -4907,7 +5474,14 @@
       "symbol": "CLAUDE_CODE_NO_FLICKER",
       "type": "env_var",
       "first_seen": "2.1.89",
-      "last_seen": "2.1.161",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_OAUTH_401_WAIT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.163",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -4949,13 +5523,20 @@
       "symbol": "CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE",
       "type": "env_var",
       "first_seen": "2.1.140",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_ORGANIZATION_UUID",
       "type": "env_var",
       "first_seen": "2.1.47",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_OTEL_DIAG_STDERR",
+      "type": "env_var",
+      "first_seen": "2.1.179",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -4981,6 +5562,20 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_OVERRIDE_DATE",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_OWNERSHIP_FRAME",
+      "type": "env_var",
+      "first_seen": "2.1.161",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE",
       "type": "env_var",
       "first_seen": "2.1.129",
@@ -4995,9 +5590,23 @@
       "removed_in": "2.1.7"
     },
     {
+      "symbol": "CLAUDE_CODE_PARKED_PERMISSION_WAIT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_PERFETTO_TRACE",
       "type": "env_var",
       "first_seen": "2.1.10",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_PERFETTO_WRITE_INTERVAL_S",
+      "type": "env_var",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5012,21 +5621,28 @@
       "symbol": "CLAUDE_CODE_PEWTER_OWL",
       "type": "env_var",
       "first_seen": "2.1.159",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_PEWTER_OWL_TOOL",
+      "type": "env_var",
+      "first_seen": "2.1.169",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_PLAN_MODE_INTERVIEW_PHASE",
       "type": "env_var",
       "first_seen": "2.1.16",
-      "last_seen": "2.1.144",
-      "removed_in": "2.1.145"
+      "last_seen": "2.1.201",
+      "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_PLAN_MODE_REQUIRED",
       "type": "env_var",
       "first_seen": "2.0.70",
-      "last_seen": "2.1.170",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -5040,6 +5656,13 @@
       "symbol": "CLAUDE_CODE_PLAN_V2_EXPLORE_AGENT_COUNT",
       "type": "env_var",
       "first_seen": "2.0.45",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_PLUGIN_BINARY_ASSETS",
+      "type": "env_var",
+      "first_seen": "2.1.196",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5103,13 +5726,27 @@
       "symbol": "CLAUDE_CODE_POST_FOR_SESSION_INGRESS_V2",
       "type": "env_var",
       "first_seen": "2.1.27",
-      "last_seen": "2.1.165",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_POWERSHELL_RESPECT_EXECUTION_POLICY",
       "type": "env_var",
       "first_seen": "2.1.143",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_POWERUP_ONBOARDING",
+      "type": "env_var",
+      "first_seen": "2.1.181",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS",
+      "type": "env_var",
+      "first_seen": "2.1.182",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5124,8 +5761,8 @@
       "symbol": "CLAUDE_CODE_PROFILE_QUERY",
       "type": "env_var",
       "first_seen": "2.0.41",
-      "last_seen": "2.0.76",
-      "removed_in": "2.0.77"
+      "last_seen": "2.1.201",
+      "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_PROFILE_STARTUP",
@@ -5198,9 +5835,23 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_REMOTE_HERMETIC_MODE",
+      "type": "env_var",
+      "first_seen": "2.1.163",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_REMOTE_MEMORY_DIR",
       "type": "env_var",
       "first_seen": "2.1.38",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_REMOTE_RAW_EVENTS_FILE",
+      "type": "env_var",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5215,6 +5866,20 @@
       "symbol": "CLAUDE_CODE_REMOTE_SESSION_ID",
       "type": "env_var",
       "first_seen": "2.0.52",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_REMOTE_SETTINGS_PATH",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_REMOTE_SETTINGS_POLL_MS",
+      "type": "env_var",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5415,6 +6080,27 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_SKILL_DESCRIPTION",
+      "type": "env_var",
+      "first_seen": "2.1.154",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_SKILL_DESC_REFRAME",
+      "type": "env_var",
+      "first_seen": "2.1.196",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_SKILL_NAME",
+      "type": "env_var",
+      "first_seen": "2.1.154",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_SKIP_ANTHROPIC_AWS_AUTH",
       "type": "env_var",
       "first_seen": "2.1.90",
@@ -5450,9 +6136,30 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_SKIP_HFI_VERSION_CHECK",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_SKIP_MANTLE_AUTH",
       "type": "env_var",
       "first_seen": "2.1.94",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_SKIP_PLUGIN_MCP_SERVERS",
+      "type": "env_var",
+      "first_seen": "2.1.172",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_SKIP_PLUGIN_MCP_SERVERS_EXCEPT",
+      "type": "env_var",
+      "first_seen": "2.1.199",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5464,9 +6171,23 @@
       "removed_in": "2.1.69"
     },
     {
+      "symbol": "CLAUDE_CODE_SKIP_PROJECT_BACKFILL",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_SKIP_PROMPT_HISTORY",
       "type": "env_var",
       "first_seen": "2.0.70",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_SKIP_REPO_UPLOAD",
+      "type": "env_var",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5527,6 +6248,13 @@
       "removed_in": "2.1.78"
     },
     {
+      "symbol": "CLAUDE_CODE_SUBAGENT_CACHE_EVICT",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_SUBAGENT_MODEL",
       "type": "env_var",
       "first_seen": "1.0.57",
@@ -5555,9 +6283,30 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_SUPPRESS_SESSION_ATTRIBUTION",
+      "type": "env_var",
+      "first_seen": "2.1.161",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_SYNC_PLUGINS",
       "type": "env_var",
       "first_seen": "2.1.157",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_SYNC_PLUGINS_BUFFERED_DOWNLOAD",
+      "type": "env_var",
+      "first_seen": "2.1.179",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_SYNC_PLUGINS_DOWNLOAD_STALL_MS",
+      "type": "env_var",
+      "first_seen": "2.1.179",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5579,7 +6328,7 @@
       "symbol": "CLAUDE_CODE_SYNC_PLUGIN_INSTALL",
       "type": "env_var",
       "first_seen": "2.1.40",
-      "last_seen": "2.1.161",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -5597,10 +6346,17 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_SYNC_SKILLS_INSTALL_TIMEOUT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.163",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_SYNC_SKILLS_WAIT_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "2.1.149",
-      "last_seen": "2.1.162",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -5621,6 +6377,13 @@
       "symbol": "CLAUDE_CODE_TAGS",
       "type": "env_var",
       "first_seen": "2.0.28",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_TAG_ISMETA_MESSAGES",
+      "type": "env_var",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5674,9 +6437,37 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_TERMINAL_RECORDING",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_TEST_FIXTURES_ROOT",
       "type": "env_var",
       "first_seen": "1.0.109",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_TEST_FORCE_DENY",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_TEST_NO_GIT_BASH",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_TEST_NO_PWSH",
+      "type": "env_var",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5716,6 +6507,27 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_TODO_REMINDER_MODE",
+      "type": "env_var",
+      "first_seen": "2.1.178",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_TOTAL_TOKENS_REMINDER",
+      "type": "env_var",
+      "first_seen": "2.1.176",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_TOTAL_TOKENS_REMINDER_BUDGET",
+      "type": "env_var",
+      "first_seen": "2.1.196",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_TST_NAMES_IN_MESSAGES",
       "type": "env_var",
       "first_seen": "2.1.31",
@@ -5733,13 +6545,20 @@
       "symbol": "CLAUDE_CODE_TWO_STAGE_CLASSIFIER",
       "type": "env_var",
       "first_seen": "2.1.71",
-      "last_seen": "2.1.73",
-      "removed_in": "2.1.74"
+      "last_seen": "2.1.201",
+      "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_ULTRAREVIEW_PREFLIGHT_FIXTURE",
       "type": "env_var",
       "first_seen": "2.1.105",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_USER_DIALOG_TIMEOUT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.169",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5768,7 +6587,7 @@
       "symbol": "CLAUDE_CODE_USE_CCR_V2",
       "type": "env_var",
       "first_seen": "2.1.47",
-      "last_seen": "2.1.165",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -5803,8 +6622,8 @@
       "symbol": "CLAUDE_CODE_USE_NATIVE_FILE_SEARCH",
       "type": "env_var",
       "first_seen": "2.0.28",
-      "last_seen": "2.1.112",
-      "removed_in": "2.1.113"
+      "last_seen": "2.1.201",
+      "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_USE_POWERSHELL_TOOL",
@@ -5821,6 +6640,13 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_CODE_VELVET_FALCON",
+      "type": "env_var",
+      "first_seen": "2.1.163",
+      "last_seen": "2.1.173",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_CODE_VERIFY_PROMPT",
       "type": "env_var",
       "first_seen": "2.1.119",
@@ -5831,6 +6657,27 @@
       "symbol": "CLAUDE_CODE_VOICE_FORWARD_INTERIMS_TYPED",
       "type": "env_var",
       "first_seen": "2.1.141",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_WEBFETCH_PROXY_PATH",
+      "type": "env_var",
+      "first_seen": "2.1.166",
+      "last_seen": "2.1.168",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_WEBFETCH_USE_CCR_PROXY",
+      "type": "env_var",
+      "first_seen": "2.1.169",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CODE_WEBSEARCH_USE_CCR_PROXY",
+      "type": "env_var",
+      "first_seen": "2.1.182",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5866,6 +6713,20 @@
       "symbol": "CLAUDE_CONFIG_DIR",
       "type": "env_var",
       "first_seen": "0.2.9",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CONTEXT_COLLAPSE",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_CONTEXT_COLLAPSE_MODEL",
+      "type": "env_var",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5908,7 +6769,14 @@
       "symbol": "CLAUDE_DEBUG",
       "type": "env_var",
       "first_seen": "1.0.91",
-      "last_seen": "2.1.159",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_DISABLE_ADOPT",
+      "type": "env_var",
+      "first_seen": "2.1.195",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -5929,7 +6797,7 @@
       "symbol": "CLAUDE_ENABLE_STREAM_WATCHDOG",
       "type": "env_var",
       "first_seen": "2.1.40",
-      "last_seen": "2.1.168",
+      "last_seen": "2.1.201",
       "removed_in": null
     },
     {
@@ -5949,7 +6817,14 @@
     {
       "symbol": "CLAUDE_GATEWAY_ALLOW_LOOPBACK",
       "type": "env_var",
-      "first_seen": "2.1.195",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_GATEWAY_LOG_LEVEL",
+      "type": "env_var",
+      "first_seen": "2.1.162",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -5963,7 +6838,35 @@
     {
       "symbol": "CLAUDE_INTERNAL_ASSISTANT_TEAM_NAME",
       "type": "env_var",
-      "first_seen": "2.1.178",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_INTERNAL_FC_OVERRIDES",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_INTERNAL_WARM_RESUME_QA",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_IN_CHROME_DOMAIN_RULE_TOOL",
+      "type": "env_var",
+      "first_seen": "2.1.176",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_IN_CHROME_MCP_SERVER_NAME",
+      "type": "env_var",
+      "first_seen": "2.1.176",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -6010,6 +6913,27 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_MOCK_HEADERLESS_429",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_PREVIEW_CLASSIFIER_FLOOR",
+      "type": "env_var",
+      "first_seen": "2.1.196",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_PROJECT_TOOL",
+      "type": "env_var",
+      "first_seen": "2.1.174",
+      "last_seen": "2.1.185",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_PROJECT_UUID",
       "type": "env_var",
       "first_seen": "2.1.174",
@@ -6052,6 +6976,20 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_REMOTE_WORKFLOW_ARGS",
+      "type": "env_var",
+      "first_seen": "2.1.200",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_REMOTE_WORKFLOW_SCRIPT",
+      "type": "env_var",
+      "first_seen": "2.1.200",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_REPL_MODE",
       "type": "env_var",
       "first_seen": "2.1.14",
@@ -6073,9 +7011,30 @@
       "removed_in": null
     },
     {
+      "symbol": "CLAUDE_RUNNER_DISABLE_AWAITING_ACTION_OVERRIDE",
+      "type": "env_var",
+      "first_seen": "2.1.200",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_FETCH_DEPTH",
+      "type": "env_var",
+      "first_seen": "2.1.172",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
       "symbol": "CLAUDE_SECURESTORAGE_CONFIG_DIR",
       "type": "env_var",
       "first_seen": "2.1.144",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_SERVE_DRAIN_TIMEOUT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -6090,6 +7049,34 @@
       "symbol": "CLAUDE_SLOW_FIRST_BYTE_MS",
       "type": "env_var",
       "first_seen": "2.1.110",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_SNIP",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_SSH_LOCAL_BINARY",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_SSH_VERSION",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_STAGE_FILE_ROOT",
+      "type": "env_var",
+      "first_seen": "2.1.174",
       "last_seen": "2.1.201",
       "removed_in": null
     },
@@ -6118,6 +7105,13 @@
       "symbol": "CLAUDE_TRUSTED_DEVICE_TOKEN",
       "type": "env_var",
       "first_seen": "2.1.86",
+      "last_seen": "2.1.201",
+      "removed_in": null
+    },
+    {
+      "symbol": "CLAUDE_WORKFLOW_NAME_ONLY",
+      "type": "env_var",
+      "first_seen": "2.1.200",
       "last_seen": "2.1.201",
       "removed_in": null
     },

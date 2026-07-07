@@ -220,6 +220,18 @@
       "category": "cli"
     },
     {
+      "symbol": "--delete",
+      "type": "cli_flag",
+      "first_seen": "1.0.89",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli"
+    },
+    {
       "symbol": "--disable-slash-commands",
       "type": "cli_flag",
       "first_seen": "2.0.60",
@@ -1484,6 +1496,19 @@
       "provenance": "changelog",
       "confidence": "high",
       "description": "Rewind the conversation and/or code to a previous point, or summarize from a selected message. See checkpointing. Aliases: `/checkpoint`, `/undo`",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/sandbox",
+      "type": "command",
+      "first_seen": "2.0.12",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Toggle sandbox mode. Available on supported platforms only",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2922,6 +2947,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_PROFILE_QUERY",
+      "type": "env_var",
+      "first_seen": "2.0.41",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_PROFILE_STARTUP",
       "type": "env_var",
       "first_seen": "2.0.31",
@@ -4144,6 +4181,18 @@
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
+    },
+    {
+      "symbol": "PATH",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
     },
     {
       "symbol": "PERMISSION_EXPLAINER_ENABLED",
