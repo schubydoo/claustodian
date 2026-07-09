@@ -19,6 +19,7 @@ import {
   enrichSymbols,
   enrichWithBinary,
   extractSymbols,
+  freezeEstimatedFirstSeen,
   isIntroducingBullet,
   isSubprocessFlagBullet,
   subprocessFlagExamples,
@@ -765,5 +766,81 @@ describe('assembleSnapshots — per-version deprecation status', () => {
       blocks
     );
     expect(statusAt(snaps, '2.6.0', 'X_ENV')).toBe('needs_review');
+  });
+});
+
+describe('freezeEstimatedFirstSeen', () => {
+  const rec = (over: Partial<SymbolRecord>): SymbolRecord => ({
+    symbol: '--any',
+    type: 'cli_flag',
+    first_seen: '2.1.205',
+    first_seen_estimated: true,
+    removed_in: null,
+    status: 'active',
+    provenance: 'docs',
+    confidence: 'medium',
+    description: 'd',
+    source_url: null,
+    category: 'cli',
+    ...over,
+  });
+
+  it('pulls a floating estimate back to the earlier prior first_seen', () => {
+    const [r] = freezeEstimatedFirstSeen(
+      [rec({ first_seen: '2.1.205' })],
+      new Map([['cli_flag:--any', '2.1.150']])
+    );
+    expect(r?.first_seen).toBe('2.1.150');
+    expect(r?.first_seen_estimated).toBe(true);
+  });
+
+  it('never touches an anchored (non-estimated) symbol, even with an earlier prior', () => {
+    const [r] = freezeEstimatedFirstSeen(
+      [rec({ first_seen: '0.2.33', first_seen_estimated: undefined })],
+      new Map([['cli_flag:--any', '0.2.9']])
+    );
+    expect(r?.first_seen).toBe('0.2.33');
+  });
+
+  it('keeps latestVersion when there is no prior entry (first sighting freezes here)', () => {
+    const [r] = freezeEstimatedFirstSeen([rec({ first_seen: '2.1.205' })], new Map());
+    expect(r?.first_seen).toBe('2.1.205');
+  });
+
+  it('never pushes an estimate later than its current value', () => {
+    const [r] = freezeEstimatedFirstSeen(
+      [rec({ first_seen: '2.1.100' })],
+      new Map([['cli_flag:--any', '2.1.150']])
+    );
+    expect(r?.first_seen).toBe('2.1.100');
+  });
+});
+
+describe('estimate does not float across a release bump', () => {
+  // A docs-only symbol with no min-version and no binary evidence.
+  const docs = docsIndex([
+    { symbol: '--undated', type: 'cli_flag', description: 'no min-version', doc_min_version: null, doc_page: 'cli-reference' },
+  ]);
+  const firstSeenOf = (snaps: ReturnType<typeof buildEnrichedSnapshots>, v: string) =>
+    snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === '--undated')?.first_seen;
+
+  it('freezes at the version first recorded instead of creeping to the newest release', () => {
+    // Release 1: newest is 2.1.100 → the undated estimate lands at 2.1.100.
+    const run1 = buildEnrichedSnapshots([{ version: '2.1.100', bullets: [] }], docs, undefined, new Map());
+    expect(firstSeenOf(run1, '2.1.100')).toBe('2.1.100');
+
+    // Carry that forward as the committed prior, then a new release ships.
+    const prior = new Map(
+      run1.at(-1)!.symbols.map((s) => [`${s.type}:${s.symbol}`, s.first_seen] as const)
+    );
+    const run2 = buildEnrichedSnapshots(
+      [{ version: '2.1.100', bullets: [] }, { version: '2.1.110', bullets: [] }],
+      docs,
+      undefined,
+      prior
+    );
+    // Frozen at 2.1.100 — NOT floated to 2.1.110 — so it now also appears at 2.1.100.
+    expect(firstSeenOf(run2, '2.1.110')).toBe('2.1.100');
+    expect(firstSeenOf(run2, '2.1.100')).toBe('2.1.100');
   });
 });

@@ -1,7 +1,7 @@
 // Copyright 2026 Schuby
 // SPDX-License-Identifier: Apache-2.0
 
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -129,5 +129,44 @@ describe('scrape-changelog main()', () => {
 
   it('errors on a bare --changelog (no path)', async () => {
     await expect(withArgv(['--changelog'], main)).rejects.toThrow('--changelog requires a path');
+  });
+
+  it('reads a prior latest.json in the out dir to freeze estimates (runs clean)', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-scrape-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    const outDir = join(tmpDir, 'out');
+    await mkdir(outDir, { recursive: true });
+    await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
+    // A valid prior snapshot at the output location — loadPriorFirstSeen parses it
+    // and builds the freeze map (its symbols may or may not overlap this run).
+    await writeFile(
+      join(outDir, 'latest.json'),
+      JSON.stringify({
+        claudeCodeVersion: '2.1.9',
+        schemaVersion: 1,
+        symbols: [
+          { symbol: '--undated', type: 'cli_flag', first_seen: '2.1.9', removed_in: null, status: 'active', provenance: 'docs', confidence: 'medium', description: '', source_url: null, category: 'cli', first_seen_estimated: true },
+        ],
+      }),
+      'utf-8'
+    );
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await withArgv(['--changelog', changelogPath, '--out', outDir], main);
+    expect(exitCode).toBe(0);
+    await expect(readFile(join(outDir, 'latest.json'), 'utf-8')).resolves.toBeTruthy();
+  });
+
+  it('degrades gracefully when the prior latest.json is malformed (no freeze, no crash)', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-scrape-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    const outDir = join(tmpDir, 'out');
+    await mkdir(outDir, { recursive: true });
+    await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
+    await writeFile(join(outDir, 'latest.json'), '{ not valid json', 'utf-8');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await withArgv(['--changelog', changelogPath, '--out', outDir], main);
+    expect(exitCode).toBe(0);
   });
 });
