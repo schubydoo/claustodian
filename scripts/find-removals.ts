@@ -56,12 +56,15 @@ export async function main(argv: string[]): Promise<number> {
   };
 
   const known = new Set(dataset.symbols.map((s) => s.symbol));
-  const confirmed = new Set([
-    ...CONFIRMED_REMOVALS.map((r) => r.symbol),
-    ...CONFIRMED_DEPRECATIONS.map((d) => d.symbol),
-  ]);
+  // Confirm per verb, not across both lists: a symbol already in
+  // CONFIRMED_DEPRECATIONS must still surface if the changelog LATER *removes* it
+  // (that removal isn't in CONFIRMED_REMOVALS yet), and vice-versa.
+  const confirmedRemovals = new Set(CONFIRMED_REMOVALS.map((r) => r.symbol));
+  const confirmedDeprecations = new Set(CONFIRMED_DEPRECATIONS.map((d) => d.symbol));
   const candidates = extractRemovalCandidates(markdown).filter(
-    (c) => known.has(c.symbol) && !confirmed.has(c.symbol)
+    (c) =>
+      known.has(c.symbol) &&
+      !(c.verb === 'Removed' ? confirmedRemovals : confirmedDeprecations).has(c.symbol)
   );
 
   if (candidates.length === 0) {
