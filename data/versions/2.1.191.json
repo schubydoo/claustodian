@@ -2067,8 +2067,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "As of v2.1.198, running `/agents` prints a reminder to ask Claude to create or manage subagents, or to edit `.claude/agents/` or `~/.claude/agents/` directly. On v2.1.197 and earlier, opens an interactive interface for creating and managing subagent configurations",
-      "description_source": "docs",
+      "description": "Manage agent configurations",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2233,8 +2233,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Configure Claude in Chrome settings",
-      "description_source": "docs",
+      "description": "Open Claude in Chrome (beta) settings",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2439,7 +2439,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "Grant or revoke Claude agent access to your Design projects",
+      "description": "Work with Claude Design (claude.ai/design) \\u2014 create, import, export, sync, login",
       "description_source": "binary",
       "source_url": null,
       "category": "command"

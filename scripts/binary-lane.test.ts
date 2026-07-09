@@ -7,7 +7,13 @@ import {
   binaryEnvCategory,
   type BinaryObservations,
   computeBinaryRemoval,
+  assertBinaryDescriptions,
+  type BinaryDescriptions,
+  descriptionAt,
+  type DescriptionEra,
+  isCurrentDescriptionEra,
   isPublishableBinaryEnv,
+  loadBinaryDescriptions,
   loadBinaryObservations,
   NEEDS_REVIEW_ENV,
   PROMOTE_CC_ENV,
@@ -174,5 +180,52 @@ describe('loadBinaryObservations', () => {
     await expect(
       loadBinaryObservations('/tmp/claustodian-no-such-binary-observations.json')
     ).rejects.toThrow(/npm run backfill-binary/);
+  });
+});
+
+describe('description timeline', () => {
+  const eras: DescriptionEra[] = [
+    { from: '0.2.9', description: 'old' },
+    { from: '2.1.100', description: 'mid' },
+    { from: '2.1.186', description: 'current' },
+  ];
+
+  it('descriptionAt returns the era active at a version', () => {
+    expect(descriptionAt(eras, '0.2.9')?.description).toBe('old');
+    expect(descriptionAt(eras, '2.1.99')?.description).toBe('old');
+    expect(descriptionAt(eras, '2.1.100')?.description).toBe('mid');
+    expect(descriptionAt(eras, '2.1.185')?.description).toBe('mid');
+    expect(descriptionAt(eras, '2.1.205')?.description).toBe('current');
+  });
+
+  it('descriptionAt returns undefined before the first era', () => {
+    expect(descriptionAt(eras, '0.2.1')).toBeUndefined();
+  });
+
+  it('isCurrentDescriptionEra is true only at/after the last era', () => {
+    expect(isCurrentDescriptionEra(eras, '2.1.185')).toBe(false);
+    expect(isCurrentDescriptionEra(eras, '2.1.186')).toBe(true);
+    expect(isCurrentDescriptionEra(eras, '2.1.205')).toBe(true);
+    expect(isCurrentDescriptionEra([], '2.1.205')).toBe(false);
+  });
+
+  it('loadBinaryDescriptions throws actionable guidance when the file is missing', async () => {
+    await expect(
+      loadBinaryDescriptions('/tmp/claustodian-no-such-binary-descriptions.json')
+    ).rejects.toThrow(/npm run backfill-binary/);
+  });
+
+  it('assertBinaryDescriptions accepts a backfill output and rejects others', () => {
+    const good: BinaryDescriptions = {
+      $generated_by: 'scripts/backfill-binary.ts',
+      source: 'binary',
+      note: '',
+      descriptions: { 'command:/x': eras },
+    };
+    expect(() => assertBinaryDescriptions(good, 'p')).not.toThrow();
+    expect(() => assertBinaryDescriptions({ ...good, source: 'hand' }, 'p')).toThrow(/not a scripts/);
+    expect(() =>
+      assertBinaryDescriptions({ ...good, descriptions: null as unknown as BinaryDescriptions['descriptions'] }, 'p')
+    ).toThrow(/malformed/);
   });
 });
