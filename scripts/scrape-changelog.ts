@@ -43,6 +43,7 @@ import {
   promotionFor,
 } from './binary-lane.js';
 import { assertOfficialDocs, DOCS_BASE, type DocsIndex } from './fetch-docs.js';
+import { applyChangelogRemovals } from './removals.js';
 import { compareVersionsAsc, type ExtractedSymbolType, isMain, loadChangelog } from './lib.js';
 
 // Re-exported from lib for existing importers (tests, extract-bundle, etc.).
@@ -652,9 +653,11 @@ export function enrichWithBinary(
 
 /**
  * Production snapshots: changelog symbols enriched with the official docs lane,
- * then overlaid with the binary lane when `binary` observations are supplied.
- * The binary overlay is optional so the changelog+docs contract (and its tests)
- * stays exercisable on its own; production always supplies it.
+ * then overlaid with the binary lane when `binary` observations are supplied,
+ * then retired per the curated changelog-removal list. The binary overlay is
+ * optional so the changelog+docs contract (and its tests) stays exercisable on
+ * its own; production always supplies it. Removals apply last so a confirmed
+ * retirement wins over whatever lane last touched the record's `removed_in`.
  */
 export function buildEnrichedSnapshots(
   blocks: ChangelogBlock[],
@@ -666,7 +669,8 @@ export function buildEnrichedSnapshots(
     blocks.map((block) => block.version).sort((a, b) => compareVersionsAsc(b, a))[0] ?? '';
   const enriched = enrichSymbols(collected, docs, latest);
   const withBinary = binary ? enrichWithBinary(enriched, binary) : enriched;
-  return assembleSnapshots(withBinary, blocks);
+  const withRemovals = applyChangelogRemovals(withBinary);
+  return assembleSnapshots(withRemovals, blocks);
 }
 
 /**

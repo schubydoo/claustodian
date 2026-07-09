@@ -3327,18 +3327,6 @@
       "category": "command"
     },
     {
-      "symbol": "/tag",
-      "type": "command",
-      "first_seen": "2.0.65",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
       "symbol": "/tasks",
       "type": "command",
       "first_seen": "0.2.117",
@@ -3567,19 +3555,6 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
-      "category": "command"
-    },
-    {
-      "symbol": "/vim",
-      "type": "command",
-      "first_seen": "0.2.19",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Removed in v2.1.92. To toggle between Vim and Normal editing modes, use `/config` → Editor mode",
-      "description_source": "docs",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
