@@ -86,6 +86,36 @@ describe('find-removals main()', () => {
     await expect(main(['--changlog', 'x'])).rejects.toThrow(/Unknown argument "--changlog"/);
   });
 
+  it('proposes a known Deprecated candidate but skips a confirmed one', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-removals-'));
+    const clPath = join(tmpDir, 'CHANGELOG.md');
+    const dsPath = join(tmpDir, 'latest.json');
+    // /new-dep is known + unconfirmed → proposed; /output-style is a confirmed
+    // deprecation → skipped. Exercises the Deprecated branch of the verb filter.
+    await writeFile(
+      clPath,
+      '# Changelog\n\n## 2.1.99\n\n- Deprecated `/new-dep`\n- Deprecated `/output-style`\n',
+      'utf-8'
+    );
+    await writeFile(
+      dsPath,
+      JSON.stringify({
+        symbols: [
+          { type: 'command', symbol: '/new-dep' },
+          { type: 'command', symbol: '/output-style' },
+        ],
+      }),
+      'utf-8'
+    );
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const code = await main(['--changelog', clPath, '--dataset', dsPath]);
+    expect(code).toBe(0);
+    const output = logSpy.mock.calls.map((c: unknown[]) => String(c[0])).join('\n');
+    expect(output).toContain('/new-dep');
+    expect(output).not.toContain('/output-style');
+  });
+
   it('still surfaces a Removed bullet for an already-deprecated symbol', async () => {
     tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-removals-'));
     const clPath = join(tmpDir, 'CHANGELOG.md');
