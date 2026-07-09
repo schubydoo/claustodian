@@ -171,4 +171,18 @@ describe('scrape-changelog main()', () => {
     const exitCode = await withArgv(['--changelog', changelogPath, '--out', outDir], main);
     expect(exitCode).toBe(0);
   });
+
+  it('tolerates a prior latest.json with no symbols array (empty freeze map)', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-scrape-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    const outDir = join(tmpDir, 'out');
+    await mkdir(outDir, { recursive: true });
+    await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
+    // Valid JSON, but no `symbols` key — exercises the `?? []` fallback.
+    await writeFile(join(outDir, 'latest.json'), '{}', 'utf-8');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await withArgv(['--changelog', changelogPath, '--out', outDir], main);
+    expect(exitCode).toBe(0);
+  });
 });
