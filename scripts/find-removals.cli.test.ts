@@ -80,4 +80,8 @@ describe('find-removals main()', () => {
     await expect(main(['--dataset'])).rejects.toThrow(/--dataset requires a path/);
     await expect(main(['--changelog'])).rejects.toThrow(/--changelog requires a path/);
   });
+
+  it('throws on an unknown/mistyped argument instead of scanning defaults', async () => {
+    await expect(main(['--changlog', 'x'])).rejects.toThrow(/Unknown argument "--changlog"/);
+  });
 });

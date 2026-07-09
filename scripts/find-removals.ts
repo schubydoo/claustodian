@@ -34,6 +34,11 @@ function parseArgs(argv: string[]): Options {
       if (value === undefined) throw new Error(`${arg} requires a path`);
       if (arg === '--changelog') options.changelogPath = value;
       else options.datasetPath = value;
+    } else {
+      // Reject unknown args rather than ignoring them: a mistyped `--changelog`
+      // would otherwise be dropped and the tool would scan the default sources
+      // and still report "up to date". Mirrors reextract-binaries.ts parseArgs.
+      throw new Error(`Unknown argument "${arg}". Expected --changelog or --dataset.`);
     }
   }
   return options;
