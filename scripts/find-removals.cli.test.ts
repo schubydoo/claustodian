@@ -14,17 +14,18 @@ const CHANGELOG = `# Changelog
 ## 2.1.92
 
 - Removed \`/vim\` command
-- Removed \`/output-style\`
+- Removed \`/legacy-cmd\`
 
 ## 2.1.90
 
 - Removed the startup warning — run \`/doctor\` to see it instead
 `;
 
-// Dataset knows /output-style and /doctor but not the (fictional) /ghost.
+// /legacy-cmd is a known symbol not in any confirmed list; /vim is a confirmed
+// removal; /doctor is only referenced (a false positive).
 const DATASET = JSON.stringify({
   symbols: [
-    { type: 'command', symbol: '/output-style' },
+    { type: 'command', symbol: '/legacy-cmd' },
     { type: 'command', symbol: '/doctor' },
     { type: 'command', symbol: '/vim' },
   ],
@@ -54,8 +55,8 @@ describe('find-removals main()', () => {
     expect(code).toBe(0);
 
     const output = logSpy.mock.calls.map((c: unknown[]) => String(c[0])).join('\n');
-    // /output-style is a known, unconfirmed retirement → reported.
-    expect(output).toContain('/output-style');
+    // /legacy-cmd is a known, unconfirmed retirement → reported.
+    expect(output).toContain('/legacy-cmd');
     // /vim is confirmed in CONFIRMED_REMOVALS → not re-proposed.
     expect(output).not.toContain('/vim');
     // /doctor is only referenced, never the object of "Removed" → never proposed.

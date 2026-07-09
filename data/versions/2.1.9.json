@@ -1287,7 +1287,8 @@
       "confidence": "high",
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "deprecated_in": "2.1.73"
     },
     {
       "symbol": "/passes",

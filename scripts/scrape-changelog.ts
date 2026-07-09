@@ -43,7 +43,7 @@ import {
   promotionFor,
 } from './binary-lane.js';
 import { assertOfficialDocs, DOCS_BASE, type DocsIndex } from './fetch-docs.js';
-import { applyChangelogRemovals } from './removals.js';
+import { applyChangelogDeprecations, applyChangelogRemovals } from './removals.js';
 import { compareVersionsAsc, type ExtractedSymbolType, isMain, loadChangelog } from './lib.js';
 
 // Re-exported from lib for existing importers (tests, extract-bundle, etc.).
@@ -70,6 +70,12 @@ export interface SymbolRecord {
   first_seen: string;
   first_seen_estimated?: boolean;
   removed_in: string | null;
+  /**
+   * Version whose changelog deprecated the symbol, if any. Metadata carried on
+   * the record; the per-version `status` flip to `deprecated` at/after this
+   * version happens in assembleSnapshots. Absent when the symbol is not deprecated.
+   */
+  deprecated_in?: string;
   status: 'active' | 'deprecated' | 'removed' | 'needs_review';
   provenance: 'changelog' | 'docs' | 'binary';
   confidence: 'high' | 'medium' | 'low';
@@ -449,8 +455,14 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
  * Assembles cumulative per-version snapshots from a finalized symbol list: each
  * version's snapshot holds every symbol live at that version — `first_seen` <=
  * version AND (no `removed_in`, or version is before it) — sorted deterministically
- * by type then symbol name. `removed_in` is currently only set by the binary lane's
- * cliff-aware removal detection; changelog/docs records leave it null.
+ * by type then symbol name.
+ *
+ * `status` is resolved per version: a symbol carrying `deprecated_in` reads
+ * `active` in snapshots before that version and `deprecated` at/after it (while
+ * still present — deprecation, unlike removal, does not drop the symbol). Removal
+ * is expressed by absence (`removed_in` filters the symbol out), so `status` never
+ * needs to say "removed". `removed_in`/`deprecated_in` are set by the binary lane
+ * and the curated changelog lifecycle lane ([[removals.ts]]).
  */
 export function assembleSnapshots(
   records: SymbolRecord[],
@@ -464,9 +476,21 @@ export function assembleSnapshots(
     compareVersionsAsc(record.first_seen, version) <= 0 &&
     (record.removed_in === null || compareVersionsAsc(version, record.removed_in) < 0);
 
+  // Flip an active symbol to `deprecated` in versions at/after its deprecation
+  // (a new object per snapshot, so earlier snapshots keep `active`).
+  const statusAt = (record: SymbolRecord, version: string): SymbolRecord =>
+    record.deprecated_in !== undefined &&
+    record.status === 'active' &&
+    compareVersionsAsc(version, record.deprecated_in) >= 0
+      ? { ...record, status: 'deprecated' }
+      : record;
+
   return versionsOldestFirst.map((version) => ({
     version,
-    symbols: records.filter((record) => liveAt(record, version)).sort(compareSymbolRecords),
+    symbols: records
+      .filter((record) => liveAt(record, version))
+      .map((record) => statusAt(record, version))
+      .sort(compareSymbolRecords),
   }));
 }
 
@@ -670,7 +694,8 @@ export function buildEnrichedSnapshots(
   const enriched = enrichSymbols(collected, docs, latest);
   const withBinary = binary ? enrichWithBinary(enriched, binary) : enriched;
   const withRemovals = applyChangelogRemovals(withBinary);
-  return assembleSnapshots(withRemovals, blocks);
+  const withDeprecations = applyChangelogDeprecations(withRemovals);
+  return assembleSnapshots(withDeprecations, blocks);
 }
 
 /**

@@ -12,6 +12,7 @@ import {
   buildEnrichedSnapshots,
   buildIndex,
   buildSnapshots,
+  assembleSnapshots,
   categorize,
   collectChangelogSymbols,
   compareVersionsAsc,
@@ -711,5 +712,58 @@ describe('assertCanonicalSourcesForCommittedData', () => {
 
   it('allows the official fetch (no --changelog) into the committed directory', () => {
     expect(() => assertCanonicalSourcesForCommittedData('data', undefined)).not.toThrow();
+  });
+});
+
+describe('assembleSnapshots — per-version deprecation status', () => {
+  const rec = (over: Partial<SymbolRecord>): SymbolRecord => ({
+    symbol: '/output-style',
+    type: 'command',
+    first_seen: '1.0.0',
+    removed_in: null,
+    status: 'active',
+    provenance: 'changelog',
+    confidence: 'high',
+    description: 'd',
+    source_url: null,
+    category: 'command',
+    ...over,
+  });
+  const blocks = [
+    { version: '1.5.0', bullets: [] },
+    { version: '2.0.0', bullets: [] },
+    { version: '2.4.0', bullets: [] },
+    { version: '2.6.0', bullets: [] },
+  ];
+  const statusAt = (snaps: ReturnType<typeof assembleSnapshots>, v: string, sym: string) =>
+    snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === sym)?.status;
+
+  it('reads active before deprecated_in and deprecated at/after (still present)', () => {
+    const snaps = assembleSnapshots([rec({ deprecated_in: '2.0.0' })], blocks);
+    expect(statusAt(snaps, '1.5.0', '/output-style')).toBe('active');
+    expect(statusAt(snaps, '2.0.0', '/output-style')).toBe('deprecated');
+    expect(statusAt(snaps, '2.6.0', '/output-style')).toBe('deprecated');
+  });
+
+  it('does not mutate the shared record (earlier snapshot stays active)', () => {
+    const input = rec({ deprecated_in: '2.0.0' });
+    assembleSnapshots([input], blocks);
+    expect(input.status).toBe('active');
+  });
+
+  it('composes with removal: active -> deprecated -> absent', () => {
+    const snaps = assembleSnapshots([rec({ deprecated_in: '2.0.0', removed_in: '2.4.0' })], blocks);
+    expect(statusAt(snaps, '1.5.0', '/output-style')).toBe('active');
+    expect(statusAt(snaps, '2.0.0', '/output-style')).toBe('deprecated');
+    expect(statusAt(snaps, '2.4.0', '/output-style')).toBeUndefined();
+    expect(statusAt(snaps, '2.6.0', '/output-style')).toBeUndefined();
+  });
+
+  it('leaves a non-active status untouched (never re-flags needs_review)', () => {
+    const snaps = assembleSnapshots(
+      [rec({ symbol: 'X_ENV', type: 'env_var', status: 'needs_review', deprecated_in: '2.0.0' })],
+      blocks
+    );
+    expect(statusAt(snaps, '2.6.0', 'X_ENV')).toBe('needs_review');
   });
 });

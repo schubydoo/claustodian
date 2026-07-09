@@ -32,6 +32,11 @@
       ],
       "description": "Version where the symbol disappeared, if known; null otherwise."
     },
+    "deprecated_in": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Version whose official changelog deprecated the symbol. Present only when the symbol has been deprecated; the symbol still exists (status is `deprecated` in snapshots at/after this version, `active` before)."
+    },
     "status": {
       "type": "string",
       "enum": ["active", "deprecated", "removed", "needs_review"],

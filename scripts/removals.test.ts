@@ -4,7 +4,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  applyChangelogDeprecations,
   applyChangelogRemovals,
+  CONFIRMED_DEPRECATIONS,
   CONFIRMED_REMOVALS,
   extractRemovalCandidates,
 } from './removals.js';
@@ -58,6 +60,47 @@ describe('applyChangelogRemovals', () => {
   it('overrides a later removed_in with the confirmed earlier one', () => {
     const out = applyChangelogRemovals([rec({ symbol: '/vim', removed_in: '2.1.200' })]);
     expect(out[0]?.removed_in).toBe('2.1.92');
+  });
+});
+
+type DepRec = { type: string; symbol: string; deprecated_in?: string };
+const depRec = (over: Partial<DepRec> = {}): DepRec => ({
+  type: 'command',
+  symbol: '/output-style',
+  ...over,
+});
+
+describe('CONFIRMED_DEPRECATIONS', () => {
+  it('every entry is a well-formed, unique deprecation', () => {
+    const keys = new Set<string>();
+    for (const d of CONFIRMED_DEPRECATIONS) {
+      expect(d.deprecated_in).toMatch(/^\d+\.\d+\.\d+$/);
+      expect(['cli_flag', 'env_var', 'command', 'config_key', 'internal_config_flag']).toContain(
+        d.type
+      );
+      const key = `${d.type}:${d.symbol}`;
+      expect(keys.has(key)).toBe(false);
+      keys.add(key);
+    }
+  });
+});
+
+describe('applyChangelogDeprecations', () => {
+  it('sets deprecated_in on a confirmed deprecation', () => {
+    const out = applyChangelogDeprecations([depRec({ symbol: '/output-style' })]);
+    expect(out[0]?.deprecated_in).toBe('2.1.73');
+  });
+
+  it('matches on type+symbol and leaves others untouched', () => {
+    const input = depRec({ type: 'cli_flag', symbol: '--output-style' });
+    const out = applyChangelogDeprecations([input]);
+    expect(out[0]).toBe(input);
+    expect(out[0]?.deprecated_in).toBeUndefined();
+  });
+
+  it('keeps an already-earlier deprecated_in (earliest wins)', () => {
+    const out = applyChangelogDeprecations([depRec({ symbol: '/output-style', deprecated_in: '2.1.50' })]);
+    expect(out[0]?.deprecated_in).toBe('2.1.50');
   });
 });
 
