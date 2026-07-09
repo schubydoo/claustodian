@@ -1385,7 +1385,7 @@
       "symbol": "/vim",
       "type": "command",
       "first_seen": "0.2.19",
-      "removed_in": null,
+      "removed_in": "2.1.92",
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
