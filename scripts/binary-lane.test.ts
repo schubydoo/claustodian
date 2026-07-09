@@ -228,4 +228,18 @@ describe('description timeline', () => {
       assertBinaryDescriptions({ ...good, descriptions: null as unknown as BinaryDescriptions['descriptions'] }, 'p')
     ).toThrow(/malformed/);
   });
+
+  it('assertBinaryDescriptions rejects a malformed timeline (caught here, not in descriptionAt)', () => {
+    const base = { $generated_by: 'scripts/backfill-binary.ts', source: 'binary', note: '' };
+    const nonArray = {
+      ...base,
+      descriptions: { 'command:/x': 'oops' as unknown as DescriptionEra[] },
+    };
+    expect(() => assertBinaryDescriptions(nonArray, 'p')).toThrow(/is not an array of eras/);
+    const badEra = {
+      ...base,
+      descriptions: { 'command:/x': [{ from: '1.0.0' } as unknown as DescriptionEra] },
+    };
+    expect(() => assertBinaryDescriptions(badEra, 'p')).toThrow(/missing string from\/description/);
+  });
 });

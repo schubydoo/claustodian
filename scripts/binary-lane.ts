@@ -445,4 +445,22 @@ export function assertBinaryDescriptions(desc: BinaryDescriptions, path: string)
         `(the file was likely truncated or hand-edited). Regenerate with "npm run backfill-binary".`
     );
   }
+  // Validate each timeline's shape here, so a malformed entry fails with this
+  // actionable message rather than crashing later in descriptionAt's iteration.
+  for (const [key, eras] of Object.entries(desc.descriptions)) {
+    if (!Array.isArray(eras)) {
+      throw new Error(
+        `Binary descriptions ${path} is malformed: entry ${JSON.stringify(key)} is not an ` +
+          `array of eras. Regenerate with "npm run backfill-binary".`
+      );
+    }
+    for (const era of eras) {
+      if (typeof era?.from !== 'string' || typeof era?.description !== 'string') {
+        throw new Error(
+          `Binary descriptions ${path} is malformed: entry ${JSON.stringify(key)} has an era ` +
+            `missing string from/description. Regenerate with "npm run backfill-binary".`
+        );
+      }
+    }
+  }
 }
