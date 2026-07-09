@@ -40,6 +40,7 @@ import {
   type BinaryObservations,
   isPublishableBinaryEnv,
   loadBinaryObservations,
+  promotionFor,
 } from './binary-lane.js';
 import { assertOfficialDocs, DOCS_BASE, type DocsIndex } from './fetch-docs.js';
 import { compareVersionsAsc, type ExtractedSymbolType, isMain, loadChangelog } from './lib.js';
@@ -72,7 +73,7 @@ export interface SymbolRecord {
   provenance: 'changelog' | 'docs' | 'binary';
   confidence: 'high' | 'medium' | 'low';
   description: string;
-  description_source?: 'docs' | 'changelog';
+  description_source?: 'docs' | 'changelog' | 'binary' | 'help';
   source_url: string | null;
   category: string;
 }
@@ -586,7 +587,9 @@ export function enrichSymbols(
  *    description, confidence "medium"), carrying the observation's conservative
  *    `removed_in` (null unless it cleanly disappeared pre-cliff). Env vars are
  *    gated to first-party ones (isPublishableBinaryEnv); flags and commands are
- *    all first-party by the extractor's registration/registry evidence.
+ *    all first-party by the extractor's registration/registry evidence. A symbol
+ *    a maintainer has audited (PROMOTED_BINARY_SYMBOLS) is instead published
+ *    active/high with a first-party description (still provenance:"binary").
  *
  * Shared (changelog/docs) records keep their own removed_in — the binary lane
  * only corrects first_seen upward-in-time on them, never their lifecycle end;
@@ -622,6 +625,9 @@ export function enrichWithBinary(
       // An external env var Claude Code merely reads — left unpublished by omission.
       continue;
     }
+    // A maintainer-audited symbol graduates from the needs_review default to
+    // active with a first-party description; everything else stays needs_review.
+    const promo = promotionFor(obs.type, obs.symbol);
     merged.push(
       finalizeRecord({
         symbol: obs.symbol,
@@ -629,10 +635,11 @@ export function enrichWithBinary(
         first_seen: obs.first_seen,
         first_seen_estimated: false,
         removed_in: obs.removed_in,
-        status: 'needs_review',
+        status: promo ? 'active' : 'needs_review',
         provenance: 'binary',
-        confidence: 'medium',
-        description: '',
+        confidence: promo ? 'high' : 'medium',
+        description: promo ? promo.description : '',
+        description_source: promo ? promo.description_source : undefined,
         source_url: null,
         category:
           obs.type === 'env_var' ? binaryEnvCategory(obs.symbol, baseCategory) : baseCategory,

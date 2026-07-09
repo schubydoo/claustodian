@@ -622,6 +622,46 @@ describe('enrichWithBinary', () => {
     expect(out.filter((r) => r.symbol === '--print')).toHaveLength(1);
     expect(out[0]?.provenance).toBe('changelog');
   });
+
+  it('promotes an audited binary-only command to active with a binary-sourced description', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([{ symbol: '/design', type: 'command', first_seen: '2.1.181', last_seen: '2.1.201' }])
+    );
+    expect(byKey(out).get('command:/design')).toMatchObject({
+      status: 'active',
+      provenance: 'binary',
+      confidence: 'high',
+      description: 'Grant or revoke Claude agent access to your Design projects',
+      description_source: 'binary',
+      source_url: null,
+    });
+  });
+
+  it('promotes an audited binary-only flag to active with a help-sourced description', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([{ symbol: '--cwd', type: 'cli_flag', first_seen: '0.2.9', last_seen: '2.1.201' }])
+    );
+    expect(byKey(out).get('cli_flag:--cwd')).toMatchObject({
+      status: 'active',
+      provenance: 'binary',
+      confidence: 'high',
+      description_source: 'help',
+    });
+  });
+
+  it('leaves an un-audited binary-only symbol at needs_review with no description', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([{ symbol: '--mcp-debug', type: 'cli_flag', first_seen: '2.1.83', last_seen: '2.1.201' }])
+    );
+    expect(byKey(out).get('cli_flag:--mcp-debug')).toMatchObject({
+      status: 'needs_review',
+      description: '',
+    });
+    expect(byKey(out).get('cli_flag:--mcp-debug')?.description_source).toBeUndefined();
+  });
 });
 
 describe('loadDocsIndex', () => {
