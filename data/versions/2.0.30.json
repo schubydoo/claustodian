@@ -338,11 +338,11 @@
       "first_seen": "0.2.46",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Limit the number of agentic turns (print mode only). Exits with an error when the limit is reached. No limit by default",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -1073,7 +1073,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Review a GitHub pull request by number. With no argument, lists open PRs to pick from. For a cloud-based review, see `/code-review ultra`",
+      "description": "Run a fast single-pass, read-only review of a GitHub pull request by number. With no argument, lists open PRs to pick from; text after the PR number becomes additional review instructions. From v2.1.186 through v2.1.201, `/review` instead ran the same multi-agent engine as `/code-review medium`. For a multi-agent review at a chosen effort level, use `/code-review <level> <pr#>`; for a cloud-based review, see `/code-review ultra`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2760,7 +2760,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Timeout in milliseconds for MCP tool execution (default: 100000000, about 28 hours). A per-server `timeout` field in `.mcp.json` overrides this for that server. For the env variable, values below 1000 are floored to one second; for the per-server field, values below 1000 are ignored",
+      "description": "Timeout in milliseconds for MCP tool execution (default: 100000000, about 28 hours). A per-server `timeout` field in `.mcp.json` overrides this for that server. A per-server `timeout` of at least 1000 also sets the minimum idle window for that server's tool calls, so `CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT` never aborts them sooner; this floor requires Claude Code v2.1.203 or later. For the env variable, values below 1000 are floored to one second; for the per-server field, values below 1000 are ignored",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
