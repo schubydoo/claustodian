@@ -2632,12 +2632,13 @@
       "type": "command",
       "first_seen": "1.0.78",
       "removed_in": null,
-      "status": "active",
+      "status": "deprecated",
       "provenance": "changelog",
       "confidence": "high",
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "deprecated_in": "2.1.73"
     },
     {
       "symbol": "/passes",
@@ -6361,7 +6362,8 @@
       "description": "Removed in v2.1.160 and now a no-op. Previously pinned fast mode to Claude Opus 4.6 instead of the current default. Opus 4.6 no longer supports fast mode",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "claude-code"
+      "category": "claude-code",
+      "deprecated_in": "2.1.154"
     },
     {
       "symbol": "CLAUDE_CODE_ORGANIZATION_UUID",

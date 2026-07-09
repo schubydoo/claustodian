@@ -2,24 +2,27 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Changelog removal lane — policy + the curated retirement list.
+ * Changelog lifecycle lane — policy + the curated retirement/deprecation lists.
  *
  * The changelog scraper is introduce-only: once a symbol is seen it carries
- * forward into every later snapshot, because "removed" is unsafe to infer from
- * prose. The obvious grammar has a ~75% false-positive rate — "Removed the
+ * forward into every later snapshot, because a lifecycle end is unsafe to infer
+ * from prose. The obvious grammar has a ~75% false-positive rate — "Removed the
  * startup warning — see `/doctor`" MENTIONS /doctor, it does not remove it;
  * dozens of "... no longer ..." bullets are behavior changes, not retirements.
  *
  * So this is a hybrid: `extractRemovalCandidates` proposes with a tight grammar
  * (the symbol must be the grammatical object of Removed/Deprecated), and a human
- * confirms each real retirement into `CONFIRMED_REMOVALS` with the version that
- * announced it. `applyChangelogRemovals` then sets `removed_in`, so the symbol
- * vanishes from every snapshot at/after that version — the same version-accurate
- * mechanic the binary lane uses (the symbol stays present/active in earlier
- * snapshots; absence, not a status flip, is how a removal reads).
+ * confirms each real event into `CONFIRMED_REMOVALS` / `CONFIRMED_DEPRECATIONS`
+ * with the version that announced it. The two events differ in how they read:
  *
- * Deprecations (the symbol still exists, just discouraged) and no-op stubs the
- * binary still observes are a separate, not-yet-modeled signal and are excluded.
+ *  - REMOVAL — `applyChangelogRemovals` sets `removed_in`, so the symbol vanishes
+ *    from every snapshot at/after that version (the same version-accurate mechanic
+ *    the binary lane uses; absence, not a status flip, is how a removal reads).
+ *    The symbol stays present/active in earlier snapshots.
+ *  - DEPRECATION — `applyChangelogDeprecations` sets `deprecated_in`; the symbol
+ *    STILL EXISTS (discouraged, not gone), so it stays present and its `status`
+ *    flips to `deprecated` at/after that version (per-snapshot, in assembleSnapshots).
+ *    A later removal composes: active → deprecated → absent.
  */
 import { compareVersionsAsc, type ExtractedSymbolType } from './lib.js';
 
@@ -65,6 +68,53 @@ export function applyChangelogRemovals<T extends { type: string; symbol: string;
         ? record.removed_in
         : removal.removed_in;
     return removed_in === record.removed_in ? record : { ...record, removed_in };
+  });
+}
+
+/** A maintainer-confirmed changelog deprecation: this symbol is discouraged as of `deprecated_in`. */
+export interface ConfirmedDeprecation {
+  type: ExtractedSymbolType;
+  symbol: string;
+  /** The version whose changelog announced the deprecation. */
+  deprecated_in: string;
+}
+
+/**
+ * The audited deprecations. Unlike a removal, a deprecated symbol STILL EXISTS —
+ * it is discouraged, not gone — so it stays present in snapshots and its `status`
+ * flips to `deprecated` at/after `deprecated_in` (handled per-version in
+ * assembleSnapshots; see applyChangelogDeprecations). Both current entries are
+ * verbatim "Deprecated `X`" changelog bullets. Whether either was later *removed*
+ * is a separate, parked call (scratch/removal-judgment-calls.md): the no-op
+ * `CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE` (changelog "Removed" at 2.1.160) and
+ * `/output-style` (gone from the binary ~2.1.91) — a `removed_in` there would
+ * compose with the deprecation (active → deprecated → absent).
+ */
+export const CONFIRMED_DEPRECATIONS: readonly ConfirmedDeprecation[] = [
+  { type: 'command', symbol: '/output-style', deprecated_in: '2.1.73' },
+  { type: 'env_var', symbol: 'CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE', deprecated_in: '2.1.154' },
+];
+
+/**
+ * Overlays the confirmed deprecations: a matching symbol gets `deprecated_in` set
+ * (earliest deprecation wins). This is metadata only — the per-version `status`
+ * flip to `deprecated` happens in assembleSnapshots, so the symbol reads `active`
+ * in snapshots before `deprecated_in` and `deprecated` at/after (while still
+ * present). Everything else is returned untouched.
+ */
+export function applyChangelogDeprecations<
+  T extends { type: string; symbol: string; deprecated_in?: string },
+>(records: readonly T[]): T[] {
+  const byKey = new Map(CONFIRMED_DEPRECATIONS.map((d) => [`${d.type}:${d.symbol}`, d]));
+  return records.map((record) => {
+    const deprecation = byKey.get(`${record.type}:${record.symbol}`);
+    if (!deprecation) return record;
+    const deprecated_in =
+      record.deprecated_in !== undefined &&
+      compareVersionsAsc(record.deprecated_in, deprecation.deprecated_in) < 0
+        ? record.deprecated_in
+        : deprecation.deprecated_in;
+    return deprecated_in === record.deprecated_in ? record : { ...record, deprecated_in };
   });
 }
 
