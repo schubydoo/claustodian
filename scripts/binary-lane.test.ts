@@ -11,6 +11,8 @@ import {
   loadBinaryObservations,
   NEEDS_REVIEW_ENV,
   PROMOTE_CC_ENV,
+  PROMOTED_BINARY_SYMBOLS,
+  promotionFor,
   RELIABLE_EXTRACTION_CEILING,
 } from './binary-lane.js';
 
@@ -42,6 +44,32 @@ describe('audited env lists', () => {
   it('the two lists are disjoint', () => {
     const overlap = [...PROMOTE_CC_ENV].filter((s) => NEEDS_REVIEW_ENV.has(s));
     expect(overlap).toEqual([]);
+  });
+});
+
+describe('audit promotions', () => {
+  // Inventory check on the maintainer audit (scratch/needs-review-audit.{md,csv}):
+  // 6 commands with binary-registry descriptions + 30 flags with `claude --help`
+  // descriptions. If you promote/demote a symbol, update these counts.
+  const entries = [...PROMOTED_BINARY_SYMBOLS.entries()];
+
+  it('holds the 36 audited promotions (6 binary + 30 help)', () => {
+    expect(PROMOTED_BINARY_SYMBOLS.size).toBe(36);
+    expect(entries.filter(([, p]) => p.description_source === 'binary')).toHaveLength(6);
+    expect(entries.filter(([, p]) => p.description_source === 'help')).toHaveLength(30);
+  });
+
+  it('keys are well-formed type:symbol and every description is non-empty', () => {
+    for (const [key, p] of entries) {
+      expect(key).toMatch(/^(command|cli_flag|env_var|config_key|internal_config_flag):.+/);
+      expect(p.description.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it('promotionFor resolves a promoted symbol and misses an un-audited one', () => {
+    expect(promotionFor('command', '/design')?.description_source).toBe('binary');
+    expect(promotionFor('cli_flag', '--cwd')?.description_source).toBe('help');
+    expect(promotionFor('cli_flag', '--mcp-debug')).toBeUndefined();
   });
 });
 

@@ -185,6 +185,77 @@ export function binaryEnvCategory(symbol: string, category: string): string {
 }
 
 /**
+ * Audit promotions — binary-only symbols a maintainer has reviewed and confirmed
+ * are genuine, user-facing Claude Code symbols, so they graduate from the
+ * conservative `status:needs_review` default to `status:active` with a first-party
+ * description. `provenance` stays `binary` (the binary is still what established
+ * existence); only the lifecycle status and description are added by the audit.
+ *
+ * Keyed `type:symbol`. Two first-party description sources:
+ *  - `binary` — the command/skill registry description the extractor already reads
+ *    out of the bundle (`{type,name,description}` / skill `menuDescription`).
+ *  - `help` — the symbol's own `claude --help` output at 2.1.202 (an in-range
+ *    installed release; the CLI's own help text is first-party). Like
+ *    `data/binary-observations.json`, these are a point-in-time maintainer capture
+ *    reviewed in the PR, not something CI re-derives (the --help lane isn't built).
+ *
+ * The audit worksheet is scratch/needs-review-audit.{md,csv}. Everything NOT in
+ * this map stays `needs_review` by omission — promotion requires a positive human
+ * call, never mere observation.
+ */
+export interface BinaryPromotion {
+  description: string;
+  description_source: 'binary' | 'help';
+}
+
+export const PROMOTED_BINARY_SYMBOLS: ReadonlyMap<string, BinaryPromotion> = new Map<
+  string,
+  BinaryPromotion
+>([
+  ['command:/rate-limit-options', { description: "Show options when rate limit is reached", description_source: 'binary' }],
+  ['command:/pro-trial-expired', { description: "Options shown when the Pro plan Claude Code trial has ended", description_source: 'binary' }],
+  ['command:/update-config', { description: "Change settings: hooks, permissions, environment variables", description_source: 'binary' }],
+  ['command:/design', { description: "Grant or revoke Claude agent access to your Design projects", description_source: 'binary' }],
+  ['command:/design-consent', { description: "Grant Claude agent access to your Design projects", description_source: 'binary' }],
+  ['command:/design-revoke', { description: "Revoke Claude agent access to your Design projects", description_source: 'binary' }],
+  ['cli_flag:--ablation', { description: "Run a no-plugin baseline arm and report the score delta (none | with-without; default: with-without when targeting a plugin by name (installed or skills-dir), none for a path)", description_source: 'help' }],
+  ['cli_flag:--allow-tools', { description: "Operator grant for gated tools (Bash, Write, Edit, WebFetch, mcp__*). Supports Tool(pattern:*) syntax", description_source: 'help' }],
+  ['cli_flag:--allowed-tools', { description: "Comma or space-separated list of tool names to allow (e.g. \"Bash(git *) Edit\")", description_source: 'help' }],
+  ['cli_flag:--brief', { description: "Enable SendUserMessage tool for agent-to-user communication", description_source: 'help' }],
+  ['cli_flag:--callback-port', { description: "Fixed port for OAuth callback (for servers requiring pre-registered redirect URIs)", description_source: 'help' }],
+  ['cli_flag:--case', { description: "Filter cases by name glob", description_source: 'help' }],
+  ['cli_flag:--claudeai', { description: "Use Claude subscription (default)", description_source: 'help' }],
+  ['cli_flag:--config', { description: "Set a userConfig option declared in the plugin's manifest (repeatable). Values are validated against the schema and stored via the same path as the interactive /plugin configure flow.", description_source: 'help' }],
+  ['cli_flag:--cwd', { description: "Show only background sessions started under <path>", description_source: 'help' }],
+  ['cli_flag:--disallowed-tools', { description: "Comma or space-separated list of tool names to deny (e.g. \"Bash(git *) Edit\")", description_source: 'help' }],
+  ['cli_flag:--email', { description: "Pre-populate email address on the login page", description_source: 'help' }],
+  ['cli_flag:--env', { description: "Set environment variables (e.g. -e KEY=value)", description_source: 'help' }],
+  ['cli_flag:--file', { description: "File resources to download at startup. Format: file_id:relative_path (e.g., --file file_abc:doc.txt file_def:img.png)", description_source: 'help' }],
+  ['cli_flag:--header', { description: "Set WebSocket headers (e.g. -H \"X-Api-Key: abc123\" -H \"X-Custom: value\")", description_source: 'help' }],
+  ['cli_flag:--interactive', { description: "Prompt for each item before deleting", description_source: 'help' }],
+  ['cli_flag:--judge-model', { description: "Override LLM-grader model (default: haiku)", description_source: 'help' }],
+  ['cli_flag:--keep-temp', { description: "Preserve scaffold dirs for debugging", description_source: 'help' }],
+  ['cli_flag:--max-cost-usd', { description: "Optional hard cost ceiling; abort and report partial results if hit (exit 2). Overrun is bounded to one agent run — when that run breaches, paid graders (llm/baseline) are skipped while free graders still score it. Runs are already bounded by max_turns and timeout_seconds — only set this when you need a strict budget", description_source: 'help' }],
+  ['cli_flag:--message', { description: "Tag annotation message (use %s for the version)", description_source: 'help' }],
+  ['cli_flag:--no-scaffold', { description: "Explicitly skip scaffold_script", description_source: 'help' }],
+  ['cli_flag:--output-dir', { description: "Directory for aggregate-result.json (default: ./evals/results/<timestamp>/)", description_source: 'help' }],
+  ['cli_flag:--runs', { description: "Override per-case runs (default: case.runs ?? 3)", description_source: 'help' }],
+  ['cli_flag:--scaffold', { description: "Run each case's scaffold_script (runs author-supplied bash as you; off by default — only use on case files you authored)", description_source: 'help' }],
+  ['cli_flag:--sso', { description: "Force SSO login flow", description_source: 'help' }],
+  ['cli_flag:--strict', { description: "Treat warnings as errors (exit 1). Use in CI to fail on unrecognized fields, missing metadata, and other issues that the runtime tolerates.", description_source: 'help' }],
+  ['cli_flag:--tag', { description: "Filter cases by tag (repeatable)", description_source: 'help' }],
+  ['cli_flag:--text', { description: "Output as human-readable text", description_source: 'help' }],
+  ['cli_flag:--threshold', { description: "Exit 1 if any case score is below this threshold (default: 1.0)", description_source: 'help' }],
+  ['cli_flag:--timeout', { description: "Maximum minutes to wait for the review to finish (default: 30)", description_source: 'help' }],
+  ['cli_flag:--transport', { description: "Transport type (stdio, sse, http). Defaults to stdio if not specified.", description_source: 'help' }],
+]);
+
+/** The audit promotion for a binary symbol, if a maintainer confirmed it. */
+export function promotionFor(type: string, symbol: string): BinaryPromotion | undefined {
+  return PROMOTED_BINARY_SYMBOLS.get(`${type}:${symbol}`);
+}
+
+/**
  * First version of the recall-unreliable era. The extractor's per-version recall
  * regressed here (bundle minification changed; env extraction dropped ~2.1.159→160
  * with no real deletions — see scratch/audit-buckets.md), so binary ABSENCE at or

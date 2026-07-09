@@ -53,8 +53,8 @@
     },
     "description_source": {
       "type": "string",
-      "enum": ["docs", "changelog"],
-      "description": "Where `description` came from: an official docs page, or an introducing changelog bullet. Absent when the description is empty."
+      "enum": ["docs", "changelog", "binary", "help"],
+      "description": "Where `description` came from: an official docs page, an introducing changelog bullet, the command/skill registry extracted from the binary, or the symbol's own `claude --help` output. Absent when the description is empty."
     },
     "first_seen_estimated": {
       "type": "boolean",
