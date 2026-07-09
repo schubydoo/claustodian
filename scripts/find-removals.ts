@@ -26,8 +26,15 @@ interface Options {
 function parseArgs(argv: string[]): Options {
   const options: Options = { datasetPath: DEFAULT_DATASET };
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i] === '--changelog') options.changelogPath = argv[++i];
-    else if (argv[i] === '--dataset') options.datasetPath = argv[++i] ?? DEFAULT_DATASET;
+    const arg = argv[i];
+    if (arg === '--changelog' || arg === '--dataset') {
+      // Require an explicit value: a bare flag must not silently fall back to the
+      // default (a typo would scan the wrong inputs and still report "up to date").
+      const value = argv[++i];
+      if (value === undefined) throw new Error(`${arg} requires a path`);
+      if (arg === '--changelog') options.changelogPath = value;
+      else options.datasetPath = value;
+    }
   }
   return options;
 }

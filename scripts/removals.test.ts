@@ -96,4 +96,26 @@ describe('extractRemovalCandidates', () => {
   it('rejects a bullet that does not begin with Removed/Deprecated', () => {
     expect(cands.some((c) => c.symbol === '--json-schema')).toBe(false);
   });
+
+  it('reaches the object across bounded connective filler', () => {
+    const wide = extractRemovalCandidates(
+      [
+        '## 2.1.5',
+        '- Removed support for `--legacy-flag`',
+        '- Removed the deprecated `/old-cmd`',
+        '- Deprecated use of `LEGACY_ENV`',
+      ].join('\n')
+    );
+    const names = wide.map((c) => c.symbol);
+    expect(names).toContain('--legacy-flag');
+    expect(names).toContain('/old-cmd');
+    expect(names).toContain('LEGACY_ENV');
+  });
+
+  it('still rejects a symbol past a clause break, not the object', () => {
+    const wide = extractRemovalCandidates(
+      '## 2.1.5\n- Removed the confusing banner — run `/status` to see it\n'
+    );
+    expect(wide.some((c) => c.symbol === '/status')).toBe(false);
+  });
 });

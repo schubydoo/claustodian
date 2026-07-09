@@ -75,4 +75,9 @@ describe('find-removals main()', () => {
     expect(code).toBe(0);
     expect(logSpy.mock.calls.map((c: unknown[]) => String(c[0])).join('\n')).toContain('up to date');
   });
+
+  it('throws on a flag passed without a value (no silent fallback)', async () => {
+    await expect(main(['--dataset'])).rejects.toThrow(/--dataset requires a path/);
+    await expect(main(['--changelog'])).rejects.toThrow(/--changelog requires a path/);
+  });
 });

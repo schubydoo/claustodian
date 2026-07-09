@@ -79,15 +79,18 @@ export interface RemovalCandidate {
 /**
  * Tight-grammar candidate extractor (the "propose" half of the hybrid). Matches a
  * changelog bullet that BEGINS with Removed/Deprecated and whose first backticked
- * token — optionally after a filler word like "the"/"stale"/"old" — is the
- * object. This rejects the common false positives where the symbol is only
- * referenced later in the sentence ("Removed the startup warning — see `/doctor`").
- * It does not decide truth; a maintainer confirms real retirements into
- * CONFIRMED_REMOVALS. Callers typically filter to symbols the dataset knows and
- * drop already-confirmed ones.
+ * token is the object — reachable only across a bounded whitelist of connective
+ * filler words ("the", "support for", "deprecated", "use of", …), so both
+ * "Removed `/vim`" and "Removed support for `--foo`" match, while the symbol being
+ * merely referenced later past a clause break stays rejected ("Removed the startup
+ * warning — see `/doctor`" — "warning" is not in the whitelist, so the run stops
+ * before the backtick). It does not decide truth; a maintainer confirms real
+ * retirements into CONFIRMED_REMOVALS. Callers typically filter to symbols the
+ * dataset knows and drop already-confirmed ones.
  */
 export function extractRemovalCandidates(markdown: string): RemovalCandidate[] {
-  const bullet = /^[-*]\s+(Removed|Deprecated)\s+(?:the\s+|stale\s+|old\s+)?`([^`]+)`/;
+  const bullet =
+    /^[-*]\s+(Removed|Deprecated)(?:\s+(?:the|a|an|old|new|stale|legacy|unused|deprecated|support|for|use|of|to))*\s+`([^`]+)`/;
   const out: RemovalCandidate[] = [];
   let version: string | null = null;
   for (const line of markdown.split('\n')) {
