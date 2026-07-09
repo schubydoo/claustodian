@@ -844,3 +844,54 @@ describe('estimate does not float across a release bump', () => {
     expect(firstSeenOf(run2, '2.1.100')).toBe('2.1.100');
   });
 });
+
+describe('assembleSnapshots — per-version descriptions (binary timeline)', () => {
+  const cmd = (over: Partial<SymbolRecord>): SymbolRecord => ({
+    symbol: '/review',
+    type: 'command',
+    first_seen: '0.2.9',
+    removed_in: null,
+    status: 'active',
+    provenance: 'changelog',
+    confidence: 'high',
+    description: 'Run a fast single-pass review',
+    description_source: 'docs',
+    source_url: null,
+    category: 'command',
+    ...over,
+  });
+  const blocks = [
+    { version: '0.2.9', bullets: [] },
+    { version: '2.1.100', bullets: [] },
+    { version: '2.1.205', bullets: [] },
+  ];
+  const timeline = {
+    'command:/review': [
+      { from: '0.2.9', description: 'Review a pull request' },
+      { from: '2.1.100', description: 'Run a fast single-pass review' },
+    ],
+  };
+  const descOf = (snaps: ReturnType<typeof assembleSnapshots>, v: string) => {
+    const r = snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === '/review');
+    return r ? { description: r.description, source: r.description_source } : undefined;
+  };
+
+  it('uses the binary description for a historical snapshot, the curated one for the current era', () => {
+    const snaps = assembleSnapshots([cmd({})], blocks, timeline);
+    // Historical era (before 2.1.100) → binary text, description_source binary.
+    expect(descOf(snaps, '0.2.9')).toEqual({ description: 'Review a pull request', source: 'binary' });
+    // Current era (>= 2.1.100) → keeps the record's curated docs description.
+    expect(descOf(snaps, '2.1.100')).toEqual({ description: 'Run a fast single-pass review', source: 'docs' });
+    expect(descOf(snaps, '2.1.205')).toEqual({ description: 'Run a fast single-pass review', source: 'docs' });
+  });
+
+  it('does not touch a record with no description (never invents one)', () => {
+    const snaps = assembleSnapshots([cmd({ description: '', description_source: undefined })], blocks, timeline);
+    expect(descOf(snaps, '0.2.9')).toEqual({ description: '', source: undefined });
+  });
+
+  it('is a no-op when no binary descriptions are supplied', () => {
+    const snaps = assembleSnapshots([cmd({})], blocks);
+    expect(descOf(snaps, '0.2.9')).toEqual({ description: 'Run a fast single-pass review', source: 'docs' });
+  });
+});

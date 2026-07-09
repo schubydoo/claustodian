@@ -2,7 +2,64 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
-import { distillObservations, main, type BinaryCacheFile } from './backfill-binary.js';
+import {
+  distillDescriptions,
+  distillObservations,
+  main,
+  type BinaryCacheFile,
+} from './backfill-binary.js';
+
+/** A cache file whose symbols carry descriptions. */
+function descFile(
+  version: string,
+  symbols: Array<{ symbol: string; type: BinaryCacheFile['symbols'][number]['type']; description?: string }>
+): BinaryCacheFile {
+  return { version, symbols };
+}
+
+describe('distillDescriptions', () => {
+  it('collapses consecutive-equal descriptions into change-point eras', () => {
+    const files = [
+      descFile('0.2.9', [{ symbol: '/review', type: 'command', description: 'Review a PR' }]),
+      descFile('1.0.0', [{ symbol: '/review', type: 'command', description: 'Review a PR' }]),
+      descFile('2.1.186', [{ symbol: '/review', type: 'command', description: 'Review a GitHub PR' }]),
+    ];
+    const { descriptions } = distillDescriptions(files);
+    expect(descriptions['command:/review']).toEqual([
+      { from: '0.2.9', description: 'Review a PR' },
+      { from: '2.1.186', description: 'Review a GitHub PR' },
+    ]);
+  });
+
+  it('spans a recall gap with the surrounding era (no spurious era on a miss)', () => {
+    const files = [
+      descFile('1.0.0', [{ symbol: '/x', type: 'command', description: 'A' }]),
+      descFile('1.0.1', [{ symbol: '/other', type: 'command', description: 'Z' }]), // /x missing here
+      descFile('1.0.2', [{ symbol: '/x', type: 'command', description: 'A' }]),
+    ];
+    expect(distillDescriptions(files).descriptions['command:/x']).toEqual([
+      { from: '1.0.0', description: 'A' },
+    ]);
+  });
+
+  it('ignores symbols without a description (e.g. flags in this cache)', () => {
+    const files = [descFile('1.0.0', [{ symbol: '--flag', type: 'cli_flag' }])];
+    expect(distillDescriptions(files).descriptions['cli_flag:--flag']).toBeUndefined();
+  });
+
+  it('is a backfill-binary output with sorted keys', () => {
+    const files = [
+      descFile('1.0.0', [
+        { symbol: '/b', type: 'command', description: 'b' },
+        { symbol: '/a', type: 'command', description: 'a' },
+      ]),
+    ];
+    const out = distillDescriptions(files);
+    expect(out.$generated_by).toBe('scripts/backfill-binary.ts');
+    expect(out.source).toBe('binary');
+    expect(Object.keys(out.descriptions)).toEqual(['command:/a', 'command:/b']);
+  });
+});
 
 /** A minimal cache file for a version, listing symbol/type pairs. */
 function cacheFile(version: string, symbols: Array<[string, BinaryCacheFile['symbols'][number]['type']]>): BinaryCacheFile {

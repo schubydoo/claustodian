@@ -35,10 +35,15 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
 import {
+  assertBinaryDescriptions,
   assertBinaryObservations,
   binaryEnvCategory,
+  type BinaryDescriptions,
   type BinaryObservations,
+  descriptionAt,
+  isCurrentDescriptionEra,
   isPublishableBinaryEnv,
+  loadBinaryDescriptions,
   loadBinaryObservations,
   promotionFor,
 } from './binary-lane.js';
@@ -463,10 +468,18 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
  * is expressed by absence (`removed_in` filters the symbol out), so `status` never
  * needs to say "removed". `removed_in`/`deprecated_in` are set by the binary lane
  * and the curated changelog lifecycle lane ([[removals.ts]]).
+ *
+ * `description` is resolved per version too when a binary description timeline is
+ * supplied: a HISTORICAL snapshot gets the description the symbol actually had at
+ * that version (from the archived binaries), while the current era keeps the
+ * record's curated (docs/changelog) description. Only symbols that already carry a
+ * description are touched — this de-anachronizes existing descriptions, it does not
+ * invent new ones.
  */
 export function assembleSnapshots(
   records: SymbolRecord[],
-  blocks: ChangelogBlock[]
+  blocks: ChangelogBlock[],
+  binaryDescriptions?: BinaryDescriptions['descriptions']
 ): VersionSnapshot[] {
   const versionsOldestFirst = blocks
     .map((block) => block.version)
@@ -485,11 +498,23 @@ export function assembleSnapshots(
       ? { ...record, status: 'deprecated' }
       : record;
 
+  // Replace a historical snapshot's description with the one observed in that
+  // version's binary; the current era keeps the record's curated description.
+  const describeAt = (record: SymbolRecord, version: string): SymbolRecord => {
+    if (!binaryDescriptions || record.description === '') return record;
+    const eras = binaryDescriptions[`${record.type}:${record.symbol}`];
+    if (!eras || eras.length === 0 || isCurrentDescriptionEra(eras, version)) return record;
+    const era = descriptionAt(eras, version);
+    return era && era.description !== record.description
+      ? { ...record, description: era.description, description_source: 'binary' }
+      : record;
+  };
+
   return versionsOldestFirst.map((version) => ({
     version,
     symbols: records
       .filter((record) => liveAt(record, version))
-      .map((record) => statusAt(record, version))
+      .map((record) => describeAt(statusAt(record, version), version))
       .sort(compareSymbolRecords),
   }));
 }
@@ -711,7 +736,8 @@ export function buildEnrichedSnapshots(
   blocks: ChangelogBlock[],
   docs: DocsIndex,
   binary?: BinaryObservations,
-  priorFirstSeen?: ReadonlyMap<string, string>
+  priorFirstSeen?: ReadonlyMap<string, string>,
+  binaryDescriptions?: BinaryDescriptions['descriptions']
 ): VersionSnapshot[] {
   const collected = collectChangelogSymbols(blocks);
   const latest =
@@ -723,7 +749,7 @@ export function buildEnrichedSnapshots(
   const frozen = priorFirstSeen
     ? freezeEstimatedFirstSeen(withDeprecations, priorFirstSeen)
     : withDeprecations;
-  return assembleSnapshots(frozen, blocks);
+  return assembleSnapshots(frozen, blocks, binaryDescriptions);
 }
 
 /**
@@ -794,6 +820,8 @@ async function writeJson(filePath: string, data: unknown): Promise<void> {
 const DOCS_PATH = 'data/docs.json';
 /** The committed binary lane — the distilled binary evidence; not CLI-overridable. */
 const BINARY_OBSERVATIONS_PATH = 'data/binary-observations.json';
+/** The committed per-version description timeline; not CLI-overridable. */
+const BINARY_DESCRIPTIONS_PATH = 'data/binary-descriptions.json';
 /** The committed data directory; regenerating it must use canonical sources. */
 const COMMITTED_DATA_DIR = 'data';
 
@@ -897,10 +925,18 @@ export async function main(): Promise<number> {
   assertOfficialDocs(docs);
   const binary = await loadBinaryObservations(BINARY_OBSERVATIONS_PATH);
   assertBinaryObservations(binary, BINARY_OBSERVATIONS_PATH);
+  const binaryDescriptions = await loadBinaryDescriptions(BINARY_DESCRIPTIONS_PATH);
+  assertBinaryDescriptions(binaryDescriptions, BINARY_DESCRIPTIONS_PATH);
   // Freeze floating first_seen estimates against the snapshot already at the
   // output location (the committed latest.json when regenerating data/).
   const priorFirstSeen = await loadPriorFirstSeen(join(options.outDir, 'latest.json'));
-  const snapshots = buildEnrichedSnapshots(blocks, docs, binary, priorFirstSeen);
+  const snapshots = buildEnrichedSnapshots(
+    blocks,
+    docs,
+    binary,
+    priorFirstSeen,
+    binaryDescriptions.descriptions
+  );
   const index = buildIndex(snapshots);
 
   const sortedByVersion = [...snapshots].sort((a, b) => compareVersionsAsc(a.version, b.version));
