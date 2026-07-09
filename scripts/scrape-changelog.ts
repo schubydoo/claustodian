@@ -530,7 +530,8 @@ function finalizeRecord(input: SymbolRecord & { first_seen_estimated: boolean })
  * `first_seen`: a docs `min-version` (authoritative) or an introducing bullet
  * anchors it (confidence "high"); an incidental-only mention or a docs page
  * without a min-version leaves it an upper bound (`first_seen_estimated`,
- * confidence "medium") for the binary lane to correct.
+ * confidence "medium") for the binary lane to correct. An estimate that survives
+ * every lane is then frozen against the prior dataset (see freezeEstimatedFirstSeen).
  */
 export function enrichSymbols(
   collected: Map<string, CollectedSymbol>,
@@ -683,10 +684,34 @@ export function enrichWithBinary(
  * its own; production always supplies it. Removals apply last so a confirmed
  * retirement wins over whatever lane last touched the record's `removed_in`.
  */
+/**
+ * Freezes a floating first_seen ESTIMATE against the prior dataset. A docs-only
+ * symbol with no date evidence gets `latestVersion` as its upper bound, which
+ * would otherwise creep forward to the newest release on every scrape (pure
+ * churn). Once a lane anchors a symbol its estimate is cleared, so this only
+ * touches records still `first_seen_estimated` after the binary lane — and only
+ * pulls first_seen EARLIER, to the version we already recorded it at (our own
+ * committed history is the timeline). A newly-seen estimate has no prior entry
+ * and stays at `latestVersion`, freezing there for every subsequent scrape.
+ */
+export function freezeEstimatedFirstSeen(
+  records: SymbolRecord[],
+  priorFirstSeen: ReadonlyMap<string, string>
+): SymbolRecord[] {
+  return records.map((record) => {
+    if (!record.first_seen_estimated) return record;
+    const prior = priorFirstSeen.get(`${record.type}:${record.symbol}`);
+    return prior !== undefined && compareVersionsAsc(prior, record.first_seen) < 0
+      ? { ...record, first_seen: prior }
+      : record;
+  });
+}
+
 export function buildEnrichedSnapshots(
   blocks: ChangelogBlock[],
   docs: DocsIndex,
-  binary?: BinaryObservations
+  binary?: BinaryObservations,
+  priorFirstSeen?: ReadonlyMap<string, string>
 ): VersionSnapshot[] {
   const collected = collectChangelogSymbols(blocks);
   const latest =
@@ -695,7 +720,10 @@ export function buildEnrichedSnapshots(
   const withBinary = binary ? enrichWithBinary(enriched, binary) : enriched;
   const withRemovals = applyChangelogRemovals(withBinary);
   const withDeprecations = applyChangelogDeprecations(withRemovals);
-  return assembleSnapshots(withDeprecations, blocks);
+  const frozen = priorFirstSeen
+    ? freezeEstimatedFirstSeen(withDeprecations, priorFirstSeen)
+    : withDeprecations;
+  return assembleSnapshots(frozen, blocks);
 }
 
 /**
@@ -769,6 +797,40 @@ const BINARY_OBSERVATIONS_PATH = 'data/binary-observations.json';
 /** The committed data directory; regenerating it must use canonical sources. */
 const COMMITTED_DATA_DIR = 'data';
 
+/**
+ * Reads the `${type}:${symbol}` -> first_seen map used to freeze floating estimates
+ * ([[freezeEstimatedFirstSeen]]) from the snapshot already at the output location
+ * (the committed `latest.json` in production).
+ *
+ * ONLY prior records that were themselves `first_seen_estimated` are included, so
+ * the freeze can only carry forward a prior ESTIMATE (a first-party-derived
+ * upper bound), never adopt an anchored/hand-set date as if it were one — it
+ * keeps this a monotonic "an estimate doesn't creep forward" rule, not a channel
+ * for generated output to override the first-party lanes. Best-effort: a missing
+ * or malformed file (fresh dir, first backfill) yields an empty map, so estimates
+ * fall back to `latestVersion` exactly as before — the freeze never fails the scrape.
+ */
+async function loadPriorFirstSeen(latestPath: string): Promise<Map<string, string>> {
+  const map = new Map<string, string>();
+  let raw: string;
+  try {
+    raw = await readFile(latestPath, 'utf-8');
+  } catch {
+    return map; // no prior snapshot (fresh output dir) — nothing to freeze against
+  }
+  try {
+    const snapshot = JSON.parse(raw) as { symbols?: Array<Partial<SymbolRecord>> };
+    for (const s of snapshot.symbols ?? []) {
+      if (s.type && s.symbol && s.first_seen && s.first_seen_estimated === true) {
+        map.set(`${s.type}:${s.symbol}`, s.first_seen);
+      }
+    }
+  } catch {
+    return new Map(); // malformed prior snapshot — degrade to no freeze, don't crash
+  }
+  return map;
+}
+
 interface CliOptions {
   changelogPath?: string;
   outDir: string;
@@ -835,7 +897,10 @@ export async function main(): Promise<number> {
   assertOfficialDocs(docs);
   const binary = await loadBinaryObservations(BINARY_OBSERVATIONS_PATH);
   assertBinaryObservations(binary, BINARY_OBSERVATIONS_PATH);
-  const snapshots = buildEnrichedSnapshots(blocks, docs, binary);
+  // Freeze floating first_seen estimates against the snapshot already at the
+  // output location (the committed latest.json when regenerating data/).
+  const priorFirstSeen = await loadPriorFirstSeen(join(options.outDir, 'latest.json'));
+  const snapshots = buildEnrichedSnapshots(blocks, docs, binary, priorFirstSeen);
   const index = buildIndex(snapshots);
 
   const sortedByVersion = [...snapshots].sort((a, b) => compareVersionsAsc(a.version, b.version));
