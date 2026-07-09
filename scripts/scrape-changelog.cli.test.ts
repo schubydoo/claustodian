@@ -145,7 +145,9 @@ describe('scrape-changelog main()', () => {
         claudeCodeVersion: '2.1.9',
         schemaVersion: 1,
         symbols: [
+          // one estimated (goes into the freeze map) and one anchored (excluded).
           { symbol: '--undated', type: 'cli_flag', first_seen: '2.1.9', removed_in: null, status: 'active', provenance: 'docs', confidence: 'medium', description: '', source_url: null, category: 'cli', first_seen_estimated: true },
+          { symbol: '--anchored', type: 'cli_flag', first_seen: '2.1.9', removed_in: null, status: 'active', provenance: 'changelog', confidence: 'high', description: '', source_url: null, category: 'cli' },
         ],
       }),
       'utf-8'

@@ -798,11 +798,17 @@ const BINARY_OBSERVATIONS_PATH = 'data/binary-observations.json';
 const COMMITTED_DATA_DIR = 'data';
 
 /**
- * Reads the `${type}:${symbol}` -> first_seen map from the snapshot already at the
- * output location (the committed `latest.json` in production). It freezes floating
- * estimates ([[enrichSymbols]]). Best-effort: a missing or unreadable file (fresh
- * dir, first backfill) yields an empty map, so estimates fall back to `latestVersion`
- * exactly as before — the freeze only ever tightens, never fails the scrape.
+ * Reads the `${type}:${symbol}` -> first_seen map used to freeze floating estimates
+ * ([[freezeEstimatedFirstSeen]]) from the snapshot already at the output location
+ * (the committed `latest.json` in production).
+ *
+ * ONLY prior records that were themselves `first_seen_estimated` are included, so
+ * the freeze can only carry forward a prior ESTIMATE (a first-party-derived
+ * upper bound), never adopt an anchored/hand-set date as if it were one — it
+ * keeps this a monotonic "an estimate doesn't creep forward" rule, not a channel
+ * for generated output to override the first-party lanes. Best-effort: a missing
+ * or malformed file (fresh dir, first backfill) yields an empty map, so estimates
+ * fall back to `latestVersion` exactly as before — the freeze never fails the scrape.
  */
 async function loadPriorFirstSeen(latestPath: string): Promise<Map<string, string>> {
   const map = new Map<string, string>();
@@ -815,7 +821,9 @@ async function loadPriorFirstSeen(latestPath: string): Promise<Map<string, strin
   try {
     const snapshot = JSON.parse(raw) as { symbols?: Array<Partial<SymbolRecord>> };
     for (const s of snapshot.symbols ?? []) {
-      if (s.type && s.symbol && s.first_seen) map.set(`${s.type}:${s.symbol}`, s.first_seen);
+      if (s.type && s.symbol && s.first_seen && s.first_seen_estimated === true) {
+        map.set(`${s.type}:${s.symbol}`, s.first_seen);
+      }
     }
   } catch {
     return new Map(); // malformed prior snapshot — degrade to no freeze, don't crash
