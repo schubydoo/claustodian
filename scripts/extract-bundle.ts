@@ -134,22 +134,24 @@ const SKILL_PLAIN_DESC = /\bdescription:\s*(["'`])((?:(?!\1)[^\\]|\\.)*)\1/;
 const SKILL_GET_DESC = /get description\(\)\s*\{\s*return\s*(["'`])((?:(?!\1)[^\\]|\\.)*)\1/;
 
 /**
- * Cleans a captured description literal for storage. Returns `undefined` for a
- * runtime TEMPLATE literal (any `${…}` interpolation) — its value depends on a
- * variable whose MINIFIED name changes every release, so it can only be captured
- * as churny garbage (`Submit feedback about ${K4}`) or a fragment truncated at a
- * nested quote (`Effort level … (${UV.join(`); a version contributing no
- * description is strictly better. Otherwise unescapes the common JS string escapes
- * so the stored text is the real string, not its source form.
+ * Cleans a captured description literal (`raw`) for storage, given its opening
+ * `delimiter`. Returns `undefined` for a runtime TEMPLATE literal — a BACKTICK
+ * string containing `${…}` interpolation, whose value depends on a variable whose
+ * MINIFIED name churns every release (captured as garbage like `Submit feedback
+ * about ${K4}` or the truncated `Effort level … (${UV.join(`); a version
+ * contributing no description is strictly better. A plain `"`/`'` string that
+ * merely contains the text `${` is a static literal and is KEPT. Otherwise
+ * unescapes the JS string escapes in a SINGLE left-to-right pass, so an escaped
+ * backslash (`\\`) consumes the next char before `\n`/`\t`/`\uXXXX` can misfire on
+ * it (`"C:\\new"` stays `C:\new`, not `C:` + newline + `ew`).
  */
-function cleanDescription(raw: string | undefined): string | undefined {
-  if (raw === undefined || raw.includes('${')) return undefined;
-  return raw
-    .replace(/\\u([0-9a-fA-F]{4})/g, (_m, h: string) => String.fromCharCode(parseInt(h, 16)))
-    .replace(/\\n/g, '\n')
-    .replace(/\\t/g, '\t')
-    .replace(/\\r/g, '')
-    .replace(/\\([\\'"`])/g, '$1');
+function cleanDescription(raw: string | undefined, delimiter: string | undefined): string | undefined {
+  if (raw === undefined) return undefined;
+  if (delimiter === '`' && raw.includes('${')) return undefined;
+  const ESCAPES: Record<string, string> = { n: '\n', t: '\t', r: '', b: '\b', f: '\f', v: '\v', '0': '\0' };
+  return raw.replace(/\\(u[0-9a-fA-F]{4}|.)/gs, (_m, e: string) =>
+    e[0] === 'u' ? String.fromCharCode(parseInt(e.slice(1), 16)) : (ESCAPES[e] ?? e)
+  );
 }
 
 /** Env vars whose existence we assert from the bundle, keyed by access syntax. */
@@ -233,7 +235,7 @@ export function extractFlagDescriptions(
   const seen = new Map<string, Set<string>>();
   for (const m of src.matchAll(FLAG_SPEC_DESC)) {
     const long = (m[2] ?? '').match(/--[a-z][a-z0-9-]+/)?.[0];
-    const description = cleanDescription(m[4]);
+    const description = cleanDescription(m[4], m[3]);
     if (!long || !flags.has(long) || !description) continue;
     if (/^-{1,2}[a-z]/.test(description)) continue; // a flag, not a description
     let set = seen.get(long);
@@ -304,7 +306,8 @@ export function extractCommands(src: string): Map<string, string | undefined> {
     // doesn't cut the window at its inner `}`.
     const forward = src.slice(t, objectCloseFrom(src, t, t + COMMAND_FWD));
     let name = forward.match(COMMAND_NAME)?.[1];
-    let desc = cleanDescription(forward.match(COMMAND_DESC)?.[2]);
+    const fdm = forward.match(COMMAND_DESC);
+    let desc = cleanDescription(fdm?.[2], fdm?.[1]);
 
     // No name after the marker → type-last object; read the fields before it,
     // back to this object's own opening brace (capped, depth-aware), so a
@@ -316,7 +319,8 @@ export function extractCommands(src: string): Map<string, string | undefined> {
       // Keep a forward-window description if the pre-type slice has none (a
       // "type-middle" object, `{name:…,type:…,description:…}`, has its name
       // before but its description after the marker).
-      desc = cleanDescription(before.match(COMMAND_DESC)?.[2]) ?? desc;
+      const bdm = before.match(COMMAND_DESC);
+      desc = cleanDescription(bdm?.[2], bdm?.[1]) ?? desc;
     }
 
     if (!name) continue;
@@ -349,10 +353,13 @@ export function extractSkillCommands(src: string): Map<string, string | undefine
     const name = anchor[1];
     if (!name) continue;
     const key = `/${name}`;
+    const mm = object.match(SKILL_MENU_DESC);
+    const mp = object.match(SKILL_PLAIN_DESC);
+    const mg = object.match(SKILL_GET_DESC);
     const desc =
-      cleanDescription(object.match(SKILL_MENU_DESC)?.[2]) ??
-      cleanDescription(object.match(SKILL_PLAIN_DESC)?.[2]) ??
-      cleanDescription(object.match(SKILL_GET_DESC)?.[2]);
+      cleanDescription(mm?.[2], mm?.[1]) ??
+      cleanDescription(mp?.[2], mp?.[1]) ??
+      cleanDescription(mg?.[2], mg?.[1]);
     if (!out.has(key)) out.set(key, desc);
     else if (out.get(key) === undefined && desc) out.set(key, desc);
   }

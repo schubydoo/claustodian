@@ -53,9 +53,20 @@ describe('extractFlagDescriptions', () => {
     expect(d.get('--verbose')).toBe('Same text');
   });
 
-  it('drops a template-literal description (${VAR} churns every release)', () => {
+  it('drops a BACKTICK template-literal description (${VAR} churns every release)', () => {
     const d = extractFlagDescriptions('.option("--verbose",`Effort (${UV.join(", ")})`)', known);
     expect(d.has('--verbose')).toBe(false);
+  });
+
+  it('keeps a plain double-quoted description that merely contains the text "${"', () => {
+    const d = extractFlagDescriptions('.option("--verbose","Use ${name} syntax")', known);
+    expect(d.get('--verbose')).toBe('Use ${name} syntax');
+  });
+
+  it('unescapes a single pass: an escaped backslash does not become a newline', () => {
+    // "C:\\new" — the escaped backslash must stay literal, not turn into \n.
+    const d = extractFlagDescriptions(String.raw`.option("--verbose","C:\\new")`, known);
+    expect(d.get('--verbose')).toBe('C:\\new');
   });
 
   it('does not truncate a description containing an apostrophe (delimiter-aware)', () => {
