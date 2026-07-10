@@ -401,6 +401,16 @@
         return res.json();
       }
 
+      // a <= b for "X.Y.Z" versions, compared numerically per segment.
+      function verLTE(a, b) {
+        const pa = a.split('.').map(Number);
+        const pb = b.split('.').map(Number);
+        for (let i = 0; i < 3; i++) {
+          if (pa[i] !== pb[i]) return pa[i] < pb[i];
+        }
+        return true;
+      }
+
       function typeBadge(type) {
         const b = document.createElement('span');
         b.className = `badge t-${type}`;
@@ -468,12 +478,19 @@
           const ul = document.createElement('ul');
           ul.className = 'hist';
           ul.hidden = true;
+          // Highlight the era in effect at the SELECTED version (the one whose text
+          // the card is showing), not always the newest — so an older snapshot marks
+          // the era that was current then. -1 if the symbol predates its first era.
+          let activeIdx = -1;
+          eras.forEach((era, i) => {
+            if (verLTE(era.from, snapshot.claudeCodeVersion)) activeIdx = i;
+          });
           eras.forEach((era, i) => {
             const item = document.createElement('li');
-            if (i === eras.length - 1) item.className = 'now';
+            if (i === activeIdx) item.className = 'now';
             const ver = document.createElement('span');
             ver.className = 'ver';
-            ver.textContent = i === eras.length - 1 ? `${era.from} → now` : `since ${era.from}`;
+            ver.textContent = `since ${era.from}`;
             const txt = document.createElement('span');
             txt.textContent = era.description;
             item.append(ver, txt);
