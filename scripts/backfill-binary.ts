@@ -131,9 +131,11 @@ export function distillDescriptions(files: BinaryCacheFile[]): BinaryDescription
   const seen = new Map<string, Array<{ version: string; description: string }>>();
   for (const file of files) {
     for (const s of file.symbols) {
-      // Belt-and-suspenders: the extractor already drops template-literal (`${…}`)
-      // descriptions; skip here too so a stale cache can't reintroduce the churn.
-      if (!s.description || s.description.includes('${')) continue;
+      // The extractor (cleanDescription) is the authoritative description filter —
+      // it drops backtick TEMPLATE literals but KEEPS a static quoted string that
+      // merely contains "${". Don't re-filter `${` here: the cache no longer carries
+      // the delimiter, so a broader `${` skip would wrongly drop a valid static one.
+      if (!s.description) continue;
       const key = `${s.type}:${s.symbol}`;
       const arr = seen.get(key) ?? [];
       arr.push({ version: file.version, description: s.description });
