@@ -105,7 +105,11 @@ const COMMAND_TYPE = /type:\s*["'`](?:local|prompt|local-jsx)["'`]/g;
  * match here (skipped, not truncated). Non-global: we take the first in-object
  * match. */
 const COMMAND_NAME = /name:\s*["'`]([a-z][a-z0-9-]+)["'`]/;
-const COMMAND_DESC = /description:\s*["'`]((?:[^"'`\\]|\\.)*)["'`]/;
+// Delimiter-aware: capture the opening quote (group 1) and allow the OTHER quote
+// chars inside (a `"..."` description may contain an apostrophe), stopping only at
+// the matching delimiter. The literal body is group 2. A plain `[^"'`]` class here
+// truncated e.g. "Don't …" at the apostrophe.
+const COMMAND_DESC = /description:\s*(["'`])((?:(?!\1)[^\\]|\\.)*)\1/;
 
 /**
  * The SECOND command registry — skills and slash-menu commands. These register as
@@ -125,9 +129,30 @@ const SKILL_FWD = 400;
 /** Description sources, in priority order: the slash-menu string, a plain
  * `description:` literal, then a `get description(){return"…"}` accessor. (`\b`
  * before `description` keeps the plain matcher from matching `menuDescription`.) */
-const SKILL_MENU_DESC = /menuDescription:\s*["'`]((?:[^"'`\\]|\\.)*)["'`]/;
-const SKILL_PLAIN_DESC = /\bdescription:\s*["'`]((?:[^"'`\\]|\\.)*)["'`]/;
-const SKILL_GET_DESC = /get description\(\)\s*\{\s*return\s*["'`]((?:[^"'`\\]|\\.)*)["'`]/;
+const SKILL_MENU_DESC = /menuDescription:\s*(["'`])((?:(?!\1)[^\\]|\\.)*)\1/;
+const SKILL_PLAIN_DESC = /\bdescription:\s*(["'`])((?:(?!\1)[^\\]|\\.)*)\1/;
+const SKILL_GET_DESC = /get description\(\)\s*\{\s*return\s*(["'`])((?:(?!\1)[^\\]|\\.)*)\1/;
+
+/**
+ * Cleans a captured description literal (`raw`) for storage, given its opening
+ * `delimiter`. Returns `undefined` for a runtime TEMPLATE literal — a BACKTICK
+ * string containing `${…}` interpolation, whose value depends on a variable whose
+ * MINIFIED name churns every release (captured as garbage like `Submit feedback
+ * about ${K4}` or the truncated `Effort level … (${UV.join(`); a version
+ * contributing no description is strictly better. A plain `"`/`'` string that
+ * merely contains the text `${` is a static literal and is KEPT. Otherwise
+ * unescapes the JS string escapes in a SINGLE left-to-right pass, so an escaped
+ * backslash (`\\`) consumes the next char before `\n`/`\t`/`\uXXXX` can misfire on
+ * it (`"C:\\new"` stays `C:\new`, not `C:` + newline + `ew`).
+ */
+function cleanDescription(raw: string | undefined, delimiter: string | undefined): string | undefined {
+  if (raw === undefined) return undefined;
+  if (delimiter === '`' && raw.includes('${')) return undefined;
+  const ESCAPES: Record<string, string> = { n: '\n', t: '\t', r: '', b: '\b', f: '\f', v: '\v', '0': '\0' };
+  return raw.replace(/\\(u[0-9a-fA-F]{4}|.)/gs, (_m, e: string) =>
+    e[0] === 'u' ? String.fromCharCode(parseInt(e.slice(1), 16)) : (ESCAPES[e] ?? e)
+  );
+}
 
 /** Env vars whose existence we assert from the bundle, keyed by access syntax. */
 export function extractEnvVars(src: string): Map<string, string> {
@@ -189,29 +214,37 @@ export function extractFlags(src: string): Map<string, Evidence> {
  * The spec starts with a dash and carries the long flag; the description is the
  * next string argument.
  */
+// Groups: 1 = spec delimiter, 2 = flag spec, 3 = desc delimiter, 4 = description.
 const FLAG_SPEC_DESC =
-  /(?:\.option|\.addOption|new [A-Za-z_$][\w$]*)\(\s*["'`](-{1,2}[a-z][^"'`]*?)["'`]\s*,\s*["'`]((?:[^"'`\\]|\\.)*)["'`]/g;
+  /(?:\.option|\.addOption|new [A-Za-z_$][\w$]*)\(\s*(["'`])(-{1,2}[a-z](?:(?!\1)[^\\]|\\.)*)\1\s*,\s*(["'`])((?:(?!\3)[^\\]|\\.)*)\3/g;
 
 /**
- * Descriptions for flags that already have own-evidence (`flags`). Scans every
- * anchored commander `(flagSpec, description)` pair; when the spec's long flag is
- * one we track, records the description (first occurrence wins). Two guards keep it
- * honest: intersecting with `flags` drops pairs for flags we don't recognize, and a
- * description that itself looks like a flag (`--x`) is rejected as a mis-match (a
- * real description is prose, never another flag). Descriptions are kept verbatim
- * (same as the command registry — no unescaping).
+ * Descriptions for flags that already have own-evidence (`flags`). A flag NAME is
+ * NOT unique across subcommands — `--all` is "Disable all enabled plugins" on
+ * `plugin disable` AND "Purge state for every project" on `project purge`, and
+ * minification reorders occurrences per release — so we collect the SET of distinct
+ * descriptions each flag registers in THIS bundle and emit one only when the flag
+ * is UNAMBIGUOUS (exactly one distinct description). Guards: intersect with `flags`;
+ * drop template-literal / flag-looking captures. A genuine cross-VERSION reword
+ * (one description per bundle) is preserved.
  */
 export function extractFlagDescriptions(
   src: string,
   flags: ReadonlySet<string>
 ): Map<string, string> {
-  const out = new Map<string, string>();
+  const seen = new Map<string, Set<string>>();
   for (const m of src.matchAll(FLAG_SPEC_DESC)) {
-    const long = (m[1] ?? '').match(/--[a-z][a-z0-9-]+/)?.[0];
-    const description = m[2] as string;
-    if (!long || !flags.has(long) || out.has(long)) continue;
+    const long = (m[2] ?? '').match(/--[a-z][a-z0-9-]+/)?.[0];
+    const description = cleanDescription(m[4], m[3]);
+    if (!long || !flags.has(long) || !description) continue;
     if (/^-{1,2}[a-z]/.test(description)) continue; // a flag, not a description
-    out.set(long, description);
+    let set = seen.get(long);
+    if (!set) seen.set(long, (set = new Set()));
+    set.add(description);
+  }
+  const out = new Map<string, string>();
+  for (const [long, descs] of seen) {
+    if (descs.size === 1) out.set(long, [...descs][0] as string);
   }
   return out;
 }
@@ -273,7 +306,8 @@ export function extractCommands(src: string): Map<string, string | undefined> {
     // doesn't cut the window at its inner `}`.
     const forward = src.slice(t, objectCloseFrom(src, t, t + COMMAND_FWD));
     let name = forward.match(COMMAND_NAME)?.[1];
-    let desc = forward.match(COMMAND_DESC)?.[1];
+    const fdm = forward.match(COMMAND_DESC);
+    let desc = cleanDescription(fdm?.[2], fdm?.[1]);
 
     // No name after the marker → type-last object; read the fields before it,
     // back to this object's own opening brace (capped, depth-aware), so a
@@ -285,7 +319,8 @@ export function extractCommands(src: string): Map<string, string | undefined> {
       // Keep a forward-window description if the pre-type slice has none (a
       // "type-middle" object, `{name:…,type:…,description:…}`, has its name
       // before but its description after the marker).
-      desc = before.match(COMMAND_DESC)?.[1] ?? desc;
+      const bdm = before.match(COMMAND_DESC);
+      desc = cleanDescription(bdm?.[2], bdm?.[1]) ?? desc;
     }
 
     if (!name) continue;
@@ -318,10 +353,13 @@ export function extractSkillCommands(src: string): Map<string, string | undefine
     const name = anchor[1];
     if (!name) continue;
     const key = `/${name}`;
+    const mm = object.match(SKILL_MENU_DESC);
+    const mp = object.match(SKILL_PLAIN_DESC);
+    const mg = object.match(SKILL_GET_DESC);
     const desc =
-      object.match(SKILL_MENU_DESC)?.[1] ??
-      object.match(SKILL_PLAIN_DESC)?.[1] ??
-      object.match(SKILL_GET_DESC)?.[1];
+      cleanDescription(mm?.[2], mm?.[1]) ??
+      cleanDescription(mp?.[2], mp?.[1]) ??
+      cleanDescription(mg?.[2], mg?.[1]);
     if (!out.has(key)) out.set(key, desc);
     else if (out.get(key) === undefined && desc) out.set(key, desc);
   }

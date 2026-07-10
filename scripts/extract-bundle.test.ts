@@ -38,9 +38,45 @@ describe('extractFlagDescriptions', () => {
     expect(d.has('--unknown')).toBe(false);
   });
 
-  it('keeps the first occurrence when a flag is described twice', () => {
-    const d = extractFlagDescriptions('.option("--verbose","first");.option("--verbose","second")', known);
-    expect(d.get('--verbose')).toBe('first');
+  it('drops a flag with two DIFFERENT descriptions in one bundle (subcommand-ambiguous)', () => {
+    // `--all` = "Disable all enabled plugins" (plugin disable) AND "Purge state…"
+    // (project purge). Can't pick one → record none.
+    const d = extractFlagDescriptions(
+      '.option("--verbose","Disable all enabled plugins");.option("--verbose","Purge state for every project")',
+      known
+    );
+    expect(d.has('--verbose')).toBe(false);
+  });
+
+  it('keeps a flag described identically twice (one distinct description)', () => {
+    const d = extractFlagDescriptions('.option("--verbose","Same text");.option("--verbose","Same text")', known);
+    expect(d.get('--verbose')).toBe('Same text');
+  });
+
+  it('drops a BACKTICK template-literal description (${VAR} churns every release)', () => {
+    const d = extractFlagDescriptions('.option("--verbose",`Effort (${UV.join(", ")})`)', known);
+    expect(d.has('--verbose')).toBe(false);
+  });
+
+  it('keeps a plain double-quoted description that merely contains the text "${"', () => {
+    const d = extractFlagDescriptions('.option("--verbose","Use ${name} syntax")', known);
+    expect(d.get('--verbose')).toBe('Use ${name} syntax');
+  });
+
+  it('unescapes a single pass: an escaped backslash does not become a newline', () => {
+    // "C:\\new" — the escaped backslash must stay literal, not turn into \n.
+    const d = extractFlagDescriptions(String.raw`.option("--verbose","C:\\new")`, known);
+    expect(d.get('--verbose')).toBe('C:\\new');
+  });
+
+  it('does not truncate a description containing an apostrophe (delimiter-aware)', () => {
+    const d = extractFlagDescriptions('.option("--verbose","Don\'t stop at the quote")', known);
+    expect(d.get('--verbose')).toBe("Don't stop at the quote");
+  });
+
+  it('unescapes JS string escapes (\\uXXXX, \\n) in the captured description', () => {
+    const d = extractFlagDescriptions(String.raw`.option("--verbose","caf\u00e9\nline")`, known);
+    expect(d.get('--verbose')).toBe('café\nline');
   });
 
   it('does not mistake a bare flag array for a spec/description pair', () => {
@@ -198,6 +234,18 @@ describe('extractCommands — registry objects', () => {
   it('does not treat an API path or bare "/foo" string as a command', () => {
     const cmds = extractCommands('fetch("/guardrails");let p="/evaluation-jobs";');
     expect(cmds.size).toBe(0);
+  });
+
+  it('keeps the command but drops a template-literal (${VAR}) description', () => {
+    // `Submit feedback about ${K4}` — the minified var churns every release.
+    const cmds = extractCommands('{type:"local",name:"bug",description:`Submit feedback about ${K4}`}');
+    expect(cmds.has('/bug')).toBe(true);
+    expect(cmds.get('/bug')).toBeUndefined();
+  });
+
+  it('does not truncate a description containing an apostrophe (delimiter-aware)', () => {
+    const cmds = extractCommands('{type:"local",name:"foo",description:"Don\'t stop here"}');
+    expect(cmds.get('/foo')).toBe("Don't stop here");
   });
 
   it('skips a type marker with no resolvable command name', () => {
