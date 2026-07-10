@@ -735,8 +735,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Effort level for the current session (${Zv.join(",
-      "description_source": "binary",
+      "description": "Set the effort level for the current session. Options: `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`. Available levels depend on the model. `ultracode` starts the session at `xhigh` effort with ultracode turned on, and requires Claude Code v2.1.203 or later. Overrides the `effortLevel` setting for this session and does not persist",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -1474,10 +1474,9 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Like --plugin-dir but the engine will not read this plugin",
+      "description": "",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli"
     },
     {
       "symbol": "--plugin-url",
@@ -2173,8 +2172,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Also scaffold: ${von.join(",
-      "description_source": "binary",
+      "description": "Also scaffold component folders. Valid values: `skills`, `agents`, `hooks`, `mcp`, `lsp`, `output-style`, `channel`",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli"
     },
@@ -2225,7 +2224,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Enable XAA (SEP-990) for this server. Requires ",
+      "description": "Enable XAA (SEP-990) for this server. Requires 'claude mcp xaa setup' first. Also requires --client-id and --client-secret (for the MCP server's AS).",
       "source_url": null,
       "category": "cli",
       "description_source": "binary"
@@ -2290,7 +2289,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Set up and customise auto mode \\u2014 environment context, plus optional rule tweaks",
+      "description": "Set up and customise auto mode — environment context, plus optional rule tweaks",
       "source_url": null,
       "category": "command",
       "description_source": "binary"
@@ -2422,7 +2421,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Hatch a coding companion Â· pet, off",
+      "description": "Hatch a coding companion · pet, off",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command",
       "description_source": "binary"
@@ -3205,10 +3204,9 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Set the permission mode (${FA$.join(",
+      "description": "",
       "source_url": null,
-      "category": "command",
-      "description_source": "binary"
+      "category": "command"
     },
     {
       "symbol": "/model",
@@ -3687,7 +3685,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Guided setup \\u2014 pick a role, install a plugin, try a skill, connect tools",
+      "description": "Guided setup — pick a role, install a plugin, try a skill, connect tools",
       "source_url": null,
       "category": "command",
       "description_source": "binary"
@@ -4051,7 +4049,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Show this session",
+      "description": "Show this session's version (autoupdate may have a newer one)",
       "source_url": null,
       "category": "command",
       "description_source": "binary"

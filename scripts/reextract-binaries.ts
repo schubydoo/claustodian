@@ -79,9 +79,11 @@ export function readBundleSource(archiveDir: string, version: string): BundleRes
     for (const entry of ['package/cli.js', 'package/cli.mjs']) {
       try {
         // execFileSync (no shell) — archiveDir may contain spaces or metacharacters
+        // utf-8: the bundle text is UTF-8; latin1 mangled non-ASCII in extracted
+        // descriptions (e.g. "·"→"Â·", "–"→"â") — see the description timeline.
         const src = execFileSync('tar', ['xzOf', tarball, entry], {
           maxBuffer: TAR_MAX_BUFFER,
-          encoding: 'latin1',
+          encoding: 'utf-8',
           stdio: ['ignore', 'pipe', 'ignore'],
         });
         return { kind: 'ok', src };
@@ -95,7 +97,7 @@ export function readBundleSource(archiveDir: string, version: string): BundleRes
   const compiled = join(dir, 'linux-x64', 'claude');
   if (existsSync(compiled)) {
     if (!isOfficial(compiled, dir, 'linux-x64/claude')) return { kind: 'unverified', file: compiled };
-    return { kind: 'ok', src: readFileSync(compiled, 'latin1') };
+    return { kind: 'ok', src: readFileSync(compiled, 'utf-8') };
   }
 
   return { kind: 'missing' };

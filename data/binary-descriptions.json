@@ -28,7 +28,7 @@
     "cli_flag:--agent": [
       {
         "from": "2.0.59",
-        "description": "Agent for the current session. Overrides the "
+        "description": "Agent for the current session. Overrides the 'agent' setting."
       }
     ],
     "cli_flag:--agent-color": [
@@ -58,20 +58,12 @@
     "cli_flag:--agents": [
       {
         "from": "1.0.125",
-        "description": "JSON object defining custom agents (e.g. "
+        "description": "JSON object defining custom agents (e.g. '{\"reviewer\": {\"description\": \"Reviews code\", \"prompt\": \"You are a code reviewer\"}}')"
       }
     ],
     "cli_flag:--all": [
       {
         "from": "2.1.26",
-        "description": "Disable all enabled plugins"
-      },
-      {
-        "from": "2.1.124",
-        "description": "Purge state for every project (mutually exclusive with [path])"
-      },
-      {
-        "from": "2.1.136",
         "description": "Disable all enabled plugins"
       }
     ],
@@ -90,11 +82,27 @@
     "cli_flag:--allowed": [
       {
         "from": "0.2.33",
-        "description": "Comma-separated list of tool names to allow (e.g. "
+        "description": "Comma-separated list of tool names to allow (e.g. \"Bash(git*),Edit,Replace\")"
       },
       {
         "from": "0.2.52",
-        "description": "Comma or space-separated list of tool names to allow (e.g. "
+        "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git*) Edit Replace\")"
+      },
+      {
+        "from": "0.2.83",
+        "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git*) Edit Write\")"
+      },
+      {
+        "from": "1.0.3",
+        "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git:*) Edit Write\")"
+      },
+      {
+        "from": "1.0.5",
+        "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git:*) Edit\")"
+      },
+      {
+        "from": "2.1.108",
+        "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git *) Edit\")"
       }
     ],
     "cli_flag:--append-system-prompt": [
@@ -147,10 +155,6 @@
       {
         "from": "2.1.81",
         "description": "Minimal mode: skip hooks, LSP, plugin sync, attribution, auto-memory, background prefetches, keychain reads, and CLAUDE.md auto-discovery. Sets CLAUDE_CODE_SIMPLE=1. Anthropic auth is strictly ANTHROPIC_API_KEY or apiKeyHelper via --settings (OAuth and keychain are never read). 3P providers (Bedrock/Vertex/Foundry) use their own credentials. Skills still resolve via /skill-name. Explicitly provide context via: --system-prompt[-file], --append-system-prompt[-file], --add-dir (CLAUDE.md dirs), --mcp-config, --settings, --agents, --plugin-dir."
-      },
-      {
-        "from": "2.1.198",
-        "description": "Write a blank template (prompt.md + graders/criteria.md) instead of running the interview"
       }
     ],
     "cli_flag:--betas": [
@@ -162,7 +166,7 @@
     "cli_flag:--bg": [
       {
         "from": "2.1.187",
-        "description": "Start the session as a background agent and return immediately (manage with "
+        "description": "Start the session as a background agent and return immediately (manage with `claude agents`)"
       }
     ],
     "cli_flag:--brief": [
@@ -222,7 +226,7 @@
     "cli_flag:--config": [
       {
         "from": "2.1.147",
-        "description": "Set a userConfig option declared in the plugin"
+        "description": "Set a userConfig option declared in the plugin's manifest (repeatable). Values are validated against the schema and stored via the same path as the interactive /plugin configure flow."
       }
     ],
     "cli_flag:--console": [
@@ -280,22 +284,6 @@
     "cli_flag:--debug": [
       {
         "from": "0.2.9",
-        "description": "Enable debug mode"
-      },
-      {
-        "from": "1.0.89",
-        "description": "Enable debug mode with optional category filtering (e.g., "
-      },
-      {
-        "from": "2.1.14",
-        "description": "Show debug output"
-      },
-      {
-        "from": "2.1.48",
-        "description": "Enable debug mode with optional category filtering (e.g., "
-      },
-      {
-        "from": "2.1.132",
         "description": "Enable debug mode"
       }
     ],
@@ -362,20 +350,24 @@
     "cli_flag:--disallowed": [
       {
         "from": "0.2.83",
-        "description": "Comma or space-separated list of tool names to deny (e.g. "
+        "description": "Comma or space-separated list of tool names to deny (e.g. \"Bash(git*) Edit Write\")"
+      },
+      {
+        "from": "1.0.3",
+        "description": "Comma or space-separated list of tool names to deny (e.g. \"Bash(git:*) Edit Write\")"
+      },
+      {
+        "from": "1.0.5",
+        "description": "Comma or space-separated list of tool names to deny (e.g. \"Bash(git:*) Edit\")"
+      },
+      {
+        "from": "2.1.108",
+        "description": "Comma or space-separated list of tool names to deny (e.g. \"Bash(git *) Edit\")"
       }
     ],
     "cli_flag:--dry-run": [
       {
         "from": "2.1.118",
-        "description": "Print what would be tagged without creating it"
-      },
-      {
-        "from": "2.1.124",
-        "description": "List what would be deleted without deleting anything"
-      },
-      {
-        "from": "2.1.136",
         "description": "Print what would be tagged without creating it"
       }
     ],
@@ -394,139 +386,7 @@
       },
       {
         "from": "2.1.149",
-        "description": "Effort level for the current session (${UV.join("
-      },
-      {
-        "from": "2.1.152",
-        "description": "Effort level for the current session (${bN.join("
-      },
-      {
-        "from": "2.1.153",
-        "description": "Effort level for the current session (${uN.join("
-      },
-      {
-        "from": "2.1.154",
-        "description": "Effort level for the current session (${dN.join("
-      },
-      {
-        "from": "2.1.157",
-        "description": "Effort level for the current session (${aN.join("
-      },
-      {
-        "from": "2.1.158",
-        "description": "Effort level for the current session (${sN.join("
-      },
-      {
-        "from": "2.1.159",
-        "description": "Effort level for the current session (${oN.join("
-      },
-      {
-        "from": "2.1.160",
-        "description": "Effort level for the current session (${KE.join("
-      },
-      {
-        "from": "2.1.161",
-        "description": "Effort level for the current session (${OE.join("
-      },
-      {
-        "from": "2.1.162",
-        "description": "Effort level for the current session (${WE.join("
-      },
-      {
-        "from": "2.1.163",
-        "description": "Effort level for the current session (${hE.join("
-      },
-      {
-        "from": "2.1.166",
-        "description": "Effort level for the current session (${Pk.join("
-      },
-      {
-        "from": "2.1.169",
-        "description": "Effort level for the current session (${zv.join("
-      },
-      {
-        "from": "2.1.170",
-        "description": "Effort level for the current session (${eV.join("
-      },
-      {
-        "from": "2.1.172",
-        "description": "Effort level for the current session (${Pv.join("
-      },
-      {
-        "from": "2.1.174",
-        "description": "Effort level for the current session (${hv.join("
-      },
-      {
-        "from": "2.1.175",
-        "description": "Effort level for the current session (${Ev.join("
-      },
-      {
-        "from": "2.1.176",
-        "description": "Effort level for the current session (${pv.join("
-      },
-      {
-        "from": "2.1.177",
-        "description": "Effort level for the current session (${Bv.join("
-      },
-      {
-        "from": "2.1.178",
-        "description": "Effort level for the current session (${sv.join("
-      },
-      {
-        "from": "2.1.179",
-        "description": "Effort level for the current session (${Uv.join("
-      },
-      {
-        "from": "2.1.181",
-        "description": "Effort level for the current session (${ZD.join("
-      },
-      {
-        "from": "2.1.182",
-        "description": "Effort level for the current session (${iP.join("
-      },
-      {
-        "from": "2.1.183",
-        "description": "Effort level for the current session (${eP.join("
-      },
-      {
-        "from": "2.1.186",
-        "description": "Effort level for the current session (${dR.join("
-      },
-      {
-        "from": "2.1.187",
-        "description": "Effort level for the current session (${mR.join("
-      },
-      {
-        "from": "2.1.191",
-        "description": "Effort level for the current session (${FR.join("
-      },
-      {
-        "from": "2.1.193",
-        "description": "Effort level for the current session (${lD.join("
-      },
-      {
-        "from": "2.1.195",
-        "description": "Effort level for the current session (${xv.join("
-      },
-      {
-        "from": "2.1.196",
-        "description": "Effort level for the current session (${Mv.join("
-      },
-      {
-        "from": "2.1.197",
-        "description": "Effort level for the current session (${$v.join("
-      },
-      {
-        "from": "2.1.198",
-        "description": "Effort level for the current session (${Nv.join("
-      },
-      {
-        "from": "2.1.199",
-        "description": "Effort level for the current session (${Zv.join("
-      },
-      {
-        "from": "2.1.200",
-        "description": "Effort level for the current session (${dw.join("
+        "description": "Default effort level for sessions dispatched from agent view"
       }
     ],
     "cli_flag:--email": [
@@ -593,10 +453,6 @@
       {
         "from": "1.0.31",
         "description": "Force installation even if already installed"
-      },
-      {
-        "from": "2.1.83",
-        "description": "Ignore any cached id_token and re-login (useful after IdP-side revocation)"
       }
     ],
     "cli_flag:--fork-session": [
@@ -682,17 +538,13 @@
     "cli_flag:--input-format": [
       {
         "from": "1.0.18",
-        "description": "Input format (only works with --print): "
+        "description": "Input format (only works with --print): \"text\" (default), or \"stream-json\" (realtime streaming input)"
       }
     ],
     "cli_flag:--interactive": [
       {
         "from": "2.1.124",
         "description": "Prompt for each item before deleting"
-      },
-      {
-        "from": "2.1.198",
-        "description": "Force the interview (default when a TTY is available)"
       }
     ],
     "cli_flag:--interview": [
@@ -713,28 +565,12 @@
       {
         "from": "2.0.34",
         "description": "Output in JSON format"
-      },
-      {
-        "from": "2.1.8",
-        "description": "Output as JSON"
-      },
-      {
-        "from": "2.1.14",
-        "description": "Output in JSON format"
-      },
-      {
-        "from": "2.1.48",
-        "description": "Output as JSON (default)"
-      },
-      {
-        "from": "2.1.136",
-        "description": "Output as JSON"
       }
     ],
     "cli_flag:--json-schema": [
       {
         "from": "2.0.45",
-        "description": "JSON Schema for structured output validation. Example: {"
+        "description": "JSON Schema for structured output validation. Example: {\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"}},\"required\":[\"name\"]}"
       }
     ],
     "cli_flag:--judge-model": [
@@ -746,7 +582,7 @@
     "cli_flag:--keep-data": [
       {
         "from": "2.1.78",
-        "description": "Preserve the plugin"
+        "description": "Preserve the plugin's persistent data directory (~/.claude/plugins/data/{id}/)"
       }
     ],
     "cli_flag:--keep-temp": [
@@ -842,11 +678,15 @@
     "cli_flag:--model": [
       {
         "from": "1.0.0",
-        "description": "Model for the current session. Provide an alias for the latest model (e.g. "
+        "description": "Model for the current session. Provide an alias for the latest model (e.g. 'sonnet' or 'opus') or a model's full name (e.g. 'claude-sonnet-4-20250514')."
       },
       {
-        "from": "2.1.198",
-        "description": "Override model for all cases"
+        "from": "2.0.0",
+        "description": "Model for the current session. Provide an alias for the latest model (e.g. 'sonnet' or 'opus') or a model's full name (e.g. 'claude-sonnet-4-5-20250929')."
+      },
+      {
+        "from": "2.1.45",
+        "description": "Model for the current session. Provide an alias for the latest model (e.g. 'sonnet' or 'opus') or a model's full name (e.g. 'claude-sonnet-4-6')."
       }
     ],
     "cli_flag:--name": [
@@ -862,7 +702,7 @@
     "cli_flag:--no-browser": [
       {
         "from": "2.1.186",
-        "description": "Print the authorization URL instead of opening a browser (for SSH/headless sessions \\u2014 paste the redirect URL back when prompted)"
+        "description": "Print the authorization URL instead of opening a browser (for SSH/headless sessions — paste the redirect URL back when prompted)"
       }
     ],
     "cli_flag:--no-chrome": [
@@ -892,7 +732,7 @@
     "cli_flag:--output-format": [
       {
         "from": "0.2.66",
-        "description": "Output format (only works with --print): "
+        "description": "Output format (only works with --print): \"text\" (default), \"json\" (single result), or \"stream-json\" (realtime streaming)"
       }
     ],
     "cli_flag:--output-schema": [
@@ -947,12 +787,6 @@
       {
         "from": "2.1.128",
         "description": "Load a plugin from a directory or .zip for this session only (repeatable: --plugin-dir A --plugin-dir B.zip)"
-      }
-    ],
-    "cli_flag:--plugin-dir-no-mcp": [
-      {
-        "from": "2.1.172",
-        "description": "Like --plugin-dir but the engine will not read this plugin"
       }
     ],
     "cli_flag:--plugin-url": [
@@ -1029,10 +863,6 @@
       {
         "from": "2.1.116",
         "description": "Create a remote session with the given description, or attach to an existing one by session ID or claude.ai/code URL"
-      },
-      {
-        "from": "2.1.136",
-        "description": "Remote to push to with --push"
       }
     ],
     "cli_flag:--remote-control": [
@@ -1094,23 +924,19 @@
     "cli_flag:--safe-mode": [
       {
         "from": "2.1.169",
-        "description": "Start with all customizations (CLAUDE.md, skills, plugins, hooks, MCP servers, custom commands and agents, output styles, workflows, custom themes, keybindings, and more) disabled \\u2014 useful for troubleshooting a broken configuration. Admin-managed (policy) settings still apply. Auth, model selection, built-in tools, and permissions work normally. Sets CLAUDE_CODE_SAFE_MODE=1."
+        "description": "Start with all customizations (CLAUDE.md, skills, plugins, hooks, MCP servers, custom commands and agents, output styles, workflows, custom themes, keybindings, and more) disabled — useful for troubleshooting a broken configuration. Admin-managed (policy) settings still apply. Auth, model selection, built-in tools, and permissions work normally. Sets CLAUDE_CODE_SAFE_MODE=1."
       }
     ],
     "cli_flag:--scaffold": [
       {
         "from": "2.1.198",
-        "description": "Run each case"
+        "description": "Run each case's scaffold_script (runs author-supplied bash as you; off by default — only use on case files you authored)"
       }
     ],
     "cli_flag:--scope": [
       {
-        "from": "0.2.9",
+        "from": "0.2.33",
         "description": "Configuration scope (project or global)"
-      },
-      {
-        "from": "0.2.49",
-        "description": "Configuration scope (local or user)"
       },
       {
         "from": "0.2.50",
@@ -1232,7 +1058,11 @@
     "cli_flag:--teammate-mode": [
       {
         "from": "2.1.16",
-        "description": "How to spawn teammates: "
+        "description": "How to spawn teammates: \"tmux\", \"in-process\", or \"auto\""
+      },
+      {
+        "from": "2.1.186",
+        "description": "How to spawn teammates: \"tmux\", \"iterm2\", \"in-process\", or \"auto\""
       }
     ],
     "cli_flag:--teleport": [
@@ -1288,7 +1118,11 @@
     "cli_flag:--tools": [
       {
         "from": "2.0.31",
-        "description": "Specify the list of available tools from the built-in set. Use "
+        "description": "Specify the list of available tools from the built-in set. Use \"\" to disable all tools, \"default\" to use all tools, or specify tool names (e.g. \"Bash,Edit,Read\"). Only works with --print mode."
+      },
+      {
+        "from": "2.0.77",
+        "description": "Specify the list of available tools from the built-in set. Use \"\" to disable all tools, \"default\" to use all tools, or specify tool names (e.g. \"Bash,Edit,Read\")."
       }
     ],
     "cli_flag:--transport": [
@@ -1317,140 +1151,6 @@
         "description": "Override verbose mode setting from config"
       }
     ],
-    "cli_flag:--with": [
-      {
-        "from": "2.1.157",
-        "description": "Also scaffold: ${rh$.join("
-      },
-      {
-        "from": "2.1.158",
-        "description": "Also scaffold: ${ah$.join("
-      },
-      {
-        "from": "2.1.159",
-        "description": "Also scaffold: ${HS$.join("
-      },
-      {
-        "from": "2.1.160",
-        "description": "Also scaffold: ${AR$.join("
-      },
-      {
-        "from": "2.1.161",
-        "description": "Also scaffold: ${sR$.join("
-      },
-      {
-        "from": "2.1.162",
-        "description": "Also scaffold: ${RI$.join("
-      },
-      {
-        "from": "2.1.163",
-        "description": "Also scaffold: ${yC$.join("
-      },
-      {
-        "from": "2.1.166",
-        "description": "Also scaffold: ${vb$.join("
-      },
-      {
-        "from": "2.1.167",
-        "description": "Also scaffold: ${kb$.join("
-      },
-      {
-        "from": "2.1.168",
-        "description": "Also scaffold: ${Nb$.join("
-      },
-      {
-        "from": "2.1.169",
-        "description": "Also scaffold: ${Jm$.join("
-      },
-      {
-        "from": "2.1.170",
-        "description": "Also scaffold: ${lm$.join("
-      },
-      {
-        "from": "2.1.172",
-        "description": "Also scaffold: ${cp$.join("
-      },
-      {
-        "from": "2.1.173",
-        "description": "Also scaffold: ${np$.join("
-      },
-      {
-        "from": "2.1.174",
-        "description": "Also scaffold: ${RB$.join("
-      },
-      {
-        "from": "2.1.175",
-        "description": "Also scaffold: ${rB$.join("
-      },
-      {
-        "from": "2.1.176",
-        "description": "Also scaffold: ${MF$.join("
-      },
-      {
-        "from": "2.1.178",
-        "description": "Also scaffold: ${BQ$.join("
-      },
-      {
-        "from": "2.1.179",
-        "description": "Also scaffold: ${lQ$.join("
-      },
-      {
-        "from": "2.1.181",
-        "description": "Also scaffold: ${W9t.join("
-      },
-      {
-        "from": "2.1.182",
-        "description": "Also scaffold: ${$8t.join("
-      },
-      {
-        "from": "2.1.183",
-        "description": "Also scaffold: ${_8t.join("
-      },
-      {
-        "from": "2.1.186",
-        "description": "Also scaffold: ${Nzt.join("
-      },
-      {
-        "from": "2.1.187",
-        "description": "Also scaffold: ${Kzt.join("
-      },
-      {
-        "from": "2.1.190",
-        "description": "Also scaffold: ${jzt.join("
-      },
-      {
-        "from": "2.1.191",
-        "description": "Also scaffold: ${QYt.join("
-      },
-      {
-        "from": "2.1.193",
-        "description": "Also scaffold: ${vXt.join("
-      },
-      {
-        "from": "2.1.195",
-        "description": "Also scaffold: ${WZt.join("
-      },
-      {
-        "from": "2.1.196",
-        "description": "Also scaffold: ${gtn.join("
-      },
-      {
-        "from": "2.1.197",
-        "description": "Also scaffold: ${htn.join("
-      },
-      {
-        "from": "2.1.198",
-        "description": "Also scaffold: ${Xnn.join("
-      },
-      {
-        "from": "2.1.199",
-        "description": "Also scaffold: ${von.join("
-      },
-      {
-        "from": "2.1.200",
-        "description": "Also scaffold: ${wsn.join("
-      }
-    ],
     "cli_flag:--workload": [
       {
         "from": "2.1.71",
@@ -1472,25 +1172,7 @@
     "cli_flag:--xaa": [
       {
         "from": "2.1.86",
-        "description": "Enable XAA (SEP-990) for this server. Requires "
-      }
-    ],
-    "cli_flag:--yes": [
-      {
-        "from": "2.1.121",
-        "description": "Skip the --prune confirmation prompt (required when stdin is not a TTY)"
-      },
-      {
-        "from": "2.1.124",
-        "description": "Skip confirmation prompt"
-      },
-      {
-        "from": "2.1.136",
-        "description": "Skip the --prune confirmation prompt (required when stdin is not a TTY)"
-      },
-      {
-        "from": "2.1.141",
-        "description": "Skip the --prune confirmation prompt (required when stdin or stdout is not a TTY)"
+        "description": "Enable XAA (SEP-990) for this server. Requires 'claude mcp xaa setup' first. Also requires --client-id and --client-secret (for the MCP server's AS)."
       }
     ],
     "command:/add-dir": [
@@ -1538,7 +1220,7 @@
     "command:/auto-mode-setup": [
       {
         "from": "2.1.198",
-        "description": "Set up and customise auto mode \\u2014 environment context, plus optional rule tweaks"
+        "description": "Set up and customise auto mode — environment context, plus optional rule tweaks"
       }
     ],
     "command:/autocompact": [
@@ -1584,11 +1266,7 @@
     "command:/batch": [
       {
         "from": "2.1.63",
-        "description": "Research and plan a large-scale change, then execute it in parallel across 5â30 isolated worktree agents that each open a PR."
-      },
-      {
-        "from": "2.1.113",
-        "description": "Research and plan a large-scale change, then execute it in parallel across 5\\u201330 isolated worktree agents that each open a PR."
+        "description": "Research and plan a large-scale change, then execute it in parallel across 5–30 isolated worktree agents that each open a PR."
       },
       {
         "from": "2.1.163",
@@ -1626,362 +1304,10 @@
     "command:/buddy": [
       {
         "from": "2.1.89",
-        "description": "Hatch a coding companion Â· pet, off"
+        "description": "Hatch a coding companion · pet, off"
       }
     ],
     "command:/bug": [
-      {
-        "from": "0.2.9",
-        "description": "Submit feedback about ${K4}"
-      },
-      {
-        "from": "0.2.25",
-        "description": "Submit feedback about ${X4}"
-      },
-      {
-        "from": "0.2.27",
-        "description": "Submit feedback about ${Y4}"
-      },
-      {
-        "from": "0.2.29",
-        "description": "Submit feedback about ${w4}"
-      },
-      {
-        "from": "0.2.30",
-        "description": "Submit feedback about ${l2}"
-      },
-      {
-        "from": "0.2.32",
-        "description": "Submit feedback about ${T2}"
-      },
-      {
-        "from": "0.2.33",
-        "description": "Submit feedback about ${b2}"
-      },
-      {
-        "from": "0.2.36",
-        "description": "Submit feedback about ${j2}"
-      },
-      {
-        "from": "0.2.37",
-        "description": "Submit feedback about ${P2}"
-      },
-      {
-        "from": "0.2.38",
-        "description": "Submit feedback about ${y2}"
-      },
-      {
-        "from": "0.2.39",
-        "description": "Submit feedback about ${O2}"
-      },
-      {
-        "from": "0.2.40",
-        "description": "Submit feedback about ${j2}"
-      },
-      {
-        "from": "0.2.41",
-        "description": "Submit feedback about ${k2}"
-      },
-      {
-        "from": "0.2.42",
-        "description": "Submit feedback about ${x2}"
-      },
-      {
-        "from": "0.2.44",
-        "description": "Submit feedback about ${k2}"
-      },
-      {
-        "from": "0.2.46",
-        "description": "Submit feedback about ${x2}"
-      },
-      {
-        "from": "0.2.50",
-        "description": "Submit feedback about ${h2}"
-      },
-      {
-        "from": "0.2.51",
-        "description": "Submit feedback about ${l2}"
-      },
-      {
-        "from": "0.2.52",
-        "description": "Submit feedback about ${x2}"
-      },
-      {
-        "from": "0.2.53",
-        "description": "Submit feedback about ${k2}"
-      },
-      {
-        "from": "0.2.54",
-        "description": "Submit feedback about ${i2}"
-      },
-      {
-        "from": "0.2.56",
-        "description": "Submit feedback about ${T2}"
-      },
-      {
-        "from": "0.2.57",
-        "description": "Submit feedback about ${f2}"
-      },
-      {
-        "from": "0.2.59",
-        "description": "Submit feedback about ${P2}"
-      },
-      {
-        "from": "0.2.64",
-        "description": "Submit feedback about ${L2}"
-      },
-      {
-        "from": "0.2.65",
-        "description": "Submit feedback about ${S2}"
-      },
-      {
-        "from": "0.2.69",
-        "description": "Submit feedback about ${L2}"
-      },
-      {
-        "from": "0.2.70",
-        "description": "Submit feedback about ${S2}"
-      },
-      {
-        "from": "0.2.72",
-        "description": "Submit feedback about ${L2}"
-      },
-      {
-        "from": "0.2.76",
-        "description": "Submit feedback about ${S4}"
-      },
-      {
-        "from": "0.2.77",
-        "description": "Submit feedback about ${P4}"
-      },
-      {
-        "from": "0.2.78",
-        "description": "Submit feedback about ${O4}"
-      },
-      {
-        "from": "0.2.80",
-        "description": "Submit feedback about ${M4}"
-      },
-      {
-        "from": "0.2.83",
-        "description": "Submit feedback about ${T2}"
-      },
-      {
-        "from": "0.2.85",
-        "description": "Submit feedback about ${P2}"
-      },
-      {
-        "from": "0.2.89",
-        "description": "Submit feedback about ${j2}"
-      },
-      {
-        "from": "0.2.91",
-        "description": "Submit feedback about ${T2}"
-      },
-      {
-        "from": "0.2.93",
-        "description": "Submit feedback about ${v2}"
-      },
-      {
-        "from": "0.2.96",
-        "description": "Submit feedback about ${x2}"
-      },
-      {
-        "from": "0.2.99",
-        "description": "Submit feedback about ${f2}"
-      },
-      {
-        "from": "0.2.101",
-        "description": "Submit feedback about ${j2}"
-      },
-      {
-        "from": "0.2.103",
-        "description": "Submit feedback about ${b2}"
-      },
-      {
-        "from": "0.2.104",
-        "description": "Submit feedback about ${x2}"
-      },
-      {
-        "from": "0.2.106",
-        "description": "Submit feedback about ${v2}"
-      },
-      {
-        "from": "0.2.107",
-        "description": "Submit feedback about ${y2}"
-      },
-      {
-        "from": "0.2.108",
-        "description": "Submit feedback about ${b2}"
-      },
-      {
-        "from": "0.2.113",
-        "description": "Submit feedback about ${j2}"
-      },
-      {
-        "from": "0.2.114",
-        "description": "Submit feedback about ${T2}"
-      },
-      {
-        "from": "0.2.119",
-        "description": "Submit feedback about ${S2}"
-      },
-      {
-        "from": "0.2.122",
-        "description": "Submit feedback about ${y2}"
-      },
-      {
-        "from": "0.2.125",
-        "description": "Submit feedback about ${k0}"
-      },
-      {
-        "from": "1.0.0",
-        "description": "Submit feedback about ${x0}"
-      },
-      {
-        "from": "1.0.4",
-        "description": "Submit feedback about ${g0}"
-      },
-      {
-        "from": "1.0.5",
-        "description": "Submit feedback about ${f0}"
-      },
-      {
-        "from": "1.0.7",
-        "description": "Submit feedback about ${b0}"
-      },
-      {
-        "from": "1.0.8",
-        "description": "Submit feedback about ${v0}"
-      },
-      {
-        "from": "1.0.10",
-        "description": "Submit feedback about ${u0}"
-      },
-      {
-        "from": "1.0.11",
-        "description": "Submit feedback about ${m0}"
-      },
-      {
-        "from": "1.0.17",
-        "description": "Submit feedback about ${d0}"
-      },
-      {
-        "from": "1.0.19",
-        "description": "Submit feedback about ${m0}"
-      },
-      {
-        "from": "1.0.20",
-        "description": "Submit feedback about ${o0}"
-      },
-      {
-        "from": "1.0.21",
-        "description": "Submit feedback about ${m0}"
-      },
-      {
-        "from": "1.0.25",
-        "description": "Submit feedback about ${f0}"
-      },
-      {
-        "from": "1.0.28",
-        "description": "Submit feedback about ${v0}"
-      },
-      {
-        "from": "1.0.30",
-        "description": "Submit feedback about ${x0}"
-      },
-      {
-        "from": "1.0.31",
-        "description": "Submit feedback about ${f0}"
-      },
-      {
-        "from": "1.0.32",
-        "description": "Submit feedback about ${b0}"
-      },
-      {
-        "from": "1.0.33",
-        "description": "Submit feedback about ${m0}"
-      },
-      {
-        "from": "1.0.35",
-        "description": "Submit feedback about ${r0}"
-      },
-      {
-        "from": "1.0.36",
-        "description": "Submit feedback about ${o0}"
-      },
-      {
-        "from": "1.0.38",
-        "description": "Submit feedback about ${t0}"
-      },
-      {
-        "from": "1.0.39",
-        "description": "Submit feedback about ${e0}"
-      },
-      {
-        "from": "1.0.42",
-        "description": "Submit feedback about ${A2}"
-      },
-      {
-        "from": "1.0.44",
-        "description": "Submit feedback about ${o0}"
-      },
-      {
-        "from": "1.0.45",
-        "description": "Submit feedback about ${t0}"
-      },
-      {
-        "from": "1.0.46",
-        "description": "Submit feedback about ${A2}"
-      },
-      {
-        "from": "1.0.49",
-        "description": "Submit feedback about ${B2}"
-      },
-      {
-        "from": "1.0.52",
-        "description": "Submit feedback about ${Q2}"
-      },
-      {
-        "from": "1.0.53",
-        "description": "Submit feedback about ${I2}"
-      },
-      {
-        "from": "1.0.55",
-        "description": "Submit feedback about ${Q2}"
-      },
-      {
-        "from": "1.0.56",
-        "description": "Submit feedback about ${B2}"
-      },
-      {
-        "from": "1.0.57",
-        "description": "Submit feedback about ${D2}"
-      },
-      {
-        "from": "1.0.58",
-        "description": "Submit feedback about ${A2}"
-      },
-      {
-        "from": "1.0.59",
-        "description": "Submit feedback about ${C2}"
-      },
-      {
-        "from": "1.0.60",
-        "description": "Submit feedback about ${E2}"
-      },
-      {
-        "from": "1.0.63",
-        "description": "Submit feedback about ${H2}"
-      },
-      {
-        "from": "1.0.64",
-        "description": "Submit feedback about ${$2}"
-      },
-      {
-        "from": "1.0.65",
-        "description": "Submit feedback about ${w2}"
-      },
       {
         "from": "1.0.68",
         "description": "Submit feedback about Claude Code"
@@ -2096,7 +1422,15 @@
     "command:/copy": [
       {
         "from": "2.1.20",
-        "description": "Copy Claude"
+        "description": "Copy Claude's last response to clipboard as markdown"
+      },
+      {
+        "from": "2.1.59",
+        "description": "Copy Claude's last response or a code block to clipboard"
+      },
+      {
+        "from": "2.1.77",
+        "description": "Copy Claude's last response to clipboard (or /copy N for the Nth-latest)"
       }
     ],
     "command:/cost": [
@@ -2124,7 +1458,7 @@
     "command:/design": [
       {
         "from": "2.1.181",
-        "description": "Work with Claude Design (claude.ai/design) \\u2014 create, import, export, sync, login"
+        "description": "Work with Claude Design (claude.ai/design) — create, import, export, sync, login"
       },
       {
         "from": "2.1.198",
@@ -2186,11 +1520,7 @@
     "command:/dream": [
       {
         "from": "2.1.97",
-        "description": "Reflective memory consolidation â review recent activity, synthesize learnings into typed memory files, and prune stale entries."
-      },
-      {
-        "from": "2.1.113",
-        "description": "Reflective memory consolidation \\u2014 review recent activity, synthesize learnings into typed memory files, and prune stale entries."
+        "description": "Reflective memory consolidation — review recent activity, synthesize learnings into typed memory files, and prune stale entries."
       }
     ],
     "command:/effort": [
@@ -2282,7 +1612,7 @@
     "command:/goal": [
       {
         "from": "2.1.132",
-        "description": "Set a goal \\u2014 keep working until the condition is met"
+        "description": "Set a goal — keep working until the condition is met"
       },
       {
         "from": "2.1.163",
@@ -2435,12 +1765,6 @@
       {
         "from": "2.0.72",
         "description": "Show QR code to download the Claude mobile app"
-      }
-    ],
-    "command:/mode": [
-      {
-        "from": "2.1.116",
-        "description": "Set the permission mode (${FA$.join("
       }
     ],
     "command:/model": [
@@ -2664,13 +1988,13 @@
     "command:/run": [
       {
         "from": "2.1.163",
-        "description": "Launch this project\\u2019s app to see your change working"
+        "description": "Launch this project’s app to see your change working"
       }
     ],
     "command:/run-skill-generator": [
       {
         "from": "2.1.163",
-        "description": "Create a skill that knows how to run this project\\u2019s app"
+        "description": "Create a skill that knows how to run this project’s app"
       }
     ],
     "command:/schedule": [
@@ -2681,10 +2005,6 @@
       {
         "from": "2.1.117",
         "description": "Create, update, list, or run scheduled remote agents (routines) on a cron schedule or once at a specific time."
-      },
-      {
-        "from": "2.1.118",
-        "description": "Create, update, list, or run scheduled remote agents (routines) ${H?"
       },
       {
         "from": "2.1.120",
@@ -2730,7 +2050,7 @@
     "command:/setup-cowork": [
       {
         "from": "2.1.199",
-        "description": "Guided setup \\u2014 pick a role, install a plugin, try a skill, connect tools"
+        "description": "Guided setup — pick a role, install a plugin, try a skill, connect tools"
       }
     ],
     "command:/setup-vertex": [
@@ -2776,7 +2096,7 @@
     "command:/statusline": [
       {
         "from": "1.0.72",
-        "description": "Set up Claude Code"
+        "description": "Set up Claude Code's status line UI"
       }
     ],
     "command:/stickers": [
@@ -2871,108 +2191,10 @@
         "description": "Set the terminal UI renderer (default | fullscreen)"
       }
     ],
-    "command:/ultraplan": [
-      {
-        "from": "2.1.83",
-        "description": "Advanced multi-agent plan mode with our most powerful model (Opus). Runs in Claude Code on the web. See ${mC4}"
-      },
-      {
-        "from": "2.1.84",
-        "description": "~10â30 min Â· Claude Code on the web drafts an advanced plan you can edit and approve. See ${JV4}"
-      },
-      {
-        "from": "2.1.85",
-        "description": "~10â30 min Â· Claude Code on the web drafts an advanced plan you can edit and approve. See ${REK}"
-      },
-      {
-        "from": "2.1.86",
-        "description": "~10â30 min Â· Claude Code on the web drafts an advanced plan you can edit and approve. See ${qLK}"
-      }
-    ],
     "command:/ultrareview": [
       {
         "from": "2.1.83",
-        "description": "~5â15 min Â· Cloud agent finds and verifies bugs in your branch"
-      },
-      {
-        "from": "2.1.84",
-        "description": "~5â15 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${_2z}"
-      },
-      {
-        "from": "2.1.85",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${qXY}"
-      },
-      {
-        "from": "2.1.86",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${sDz}"
-      },
-      {
-        "from": "2.1.87",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${aDz}"
-      },
-      {
-        "from": "2.1.89",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${tvY}"
-      },
-      {
-        "from": "2.1.90",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${bkY}"
-      },
-      {
-        "from": "2.1.91",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${UNY}"
-      },
-      {
-        "from": "2.1.92",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${DLY}"
-      },
-      {
-        "from": "2.1.94",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${nCY}"
-      },
-      {
-        "from": "2.1.96",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${iCY}"
-      },
-      {
-        "from": "2.1.97",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${$bY}"
-      },
-      {
-        "from": "2.1.98",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${FuY}"
-      },
-      {
-        "from": "2.1.100",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${puY}"
-      },
-      {
-        "from": "2.1.101",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${tFY}"
-      },
-      {
-        "from": "2.1.104",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${qpY}"
-      },
-      {
-        "from": "2.1.105",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${yQY}"
-      },
-      {
-        "from": "2.1.107",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${hQY}"
-      },
-      {
-        "from": "2.1.108",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${HpY}"
-      },
-      {
-        "from": "2.1.109",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${MpY}"
-      },
-      {
-        "from": "2.1.110",
-        "description": "~10â20 min Â· Finds and verifies bugs in your branch. Runs in Claude Code on the web. See ${gUY}"
+        "description": "~5–15 min · Cloud agent finds and verifies bugs in your branch"
       }
     ],
     "command:/update": [
@@ -3016,7 +2238,7 @@
       },
       {
         "from": "2.1.163",
-        "description": "Show this session"
+        "description": "Show this session's version (autoupdate may have a newer one)"
       }
     ],
     "command:/vibe": [

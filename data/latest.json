@@ -1529,10 +1529,9 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Like --plugin-dir but the engine will not read this plugin",
+      "description": "",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli"
     },
     {
       "symbol": "--plugin-url",
@@ -2294,7 +2293,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Enable XAA (SEP-990) for this server. Requires ",
+      "description": "Enable XAA (SEP-990) for this server. Requires 'claude mcp xaa setup' first. Also requires --client-id and --client-secret (for the MCP server's AS).",
       "source_url": null,
       "category": "cli",
       "description_source": "binary"
@@ -2359,7 +2358,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Set up and customise auto mode \\u2014 environment context, plus optional rule tweaks",
+      "description": "Set up and customise auto mode — environment context, plus optional rule tweaks",
       "source_url": null,
       "category": "command",
       "description_source": "binary"
@@ -2491,7 +2490,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Hatch a coding companion Â· pet, off",
+      "description": "Hatch a coding companion · pet, off",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command",
       "description_source": "binary"
@@ -3287,10 +3286,9 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Set the permission mode (${FA$.join(",
+      "description": "",
       "source_url": null,
-      "category": "command",
-      "description_source": "binary"
+      "category": "command"
     },
     {
       "symbol": "/model",
@@ -3769,7 +3767,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Guided setup \\u2014 pick a role, install a plugin, try a skill, connect tools",
+      "description": "Guided setup — pick a role, install a plugin, try a skill, connect tools",
       "source_url": null,
       "category": "command",
       "description_source": "binary"
@@ -4133,7 +4131,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Show this session",
+      "description": "Show this session's version (autoupdate may have a newer one)",
       "source_url": null,
       "category": "command",
       "description_source": "binary"

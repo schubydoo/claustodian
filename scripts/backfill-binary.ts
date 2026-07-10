@@ -131,7 +131,9 @@ export function distillDescriptions(files: BinaryCacheFile[]): BinaryDescription
   const seen = new Map<string, Array<{ version: string; description: string }>>();
   for (const file of files) {
     for (const s of file.symbols) {
-      if (!s.description) continue;
+      // Belt-and-suspenders: the extractor already drops template-literal (`${…}`)
+      // descriptions; skip here too so a stale cache can't reintroduce the churn.
+      if (!s.description || s.description.includes('${')) continue;
       const key = `${s.type}:${s.symbol}`;
       const arr = seen.get(key) ?? [];
       arr.push({ version: file.version, description: s.description });

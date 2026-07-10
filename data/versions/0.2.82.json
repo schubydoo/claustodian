@@ -10,8 +10,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Tools that execute without prompting for permission. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead",
-      "description_source": "docs",
+      "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git*) Edit Replace\")",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
     },
@@ -49,8 +49,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Enable debug mode",
-      "description_source": "binary",
+      "description": "Enable debug mode with optional category filtering (for example, `\"api,hooks\"` or `\"!statsig,!file\"`)",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -218,10 +218,9 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Submit feedback about ${M4}",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command",
-      "description_source": "binary"
+      "category": "command"
     },
     {
       "symbol": "/clear",

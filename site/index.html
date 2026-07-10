@@ -276,6 +276,11 @@
         display: grid;
         gap: 0.3rem;
       }
+      /* `.hist` sets an author `display`, which overrides the UA `[hidden]` rule;
+         re-assert hiding so the JS `ul.hidden` toggle actually collapses the list. */
+      .hist[hidden] {
+        display: none;
+      }
       .hist li {
         display: grid;
         grid-template-columns: max-content 1fr;
