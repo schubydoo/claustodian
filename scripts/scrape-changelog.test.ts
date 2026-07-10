@@ -885,9 +885,21 @@ describe('assembleSnapshots — per-version descriptions (binary timeline)', () 
     expect(descOf(snaps, '2.1.205')).toEqual({ description: 'Run a fast single-pass review', source: 'docs' });
   });
 
-  it('does not touch a record with no description (never invents one)', () => {
+  it('fills a previously-empty description from the binary at every version', () => {
     const snaps = assembleSnapshots([cmd({ description: '', description_source: undefined })], blocks, timeline);
-    expect(descOf(snaps, '0.2.9')).toEqual({ description: '', source: undefined });
+    // No curated text, so the binary description is used in every era (incl. current).
+    expect(descOf(snaps, '0.2.9')).toEqual({ description: 'Review a pull request', source: 'binary' });
+    expect(descOf(snaps, '2.1.205')).toEqual({ description: 'Run a fast single-pass review', source: 'binary' });
+  });
+
+  it('leaves an empty description untouched when there is no binary timeline for it', () => {
+    const snaps = assembleSnapshots(
+      [cmd({ symbol: '/nolane', description: '', description_source: undefined })],
+      blocks,
+      timeline
+    );
+    const r = snaps.find((s) => s.version === '0.2.9')?.symbols.find((x) => x.symbol === '/nolane');
+    expect(r?.description).toBe('');
   });
 
   it('is a no-op when no binary descriptions are supplied', () => {

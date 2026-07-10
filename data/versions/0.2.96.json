@@ -23,8 +23,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Load the most recent conversation in the current directory. Includes sessions that added this directory with `/add-dir`",
-      "description_source": "docs",
+      "description": "Continue the most recent conversation",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -36,8 +36,8 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "Show only background sessions started under <path>",
-      "description_source": "help",
+      "description": "The current working directory",
+      "description_source": "binary",
       "source_url": null,
       "category": "cli"
     },
@@ -49,8 +49,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Skip permission prompts. Equivalent to `--permission-mode bypassPermissions`. See permission modes for what this does and does not skip",
-      "description_source": "docs",
+      "description": "Bypass all permission checks. Only works in Docker containers with no internet access.",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -62,8 +62,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Enable debug mode with optional category filtering (for example, `\"api,hooks\"` or `\"!statsig,!file\"`)",
-      "description_source": "docs",
+      "description": "Enable debug mode",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -101,9 +101,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Use global config",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--json",
@@ -113,8 +114,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Output as JSON",
-      "description_source": "docs",
+      "description": "[Deprecated: Use --output-format json instead] Output JSON in the shape {cost_usd: number, duration_ms: number, duration_api_ms: number, result: string} (only works with --print)",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -139,8 +140,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Load MCP servers from JSON files or strings (space-separated)",
-      "description_source": "docs",
+      "description": "Load MCP servers from a JSON file",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -152,9 +153,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Enable MCP debug mode (shows MCP server errors)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--output-format",
@@ -190,8 +192,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Print response without interactive mode (see Agent SDK documentation for programmatic usage details)",
-      "description_source": "docs",
+      "description": "Print response and exit (useful for pipes)",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -203,8 +205,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Resume a specific session by ID or name, or show an interactive picker to choose a session. The picker and name search include sessions that added this directory with `/add-dir`; passing a session ID searches only the current project directory and its git worktrees. As of v2.1.144, background sessions appear in the picker marked with `bg`",
-      "description_source": "docs",
+      "description": "Show conversation picker to select a conversation to resume",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -229,8 +231,8 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "Transport type (stdio, sse, http). Defaults to stdio if not specified.",
-      "description_source": "help",
+      "description": "Transport type (stdio, sse)",
+      "description_source": "binary",
       "source_url": null,
       "category": "cli"
     },
@@ -255,9 +257,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "List all currently allowed tools",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/bug",
@@ -267,9 +270,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Submit feedback about ${x2}",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/clear",
@@ -357,9 +361,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "List all files currently in context",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/help",
@@ -447,9 +452,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Migrate from global npm installation to local installation",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/pr-comments",

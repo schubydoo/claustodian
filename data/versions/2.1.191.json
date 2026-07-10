@@ -49,9 +49,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Teammate UI color",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--agent-id",
@@ -61,9 +62,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Teammate agent ID",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--agent-name",
@@ -73,9 +75,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Teammate display name",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--agent-teams",
@@ -97,9 +100,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Custom agent type for this teammate",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--agents",
@@ -122,9 +126,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Disable all enabled plugins",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--allow-dangerously-skip-permissions",
@@ -199,9 +204,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Bearer token for auth",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--author",
@@ -275,8 +281,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Minimal mode: skip auto-discovery of hooks, skills, plugins, MCP servers, auto memory, and CLAUDE.md so scripted calls start faster. Claude has access to Bash, file read, and file edit tools. Sets `CLAUDE_CODE_SIMPLE`. See bare mode",
-      "description_source": "docs",
+      "description": "Minimal mode: skip hooks, LSP, plugin sync, attribution, auto-memory, background prefetches, keychain reads, and CLAUDE.md auto-discovery. Sets CLAUDE_CODE_SIMPLE=1. Anthropic auth is strictly ANTHROPIC_API_KEY or apiKeyHelper via --settings (OAuth and keychain are never read). 3P providers (Bedrock/Vertex/Foundry) use their own credentials. Skills still resolve via /skill-name. Explicitly provide context via: --system-prompt[-file], --append-system-prompt[-file], --add-dir (CLAUDE.md dirs), --mcp-config, --settings, --agents, --plugin-dir.",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -535,9 +541,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "(deprecated) Enable debug mode (to stderr)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--deep-link-cwd-b64",
@@ -547,9 +554,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Base64url-encoded working directory (deep-link shell-safe launch paths)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--deep-link-last-fetch",
@@ -559,9 +567,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "FETCH_HEAD mtime in epoch ms, precomputed by the deep link trampoline",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--deep-link-origin",
@@ -571,9 +580,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Signal that this session was launched from a deep link",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--deep-link-repo",
@@ -583,9 +593,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Repo slug the deep link ?repo= parameter resolved to the current cwd",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--delete",
@@ -685,8 +696,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the effort level for the current session. Options: `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`. Available levels depend on the model. `ultracode` starts the session at `xhigh` effort with ultracode turned on, and requires Claude Code v2.1.203 or later. Overrides the `effortLevel` setting for this session and does not persist",
-      "description_source": "docs",
+      "description": "Effort level for the current session (${FR.join(",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -711,9 +722,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Enable auth status messages in SDK mode",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--enable-auto-mode",
@@ -890,9 +902,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Bind address",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--id-token",
@@ -902,9 +915,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Write this pre-obtained id_token directly to cache, skipping the OIDC browser login",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--ide",
@@ -927,9 +941,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Idle timeout for detached sessions in ms (0 = never expire)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--include-hook-events",
@@ -1070,9 +1085,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Policy-tier settings JSON from a spawning parent process (SDK use only)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--max-budget-usd",
@@ -1095,9 +1111,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Maximum concurrent sessions (0 = unlimited)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--max-thinking-tokens",
@@ -1107,9 +1124,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "[DEPRECATED. Use --thinking instead for newer models] Maximum number of thinking tokens (only works with --print)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--max-turns",
@@ -1145,9 +1163,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "[DEPRECATED. Use --debug instead] Enable MCP debug mode (shows MCP server errors)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--message",
@@ -1170,8 +1189,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Sets the model for the current session with an alias for the latest model (`sonnet`, `opus`, `haiku`, or `fable`) or a model's full name. Overrides the `model` setting and `ANTHROPIC_MODEL`",
-      "description_source": "docs",
+      "description": "Model for the current session. Provide an alias for the latest model (e.g. ",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -1260,9 +1279,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Parent session ID for analytics correlation",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--permission-mode",
@@ -1298,9 +1318,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Custom workflow body for plan mode. Replaces the default code-implementation phases in the plan-mode system reminder; the read-only enforcement preamble and ExitPlanMode protocol footer are always kept.",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--plan-mode-required",
@@ -1310,9 +1331,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Require plan mode before implementation",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--plugin-dir",
@@ -1335,9 +1357,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Like --plugin-dir but the engine will not read this plugin",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--plugin-url",
@@ -1372,9 +1395,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "HTTP port",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--prefill",
@@ -1384,9 +1408,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Pre-fill the prompt input with text without submitting it",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--prefill-b64",
@@ -1396,9 +1421,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Base64url-encoded --prefill value (deep-link shell-safe launch paths)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--print",
@@ -1460,9 +1486,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Alias for --remote-control",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--remote",
@@ -1538,9 +1565,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "When resuming, immediately query if the loaded transcript ends in a user-role message (set by /background mid-turn so the fork continues the in-flight turn).",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--resume",
@@ -1563,9 +1591,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "When resuming, only messages up to and including the assistant message with <message.id> (use with --resume in print mode)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--rewind-files",
@@ -1575,9 +1604,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Restore files to state at the specified user message and exit (requires --resume)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--routine",
@@ -1625,9 +1655,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Use remote WebSocket endpoint for SDK I/O streaming (only with -p and stream-json format)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--server-option",
@@ -1662,9 +1693,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Emit transcript_mirror frames on stdout (SDK-internal; set by ProcessTransport when sessionStore is configured)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--setting-sources",
@@ -1713,9 +1745,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Limit checkout to specific directories via git sparse-checkout (for monorepos). Example: --sparse .claude-plugin plugins",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--sso",
@@ -1790,9 +1823,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "API-side task budget in tokens (output_config.task_budget)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--team-name",
@@ -1802,9 +1836,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Team name for teammate coordination",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--teammate-mode",
@@ -1853,9 +1888,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Thinking mode: enabled (equivalent to adaptive), disabled",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--thinking-display",
@@ -1865,9 +1901,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "How thinking content appears in the response",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--timeout",
@@ -1929,9 +1966,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Listen on a unix domain socket",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--verbose",
@@ -1966,8 +2004,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Also scaffold component folders. Valid values: `skills`, `agents`, `hooks`, `mcp`, `lsp`, `output-style`, `channel`",
-      "description_source": "docs",
+      "description": "Also scaffold: ${QYt.join(",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli"
     },
@@ -1979,9 +2017,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Workload tag for billing-header attribution (cc_workload). Process-scoped; set by SDK daemon callers that spawn subprocesses for cron work. (only works with --print)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--workspace",
@@ -1991,9 +2030,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Default working directory for sessions that do not specify cwd",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--worktree",
@@ -2016,9 +2056,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Enable XAA (SEP-990) for this server. Requires ",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--yes",
@@ -2080,9 +2121,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Set how full the context gets before auto-summarizing",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/autofix-pr",
@@ -2158,9 +2200,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Inject Remote Control failures for recovery testing",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/brief",
@@ -2170,9 +2213,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Toggle brief-only mode",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/btw",
@@ -2196,9 +2240,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "",
+      "description": "Hatch a coding companion Â· pet, off",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/bug",
@@ -2208,9 +2253,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Submit feedback about Claude Code",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/cd",
@@ -2259,9 +2305,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Let Claude browse and interact with pages in your Chrome",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/clear",
@@ -2323,9 +2370,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Create a git commit",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/commit-push-pr",
@@ -2336,9 +2384,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "",
+      "description": "Commit, push, and open a PR",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/compact",
@@ -2414,9 +2463,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Manage background services and routines",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/debug",
@@ -2569,9 +2619,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Renamed to /usage-credits",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/fast",
@@ -2724,9 +2775,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Create verifier skill(s) for automated verification of code changes",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/insights",
@@ -2749,9 +2801,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Install Claude Code native build",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/install-github-app",
@@ -2852,9 +2905,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "List, create, and delete loops",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/mcp",
@@ -2890,9 +2944,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Import config from another AI coding agent (Codex, Gemini CLI)",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/mobile",
@@ -2915,9 +2970,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Set the permission mode (${FA$.join(",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/model",
@@ -2940,10 +2996,11 @@
       "status": "deprecated",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Deprecated: use /config to change output style",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command",
-      "deprecated_in": "2.1.73"
+      "deprecated_in": "2.1.73",
+      "description_source": "binary"
     },
     {
       "symbol": "/passes",
@@ -2966,9 +3023,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Pause automemory for this session",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/permissions",
@@ -3342,9 +3400,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Show cloud session URL and QR code",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/settings",
@@ -3562,9 +3621,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "List current todo items",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/toggle-memory",
@@ -3574,9 +3634,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Toggle automemory off/on for this session",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/tui",
@@ -3638,9 +3699,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Switch to the latest version (conversation continues)",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/update-config",
@@ -3715,9 +3777,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Show this session",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/voice",
@@ -3753,9 +3816,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Configure optional break reminders and quiet-hours nudges",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/workflows",
