@@ -48,7 +48,7 @@ export interface BundleSymbol {
   /** Shared ownership/source bucket (claude-code / cloud / runtime / … / other). */
   category: string;
   evidence: Evidence;
-  /** Only commands carry a description (from the registry object). */
+  /** Commands (registry object) and flags (commander `.option` spec) carry a description. */
   description?: string;
 }
 
@@ -182,6 +182,41 @@ export function extractFlags(src: string): Map<string, Evidence> {
 }
 
 /**
+ * A commander flag registration's `(flagSpec, description)` pair — ANCHORED to the
+ * call so a bare array of flag strings (`["--verbose","--input-format"]`) can't be
+ * mistaken for a spec/description. Matches `.option(...)` / `.addOption(...)` and
+ * the minified Option constructor `new Z("--x","desc")` (incl. `.addOption(new Z(…))`).
+ * The spec starts with a dash and carries the long flag; the description is the
+ * next string argument.
+ */
+const FLAG_SPEC_DESC =
+  /(?:\.option|\.addOption|new [A-Za-z_$][\w$]*)\(\s*["'`](-{1,2}[a-z][^"'`]*?)["'`]\s*,\s*["'`]((?:[^"'`\\]|\\.)*)["'`]/g;
+
+/**
+ * Descriptions for flags that already have own-evidence (`flags`). Scans every
+ * anchored commander `(flagSpec, description)` pair; when the spec's long flag is
+ * one we track, records the description (first occurrence wins). Two guards keep it
+ * honest: intersecting with `flags` drops pairs for flags we don't recognize, and a
+ * description that itself looks like a flag (`--x`) is rejected as a mis-match (a
+ * real description is prose, never another flag). Descriptions are kept verbatim
+ * (same as the command registry — no unescaping).
+ */
+export function extractFlagDescriptions(
+  src: string,
+  flags: ReadonlySet<string>
+): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const m of src.matchAll(FLAG_SPEC_DESC)) {
+    const long = (m[1] ?? '').match(/--[a-z][a-z0-9-]+/)?.[0];
+    const description = m[2] as string;
+    if (!long || !flags.has(long) || out.has(long)) continue;
+    if (/^-{1,2}[a-z]/.test(description)) continue; // a flag, not a description
+    out.set(long, description);
+  }
+  return out;
+}
+
+/**
  * Slash commands from the command registry. Each `type:` marker anchors an
  * object; its `name:` (required) and `description:` (optional) are read from that
  * object's fields. Field order varies: usually `{type:…,name:…,description:…}`,
@@ -306,8 +341,17 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
     if (envReads.has(symbol)) continue;
     symbols.push({ symbol, type: 'env_var', category, evidence: 'accessor-map' });
   }
-  for (const [symbol, evidence] of extractFlags(src)) {
-    symbols.push({ symbol, type: 'cli_flag', category: categorize(symbol, 'cli_flag'), evidence });
+  const flags = extractFlags(src);
+  const flagDescriptions = extractFlagDescriptions(src, new Set(flags.keys()));
+  for (const [symbol, evidence] of flags) {
+    const description = flagDescriptions.get(symbol);
+    symbols.push({
+      symbol,
+      type: 'cli_flag',
+      category: categorize(symbol, 'cli_flag'),
+      evidence,
+      ...(description ? { description } : {}),
+    });
   }
   const commands = extractCommands(src);
   for (const [symbol, description] of commands) {

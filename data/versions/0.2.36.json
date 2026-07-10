@@ -10,8 +10,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Tools that execute without prompting for permission. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead",
-      "description_source": "docs",
+      "description": "Comma-separated list of tool names to allow (e.g. ",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
     },
@@ -23,8 +23,8 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "Show only background sessions started under <path>",
-      "description_source": "help",
+      "description": "The current working directory",
+      "description_source": "binary",
       "source_url": null,
       "category": "cli"
     },
@@ -36,8 +36,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Skip permission prompts. Equivalent to `--permission-mode bypassPermissions`. See permission modes for what this does and does not skip",
-      "description_source": "docs",
+      "description": "Bypass all permission checks. Only works in Docker containers with no internet access.",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -49,8 +49,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Enable debug mode with optional category filtering (for example, `\"api,hooks\"` or `\"!statsig,!file\"`)",
-      "description_source": "docs",
+      "description": "Enable debug mode",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -62,9 +62,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Enable the Architect tool",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--env",
@@ -87,9 +88,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Use global config",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--mcp-debug",
@@ -99,9 +101,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Enable MCP debug mode (shows MCP server errors)",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--print",
@@ -111,8 +114,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Print response without interactive mode (see Agent SDK documentation for programmatic usage details)",
-      "description_source": "docs",
+      "description": "Print response and exit (useful for pipes)",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -124,8 +127,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Installation scope: `user`, `project`, or `local`",
-      "description_source": "docs",
+      "description": "Configuration scope (project or global)",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -150,9 +153,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "List all currently approved tools",
       "source_url": null,
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/bug",
@@ -162,9 +166,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Submit feedback about ${j2}",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/clear",

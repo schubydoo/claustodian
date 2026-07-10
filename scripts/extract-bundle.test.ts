@@ -7,9 +7,59 @@ import {
   extractBundleSymbols,
   extractCommands,
   extractEnvVars,
+  extractFlagDescriptions,
   extractFlags,
   extractSkillCommands,
 } from './extract-bundle.js';
+
+describe('extractFlagDescriptions', () => {
+  const known = new Set(['--verbose', '--print', '--mcp-config', '--max-thinking-tokens']);
+
+  it('captures a .option(spec, description) pair for a tracked flag', () => {
+    const d = extractFlagDescriptions('.option("--verbose","Override verbose mode")', known);
+    expect(d.get('--verbose')).toBe('Override verbose mode');
+  });
+
+  it('reads the long flag from a "-p, --print" spec', () => {
+    const d = extractFlagDescriptions('.option("-p, --print","Print and exit")', known);
+    expect(d.get('--print')).toBe('Print and exit');
+  });
+
+  it('handles an arg placeholder in the spec and the minified Option constructor', () => {
+    const src =
+      '.option("--mcp-config <configs...>","Load MCP servers");new GV("--max-thinking-tokens <n>","Max thinking tokens")';
+    const d = extractFlagDescriptions(src, known);
+    expect(d.get('--mcp-config')).toBe('Load MCP servers');
+    expect(d.get('--max-thinking-tokens')).toBe('Max thinking tokens');
+  });
+
+  it('ignores a (spec, desc) pair whose flag is not tracked (no invented descriptions)', () => {
+    const d = extractFlagDescriptions('.option("--unknown","x")', known);
+    expect(d.has('--unknown')).toBe(false);
+  });
+
+  it('keeps the first occurrence when a flag is described twice', () => {
+    const d = extractFlagDescriptions('.option("--verbose","first");.option("--verbose","second")', known);
+    expect(d.get('--verbose')).toBe('first');
+  });
+
+  it('does not mistake a bare flag array for a spec/description pair', () => {
+    // `["--verbose","--input-format"]` must NOT make "--input-format" --verbose's description.
+    const d = extractFlagDescriptions('const a=["--verbose","--input-format","--print"];', known);
+    expect(d.has('--verbose')).toBe(false);
+  });
+
+  it('rejects a description that itself looks like a flag', () => {
+    const d = extractFlagDescriptions('.option("--verbose","--print")', known);
+    expect(d.has('--verbose')).toBe(false);
+  });
+
+  it('attaches the description to the flag symbol in extractBundleSymbols', () => {
+    const src = '.option("--verbose","Override verbose mode")';
+    const flag = extractBundleSymbols(src).find((s) => s.symbol === '--verbose');
+    expect(flag).toMatchObject({ type: 'cli_flag', description: 'Override verbose mode' });
+  });
+});
 
 describe('extractEnvVars', () => {
   it('captures process.env.X and process.env["X"] with a category', () => {
@@ -294,7 +344,7 @@ describe('extractBundleSymbols', () => {
     ].join(';');
     const out = extractBundleSymbols(src);
     expect(out).toEqual([
-      { symbol: '--verbose', type: 'cli_flag', category: 'cli', evidence: 'registration' },
+      { symbol: '--verbose', type: 'cli_flag', category: 'cli', evidence: 'registration', description: 'v' },
       {
         symbol: '/bug',
         type: 'command',

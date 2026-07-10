@@ -470,11 +470,11 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
  * and the curated changelog lifecycle lane ([[removals.ts]]).
  *
  * `description` is resolved per version too when a binary description timeline is
- * supplied: a HISTORICAL snapshot gets the description the symbol actually had at
- * that version (from the archived binaries), while the current era keeps the
- * record's curated (docs/changelog) description. Only symbols that already carry a
- * description are touched — this de-anachronizes existing descriptions, it does not
- * invent new ones.
+ * supplied: the current era keeps the record's curated (docs/changelog) description
+ * when it has one; a HISTORICAL snapshot gets the description the symbol actually
+ * had at that version (from the archived binaries); and a symbol with no curated
+ * description at all is filled from the binary at every version. All binary-sourced
+ * descriptions are stamped `description_source: "binary"`.
  */
 export function assembleSnapshots(
   records: SymbolRecord[],
@@ -498,12 +498,16 @@ export function assembleSnapshots(
       ? { ...record, status: 'deprecated' }
       : record;
 
-  // Replace a historical snapshot's description with the one observed in that
-  // version's binary; the current era keeps the record's curated description.
+  // Resolve the description from the binary timeline: a curated (non-empty)
+  // description wins in the current era; a HISTORICAL snapshot takes the text
+  // observed in that version's binary (de-anachronized), and a previously-EMPTY
+  // description is filled from the binary at every version. Symbols with no
+  // timeline, or versions before the first binary observation, are untouched.
   const describeAt = (record: SymbolRecord, version: string): SymbolRecord => {
-    if (!binaryDescriptions || record.description === '') return record;
+    if (!binaryDescriptions) return record;
     const eras = binaryDescriptions[`${record.type}:${record.symbol}`];
-    if (!eras || eras.length === 0 || isCurrentDescriptionEra(eras, version)) return record;
+    if (!eras || eras.length === 0) return record;
+    if (record.description !== '' && isCurrentDescriptionEra(eras, version)) return record;
     const era = descriptionAt(eras, version);
     return era && era.description !== record.description
       ? { ...record, description: era.description, description_source: 'binary' }
