@@ -28,6 +28,7 @@
 import { readFile } from 'node:fs/promises';
 
 import { isMain, loadChangelog } from './lib.js';
+import { CONFIRMED_REMOVALS } from './removals.js';
 import { collectChangelogSymbols, parseChangelog } from './scrape-changelog.js';
 import type { SymbolRecord } from './scrape-changelog.js';
 
@@ -56,6 +57,12 @@ export function findMissingCoverage(
   datasetSymbols: SymbolRecord[]
 ): MissingSymbol[] {
   const known = new Set(datasetSymbols.map((record) => keyFor(record.symbol, record.type)));
+  // A confirmed removal is mentioned in the changelog (in its own "Removed `X`"
+  // bullet) yet is legitimately ABSENT from latest.json — the removal lane vanished
+  // it from post-removal snapshots. Excluding these keeps the gate from demanding a
+  // symbol the dataset intentionally dropped. (Deprecations still appear, so they
+  // are covered normally.)
+  const removed = new Set(CONFIRMED_REMOVALS.map((r) => keyFor(r.symbol, r.type)));
 
   const blocks = parseChangelog(changelogMd);
   const missing: MissingSymbol[] = [];
@@ -64,7 +71,7 @@ export function findMissingCoverage(
   // the scraper's exclusions, so we just diff its symbol set against the dataset.
   for (const { record } of collectChangelogSymbols(blocks).values()) {
     const key = keyFor(record.symbol, record.type);
-    if (!known.has(key)) {
+    if (!known.has(key) && !removed.has(key)) {
       missing.push({ symbol: record.symbol, type: record.type });
     }
   }

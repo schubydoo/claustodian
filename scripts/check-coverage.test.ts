@@ -64,6 +64,13 @@ describe('findMissingCoverage', () => {
     expect(findMissingCoverage('# Changelog\n', [])).toEqual([]);
   });
 
+  it('excludes a confirmed removal (mentioned in its "Removed" bullet but vanished from latest)', () => {
+    // /vim is in CONFIRMED_REMOVALS: the changelog names it, but the removal lane
+    // dropped it from latest.json, so it must NOT be reported as missing coverage.
+    const changelog = '# Changelog\n\n## 2.1.92\n\n- Removed `/vim` command\n';
+    expect(findMissingCoverage(changelog, [])).toEqual([]);
+  });
+
   it('dedupes a symbol mentioned in multiple bullets/versions into a single missing entry', () => {
     const changelogWithRepeat = `## 2.1.11
 
