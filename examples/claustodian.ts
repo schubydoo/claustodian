@@ -16,7 +16,10 @@
 
 export const DEFAULT_BASE = 'https://schubydoo.github.io/claustodian/data';
 
-export type SymbolType = 'cli_flag' | 'command' | 'env_var';
+// All five values the schema's `type` enum allows. Only cli_flag/command/env_var
+// appear in the data today; config_key/internal_config_flag are reserved by the
+// schema, so a forward-compatible consumer should accept them too.
+export type SymbolType = 'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag';
 export type Status = 'active' | 'deprecated' | 'needs_review';
 
 export interface ClaudeSymbol {

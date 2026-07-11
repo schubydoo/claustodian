@@ -24,9 +24,11 @@ else
   echo "  not available"
 fi
 
-echo "== all env vars available in 2.1.169 =="
+echo "== first 20 env vars available in 2.1.169 =="
+# Slice inside jq (not `| head`): with `set -o pipefail`, head closing the pipe
+# early would SIGPIPE jq and abort the script before the examples below.
 curl -fsSL "$BASE/versions/2.1.169.json" \
-  | jq -r '[.symbols[] | select(.type == "env_var") | .symbol] | sort | .[]' | head -20
+  | jq -r '[.symbols[] | select(.type == "env_var") | .symbol] | sort | .[:20][]'
 
 echo "== removal = vanish: /vim is present at 2.1.91, gone at 2.1.92 =="
 curl -fsSL "$BASE/versions/2.1.91.json" | jq -r \

@@ -53,7 +53,7 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
 ```json
 {
   "symbol": "--output-format",
-  "type": "cli_flag",            // "cli_flag" | "command" | "env_var"
+  "type": "cli_flag",            // schema enum: cli_flag | command | env_var | config_key | internal_config_flag (only the first three are populated today)
   "first_seen": "1.0.19",        // earliest version OBSERVED (semver string)
   "removed_in": null,            // version it vanished, or null if still present
   "deprecated_in": "2.1.73",     // OPTIONAL: version it was marked deprecated
