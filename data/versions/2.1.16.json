@@ -125,11 +125,11 @@
       "first_seen": "1.0.86",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git *) Edit\")",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Tools that execute without prompting for permission. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
     },
     {
@@ -319,11 +319,11 @@
       "first_seen": "1.0.86",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Comma or space-separated list of tool names to deny (e.g. \"Bash(git *) Edit\")",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Deny rules. A bare tool name removes the matching tools from the model's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only matching calls",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
     },
     {

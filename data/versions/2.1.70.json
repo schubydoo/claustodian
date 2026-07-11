@@ -150,11 +150,11 @@
       "first_seen": "1.0.86",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git *) Edit\")",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Tools that execute without prompting for permission. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
     },
     {
@@ -233,6 +233,19 @@
       "description": "Fixed port for OAuth callback (for servers requiring pre-registered redirect URIs)",
       "description_source": "help",
       "source_url": null,
+      "category": "cli"
+    },
+    {
+      "symbol": "--capacity",
+      "type": "cli_flag",
+      "first_seen": "2.1.51",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Maximum number of concurrent sessions. Default is 32. Cannot be used with `--spawn=session`.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/remote-control.md",
       "category": "cli"
     },
     {
@@ -409,11 +422,11 @@
       "first_seen": "1.0.86",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Comma or space-separated list of tool names to deny (e.g. \"Bash(git *) Edit\")",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Deny rules. A bare tool name removes the matching tools from the model's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only matching calls",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
     },
     {
@@ -794,6 +807,19 @@
       "category": "cli"
     },
     {
+      "symbol": "--no-sandbox",
+      "type": "cli_flag",
+      "first_seen": "2.1.51",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Enable or disable sandboxing for filesystem and network isolation. Off by default.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/remote-control.md",
+      "category": "cli"
+    },
+    {
       "symbol": "--no-session-persistence",
       "type": "cli_flag",
       "first_seen": "2.0.63",
@@ -990,6 +1016,19 @@
       "description_source": "binary"
     },
     {
+      "symbol": "--sandbox",
+      "type": "cli_flag",
+      "first_seen": "2.1.51",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Enable or disable sandboxing for filesystem and network isolation. Off by default.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/remote-control.md",
+      "category": "cli"
+    },
+    {
       "symbol": "--scope",
       "type": "cli_flag",
       "first_seen": "0.2.9",
@@ -1067,6 +1106,19 @@
       "source_url": null,
       "category": "cli",
       "description_source": "binary"
+    },
+    {
+      "symbol": "--spawn",
+      "type": "cli_flag",
+      "first_seen": "2.1.51",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "How the server creates sessions.<br />• `same-dir` (default): all sessions share the current working directory, so they can conflict if editing the same files.<br />• `worktree`: each on-demand session gets its own git worktree. Requires a git repository.<br />• `session`: single-session mode. Serves exactly one session and rejects additional connections. Set at startup only.<br />Press `w` at runtime to toggle between `same-dir` and `worktree`.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/remote-control.md",
+      "category": "cli"
     },
     {
       "symbol": "--sso",
