@@ -15,3 +15,7 @@ test-report.junit.xml
 # Generated data exports (built in CI from committed JSON, never hand-edited)
 data/**/*.yaml
 data/**/*.toml
+
+# Python bytecode (from running examples/*.py)
+__pycache__/
+*.pyc

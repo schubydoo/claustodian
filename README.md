@@ -37,6 +37,15 @@ curl -s https://schubydoo.github.io/claustodian/data/versions/2.1.169.json \
 
 A symbol is available in version Y when `first_seen <= Y` and (`removed_in` is null or `> Y`).
 
+## Use it with an AI agent
+
+Point your agent at [`llms.txt`](llms.txt) (served at `https://schubydoo.github.io/claustodian/llms.txt`)
+or the [agent guide in `examples/`](examples/README.md) to teach it how to consume this data and
+make its features version-accurate. The `examples/` directory has runnable, dependency-light clients
+you can copy — [`quickstart.sh`](examples/quickstart.sh) (curl + jq),
+[`claustodian.ts`](examples/claustodian.ts) (zero-dep TypeScript),
+and [`claustodian.py`](examples/claustodian.py) (stdlib-only Python).
+
 ## Data layout
 
 Stable, predictable URLs under `data/`:
