@@ -33,9 +33,26 @@ export const DOC_PAGES = [
   'plugins-reference',
   'channels-reference',
   'glossary',
+  'remote-control',
 ] as const;
 
 export type DocSymbolType = 'cli_flag' | 'command' | 'env_var';
+
+/**
+ * Per-page baseline `min-version` for pages that state a feature-level
+ * introduction version in prose but don't repeat it in every flag's table cell.
+ * A symbol parsed from such a page inherits this when its own cell carries no
+ * `min-version` marker; a cell-level marker always wins (later-added flags keep
+ * their own version). Curated from the page's own official callout.
+ *
+ * `remote-control`: the page states "Remote Control requires Claude Code v2.1.51
+ * or later," so its server-mode flags that carry no per-cell marker (`--sandbox`,
+ * `--no-sandbox`, `--spawn`, …) date to 2.1.51; flags added later (`--continue`,
+ * `--session-id` → 2.1.200) keep their cell marker. Provenance stays `docs`.
+ */
+export const PAGE_BASELINE_MIN_VERSION: Partial<Record<(typeof DOC_PAGES)[number], string>> = {
+  'remote-control': '2.1.51',
+};
 
 /** Generic OS/shell env vars a doc may reference but that aren't Claude Code symbols. */
 const ENV_DENYLIST = new Set([
@@ -118,11 +135,7 @@ function minVersion(cell: string): string | null {
  * `--flag`, a `/command`, or an `ALL_CAPS` environment variable inside the
  * cell's first backtick span; skips `claude sub command` rows and prose.
  */
-export function symbolFromCell(cell: string): { symbol: string; type: DocSymbolType } | null {
-  const backtick = cell.match(/`([^`]+)`/);
-  if (!backtick) return null;
-  const inner = (backtick[1] ?? '').trim();
-
+function symbolFromInner(inner: string): { symbol: string; type: DocSymbolType } | null {
   const flag = inner.match(/(--[a-z][a-z0-9-]+)/);
   if (flag?.[1]) return { symbol: flag[1], type: 'cli_flag' };
 
@@ -137,6 +150,40 @@ export function symbolFromCell(cell: string): { symbol: string; type: DocSymbolT
   if (env?.[1] && !ENV_DENYLIST.has(env[1])) return { symbol: env[1], type: 'env_var' };
 
   return null;
+}
+
+export function symbolFromCell(cell: string): { symbol: string; type: DocSymbolType } | null {
+  return symbolsFromCell(cell)[0] ?? null;
+}
+
+/**
+ * The trackable symbol(s) named by a table's first cell. Usually one — but a cell
+ * that lists an alias/pair of the SAME type joined only by separators (a slash or
+ * comma), e.g. `` `--sandbox` / `--no-sandbox` ``, names every one of them. Prose
+ * BETWEEN the spans (`` `--model` overrides `ANTHROPIC_MODEL` ``) means the cell's
+ * subject is just the first span, so only that one is returned.
+ */
+export function symbolsFromCell(cell: string): Array<{ symbol: string; type: DocSymbolType }> {
+  // Group 1 is always present when the pattern matches, so the cast is safe.
+  const spans = [...cell.matchAll(/`([^`]+)`/g)].map((m) => (m[1] as string).trim());
+  const first = spans[0] !== undefined ? symbolFromInner(spans[0]) : null;
+  if (!first) return [];
+
+  // Multi-emit only for an alias/pair cell: >1 span and the text outside every
+  // span is nothing but separators/whitespace. Anything else (prose) → primary only.
+  const outsideSpans = cell.replace(/`[^`]+`/g, '').trim();
+  if (spans.length === 1 || !/^[\s/,]*$/.test(outsideSpans)) return [first];
+
+  const out = [first];
+  const seen = new Set([`${first.type}:${first.symbol}`]);
+  for (const span of spans.slice(1)) {
+    const sym = symbolFromInner(span);
+    if (sym && sym.type === first.type && !seen.has(`${sym.type}:${sym.symbol}`)) {
+      seen.add(`${sym.type}:${sym.symbol}`);
+      out.push(sym);
+    }
+  }
+  return out;
 }
 
 /**
@@ -182,19 +229,23 @@ export function parseDocPage(page: string, markdown: string): DocEntry[] {
       .slice(1, -1)
       .map((c) => c.trim());
     if (cells.length < 2) continue;
+    // length >= 2 guarantees both are present, so the casts are safe.
+    const symbolCell = cells[0] as string;
+    const descCell = cells[1] as string;
 
-    const sym = symbolFromCell(cells[0] ?? '');
-    if (!sym) continue;
-    const description = cleanCell(cells[1] ?? '');
+    const syms = symbolsFromCell(symbolCell);
+    if (syms.length === 0) continue;
+    const description = cleanCell(descCell);
     if (description.length < 3) continue;
 
-    entries.push({
-      symbol: sym.symbol,
-      type: sym.type,
-      description,
-      doc_min_version: minVersion(cells[1] ?? '') ?? minVersion(cells[0] ?? ''),
-      doc_page: page,
-    });
+    // Only a cell-level marker (either column) here — never the page baseline. The
+    // baseline is applied page-locally in buildDocsIndex AFTER dedupe, so it can't
+    // ride the cross-page min-version backfill onto an earlier page's dateless flag
+    // (e.g. remote-control's 2.1.51 must not stamp cli-reference's `--verbose`).
+    const doc_min_version = minVersion(descCell) ?? minVersion(symbolCell);
+    for (const sym of syms) {
+      entries.push({ symbol: sym.symbol, type: sym.type, description, doc_min_version, doc_page: page });
+    }
   }
   return entries;
 }
@@ -203,13 +254,23 @@ export function parseDocPage(page: string, markdown: string): DocEntry[] {
 export function buildDocsIndex(pages: Array<{ page: string; markdown: string }>): DocsIndex {
   const seen = new Map<string, DocEntry>();
   for (const { page, markdown } of pages) {
+    // A baselined page is SUPPLEMENTAL: it documents subcommand-scoped flags, so a
+    // name that collides with an earlier page is usually a DIFFERENT flag (e.g.
+    // remote-control's `--session-id` @2.1.200 vs the top-level `--session-id`
+    // @1.0.53). It may only CONTRIBUTE net-new symbols — never backfill or override
+    // a symbol an earlier (primary) page already owns. Its net-new symbols inherit
+    // the page baseline when they carry no cell-level marker.
+    const baseline = PAGE_BASELINE_MIN_VERSION[page as (typeof DOC_PAGES)[number]];
+    const supplemental = baseline !== undefined;
     for (const entry of parseDocPage(page, markdown)) {
       const key = `${entry.type}:${entry.symbol}`;
       const existing = seen.get(key);
-      // First page wins; but let a later page fill in a missing min-version.
       if (!existing) {
+        if (supplemental && !entry.doc_min_version) entry.doc_min_version = baseline;
         seen.set(key, entry);
-      } else if (!existing.doc_min_version && entry.doc_min_version) {
+      } else if (!supplemental && !existing.doc_min_version && entry.doc_min_version) {
+        // Normal cross-page backfill, among primary pages only: a later primary
+        // page fills a min-version the winning page lacked.
         existing.doc_min_version = entry.doc_min_version;
       }
     }
