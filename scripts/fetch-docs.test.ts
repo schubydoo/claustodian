@@ -8,9 +8,11 @@ import {
   buildDocsIndex,
   main,
   officialSourcePages,
+  PAGE_BASELINE_MIN_VERSION,
   parseDocPage,
   splitTableRow,
   symbolFromCell,
+  symbolsFromCell,
 } from './fetch-docs.js';
 
 describe('symbolFromCell', () => {
@@ -66,6 +68,43 @@ describe('symbolFromCell', () => {
   });
 });
 
+describe('symbolsFromCell', () => {
+  it('emits both flags of a slash-joined same-type pair', () => {
+    expect(symbolsFromCell('`--sandbox` / `--no-sandbox`')).toEqual([
+      { symbol: '--sandbox', type: 'cli_flag' },
+      { symbol: '--no-sandbox', type: 'cli_flag' },
+    ]);
+  });
+
+  it('emits both flags of a comma-joined alias pair', () => {
+    expect(symbolsFromCell('`--remote-control`, `--rc`')).toEqual([
+      { symbol: '--remote-control', type: 'cli_flag' },
+      { symbol: '--rc', type: 'cli_flag' },
+    ]);
+  });
+
+  it('returns only the primary symbol when prose separates the spans', () => {
+    // A flag whose description names an env var it overrides is NOT a pair.
+    expect(symbolsFromCell('`--model` overrides `ANTHROPIC_MODEL`')).toEqual([
+      { symbol: '--model', type: 'cli_flag' },
+    ]);
+  });
+
+  it('does not pair spans of different types even when separator-joined', () => {
+    expect(symbolsFromCell('`--model`, `ANTHROPIC_MODEL`')).toEqual([
+      { symbol: '--model', type: 'cli_flag' },
+    ]);
+  });
+
+  it('returns a single-element list for an ordinary one-symbol cell', () => {
+    expect(symbolsFromCell('`--continue`')).toEqual([{ symbol: '--continue', type: 'cli_flag' }]);
+  });
+
+  it('returns an empty list when the first span names no trackable symbol', () => {
+    expect(symbolsFromCell('`claude auth login`')).toEqual([]);
+  });
+});
+
 describe('parseDocPage', () => {
   const md = [
     '# CLI flags',
@@ -112,9 +151,39 @@ describe('parseDocPage', () => {
     expect(entry?.description).toBe('uses `foo\\_bar` as a key');
   });
 
+  it('applies a page baseline min-version to an unmarked flag on a baselined page', () => {
+    // `remote-control` is baselined at 2.1.51; a cell with no own marker inherits it.
+    const entry = parseDocPage(
+      'remote-control',
+      '| `--sandbox` / `--no-sandbox` | Enable or disable sandboxing. |'
+    );
+    expect(entry.map((e) => e.symbol)).toEqual(['--sandbox', '--no-sandbox']);
+    expect(entry.every((e) => e.doc_min_version === '2.1.51')).toBe(true);
+    expect(entry[0]?.description).toBe('Enable or disable sandboxing.');
+  });
+
+  it("lets a cell's own min-version override the page baseline", () => {
+    const entry = parseDocPage(
+      'remote-control',
+      '| `--session-id <id>` | {/* min-version: 2.1.200 */}Resume a session by id. |'
+    )[0];
+    expect(entry?.doc_min_version).toBe('2.1.200');
+  });
+
+  it('leaves an unmarked flag dateless on a page with no baseline', () => {
+    const entry = parseDocPage('cli-reference', '| `--xray` | Some flag. |')[0];
+    expect(entry?.doc_min_version).toBeNull();
+  });
+
   it('does not resurrect a deliberately-escaped link into active markdown', () => {
     const entry = parseDocPage('env-vars', '| `--xray` | see \\[text\\]\\(url\\) here |')[0];
     expect(entry?.description).toBe('see text here');
+  });
+});
+
+describe('PAGE_BASELINE_MIN_VERSION', () => {
+  it('baselines the remote-control page at the feature introduction version', () => {
+    expect(PAGE_BASELINE_MIN_VERSION['remote-control']).toBe('2.1.51');
   });
 });
 

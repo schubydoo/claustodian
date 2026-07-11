@@ -33,9 +33,26 @@ export const DOC_PAGES = [
   'plugins-reference',
   'channels-reference',
   'glossary',
+  'remote-control',
 ] as const;
 
 export type DocSymbolType = 'cli_flag' | 'command' | 'env_var';
+
+/**
+ * Per-page baseline `min-version` for pages that state a feature-level
+ * introduction version in prose but don't repeat it in every flag's table cell.
+ * A symbol parsed from such a page inherits this when its own cell carries no
+ * `min-version` marker; a cell-level marker always wins (later-added flags keep
+ * their own version). Curated from the page's own official callout.
+ *
+ * `remote-control`: the page states "Remote Control requires Claude Code v2.1.51
+ * or later," so its server-mode flags that carry no per-cell marker (`--sandbox`,
+ * `--no-sandbox`, `--spawn`, …) date to 2.1.51; flags added later (`--continue`,
+ * `--session-id` → 2.1.200) keep their cell marker. Provenance stays `docs`.
+ */
+export const PAGE_BASELINE_MIN_VERSION: Partial<Record<(typeof DOC_PAGES)[number], string>> = {
+  'remote-control': '2.1.51',
+};
 
 /** Generic OS/shell env vars a doc may reference but that aren't Claude Code symbols. */
 const ENV_DENYLIST = new Set([
@@ -118,11 +135,7 @@ function minVersion(cell: string): string | null {
  * `--flag`, a `/command`, or an `ALL_CAPS` environment variable inside the
  * cell's first backtick span; skips `claude sub command` rows and prose.
  */
-export function symbolFromCell(cell: string): { symbol: string; type: DocSymbolType } | null {
-  const backtick = cell.match(/`([^`]+)`/);
-  if (!backtick) return null;
-  const inner = (backtick[1] ?? '').trim();
-
+function symbolFromInner(inner: string): { symbol: string; type: DocSymbolType } | null {
   const flag = inner.match(/(--[a-z][a-z0-9-]+)/);
   if (flag?.[1]) return { symbol: flag[1], type: 'cli_flag' };
 
@@ -137,6 +150,39 @@ export function symbolFromCell(cell: string): { symbol: string; type: DocSymbolT
   if (env?.[1] && !ENV_DENYLIST.has(env[1])) return { symbol: env[1], type: 'env_var' };
 
   return null;
+}
+
+export function symbolFromCell(cell: string): { symbol: string; type: DocSymbolType } | null {
+  return symbolsFromCell(cell)[0] ?? null;
+}
+
+/**
+ * The trackable symbol(s) named by a table's first cell. Usually one — but a cell
+ * that lists an alias/pair of the SAME type joined only by separators (a slash or
+ * comma), e.g. `` `--sandbox` / `--no-sandbox` ``, names every one of them. Prose
+ * BETWEEN the spans (`` `--model` overrides `ANTHROPIC_MODEL` ``) means the cell's
+ * subject is just the first span, so only that one is returned.
+ */
+export function symbolsFromCell(cell: string): Array<{ symbol: string; type: DocSymbolType }> {
+  const spans = [...cell.matchAll(/`([^`]+)`/g)].map((m) => (m[1] ?? '').trim());
+  const first = spans[0] !== undefined ? symbolFromInner(spans[0]) : null;
+  if (!first) return [];
+
+  // Multi-emit only for an alias/pair cell: >1 span and the text outside every
+  // span is nothing but separators/whitespace. Anything else (prose) → primary only.
+  const outsideSpans = cell.replace(/`[^`]+`/g, '').trim();
+  if (spans.length === 1 || !/^[\s/,]*$/.test(outsideSpans)) return [first];
+
+  const out = [first];
+  const seen = new Set([`${first.type}:${first.symbol}`]);
+  for (const span of spans.slice(1)) {
+    const sym = symbolFromInner(span);
+    if (sym && sym.type === first.type && !seen.has(`${sym.type}:${sym.symbol}`)) {
+      seen.add(`${sym.type}:${sym.symbol}`);
+      out.push(sym);
+    }
+  }
+  return out;
 }
 
 /**
@@ -176,6 +222,7 @@ export function splitTableRow(line: string): string[] {
 
 export function parseDocPage(page: string, markdown: string): DocEntry[] {
   const entries: DocEntry[] = [];
+  const baseline = PAGE_BASELINE_MIN_VERSION[page as (typeof DOC_PAGES)[number]] ?? null;
   for (const line of markdown.split('\n')) {
     if (!/^\s*\|/.test(line) || /^\s*\|\s*:?-{2,}/.test(line)) continue;
     const cells = splitTableRow(line)
@@ -183,18 +230,18 @@ export function parseDocPage(page: string, markdown: string): DocEntry[] {
       .map((c) => c.trim());
     if (cells.length < 2) continue;
 
-    const sym = symbolFromCell(cells[0] ?? '');
-    if (!sym) continue;
+    const syms = symbolsFromCell(cells[0] ?? '');
+    if (syms.length === 0) continue;
     const description = cleanCell(cells[1] ?? '');
     if (description.length < 3) continue;
 
-    entries.push({
-      symbol: sym.symbol,
-      type: sym.type,
-      description,
-      doc_min_version: minVersion(cells[1] ?? '') ?? minVersion(cells[0] ?? ''),
-      doc_page: page,
-    });
+    // A cell-level marker (either column) wins; otherwise fall back to the page
+    // baseline so unmarked flags on a versioned-feature page aren't left dateless.
+    const cellMin = minVersion(cells[1] ?? '') ?? minVersion(cells[0] ?? '');
+    const doc_min_version = cellMin ?? baseline;
+    for (const sym of syms) {
+      entries.push({ symbol: sym.symbol, type: sym.type, description, doc_min_version, doc_page: page });
+    }
   }
   return entries;
 }
