@@ -20,7 +20,8 @@ export const DEFAULT_BASE = 'https://schubydoo.github.io/claustodian/data';
 // appear in the data today; config_key/internal_config_flag are reserved by the
 // schema, so a forward-compatible consumer should accept them too.
 export type SymbolType = 'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag';
-export type Status = 'active' | 'deprecated' | 'needs_review';
+export type Status = 'active' | 'deprecated' | 'removed' | 'needs_review';
+export type Confidence = 'high' | 'medium' | 'low';
 
 export interface ClaudeSymbol {
   symbol: string;
@@ -30,7 +31,7 @@ export interface ClaudeSymbol {
   deprecated_in?: string;
   status: Status;
   provenance: 'changelog' | 'docs' | 'binary';
-  confidence: 'high' | 'medium';
+  confidence: Confidence;
   first_seen_estimated?: boolean;
   description: string;
   description_source?: 'docs' | 'changelog' | 'binary' | 'help';

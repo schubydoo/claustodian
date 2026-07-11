@@ -57,9 +57,9 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
   "first_seen": "1.0.19",        // earliest version OBSERVED (semver string)
   "removed_in": null,            // version it vanished, or null if still present
   "deprecated_in": "2.1.73",     // OPTIONAL: version it was marked deprecated
-  "status": "active",            // "active" | "deprecated" | "needs_review"
+  "status": "active",            // "active" | "deprecated" | "removed" | "needs_review"
   "provenance": "changelog",     // "changelog" | "docs" | "binary" — which lane proved existence
-  "confidence": "high",          // "high" | "medium"
+  "confidence": "high",          // "high" | "medium" | "low"
   "first_seen_estimated": true,  // OPTIONAL: first_seen is an UPPER BOUND, not exact
   "description": "Output format…",
   "description_source": "docs",  // OPTIONAL: "docs" | "changelog" | "binary" | "help"
