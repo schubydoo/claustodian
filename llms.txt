@@ -1,0 +1,35 @@
+# Claustodian
+
+> A static, versioned, machine-queryable dataset of the Claude Code surface. It answers: does a symbol — a CLI flag, environment variable, or slash command — exist in a specific Claude Code version, and what did it do at that version? Use it to make agent features version-accurate for a specific user's Claude Code version instead of assuming "latest." All data is derived only from official public Anthropic artifacts (changelog, docs, release binaries).
+
+The data is static JSON on GitHub Pages under a stable base URL — no API, no auth, no install. Fetch a URL and read it. Each version is a full snapshot of every symbol; each symbol record carries `first_seen`, `removed_in`, `deprecated_in`, `status`, `provenance`, `confidence`, and `description`.
+
+Three rules cover almost all use: (1) a symbol is available in version Y when `first_seen <= Y AND (removed_in is null OR removed_in > Y)`, compared as semver; (2) removal = vanish — a removed symbol is absent from snapshots at/after `removed_in`; (3) deprecation = a `status` flip to `deprecated` at `deprecated_in`, while the symbol stays present. Compare versions as semver, not strings.
+
+## Start here
+
+- [Agent guide](https://github.com/schubydoo/claustodian/blob/main/examples/README.md): the full how-to — endpoints, record schema, the three rules, trust tiers, and gotchas. Read this first.
+- [Symbol JSON Schema](https://github.com/schubydoo/claustodian/blob/main/schema/symbol.schema.json): the authoritative record shape (draft 2020-12).
+
+## Data endpoints (base: https://schubydoo.github.io/claustodian/data)
+
+- [index.json](https://schubydoo.github.io/claustodian/data/index.json): `{ schemaVersion, latest, versions[] }` — every tracked version, newest-first.
+- [latest.json](https://schubydoo.github.io/claustodian/data/latest.json): full symbol snapshot for the newest tracked version.
+- versions/<X.Y.Z>.json: full symbol snapshot as of that exact version, e.g. https://schubydoo.github.io/claustodian/data/versions/2.1.169.json — the ground truth for availability in that version.
+- [binary-descriptions.json](https://schubydoo.github.io/claustodian/data/binary-descriptions.json): per-symbol description timeline (change-point eras keyed by `type:symbol`); take the last era whose `from <= Y` for the text at version Y.
+- [schema-version.json](https://schubydoo.github.io/claustodian/data/schema-version.json): the data format version; a bump signals a format change.
+
+Core files are also served as `.yaml` and `.toml` (swap the extension); JSON is the source of truth.
+
+## Runnable examples
+
+- [quickstart.sh](https://github.com/schubydoo/claustodian/blob/main/examples/quickstart.sh): curl + jq recipes, no client library.
+- [claustodian.ts](https://github.com/schubydoo/claustodian/blob/main/examples/claustodian.ts): zero-dependency TypeScript client (Node 18+) — `fetchSnapshot`, `findSymbol`, `availableAt`, `describeAt`.
+- [claustodian.py](https://github.com/schubydoo/claustodian/blob/main/examples/claustodian.py): stdlib-only Python client with the same API.
+
+## Notes
+
+- `status: needs_review` means the symbol provably exists (observed in a release binary) but isn't yet human-curated — treat it as real, not "maybe."
+- `first_seen_estimated: true` (or `confidence: medium`) means `first_seen` is an upper bound, not an exact introduction point.
+- Not every Claude Code version is tracked; check `index.json.versions` and fall back to the nearest tracked version `<= Y`. A 404 means untracked, not "symbol absent."
+- License: code Apache-2.0, data CC-BY-4.0. Source: https://github.com/schubydoo/claustodian
