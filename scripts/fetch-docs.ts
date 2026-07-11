@@ -164,7 +164,8 @@ export function symbolFromCell(cell: string): { symbol: string; type: DocSymbolT
  * subject is just the first span, so only that one is returned.
  */
 export function symbolsFromCell(cell: string): Array<{ symbol: string; type: DocSymbolType }> {
-  const spans = [...cell.matchAll(/`([^`]+)`/g)].map((m) => (m[1] ?? '').trim());
+  // Group 1 is always present when the pattern matches, so the cast is safe.
+  const spans = [...cell.matchAll(/`([^`]+)`/g)].map((m) => (m[1] as string).trim());
   const first = spans[0] !== undefined ? symbolFromInner(spans[0]) : null;
   if (!first) return [];
 
@@ -228,17 +229,20 @@ export function parseDocPage(page: string, markdown: string): DocEntry[] {
       .slice(1, -1)
       .map((c) => c.trim());
     if (cells.length < 2) continue;
+    // length >= 2 guarantees both are present, so the casts are safe.
+    const symbolCell = cells[0] as string;
+    const descCell = cells[1] as string;
 
-    const syms = symbolsFromCell(cells[0] ?? '');
+    const syms = symbolsFromCell(symbolCell);
     if (syms.length === 0) continue;
-    const description = cleanCell(cells[1] ?? '');
+    const description = cleanCell(descCell);
     if (description.length < 3) continue;
 
     // Only a cell-level marker (either column) here — never the page baseline. The
     // baseline is applied page-locally in buildDocsIndex AFTER dedupe, so it can't
     // ride the cross-page min-version backfill onto an earlier page's dateless flag
     // (e.g. remote-control's 2.1.51 must not stamp cli-reference's `--verbose`).
-    const doc_min_version = minVersion(cells[1] ?? '') ?? minVersion(cells[0] ?? '');
+    const doc_min_version = minVersion(descCell) ?? minVersion(symbolCell);
     for (const sym of syms) {
       entries.push({ symbol: sym.symbol, type: sym.type, description, doc_min_version, doc_page: page });
     }

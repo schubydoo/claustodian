@@ -176,6 +176,19 @@ describe('parseDocPage', () => {
     expect(entry?.doc_min_version).toBeNull();
   });
 
+  it('skips a row whose description is too short (< 3 chars)', () => {
+    expect(parseDocPage('cli-reference', '| `--tiny` | ab |')).toEqual([]);
+  });
+
+  it('reads a min-version from the first cell when the description cell has none', () => {
+    // Exercises the `?? minVersion(cells[0])` fallback: marker in the symbol cell.
+    const entry = parseDocPage(
+      'cli-reference',
+      '| `--xray` {/* min-version: 2.1.10 */} | plain description, no version |'
+    )[0];
+    expect(entry?.doc_min_version).toBe('2.1.10');
+  });
+
   it('does not resurrect a deliberately-escaped link into active markdown', () => {
     const entry = parseDocPage('env-vars', '| `--xray` | see \\[text\\]\\(url\\) here |')[0];
     expect(entry?.description).toBe('see text here');
