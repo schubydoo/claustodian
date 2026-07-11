@@ -32,6 +32,12 @@
   ],
   "packageRules": [
     {
+      "description": "Hold TypeScript on the 6.x major (still take 6.x minor/patch). TS 7 is the ground-up native (Go port) compiler; our toolchain isn't ready — typescript-eslint's latest still caps its peer at typescript <6.1.0, so `eslint .` breaks under TS 7. Re-enable (drop this rule) once typescript-eslint publishes a release whose typescript peer range includes 7.x.",
+      "matchPackageNames": ["typescript"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
       "description": "Roll non-major GitHub Actions version updates into one weekly PR.",
       "matchManagers": ["github-actions"],
       "matchUpdateTypes": ["minor", "patch"],
