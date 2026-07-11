@@ -222,7 +222,6 @@ export function splitTableRow(line: string): string[] {
 
 export function parseDocPage(page: string, markdown: string): DocEntry[] {
   const entries: DocEntry[] = [];
-  const baseline = PAGE_BASELINE_MIN_VERSION[page as (typeof DOC_PAGES)[number]] ?? null;
   for (const line of markdown.split('\n')) {
     if (!/^\s*\|/.test(line) || /^\s*\|\s*:?-{2,}/.test(line)) continue;
     const cells = splitTableRow(line)
@@ -235,10 +234,11 @@ export function parseDocPage(page: string, markdown: string): DocEntry[] {
     const description = cleanCell(cells[1] ?? '');
     if (description.length < 3) continue;
 
-    // A cell-level marker (either column) wins; otherwise fall back to the page
-    // baseline so unmarked flags on a versioned-feature page aren't left dateless.
-    const cellMin = minVersion(cells[1] ?? '') ?? minVersion(cells[0] ?? '');
-    const doc_min_version = cellMin ?? baseline;
+    // Only a cell-level marker (either column) here — never the page baseline. The
+    // baseline is applied page-locally in buildDocsIndex AFTER dedupe, so it can't
+    // ride the cross-page min-version backfill onto an earlier page's dateless flag
+    // (e.g. remote-control's 2.1.51 must not stamp cli-reference's `--verbose`).
+    const doc_min_version = minVersion(cells[1] ?? '') ?? minVersion(cells[0] ?? '');
     for (const sym of syms) {
       entries.push({ symbol: sym.symbol, type: sym.type, description, doc_min_version, doc_page: page });
     }
@@ -250,13 +250,23 @@ export function parseDocPage(page: string, markdown: string): DocEntry[] {
 export function buildDocsIndex(pages: Array<{ page: string; markdown: string }>): DocsIndex {
   const seen = new Map<string, DocEntry>();
   for (const { page, markdown } of pages) {
+    // A baselined page is SUPPLEMENTAL: it documents subcommand-scoped flags, so a
+    // name that collides with an earlier page is usually a DIFFERENT flag (e.g.
+    // remote-control's `--session-id` @2.1.200 vs the top-level `--session-id`
+    // @1.0.53). It may only CONTRIBUTE net-new symbols — never backfill or override
+    // a symbol an earlier (primary) page already owns. Its net-new symbols inherit
+    // the page baseline when they carry no cell-level marker.
+    const baseline = PAGE_BASELINE_MIN_VERSION[page as (typeof DOC_PAGES)[number]];
+    const supplemental = baseline !== undefined;
     for (const entry of parseDocPage(page, markdown)) {
       const key = `${entry.type}:${entry.symbol}`;
       const existing = seen.get(key);
-      // First page wins; but let a later page fill in a missing min-version.
       if (!existing) {
+        if (supplemental && !entry.doc_min_version) entry.doc_min_version = baseline;
         seen.set(key, entry);
-      } else if (!existing.doc_min_version && entry.doc_min_version) {
+      } else if (!supplemental && !existing.doc_min_version && entry.doc_min_version) {
+        // Normal cross-page backfill, among primary pages only: a later primary
+        // page fills a min-version the winning page lacked.
         existing.doc_min_version = entry.doc_min_version;
       }
     }

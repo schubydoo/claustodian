@@ -417,7 +417,7 @@
       "symbol": "--name",
       "type": "cli_flag",
       "description": "Set a display name for the session, shown in `/resume` and the terminal title. You can resume a named session with `claude --resume <name>`. <br /><br />`/rename` changes the name mid-session and also shows it on the prompt bar",
-      "doc_min_version": "2.1.51",
+      "doc_min_version": null,
       "doc_page": "cli-reference"
     },
     {
@@ -529,7 +529,7 @@
       "symbol": "--remote-control-session-name-prefix",
       "type": "cli_flag",
       "description": "Prefix for auto-generated Remote Control session names when no explicit name is set. Defaults to your machine's hostname, producing names like `myhost-graceful-unicorn`. Set `CLAUDE_REMOTE_CONTROL_SESSION_NAME_PREFIX` for the same effect",
-      "doc_min_version": "2.1.51",
+      "doc_min_version": null,
       "doc_page": "cli-reference"
     },
     {
@@ -571,7 +571,7 @@
       "symbol": "--session-id",
       "type": "cli_flag",
       "description": "Use a specific session ID for the conversation (must be a valid UUID)",
-      "doc_min_version": "2.1.200",
+      "doc_min_version": null,
       "doc_page": "cli-reference"
     },
     {
@@ -648,7 +648,7 @@
       "symbol": "--verbose",
       "type": "cli_flag",
       "description": "Enable verbose logging, shows full turn-by-turn output. Overrides the `viewMode` setting for this session",
-      "doc_min_version": "2.1.51",
+      "doc_min_version": null,
       "doc_page": "cli-reference"
     },
     {

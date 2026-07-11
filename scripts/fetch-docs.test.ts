@@ -151,18 +151,19 @@ describe('parseDocPage', () => {
     expect(entry?.description).toBe('uses `foo\\_bar` as a key');
   });
 
-  it('applies a page baseline min-version to an unmarked flag on a baselined page', () => {
-    // `remote-control` is baselined at 2.1.51; a cell with no own marker inherits it.
+  it('emits every flag of an unmarked pair cell dateless (baseline is applied later)', () => {
+    // parseDocPage never applies the page baseline itself — that happens in
+    // buildDocsIndex after dedupe, so it can't ride the cross-page backfill.
     const entry = parseDocPage(
       'remote-control',
       '| `--sandbox` / `--no-sandbox` | Enable or disable sandboxing. |'
     );
     expect(entry.map((e) => e.symbol)).toEqual(['--sandbox', '--no-sandbox']);
-    expect(entry.every((e) => e.doc_min_version === '2.1.51')).toBe(true);
+    expect(entry.every((e) => e.doc_min_version === null)).toBe(true);
     expect(entry[0]?.description).toBe('Enable or disable sandboxing.');
   });
 
-  it("lets a cell's own min-version override the page baseline", () => {
+  it('captures a cell-level min-version even on a baselined page', () => {
     const entry = parseDocPage(
       'remote-control',
       '| `--session-id <id>` | {/* min-version: 2.1.200 */}Resume a session by id. |'
@@ -215,6 +216,41 @@ describe('buildDocsIndex', () => {
     const index = buildDocsIndex(pages);
     expect(index.symbols[0]?.doc_min_version).toBe('2.1.50');
     expect(index.symbols[0]?.description).toBe('no version here');
+  });
+
+  it('applies a page baseline to a symbol the baselined page owns', () => {
+    const index = buildDocsIndex([
+      { page: 'remote-control', markdown: '| `--sandbox` | Toggle sandboxing. |' },
+    ]);
+    expect(index.symbols.find((s) => s.symbol === '--sandbox')?.doc_min_version).toBe('2.1.51');
+  });
+
+  it('does NOT let a baseline cross onto an earlier page’s dateless flag', () => {
+    // The Greptile regression: `--verbose` wins from cli-reference (dateless) and
+    // also appears dateless under remote-control (2.1.51 baseline). It must stay
+    // dateless — the baseline belongs to remote-control's own symbols only.
+    const index = buildDocsIndex([
+      { page: 'cli-reference', markdown: '| `--verbose` | Global verbose flag. |' },
+      { page: 'remote-control', markdown: '| `--verbose` | Show detailed logs. |' },
+    ]);
+    const verbose = index.symbols.find((s) => s.symbol === '--verbose');
+    expect(verbose?.doc_page).toBe('cli-reference');
+    expect(verbose?.doc_min_version).toBeNull();
+  });
+
+  it('does NOT backfill a supplemental page’s cell min-version onto an earlier flag', () => {
+    // remote-control's `--session-id` @2.1.200 is a different flag from the
+    // top-level `--session-id` (@1.0.53); it must not stamp 2.1.200 on the older one.
+    const index = buildDocsIndex([
+      { page: 'cli-reference', markdown: '| `--session-id` | Use a specific session ID. |' },
+      {
+        page: 'remote-control',
+        markdown: '| `--session-id` | {/* min-version: 2.1.200 */}Resume a session by id. |',
+      },
+    ]);
+    const sid = index.symbols.find((s) => s.symbol === '--session-id');
+    expect(sid?.doc_page).toBe('cli-reference');
+    expect(sid?.doc_min_version).toBeNull();
   });
 });
 
