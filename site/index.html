@@ -246,7 +246,10 @@
         color: color-mix(in srgb, var(--warn) 70%, var(--fg));
       }
       .deprecated .lbl {
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
         font-size: 0.6rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -358,6 +361,14 @@
           <label for="version">As of version</label>
           <select id="version" aria-label="Claude Code version"></select>
         </div>
+        <div>
+          <label for="sort">Sort by</label>
+          <select id="sort" aria-label="Sort order">
+            <option value="alpha">Alphabetical</option>
+            <option value="oldest">Since — oldest first</option>
+            <option value="newest">Since — newest first</option>
+          </select>
+        </div>
       </div>
 
       <p id="meta" aria-live="polite"></p>
@@ -370,8 +381,8 @@
           version Claustodian observed a symbol; it's available in any version Y where
           <code>first_seen &le; Y</code> and it hasn't been removed. A dashed
           <span class="seen seen--est"><span class="lbl">since</span>&le;X</span> chip marks an
-          <em>estimated</em> <code>first_seen</code> — an upper bound from an incidental mention or a
-          doc with no stated introduction version, so the true version may be earlier (the binary
+          <em>estimated</em> <code>first_seen</code> — an upper bound from an incidental mention or
+          a doc with no stated introduction version, so the true version may be earlier (the binary
           lane will pin it). Solid chips are confirmed. Descriptions come from Anthropic's official
           docs where available.
         </p>
@@ -391,6 +402,7 @@
       const DATA = 'data';
       const $q = document.getElementById('q');
       const $version = document.getElementById('version');
+      const $sort = document.getElementById('sort');
       const $results = document.getElementById('results');
       const $meta = document.getElementById('meta');
       const $status = document.getElementById('status');
@@ -406,14 +418,18 @@
         return res.json();
       }
 
-      // a <= b for "X.Y.Z" versions, compared numerically per segment.
-      function verLTE(a, b) {
+      // Compare "X.Y.Z" versions numerically per segment: <0, 0, or >0.
+      function cmpVersions(a, b) {
         const pa = a.split('.').map(Number);
         const pb = b.split('.').map(Number);
         for (let i = 0; i < 3; i++) {
-          if (pa[i] !== pb[i]) return pa[i] < pb[i];
+          if (pa[i] !== pb[i]) return pa[i] - pb[i];
         }
-        return true;
+        return 0;
+      }
+      // a <= b for "X.Y.Z" versions.
+      function verLTE(a, b) {
+        return cmpVersions(a, b) <= 0;
       }
 
       function typeBadge(type) {
@@ -485,7 +501,11 @@
           sym.description &&
           (eras.length === 0 || eras[eras.length - 1].description !== sym.description);
         if (appendedCurrent) {
-          eras.push({ current: true, source: sym.description_source, description: sym.description });
+          eras.push({
+            current: true,
+            source: sym.description_source,
+            description: sym.description,
+          });
         }
         if (eras.length > 1) {
           const label = (open) =>
@@ -542,6 +562,14 @@
             s.symbol.toLowerCase().includes(q) ||
             (s.description && s.description.toLowerCase().includes(q))
         );
+        // The snapshot's native order is alphabetical by symbol, so "alpha" needs no
+        // re-sort. "oldest"/"newest" sort by first_seen; Array.sort is stable, so
+        // symbols sharing a first_seen keep their alphabetical order as the tie-break.
+        const sort = $sort.value;
+        if (sort === 'oldest' || sort === 'newest') {
+          const dir = sort === 'oldest' ? 1 : -1;
+          matches.sort((a, b) => dir * cmpVersions(a.first_seen, b.first_seen));
+        }
         $results.replaceChildren(...matches.map(card));
         $meta.textContent = `${matches.length} of ${snapshot.symbols.length} symbols as of ${snapshot.claudeCodeVersion}`;
       }
@@ -578,6 +606,7 @@
           );
           $version.value = index.latest;
           $version.addEventListener('change', () => loadVersion($version.value));
+          $sort.addEventListener('change', render);
           $q.addEventListener('input', render);
           await loadVersion(index.latest);
         } catch (e) {
