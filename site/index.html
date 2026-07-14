@@ -768,16 +768,19 @@
               s.symbol.toLowerCase().includes(q) ||
               (s.description && s.description.toLowerCase().includes(q)))
         );
-        // "alpha" (A–Z) is the snapshot's native order, so it needs no re-sort.
-        // The others sort in place (matches is already a fresh filtered array).
-        // Array.sort is stable and the list starts A–Z, so symbols sharing a
-        // first_seen keep their alphabetical order as the tie-break.
+        // Sort explicitly by symbol so every mode has a defined order rather than
+        // leaning on the source's native ordering — including the tie-break for
+        // equal-first_seen rows, which must be alphabetical by symbol regardless of
+        // whether the source happened to be grouped by type.
+        const bySymbol = (a, b) => (a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0);
         const sort = $sort.value;
-        if (sort === 'alpha-desc') {
-          matches.sort((a, b) => (a.symbol < b.symbol ? 1 : a.symbol > b.symbol ? -1 : 0));
+        if (sort === 'alpha') {
+          matches.sort(bySymbol);
+        } else if (sort === 'alpha-desc') {
+          matches.sort((a, b) => -bySymbol(a, b));
         } else if (sort === 'oldest' || sort === 'newest') {
           const dir = sort === 'oldest' ? 1 : -1;
-          matches.sort((a, b) => dir * cmpVersions(a.first_seen, b.first_seen));
+          matches.sort((a, b) => dir * cmpVersions(a.first_seen, b.first_seen) || bySymbol(a, b));
         }
         if ($group.checked) {
           // Group by type: sections in a fixed type order, with the chosen sort

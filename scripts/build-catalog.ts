@@ -67,7 +67,8 @@ export function buildCatalog(snapshots: Snapshot[]): CatalogEntry[] {
   }
   return [...byKey.values()].sort((a, b) => {
     if (a.type !== b.type) return a.type < b.type ? -1 : 1;
-    return a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0;
+    // Same type ⇒ symbols differ (entries are keyed on type:symbol, so no ties).
+    return a.symbol < b.symbol ? -1 : 1;
   });
 }
 
@@ -104,7 +105,9 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<numb
   const output = { $generated_by: 'scripts/build-catalog.ts', note: NOTE, symbols };
   await writeFile(outPath, `${JSON.stringify(output, null, 2)}\n`, 'utf-8');
 
-  console.log(`Built ${symbols.length} catalog entries from ${files.length} snapshot(s) into ${outPath}.`);
+  console.log(
+    `Built ${symbols.length} catalog entries from ${files.length} snapshot(s) into ${outPath}.`
+  );
   return 0;
 }
 

@@ -22,7 +22,9 @@ describe('buildCatalog', () => {
       snap('1.0.0', [{ symbol: '/x', type: 'command', description: 'old' }]),
       snap('1.0.2', [{ symbol: '/x', type: 'command', description: 'new' }]),
     ]);
-    expect(cat).toEqual([{ symbol: '/x', type: 'command', description: 'new', last_seen: '1.0.2' }]);
+    expect(cat).toEqual([
+      { symbol: '/x', type: 'command', description: 'new', last_seen: '1.0.2' },
+    ]);
   });
 
   it('processes oldest-first regardless of input order (last_seen is the newest)', () => {
@@ -37,14 +39,20 @@ describe('buildCatalog', () => {
   it('retains a removed symbol with its lifecycle and last living version', () => {
     // Present 2.1.97–2.1.145, then gone; the last occurrence carries removed_in.
     const cat = buildCatalog([
-      snap('2.1.97', [{ symbol: '/dream', type: 'command', first_seen: '2.1.97', removed_in: null }]),
+      snap('2.1.97', [
+        { symbol: '/dream', type: 'command', first_seen: '2.1.97', removed_in: null },
+      ]),
       snap('2.1.145', [
         { symbol: '/dream', type: 'command', first_seen: '2.1.97', removed_in: '2.1.146' },
       ]),
       snap('2.1.146', [{ symbol: '--keep', type: 'cli_flag', first_seen: '2.1.146' }]),
     ]);
     const dream = cat.find((e) => e.symbol === '/dream') as CatalogEntry;
-    expect(dream).toMatchObject({ first_seen: '2.1.97', removed_in: '2.1.146', last_seen: '2.1.145' });
+    expect(dream).toMatchObject({
+      first_seen: '2.1.97',
+      removed_in: '2.1.146',
+      last_seen: '2.1.145',
+    });
     // --keep, absent from the older snapshots, is still in the catalog.
     expect(cat.some((e) => e.symbol === '--keep')).toBe(true);
   });
@@ -108,10 +116,11 @@ describe('build-catalog main()', () => {
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Built 1 catalog entries'));
   });
 
-  it('is a no-op when there are no version snapshots', async () => {
+  it('is a no-op when there are no version snapshots (and ignores unknown args)', async () => {
     dir = await mkdtemp(join(tmpdir(), 'claustodian-catalog-empty-'));
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    const code = await main(['--data', dir]);
+    // The leading unknown arg exercises parseArgs' non-"--data" path.
+    const code = await main(['--unknown', '--data', dir]);
     expect(code).toBe(0);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('nothing to build'));
   });
