@@ -57,19 +57,25 @@ describe('buildCatalog', () => {
     expect(cat.some((e) => e.symbol === '--keep')).toBe(true);
   });
 
-  it('sorts entries by type then symbol', () => {
+  it('sorts entries by type then symbol (same-type symbols in both directions)', () => {
+    // Multiple same-type symbols in scrambled order so the symbol comparator is
+    // exercised both ways (a < b and a > b), not just ascending.
     const cat = buildCatalog([
       snap('1.0.0', [
         { symbol: 'ZED', type: 'env_var' },
-        { symbol: '/b', type: 'command' },
-        { symbol: '--a', type: 'cli_flag' },
+        { symbol: '/c', type: 'command' },
+        { symbol: '--b', type: 'cli_flag' },
         { symbol: '/a', type: 'command' },
+        { symbol: '--a', type: 'cli_flag' },
+        { symbol: '/b', type: 'command' },
       ]),
     ]);
     expect(cat.map((e) => `${e.type}:${e.symbol}`)).toEqual([
       'cli_flag:--a',
+      'cli_flag:--b',
       'command:/a',
       'command:/b',
+      'command:/c',
       'env_var:ZED',
     ]);
   });
