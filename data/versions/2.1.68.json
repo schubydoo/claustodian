@@ -879,7 +879,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Specify an MCP tool to handle permission prompts in non-interactive mode. As of v2.1.199, the prompt tool can't approve an MCP tool marked as requiring user interaction: an `allow` result for one is converted to a deny",
+      "description": "Specify an MCP tool to handle permission prompts in non-interactive mode. Claude Code waits for that tool's MCP server to connect before running the first turn, up to the `MCP_TIMEOUT` startup timeout of 30 seconds. Before v2.1.206, a slow-starting server could make the run exit with an error that the MCP tool was not found. <br /><br />The prompt tool can't approve an MCP tool marked as requiring user interaction: Claude Code converts an `allow` result for one to a deny. This restriction requires Claude Code v2.1.199 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1348,7 +1348,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Add a working directory for file access during the current session. Most `.claude/` configuration is not discovered from the added directory. You can later resume the session from the added directory with `--continue` or `--resume`",
+      "description": "Add a working directory for file access during the current session. Typing a partial path shows matching directory suggestions; press `Tab` to accept one. Most `.claude/` configuration is not discovered from the added directory. You can later resume the session from the added directory with `--continue` or `--resume`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -1597,7 +1597,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "**Skill.** Run a setup checkup that diagnoses issues and can fix them. Checks installation health, including duplicate or leftover installs, `PATH` problems, and unparseable settings files. Finds unused skills, MCP servers, and plugins versus their context cost, deduplicates local `CLAUDE.md` files against checked-in ones, migrates always-loaded guidance into skills and nested `CLAUDE.md` files that load on demand, flags slow hooks, and checks for a newer version. Also offers to make auto mode your default and to pre-approve frequently denied read-only commands. Reports findings first and asks for confirmation before changing anything. From the terminal, `claude doctor` prints read-only installation diagnostics without starting a session. Alias: `/checkup`. Before v2.1.205, `/doctor` opened a read-only diagnostics screen and pressing `f` sent the report to Claude",
+      "description": "**Skill.** Run a setup checkup that diagnoses issues and can fix them. Checks installation health, including duplicate or leftover installs, `PATH` problems, and unparseable settings files. Finds unused skills, MCP servers, and plugins versus their context cost, flags slow hooks, and checks for a newer version on your release channel. Deduplicates local `CLAUDE.md` files against checked-in ones, trims checked-in `CLAUDE.md` files by cutting content Claude could derive from the codebase, and migrates the always-loaded guidance that remains into skills and nested `CLAUDE.md` files that load on demand. The trim cuts sections such as directory layouts, dependency lists, and architecture overviews, and keeps pitfalls, rationale, and conventions that differ from tool defaults. Also offers to make auto mode your default and to pre-approve frequently denied read-only commands. Reports findings first and asks for confirmation before changing anything. From the terminal, `claude doctor` prints read-only installation diagnostics without starting a session. Alias: `/checkup`. The `CLAUDE.md` trim check requires Claude Code v2.1.206 or later. Before v2.1.206, the version check compared Homebrew installs against the `autoUpdatesChannel` setting rather than the installed cask's channel. Before v2.1.205, `/doctor` opened a read-only diagnostics screen and pressing `f` sent the report to Claude",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2624,7 +2624,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override AWS region for the Haiku-class model when using Amazon Bedrock or Amazon Bedrock Mantle. On Amazon Bedrock, this only takes effect when `ANTHROPIC_DEFAULT_HAIKU_MODEL` or the deprecated `ANTHROPIC_SMALL_FAST_MODEL` is also set, since Amazon Bedrock otherwise uses the primary model for background tasks",
+      "description": "Override AWS region for the Haiku-class model when using Amazon Bedrock or Amazon Bedrock Mantle. On Amazon Bedrock, this only takes effect when `ANTHROPIC_DEFAULT_HAIKU_MODEL` or the deprecated `ANTHROPIC_SMALL_FAST_MODEL` is also set, since Amazon Bedrock otherwise runs background tasks on the default Sonnet model or the primary model in the session region",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -3655,7 +3655,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "JSON object to merge into the top level of every API request body. Useful for passing provider-specific parameters that Claude Code does not expose directly",
+      "description": "JSON object to merge into the top level of every API request body. Useful for passing provider-specific parameters that Claude Code doesn't expose directly. A value exported in your shell also applies to the background sessions you dispatch with `claude agents` or `--bg`. Before v2.1.206, background sessions ignored a shell-exported value and used whatever copy the background supervisor process inherited",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -5482,7 +5482,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Timeout in milliseconds for MCP tool execution (default: 100000000, about 28 hours). A per-server `timeout` field in `.mcp.json` overrides this for that server. A per-server `timeout` of at least 1000 also sets the minimum idle window for that server's tool calls, so `CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT` never aborts them sooner; this floor requires Claude Code v2.1.203 or later. For the env variable, values below 1000 are floored to one second; for the per-server field, values below 1000 are ignored",
+      "description": "Timeout in milliseconds for MCP tool execution (default: 100000000, about 28 hours). For an HTTP, SSE, or claude.ai connector server, each request also times out after 60 seconds by default; set this variable, or the per-server `timeout`, above 60000 to raise that per-request limit. A lower value still shortens the overall tool-execution timeout but leaves the per-request limit at 60 seconds. Stdio and WebSocket servers have no per-request timer. A per-server `timeout` field in `.mcp.json` overrides this for that server. A per-server `timeout` of at least 1000 also sets the minimum idle window for that server's tool calls, so `CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT` never aborts them sooner; this floor requires Claude Code v2.1.203 or later. For the env variable, values below 1000 are floored to one second; for the per-server field, values below 1000 are ignored",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"

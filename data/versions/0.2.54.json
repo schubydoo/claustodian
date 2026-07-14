@@ -541,7 +541,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "JSON object to merge into the top level of every API request body. Useful for passing provider-specific parameters that Claude Code does not expose directly",
+      "description": "JSON object to merge into the top level of every API request body. Useful for passing provider-specific parameters that Claude Code doesn't expose directly. A value exported in your shell also applies to the background sessions you dispatch with `claude agents` or `--bg`. Before v2.1.206, background sessions ignored a shell-exported value and used whatever copy the background supervisor process inherited",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"

@@ -1,7 +1,20 @@
 {
-  "claudeCodeVersion": "2.1.187",
+  "claudeCodeVersion": "2.1.208",
   "schemaVersion": "1.0.0",
   "symbols": [
+    {
+      "symbol": "--ablation",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Run a no-plugin baseline arm and report the score delta (none | with-without; default: with-without when targeting a plugin by name (installed or skills-dir), none for a path)",
+      "description_source": "help",
+      "source_url": null,
+      "category": "cli"
+    },
     {
       "symbol": "--add-dir",
       "type": "cli_flag",
@@ -145,6 +158,19 @@
       "category": "cli"
     },
     {
+      "symbol": "--allow-tools",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Operator grant for gated tools (Bash, Write, Edit, WebFetch, mcp__*). Supports Tool(pattern:*) syntax",
+      "description_source": "help",
+      "source_url": null,
+      "category": "cli"
+    },
+    {
       "symbol": "--allowed",
       "type": "cli_flag",
       "first_seen": "0.2.33",
@@ -166,6 +192,33 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "Tools that execute without prompting for permission. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "category": "cli"
+    },
+    {
+      "symbol": "--any",
+      "type": "cli_flag",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Stop the background-session supervisor and the sessions it hosts. Pass `--keep-workers` to leave background sessions running so the next supervisor reconnects to them. `--any` confirms stopping an on-demand supervisor, which is the default. Use this to recover from an unresponsive supervisor",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "category": "cli"
+    },
+    {
+      "symbol": "--append-subagent-system-prompt",
+      "type": "cli_flag",
+      "first_seen": "2.1.205",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Append custom text to the end of every subagent's system prompt, including nested subagents. Only applies in non-interactive mode with `-p`. Requires Claude Code v2.1.205 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
@@ -350,6 +403,19 @@
       "description": "Maximum number of concurrent sessions. Default is 32. Cannot be used with `--spawn=session`.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/remote-control.md",
+      "category": "cli"
+    },
+    {
+      "symbol": "--case",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Filter cases by name glob",
+      "description_source": "help",
+      "source_url": null,
       "category": "cli"
     },
     {
@@ -794,6 +860,20 @@
       "category": "cli"
     },
     {
+      "symbol": "--exec",
+      "type": "cli_flag",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Run a shell command as a PTY-backed background job instead of starting a Claude session. Use with `--bg` to launch from the shell",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "category": "cli"
+    },
+    {
       "symbol": "--fallback-model",
       "type": "cli_flag",
       "first_seen": "1.0.28",
@@ -906,6 +986,20 @@
       "description": "Set WebSocket headers (e.g. -H \"X-Api-Key: abc123\" -H \"X-Custom: value\")",
       "description_source": "help",
       "source_url": null,
+      "category": "cli"
+    },
+    {
+      "symbol": "--help",
+      "type": "cli_flag",
+      "first_seen": "2.1.200",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "medium",
+      "description": "Display help for command",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -1040,6 +1134,19 @@
       "category": "cli"
     },
     {
+      "symbol": "--interview",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Alias for --interactive",
+      "source_url": null,
+      "category": "cli",
+      "description_source": "binary"
+    },
+    {
       "symbol": "--json",
       "type": "cli_flag",
       "first_seen": "0.2.46",
@@ -1066,6 +1173,19 @@
       "category": "cli"
     },
     {
+      "symbol": "--judge-model",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Override LLM-grader model (default: haiku)",
+      "description_source": "help",
+      "source_url": null,
+      "category": "cli"
+    },
+    {
       "symbol": "--keep-data",
       "type": "cli_flag",
       "first_seen": "2.1.78",
@@ -1076,6 +1196,19 @@
       "description": "Preserve the plugin's persistent data directory",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "category": "cli"
+    },
+    {
+      "symbol": "--keep-temp",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Preserve scaffold dirs for debugging",
+      "description_source": "help",
+      "source_url": null,
       "category": "cli"
     },
     {
@@ -1115,6 +1248,19 @@
       "description": "Maximum dollar amount to spend on API calls before stopping (print mode only)",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "category": "cli"
+    },
+    {
+      "symbol": "--max-cost-usd",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Optional hard cost ceiling; abort and report partial results if hit (exit 2). Overrun is bounded to one agent run — when that run breaches, paid graders (llm/baseline) are skipped while free graders still score it. Runs are already bounded by max_turns and timeout_seconds — only set this when you need a strict budget",
+      "description_source": "help",
+      "source_url": null,
       "category": "cli"
     },
     {
@@ -1273,6 +1419,19 @@
       "category": "cli"
     },
     {
+      "symbol": "--no-scaffold",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Explicitly skip scaffold_script",
+      "description_source": "help",
+      "source_url": null,
+      "category": "cli"
+    },
+    {
       "symbol": "--no-session-persistence",
       "type": "cli_flag",
       "first_seen": "2.0.63",
@@ -1283,6 +1442,19 @@
       "description": "Disable session persistence so sessions are not saved to disk and cannot be resumed. Print mode only. The `CLAUDE_CODE_SKIP_PROMPT_HISTORY` environment variable does the same in any mode",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "category": "cli"
+    },
+    {
+      "symbol": "--output-dir",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Directory for aggregate-result.json (default: ./evals/results/<timestamp>/)",
+      "description_source": "help",
+      "source_url": null,
       "category": "cli"
     },
     {
@@ -1648,6 +1820,19 @@
       "category": "cli"
     },
     {
+      "symbol": "--runs",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Override per-case runs (default: case.runs ?? 3)",
+      "description_source": "help",
+      "source_url": null,
+      "category": "cli"
+    },
+    {
       "symbol": "--safe-mode",
       "type": "cli_flag",
       "first_seen": "2.1.169",
@@ -1671,6 +1856,19 @@
       "description": "Enable or disable sandboxing for filesystem and network isolation. Off by default.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/remote-control.md",
+      "category": "cli"
+    },
+    {
+      "symbol": "--scaffold",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Run each case's scaffold_script (runs author-supplied bash as you; off by default — only use on case files you authored)",
+      "description_source": "help",
+      "source_url": null,
       "category": "cli"
     },
     {
@@ -1868,6 +2066,19 @@
       "category": "cli"
     },
     {
+      "symbol": "--tag",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Filter cases by tag (repeatable)",
+      "description_source": "help",
+      "source_url": null,
+      "category": "cli"
+    },
+    {
       "symbol": "--task-budget",
       "type": "cli_flag",
       "first_seen": "2.1.84",
@@ -1959,6 +2170,19 @@
       "description_source": "binary"
     },
     {
+      "symbol": "--threshold",
+      "type": "cli_flag",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Exit 1 if any case score is below this threshold (default: 1.0)",
+      "description_source": "help",
+      "source_url": null,
+      "category": "cli"
+    },
+    {
       "symbol": "--timeout",
       "type": "cli_flag",
       "first_seen": "2.0.34",
@@ -2034,6 +2258,20 @@
       "description": "Enable verbose logging, shows full turn-by-turn output. Overrides the `viewMode` setting for this session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli"
+    },
+    {
+      "symbol": "--version",
+      "type": "cli_flag",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Output the version number",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
     },
     {
@@ -2160,10 +2398,23 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Manage agent configurations",
-      "description_source": "binary",
+      "description": "As of v2.1.198, running `/agents` prints a reminder to ask Claude to create or manage subagents, or to edit `.claude/agents/` or `~/.claude/agents/` directly. On v2.1.197 and earlier, opens an interactive interface for creating and managing subagent configurations",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
+    },
+    {
+      "symbol": "/auto-mode-setup",
+      "type": "command",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Set up and customise auto mode — environment context, plus optional rule tweaks",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/autocompact",
@@ -2324,6 +2575,19 @@
       "category": "command"
     },
     {
+      "symbol": "/checkup",
+      "type": "command",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "medium",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
       "symbol": "/chrome",
       "type": "command",
       "first_seen": "2.0.71",
@@ -2331,8 +2595,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open Claude in Chrome (beta) settings",
-      "description_source": "binary",
+      "description": "Configure Claude in Chrome settings",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2521,6 +2785,19 @@
       "description_source": "binary"
     },
     {
+      "symbol": "/dataviz",
+      "type": "command",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "**Skill.** Design guidance for charts, graphs, and dashboards. Claude picks the chart form for the data, assigns color by role, validates the palette for colorblind safety and contrast with a bundled script, and applies mark, interaction, and accessibility rules. Uses a brand-neutral placeholder palette that you replace with your own. Requires Claude Code v2.1.198 or later",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
       "symbol": "/debug",
       "type": "command",
       "first_seen": "2.1.30",
@@ -2534,6 +2811,20 @@
       "category": "command"
     },
     {
+      "symbol": "/deep-research",
+      "type": "command",
+      "first_seen": "2.1.196",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "medium",
+      "description": "**Workflow.** Fan out web searches on a question, fetch and cross-check sources, and synthesize a cited report",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
       "symbol": "/design",
       "type": "command",
       "first_seen": "2.1.181",
@@ -2541,7 +2832,20 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "Work with Claude Design (claude.ai/design) — create, import, export, sync, login",
+      "description": "Grant or revoke Claude agent access to your Design projects",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "command"
+    },
+    {
+      "symbol": "/design-consent",
+      "type": "command",
+      "first_seen": "2.1.199",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Grant Claude agent access to your Design projects",
       "description_source": "binary",
       "source_url": null,
       "category": "command"
@@ -2557,6 +2861,19 @@
       "description": "Authorize design-system access for `/design-sync` with your claude.ai account",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/design-revoke",
+      "type": "command",
+      "first_seen": "2.1.199",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "Revoke Claude agent access to your Design projects",
+      "description_source": "binary",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -3106,6 +3423,19 @@
       "category": "command"
     },
     {
+      "symbol": "/plan-artifact",
+      "type": "command",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Publish a plan as a shareable Artifact",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
       "symbol": "/plugin",
       "type": "command",
       "first_seen": "2.0.12",
@@ -3483,6 +3813,19 @@
       "category": "command"
     },
     {
+      "symbol": "/setup-cowork",
+      "type": "command",
+      "first_seen": "2.1.199",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Guided setup — pick a role, install a plugin, try a skill, connect tools",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
       "symbol": "/setup-vertex",
       "type": "command",
       "first_seen": "2.1.98",
@@ -3520,6 +3863,19 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
+    },
+    {
+      "symbol": "/skill-doctor",
+      "type": "command",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Show which loaded skills are unused and costing context",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/skills",
@@ -4118,6 +4474,20 @@
       "category": "claude-code"
     },
     {
+      "symbol": "ANTHROPIC_CUSTOM_MODEL_OPTION_SUPPORTED_CAPABILITIES",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "See Model configuration",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "ANTHROPIC_DEFAULT_FABLE_MODEL",
       "type": "env_var",
       "first_seen": "2.1.170",
@@ -4151,6 +4521,20 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
+      "description": "See Model configuration",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "ANTHROPIC_DEFAULT_FABLE_MODEL_SUPPORTED_CAPABILITIES",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
       "description": "See Model configuration",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
@@ -4196,6 +4580,20 @@
       "category": "claude-code"
     },
     {
+      "symbol": "ANTHROPIC_DEFAULT_HAIKU_MODEL_SUPPORTED_CAPABILITIES",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "See Model configuration",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "ANTHROPIC_DEFAULT_OPUS_MODEL",
       "type": "env_var",
       "first_seen": "1.0.87",
@@ -4235,6 +4633,20 @@
       "category": "claude-code"
     },
     {
+      "symbol": "ANTHROPIC_DEFAULT_OPUS_MODEL_SUPPORTED_CAPABILITIES",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "See Model configuration",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "ANTHROPIC_DEFAULT_SONNET_MODEL",
       "type": "env_var",
       "first_seen": "1.0.87",
@@ -4268,6 +4680,20 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
+      "description": "See Model configuration",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "ANTHROPIC_DEFAULT_SONNET_MODEL_SUPPORTED_CAPABILITIES",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
       "description": "See Model configuration",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
@@ -4318,6 +4744,19 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "API key for Microsoft Foundry authentication (see Microsoft Foundry)",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "ANTHROPIC_FOUNDRY_AUTH_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.203",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Bearer token for Microsoft Foundry authentication, such as a Microsoft Entra access token. Claude Code sends it as the `Authorization: Bearer` header. Takes precedence over `ANTHROPIC_FOUNDRY_API_KEY` and over the Azure default credential chain. See Microsoft Foundry. Requires Claude Code v2.1.203 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -4711,6 +5150,32 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_AFK_COUNTDOWN_MS",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "How many milliseconds before auto-continue the on-screen countdown appears on an unanswered `AskUserQuestion` dialog. Default `20000` (20 seconds), capped at the auto-continue timeout. Has no effect unless auto-continue is on; see the `askUserQuestionTimeout` setting and `CLAUDE_AFK_TIMEOUT_MS`. Requires Claude Code v2.1.198 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_AFK_TIMEOUT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "How many milliseconds of idle time before an unanswered `AskUserQuestion` dialog auto-continues without you. Auto-continue is off by default; opt in with the `askUserQuestionTimeout` setting. This variable is an override for demos and automated tests: when set, it takes precedence over that setting and turns auto-continue on even when the setting is unset or `never`. Setting `0` doesn't turn the timeout off; it closes the dialog immediately. In v2.1.198 and v2.1.199, auto-continue was on by default with a `60000` (60 seconds) timeout. Requires Claude Code v2.1.198 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_AFTER_LAST_COMPACT",
       "type": "env_var",
       "first_seen": "2.1.40",
@@ -4974,6 +5439,18 @@
       "symbol": "CLAUDE_BG_MEMORY_TOGGLED_OFF",
       "type": "env_var",
       "first_seen": "2.1.147",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_BG_POST_CLEAR_RESPAWN",
+      "type": "env_var",
+      "first_seen": "2.1.193",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -5522,6 +5999,19 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.207",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Time in milliseconds Claude Code waits for the AWS default credential provider chain to produce credentials before the request fails with `AWS default-chain credential resolve timed out` (default: `60000`). Raise it when a step in your chain legitimately needs longer, such as a browser-based SSO sign-in with MFA through a wrapper like `aws-vault`. Applies wherever Claude Code signs with the default chain: Amazon Bedrock, Claude Platform on AWS, and the Mantle endpoint. Requires Claude Code v2.1.207 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_BASE_REF",
       "type": "env_var",
       "first_seen": "2.1.16",
@@ -5603,6 +6093,19 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_BRIDGE_SESSION_ID",
+      "type": "env_var",
+      "first_seen": "2.1.199",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set automatically in Bash tool and hook command subprocesses while the session has an active Remote Control connection, and removed when the connection ends. The value is the session's ID in `session_` form, the same identifier that appears in the session's `claude.ai/code` URL, so a script can link back to the session that ran it. Requires Claude Code v2.1.199 or later. In cloud sessions, read `CLAUDE_CODE_REMOTE_SESSION_ID` instead",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -6055,6 +6558,32 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_BG_EXIT_HANDOFF",
+      "type": "env_var",
+      "first_seen": "2.1.196",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to stop a background session's running background shell commands, dynamic workflows, and, as of v2.1.198, background subagents when the supervisor stops, restarts, or updates that session's process, instead of handing them to the session's next process. Affects only that handoff: backgrounding a session with `←` or `/background` still carries in-flight work over, and `CLAUDE_DISABLE_ADOPT` turns off both. Requires Claude Code v2.1.196 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP",
+      "type": "env_var",
+      "first_seen": "2.1.193",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to stop Claude Code from terminating background shell commands when the operating system reports memory pressure. By default, on macOS and Linux, Claude Code terminates a background shell started in the main session on a memory-pressure signal once the session has been idle for 30 minutes and no turn or subagent is running. Windows has no memory-pressure signal, so this variable has no effect there. Requires Claude Code v2.1.193 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_BUNDLED_SKILLS",
       "type": "env_var",
       "first_seen": "2.1.169",
@@ -6128,6 +6657,19 @@
       "description": "Set to `1` to strip Anthropic-specific `anthropic-beta` request headers and beta tool-schema fields (such as `defer_loading` and `eager_input_streaming`) from API requests. Use this when a proxy gateway rejects requests with errors like \"Unexpected value(s) for the `anthropic-beta` header\" or \"Extra inputs are not permitted\". Standard fields (`name`, `description`, `input_schema`, `cache_control`) are preserved",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_EXPLORE_PLAN_AGENTS",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to disable the built-in Explore and Plan subagents. Claude explores with its search tools or the general-purpose subagent instead, and plan mode reads files directly rather than launching Explore and Plan agents. Custom subagents named `Explore` or `Plan` are unaffected. To remove every built-in subagent type in the Agent SDK or non-interactive mode, use `CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS` instead. Requires Claude Code v2.1.198 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -6245,6 +6787,31 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_MOUSE_CLICKS",
+      "type": "env_var",
+      "first_seen": "2.1.195",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Set to `1` to disable click, drag, and hover handling in fullscreen rendering while keeping mouse-wheel scrolling. Use this when you want wheel scroll to work inside Claude Code but don't want clicks to position the cursor, expand tool output, or open links. `CLAUDE_CODE_DISABLE_MOUSE` takes precedence when both are set. Requires Claude Code v2.1.195 or later",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_NESTED_CHAIN_IDLE",
+      "type": "env_var",
+      "first_seen": "2.1.200",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
       "type": "env_var",
       "first_seen": "0.2.116",
@@ -6268,6 +6835,19 @@
       "description": "Set to `1` to disable the non-streaming fallback when a streaming request fails mid-stream. Streaming errors propagate to the retry layer instead. Useful when a proxy or gateway causes the fallback to produce duplicate tool execution",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_NOTIFICATION_PRESENCE_CHECK",
+      "type": "env_var",
+      "first_seen": "2.1.193",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to send the `PushNotification` tool's desktop notification even while you are typing in or focused on the terminal. By default the tool skips both the desktop notification and the mobile push when it detects recent keyboard activity or terminal focus. This variable disables only that local check, so the server can still suppress the mobile push when it detects that you are active. Requires Claude Code v2.1.193 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -6370,6 +6950,18 @@
       "description": "Set to `1` to disable workflows. Equivalent to the `disableWorkflows` setting",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_WORKING_SYNC",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -6570,6 +7162,18 @@
       "description": "Set to `1` to populate the `/model` picker from your gateway's `/v1/models` endpoint when `ANTHROPIC_BASE_URL` points at an Anthropic-compatible gateway such as LiteLLM, Kong, or an internal proxy. Off by default because gateways backed by a shared API key would otherwise show every user every model the key can access. Discovered models are still filtered by an `availableModels` allowlist the session receives; deliver the list through MDM or a managed settings file, since server-managed delivery is not available on gateway configurations",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_ENABLE_LAUNCH_COMPOSER",
+      "type": "env_var",
+      "first_seen": "2.1.193",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -6780,6 +7384,18 @@
       "description": "Set to `1` to enable agent teams. Agent teams are experimental and disabled by default",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_EXPERIMENTAL_OBSERVER_AGENTS",
+      "type": "env_var",
+      "first_seen": "2.1.200",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -7053,6 +7669,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_FRAME_TIMING_SAMPLE_EVERY",
+      "type": "env_var",
+      "first_seen": "2.1.195",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_GB_BASE_URL",
       "type": "env_var",
       "first_seen": "2.1.64",
@@ -7129,6 +7757,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_GZIP_REQUEST_BODIES",
+      "type": "env_var",
+      "first_seen": "2.1.199",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_HFI_BEARER_TOKEN",
       "type": "env_var",
       "first_seen": "2.1.160",
@@ -7181,6 +7821,18 @@
       "symbol": "CLAUDE_CODE_HOST_AUTH_REFRESH_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "2.1.145",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_HOST_CREDS_FILE",
+      "type": "env_var",
+      "first_seen": "2.1.198",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -7460,6 +8112,18 @@
       "description": "Set to `1` to spawn stdio MCP servers with only a safe baseline environment plus the server's configured `env`, instead of inheriting your shell environment",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -7780,6 +8444,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_PARKED_PERMISSION_WAIT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_PERFETTO_TRACE",
       "type": "env_var",
       "first_seen": "2.1.10",
@@ -7880,6 +8556,18 @@
       "symbol": "CLAUDE_CODE_PLAN_V2_EXPLORE_AGENT_COUNT",
       "type": "env_var",
       "first_seen": "2.0.45",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_PLUGIN_BINARY_ASSETS",
+      "type": "env_var",
+      "first_seen": "2.1.196",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -8038,6 +8726,19 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_PROCESS_WRAPPER",
+      "type": "env_var",
+      "first_seen": "2.1.208",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `CLAUDE_CODE_PROCESS_WRAPPER`: agent view and the background service now honor a corporate launcher by running every Claude Code self-spawn through a required wrapper executable",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -8537,6 +9238,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SHOJI_ENGINE",
+      "type": "env_var",
+      "first_seen": "2.1.193",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SIMPLE",
       "type": "env_var",
       "first_seen": "2.1.48",
@@ -8587,6 +9300,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SKILL_DESC_REFRAME",
+      "type": "env_var",
+      "first_seen": "2.1.196",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SKILL_NAME",
       "type": "env_var",
       "first_seen": "2.1.154",
@@ -8607,6 +9332,19 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "Skip client-side authentication for Claude Platform on AWS, for gateways that sign requests themselves",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SKIP_AWS_CRED_CACHE",
+      "type": "env_var",
+      "first_seen": "2.1.207",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to turn off the in-process cache of credentials resolved from the AWS default credential provider chain, so Claude Code resolves the chain on every API request. With the cache off, an SSO-backed profile requests credentials from IAM Identity Center on every request. See credential caching and resolution timeout. Requires Claude Code v2.1.207 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -8690,6 +9428,18 @@
       "symbol": "CLAUDE_CODE_SKIP_PLUGIN_MCP_SERVERS",
       "type": "env_var",
       "first_seen": "2.1.172",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SKIP_PLUGIN_MCP_SERVERS_EXCEPT",
+      "type": "env_var",
+      "first_seen": "2.1.199",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -8808,6 +9558,18 @@
       "description": "Maximum number of consecutive times a Stop or SubagentStop hook may block the turn from ending before Claude Code overrides it and ends the turn anyway (default: 8). Set to `0` to disable the cap. Raise this if your hook legitimately needs more iterations to resolve",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SUBAGENT_CACHE_EVICT",
+      "type": "env_var",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -9097,6 +9859,19 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_TEAM_TEARDOWN_PARK_TIMEOUT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.206",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Override, in milliseconds, how long a non-interactive session waits at exit for its agent team to finish tearing down. Accepts 1000 to 60000; an out-of-range value is ignored and the default of 10000 applies. Requires Claude Code v2.1.206 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_TEE_SDK_STDOUT",
       "type": "env_var",
       "first_seen": "2.1.139",
@@ -9267,6 +10042,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_TOTAL_TOKENS_REMINDER_BUDGET",
+      "type": "env_var",
+      "first_seen": "2.1.196",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_TUI_JUST_SWITCHED",
       "type": "env_var",
       "first_seen": "2.1.110",
@@ -9388,6 +10175,18 @@
       "description": "Use Microsoft Foundry",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_USE_GATEWAY",
+      "type": "env_var",
+      "first_seen": "2.1.195",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -9672,6 +10471,33 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_DISABLE_ADOPT",
+      "type": "env_var",
+      "first_seen": "2.1.195",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to stop in-flight background work instead of carrying it over when you background a session by pressing `←` or with `/background`. Claude Code asks you to confirm before backgrounding, then stops the tasks that would otherwise carry over. Requires Claude Code v2.1.195 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_EFFORT",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Set automatically in Bash tool subprocesses and hook commands to the active effort level for the turn: `low`, `medium`, `high`, `xhigh`, or `max`. Ultracode is not a distinct level and reports as `xhigh`. Matches the `effort.level` field passed to hooks. Only set when the current model supports the effort parameter",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_ENABLE_BYTE_WATCHDOG",
       "type": "env_var",
       "first_seen": "2.1.105",
@@ -9917,6 +10743,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_PREVIEW_CLASSIFIER_FLOOR",
+      "type": "env_var",
+      "first_seen": "2.1.196",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_PROJECT_DIR",
       "type": "env_var",
       "first_seen": "2.1.139",
@@ -10015,9 +10853,57 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_REMOTE_WORKFLOW_ARGS",
+      "type": "env_var",
+      "first_seen": "2.1.200",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_REMOTE_WORKFLOW_SCRIPT",
+      "type": "env_var",
+      "first_seen": "2.1.200",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_REPL_VARIANT",
       "type": "env_var",
       "first_seen": "2.1.108",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_ACTIVITY_FD",
+      "type": "env_var",
+      "first_seen": "2.1.196",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_DISABLE_AWAITING_ACTION_OVERRIDE",
+      "type": "env_var",
+      "first_seen": "2.1.200",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -10175,6 +11061,18 @@
       "symbol": "CLAUDE_TRUSTED_DEVICE_TOKEN",
       "type": "env_var",
       "first_seen": "2.1.86",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_WORKFLOW_NAME_ONLY",
+      "type": "env_var",
+      "first_seen": "2.1.200",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -11149,6 +12047,19 @@
       "category": "telemetry"
     },
     {
+      "symbol": "OTEL_LOG_ASSISTANT_RESPONSES",
+      "type": "env_var",
+      "first_seen": "2.1.193",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to include the model's response text on `assistant_response` OpenTelemetry log events. When unset, the value of `OTEL_LOG_USER_PROMPTS` is used instead. Set to `0` to keep responses redacted even when `OTEL_LOG_USER_PROMPTS` is set. Requires Claude Code v2.1.193 or later. See Monitoring",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "telemetry"
+    },
+    {
       "symbol": "OTEL_LOG_RAW_API_BODIES",
       "type": "env_var",
       "first_seen": "2.1.111",
@@ -11213,6 +12124,20 @@
       "category": "telemetry"
     },
     {
+      "symbol": "OTEL_METRICS_INCLUDE_ACCOUNT_UUID",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Set to `false` to exclude account UUID from metrics attributes (default: included). See Monitoring",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "telemetry"
+    },
+    {
       "symbol": "OTEL_METRICS_INCLUDE_ENTRYPOINT",
       "type": "env_var",
       "first_seen": "2.1.152",
@@ -11234,6 +12159,34 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "As of v2.1.161, Claude Code attaches `OTEL_RESOURCE_ATTRIBUTES` keys to metric datapoint labels. Set to `false` to exclude them (default: included). See Monitoring",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_SESSION_ID",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Set to `false` to exclude session ID from metrics attributes (default: included). See Monitoring",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_VERSION",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Set to `true` to include Claude Code version in metrics attributes (default: excluded). See Monitoring",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "telemetry"
@@ -11551,6 +12504,20 @@
       "category": "other"
     },
     {
+      "symbol": "VERTEX_REGION_CLAUDE_4_5_OPUS",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Override region for Claude Opus 4.5 when using Google Cloud's Agent Platform",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
       "symbol": "VERTEX_REGION_CLAUDE_4_5_SONNET",
       "type": "env_var",
       "first_seen": "2.0.0",
@@ -11559,6 +12526,34 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "Override region for Claude Sonnet 4.5 when using Google Cloud's Agent Platform",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
+      "symbol": "VERTEX_REGION_CLAUDE_4_6_OPUS",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Override region for Claude Opus 4.6 when using Google Cloud's Agent Platform",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
+      "symbol": "VERTEX_REGION_CLAUDE_4_6_SONNET",
+      "type": "env_var",
+      "first_seen": "2.1.205",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Override region for Claude Sonnet 4.6 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -11585,6 +12580,19 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "Override region for Claude Opus 4.8 when using Google Cloud's Agent Platform. Added in v2.1.154",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
+      "symbol": "VERTEX_REGION_CLAUDE_5_SONNET",
+      "type": "env_var",
+      "first_seen": "2.1.197",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Override region for Claude Sonnet 5 when using Google Cloud's Agent Platform. Added in v2.1.197",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
