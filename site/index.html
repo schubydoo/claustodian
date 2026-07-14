@@ -370,6 +370,10 @@
             <option value="env_var">Env vars</option>
           </select>
         </div>
+        <div id="category-wrap" hidden>
+          <label for="category">Category</label>
+          <select id="category" aria-label="Env var category"></select>
+        </div>
         <div>
           <label for="sort">Sort by</label>
           <select id="sort" aria-label="Sort order">
@@ -414,6 +418,8 @@
       const $version = document.getElementById('version');
       const $sort = document.getElementById('sort');
       const $type = document.getElementById('type');
+      const $category = document.getElementById('category');
+      const $categoryWrap = document.getElementById('category-wrap');
       const $results = document.getElementById('results');
       const $meta = document.getElementById('meta');
       const $status = document.getElementById('status');
@@ -564,13 +570,49 @@
         return li;
       }
 
+      // Build a <select> <option>.
+      function optionEl(value, label) {
+        const o = document.createElement('option');
+        o.value = value;
+        o.textContent = label;
+        return o;
+      }
+
+      // Category applies only to env vars (for flags/commands it just mirrors the
+      // type), so the control is shown only when Type = Env vars, with its options
+      // rebuilt from the current snapshot's env-var categories. Selection is kept if
+      // still present in the new snapshot, else reset to "all".
+      function refreshCategoryControl() {
+        const isEnv = $type.value === 'env_var';
+        $categoryWrap.hidden = !isEnv;
+        if (!isEnv) {
+          $category.value = 'all';
+          return;
+        }
+        const cats = [
+          ...new Set(
+            snapshot.symbols
+              .filter((s) => s.type === 'env_var' && s.category)
+              .map((s) => s.category)
+          ),
+        ].sort();
+        const prev = $category.value;
+        $category.replaceChildren(
+          optionEl('all', 'All categories'),
+          ...cats.map((c) => optionEl(c, c))
+        );
+        $category.value = cats.includes(prev) ? prev : 'all';
+      }
+
       function render() {
         if (!snapshot) return;
         const q = $q.value.trim().toLowerCase();
         const type = $type.value;
+        const category = $category.value;
         const matches = snapshot.symbols.filter(
           (s) =>
             (type === 'all' || s.type === type) &&
+            (category === 'all' || s.category === category) &&
             (!q ||
               s.symbol.toLowerCase().includes(q) ||
               (s.description && s.description.toLowerCase().includes(q)))
@@ -595,6 +637,7 @@
         try {
           snapshot = await getJSON(`${DATA}/versions/${v}.json`);
           $status.textContent = '';
+          refreshCategoryControl();
           render();
         } catch (e) {
           $status.textContent = `Could not load ${v} (${e.message}).`;
@@ -613,17 +656,16 @@
             descTimelines = {};
           }
           $version.replaceChildren(
-            ...index.versions.map((v) => {
-              const o = document.createElement('option');
-              o.value = v;
-              o.textContent = v === index.latest ? `${v} (latest)` : v;
-              return o;
-            })
+            ...index.versions.map((v) => optionEl(v, v === index.latest ? `${v} (latest)` : v))
           );
           $version.value = index.latest;
           $version.addEventListener('change', () => loadVersion($version.value));
           $sort.addEventListener('change', render);
-          $type.addEventListener('change', render);
+          $type.addEventListener('change', () => {
+            refreshCategoryControl();
+            render();
+          });
+          $category.addEventListener('change', render);
           $q.addEventListener('input', render);
           await loadVersion(index.latest);
         } catch (e) {
