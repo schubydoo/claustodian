@@ -388,7 +388,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "System prompt to use for the session  (only works with --print)",
+      "description": "System prompt to use for the session (only works with --print)",
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"

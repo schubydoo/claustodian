@@ -491,7 +491,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Maximum number of thinking tokens.  (only works with --print)",
+      "description": "Maximum number of thinking tokens. (only works with --print)",
       "source_url": null,
       "category": "cli",
       "description_source": "binary"
