@@ -95,8 +95,10 @@
         color: var(--muted);
         margin-bottom: 0.25rem;
       }
+      /* Search spans its own row so the dropdowns sit together on the next line and
+         don't reshuffle when the contextual Category control appears/disappears. */
       #search {
-        flex: 1 1 260px;
+        flex: 1 1 100%;
       }
       input,
       select {
@@ -153,17 +155,31 @@
         border-radius: 10px;
         padding: 0.75rem 0.9rem;
       }
-      /* Section header inserted between type runs when "Group by type" is on. */
+      /* Section header inserted between type runs when "Group by type" is on;
+         its button collapses/expands the group. */
       .group-head {
         margin: 0.5rem 0 0;
+      }
+      .group-head:first-child {
+        margin-top: 0;
+      }
+      .group-head-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        border: 0;
+        padding: 0;
+        background: none;
+        font: inherit;
         font-size: 0.72rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         color: var(--muted);
+        cursor: pointer;
       }
-      .group-head:first-child {
-        margin-top: 0;
+      .group-head-btn:hover {
+        color: var(--fg);
       }
       .row1 {
         display: flex;
@@ -469,6 +485,9 @@
       // `${type}:${symbol}` -> [{from, description}] eras (data/binary-descriptions.json).
       // Best-effort: absent (older deploy, fetch failure) just hides the history UI.
       let descTimelines = {};
+      // Types whose group is collapsed in the "Group by type" view (persists across
+      // re-renders so a collapse survives a filter/sort/version change).
+      const collapsedTypes = new Set();
 
       async function getJSON(path) {
         const res = await fetch(path, { cache: 'no-cache' });
@@ -619,11 +638,22 @@
         return o;
       }
 
-      // A section-header row for the grouped-by-type view.
-      function groupHeader(label, count) {
+      // A clickable section-header row for the grouped-by-type view; its button
+      // toggles the group's collapsed state (▾ expanded / ▸ collapsed).
+      function groupHeader(type, label, count) {
+        const collapsed = collapsedTypes.has(type);
         const li = document.createElement('li');
         li.className = 'group-head';
-        li.textContent = `${label} · ${count}`;
+        const btn = document.createElement('button');
+        btn.className = 'group-head-btn';
+        btn.setAttribute('aria-expanded', String(!collapsed));
+        btn.textContent = `${collapsed ? '▸' : '▾'} ${label} · ${count}`;
+        btn.addEventListener('click', () => {
+          if (collapsedTypes.has(type)) collapsedTypes.delete(type);
+          else collapsedTypes.add(type);
+          render();
+        });
+        li.appendChild(btn);
         return li;
       }
 
@@ -657,11 +687,15 @@
         if (!snapshot) return;
         const q = $q.value.trim().toLowerCase();
         const type = $type.value;
+        // Category applies only to env vars and only when a specific one is chosen.
+        // Otherwise ignore it — the control may be hidden/empty (so its value can be
+        // "", not "all"), which previously filtered everything out on load.
         const category = $category.value;
+        const byCategory = type === 'env_var' && category && category !== 'all';
         const matches = snapshot.symbols.filter(
           (s) =>
             (type === 'all' || s.type === type) &&
-            (category === 'all' || s.category === category) &&
+            (!byCategory || s.category === category) &&
             (!q ||
               s.symbol.toLowerCase().includes(q) ||
               (s.description && s.description.toLowerCase().includes(q)))
@@ -695,8 +729,10 @@
           for (const [t, label] of [...TYPE_GROUPS, ...extra]) {
             const group = matches.filter((s) => s.type === t);
             if (!group.length) continue;
-            nodes.push(groupHeader(label, group.length));
-            for (const s of group) nodes.push(card(s));
+            nodes.push(groupHeader(t, label, group.length));
+            if (!collapsedTypes.has(t)) {
+              for (const s of group) nodes.push(card(s));
+            }
           }
           $results.replaceChildren(...nodes);
         } else {
