@@ -42,6 +42,11 @@ jobs:
       - run: npm run validate
       - name: Generate YAML/TOML exports
         run: npm run generate-exports
+      # Cross-version catalog powering the site's "Search all versions" mode.
+      # Written to data/catalog.json (gitignored) so the assemble step below picks
+      # it up with the rest of data/.
+      - name: Build cross-version catalog
+        run: npm run build-catalog
       - name: Assemble site
         run: |
           mkdir -p _site
