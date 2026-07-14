@@ -31,6 +31,32 @@ describe('distillDescriptions', () => {
     ]);
   });
 
+  it('normalizes whitespace so a cosmetic spacing change is not a new era', () => {
+    const files = [
+      descFile('2.0.2', [{ symbol: '--max-thinking-tokens', type: 'cli_flag', description: 'Max tokens.  (only --print)' }]),
+      descFile('2.1.26', [{ symbol: '--max-thinking-tokens', type: 'cli_flag', description: 'Max tokens. (only --print)' }]),
+      descFile('2.1.32', [{ symbol: '--max-thinking-tokens', type: 'cli_flag', description: '  Max tokens. (only --print)  ' }]),
+    ];
+    // Double-space vs single-space vs padded — all collapse to one normalized era.
+    expect(distillDescriptions(files).descriptions['cli_flag:--max-thinking-tokens']).toEqual([
+      { from: '2.0.2', description: 'Max tokens. (only --print)' },
+    ]);
+  });
+
+  it('preserves newlines/tabs so structurally-distinct eras stay distinct', () => {
+    // Only repeated spaces are cosmetic; a newline/tab is real structure that
+    // cleanDescription keeps, so a description that gains one is a genuine new era
+    // and its multi-line text must not be flattened.
+    const files = [
+      descFile('1.0.0', [{ symbol: '/x', type: 'command', description: 'Modes: fast, slow' }]),
+      descFile('1.1.0', [{ symbol: '/x', type: 'command', description: 'Modes:\n\tfast\n\tslow' }]),
+    ];
+    expect(distillDescriptions(files).descriptions['command:/x']).toEqual([
+      { from: '1.0.0', description: 'Modes: fast, slow' },
+      { from: '1.1.0', description: 'Modes:\n\tfast\n\tslow' },
+    ]);
+  });
+
   it('spans a recall gap with the surrounding era (no spurious era on a miss)', () => {
     const files = [
       descFile('1.0.0', [{ symbol: '/x', type: 'command', description: 'A' }]),

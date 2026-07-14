@@ -612,7 +612,7 @@
     "cli_flag:--max-cost-usd": [
       {
         "from": "2.1.198",
-        "description": "Optional hard cost ceiling; abort and report partial results if hit (exit 2). "
+        "description": "Optional hard cost ceiling; abort and report partial results if hit (exit 2)."
       }
     ],
     "cli_flag:--max-sessions": [
@@ -624,10 +624,6 @@
     "cli_flag:--max-thinking-tokens": [
       {
         "from": "2.0.2",
-        "description": "Maximum number of thinking tokens.  (only works with --print)"
-      },
-      {
-        "from": "2.1.26",
         "description": "Maximum number of thinking tokens. (only works with --print)"
       },
       {
@@ -1016,7 +1012,7 @@
       },
       {
         "from": "0.2.117",
-        "description": "System prompt to use for the session  (only works with --print)"
+        "description": "System prompt to use for the session (only works with --print)"
       },
       {
         "from": "2.0.12",

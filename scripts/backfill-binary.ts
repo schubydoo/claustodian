@@ -127,6 +127,20 @@ const DESC_NOTE =
  * the text changes). A recall gap (a version that missed the symbol) is spanned by
  * the surrounding era — the same version-bounded imprecision as first_seen.
  */
+/**
+ * Collapse runs of repeated spaces and trim the ends. A cosmetic spacing change in
+ * the source (e.g. "Maximum thinking tokens.  (only…" → "…tokens. (only…", a double
+ * space becoming single) is NOT a real description change, so normalizing here stops
+ * it spawning a spurious "duplicate-looking" era. Only repeated SPACES are collapsed
+ * — newlines and tabs are left intact so a genuinely multi-line description (an
+ * indented option list / example that cleanDescription preserves) keeps its structure
+ * and is not flattened or merged with a differently-structured era. cleanDescription
+ * (the extractor) remains the authoritative content filter.
+ */
+function normalizeDescriptionWhitespace(text: string): string {
+  return text.replace(/ {2,}/g, ' ').trim();
+}
+
 export function distillDescriptions(files: BinaryCacheFile[]): BinaryDescriptions {
   const seen = new Map<string, Array<{ version: string; description: string }>>();
   for (const file of files) {
@@ -138,7 +152,7 @@ export function distillDescriptions(files: BinaryCacheFile[]): BinaryDescription
       if (!s.description) continue;
       const key = `${s.type}:${s.symbol}`;
       const arr = seen.get(key) ?? [];
-      arr.push({ version: file.version, description: s.description });
+      arr.push({ version: file.version, description: normalizeDescriptionWhitespace(s.description) });
       seen.set(key, arr);
     }
   }
