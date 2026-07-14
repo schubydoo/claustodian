@@ -95,8 +95,27 @@
         color: var(--muted);
         margin-bottom: 0.25rem;
       }
+      /* Search spans its own row so the dropdowns sit together on the next line and
+         don't reshuffle when the contextual Category control appears/disappears. */
       #search {
-        flex: 1 1 260px;
+        flex: 1 1 100%;
+      }
+      /* "Search all versions" toggle under the search box (overrides the block
+         label + full-width input rules for this inline checkbox). */
+      #search .search-scope {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin: 0.4rem 0 0;
+        font-size: 0.82rem;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      #search .search-scope input {
+        width: auto;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
       }
       input,
       select {
@@ -112,6 +131,28 @@
       select:focus {
         outline: 2px solid var(--accent);
         outline-offset: 1px;
+      }
+      /* The "Group by type" toggle is a checkbox, so undo the full-width input
+         styling above and lay the box + label out inline. */
+      .group-toggle {
+        display: flex;
+        align-items: center;
+      }
+      .group-toggle label {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--fg);
+        white-space: nowrap;
+        cursor: pointer;
+      }
+      .group-toggle input {
+        width: auto;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
       }
       #meta {
         color: var(--muted);
@@ -130,6 +171,32 @@
         background: var(--card);
         border-radius: 10px;
         padding: 0.75rem 0.9rem;
+      }
+      /* Section header inserted between type runs when "Group by type" is on;
+         its button collapses/expands the group. */
+      .group-head {
+        margin: 0.5rem 0 0;
+      }
+      .group-head:first-child {
+        margin-top: 0;
+      }
+      .group-head-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        border: 0;
+        padding: 0;
+        background: none;
+        font: inherit;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .group-head-btn:hover {
+        color: var(--fg);
       }
       .row1 {
         display: flex;
@@ -183,6 +250,20 @@
         margin: 0.4rem 0 0;
         color: var(--fg);
         font-size: 0.92rem;
+      }
+      /* "view at <version>" link shown on cards in the all-versions search view. */
+      .jump-link {
+        margin: 0.45rem 0 0;
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--accent);
+        font: inherit;
+        font-size: 0.78rem;
+        cursor: pointer;
+      }
+      .jump-link:hover {
+        text-decoration: underline;
       }
       /* first_seen chip — confidence is visual weight: solid = confirmed,
          dashed + muted = estimated (an upper bound; see the footer legend). */
@@ -246,7 +327,10 @@
         color: color-mix(in srgb, var(--warn) 70%, var(--fg));
       }
       .deprecated .lbl {
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
         font-size: 0.6rem;
         font-weight: 700;
         text-transform: uppercase;
@@ -353,10 +437,42 @@
             placeholder="e.g. --safe-mode, CLAUDE_CODE, /rename"
             autocomplete="off"
           />
+          <label class="search-scope" for="all-versions">
+            <input type="checkbox" id="all-versions" />
+            Search all versions (include removed)
+          </label>
         </div>
         <div>
           <label for="version">As of version</label>
           <select id="version" aria-label="Claude Code version"></select>
+        </div>
+        <div>
+          <label for="type">Type</label>
+          <select id="type" aria-label="Symbol type">
+            <option value="all">All types</option>
+            <option value="cli_flag">CLI flags</option>
+            <option value="command">Commands</option>
+            <option value="env_var">Env vars</option>
+          </select>
+        </div>
+        <div id="category-wrap" hidden>
+          <label for="category">Category</label>
+          <select id="category" aria-label="Env var category"></select>
+        </div>
+        <div>
+          <label for="sort">Sort by</label>
+          <select id="sort" aria-label="Sort order">
+            <option value="alpha">Alphabetical (A–Z)</option>
+            <option value="alpha-desc">Alphabetical (Z–A)</option>
+            <option value="oldest">Since — oldest first</option>
+            <option value="newest">Since — newest first</option>
+          </select>
+        </div>
+        <div class="group-toggle">
+          <label for="group">
+            <input type="checkbox" id="group" />
+            Group by type
+          </label>
         </div>
       </div>
 
@@ -370,8 +486,8 @@
           version Claustodian observed a symbol; it's available in any version Y where
           <code>first_seen &le; Y</code> and it hasn't been removed. A dashed
           <span class="seen seen--est"><span class="lbl">since</span>&le;X</span> chip marks an
-          <em>estimated</em> <code>first_seen</code> — an upper bound from an incidental mention or a
-          doc with no stated introduction version, so the true version may be earlier (the binary
+          <em>estimated</em> <code>first_seen</code> — an upper bound from an incidental mention or
+          a doc with no stated introduction version, so the true version may be earlier (the binary
           lane will pin it). Solid chips are confirmed. Descriptions come from Anthropic's official
           docs where available.
         </p>
@@ -391,6 +507,12 @@
       const DATA = 'data';
       const $q = document.getElementById('q');
       const $version = document.getElementById('version');
+      const $sort = document.getElementById('sort');
+      const $type = document.getElementById('type');
+      const $category = document.getElementById('category');
+      const $categoryWrap = document.getElementById('category-wrap');
+      const $group = document.getElementById('group');
+      const $allVersions = document.getElementById('all-versions');
       const $results = document.getElementById('results');
       const $meta = document.getElementById('meta');
       const $status = document.getElementById('status');
@@ -399,6 +521,12 @@
       // `${type}:${symbol}` -> [{from, description}] eras (data/binary-descriptions.json).
       // Best-effort: absent (older deploy, fetch failure) just hides the history UI.
       let descTimelines = {};
+      // Types whose group is collapsed in the "Group by type" view (persists across
+      // re-renders so a collapse survives a filter/sort/version change).
+      const collapsedTypes = new Set();
+      // Cross-version catalog (every symbol ever, with lifecycle + last_seen), lazily
+      // fetched the first time "Search all versions" is enabled. null until loaded.
+      let catalog = null;
 
       async function getJSON(path) {
         const res = await fetch(path, { cache: 'no-cache' });
@@ -406,14 +534,18 @@
         return res.json();
       }
 
-      // a <= b for "X.Y.Z" versions, compared numerically per segment.
-      function verLTE(a, b) {
+      // Compare "X.Y.Z" versions numerically per segment: <0, 0, or >0.
+      function cmpVersions(a, b) {
         const pa = a.split('.').map(Number);
         const pb = b.split('.').map(Number);
         for (let i = 0; i < 3; i++) {
-          if (pa[i] !== pb[i]) return pa[i] < pb[i];
+          if (pa[i] !== pb[i]) return pa[i] - pb[i];
         }
-        return true;
+        return 0;
+      }
+      // a <= b for "X.Y.Z" versions.
+      function verLTE(a, b) {
+        return cmpVersions(a, b) <= 0;
       }
 
       function typeBadge(type) {
@@ -485,7 +617,11 @@
           sym.description &&
           (eras.length === 0 || eras[eras.length - 1].description !== sym.description);
         if (appendedCurrent) {
-          eras.push({ current: true, source: sym.description_source, description: sym.description });
+          eras.push({
+            current: true,
+            source: sym.description_source,
+            description: sym.description,
+          });
         }
         if (eras.length > 1) {
           const label = (open) =>
@@ -533,17 +669,149 @@
         return li;
       }
 
+      // Build a <select> <option>.
+      function optionEl(value, label) {
+        const o = document.createElement('option');
+        o.value = value;
+        o.textContent = label;
+        return o;
+      }
+
+      // A clickable section-header row for the grouped-by-type view; its button
+      // toggles the group's collapsed state (▾ expanded / ▸ collapsed).
+      function groupHeader(type, label, count) {
+        const collapsed = collapsedTypes.has(type);
+        const li = document.createElement('li');
+        li.className = 'group-head';
+        const btn = document.createElement('button');
+        btn.className = 'group-head-btn';
+        btn.setAttribute('aria-expanded', String(!collapsed));
+        btn.textContent = `${collapsed ? '▸' : '▾'} ${label} · ${count}`;
+        btn.addEventListener('click', () => {
+          if (collapsedTypes.has(type)) collapsedTypes.delete(type);
+          else collapsedTypes.add(type);
+          render();
+        });
+        li.appendChild(btn);
+        return li;
+      }
+
+      // The symbol list being searched: the whole cross-version catalog when
+      // "Search all versions" is on (and loaded), else the selected snapshot.
+      function activeSource() {
+        return $allVersions.checked && catalog ? catalog : snapshot ? snapshot.symbols : [];
+      }
+
+      // Renders a result card; in all-versions mode it appends a "view at <version>"
+      // link that jumps to the newest version where the symbol still existed.
+      function resultCard(sym) {
+        const li = card(sym);
+        if ($allVersions.checked && catalog && sym.last_seen) {
+          const jump = document.createElement('button');
+          jump.className = 'jump-link';
+          jump.textContent = `view at ${sym.last_seen} →`;
+          jump.title = `Open ${sym.last_seen} — the newest version where ${sym.symbol} existed`;
+          jump.addEventListener('click', () => {
+            $allVersions.checked = false;
+            $version.disabled = false;
+            $version.value = sym.last_seen;
+            loadVersion(sym.last_seen);
+          });
+          li.appendChild(jump);
+        }
+        return li;
+      }
+
+      // Category applies only to env vars (for flags/commands it just mirrors the
+      // type), so the control is shown only when Type = Env vars, with its options
+      // rebuilt from the active source's env-var categories. Selection is kept if
+      // still present, else reset to "all".
+      function refreshCategoryControl() {
+        const isEnv = $type.value === 'env_var';
+        $categoryWrap.hidden = !isEnv;
+        if (!isEnv) {
+          $category.value = 'all';
+          return;
+        }
+        const cats = [
+          ...new Set(
+            activeSource()
+              .filter((s) => s.type === 'env_var' && s.category)
+              .map((s) => s.category)
+          ),
+        ].sort();
+        const prev = $category.value;
+        $category.replaceChildren(
+          optionEl('all', 'All categories'),
+          ...cats.map((c) => optionEl(c, c))
+        );
+        $category.value = cats.includes(prev) ? prev : 'all';
+      }
+
       function render() {
         if (!snapshot) return;
         const q = $q.value.trim().toLowerCase();
-        const matches = snapshot.symbols.filter(
+        const type = $type.value;
+        // Category applies only to env vars and only when a specific one is chosen.
+        // Otherwise ignore it — the control may be hidden/empty (so its value can be
+        // "", not "all"), which previously filtered everything out on load.
+        const category = $category.value;
+        const byCategory = type === 'env_var' && category && category !== 'all';
+        // Search the whole cross-version catalog when "Search all versions" is on,
+        // else just the selected snapshot.
+        const useCatalog = $allVersions.checked && catalog;
+        const matches = activeSource().filter(
           (s) =>
-            !q ||
-            s.symbol.toLowerCase().includes(q) ||
-            (s.description && s.description.toLowerCase().includes(q))
+            (type === 'all' || s.type === type) &&
+            (!byCategory || s.category === category) &&
+            (!q ||
+              s.symbol.toLowerCase().includes(q) ||
+              (s.description && s.description.toLowerCase().includes(q)))
         );
-        $results.replaceChildren(...matches.map(card));
-        $meta.textContent = `${matches.length} of ${snapshot.symbols.length} symbols as of ${snapshot.claudeCodeVersion}`;
+        // Sort explicitly by symbol so every mode has a defined order rather than
+        // leaning on the source's native ordering — including the tie-break for
+        // equal-first_seen rows, which must be alphabetical by symbol regardless of
+        // whether the source happened to be grouped by type.
+        const bySymbol = (a, b) => (a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0);
+        const sort = $sort.value;
+        if (sort === 'alpha') {
+          matches.sort(bySymbol);
+        } else if (sort === 'alpha-desc') {
+          matches.sort((a, b) => -bySymbol(a, b));
+        } else if (sort === 'oldest' || sort === 'newest') {
+          const dir = sort === 'oldest' ? 1 : -1;
+          matches.sort((a, b) => dir * cmpVersions(a.first_seen, b.first_seen) || bySymbol(a, b));
+        }
+        if ($group.checked) {
+          // Group by type: sections in a fixed type order, with the chosen sort
+          // applied within each (matches is already sorted, and bucketing preserves
+          // that order). Any unlisted type is appended so nothing is ever dropped.
+          const TYPE_GROUPS = [
+            ['cli_flag', 'CLI flags'],
+            ['command', 'Commands'],
+            ['env_var', 'Env vars'],
+          ];
+          const known = new Set(TYPE_GROUPS.map(([t]) => t));
+          const extra = [...new Set(matches.map((s) => s.type))]
+            .filter((t) => !known.has(t))
+            .sort()
+            .map((t) => [t, t]);
+          const nodes = [];
+          for (const [t, label] of [...TYPE_GROUPS, ...extra]) {
+            const group = matches.filter((s) => s.type === t);
+            if (!group.length) continue;
+            nodes.push(groupHeader(t, label, group.length));
+            if (!collapsedTypes.has(t)) {
+              for (const s of group) nodes.push(resultCard(s));
+            }
+          }
+          $results.replaceChildren(...nodes);
+        } else {
+          $results.replaceChildren(...matches.map(resultCard));
+        }
+        $meta.textContent = useCatalog
+          ? `${matches.length} of ${catalog.length} symbols across all versions`
+          : `${matches.length} of ${snapshot.symbols.length} symbols as of ${snapshot.claudeCodeVersion}`;
       }
 
       async function loadVersion(v) {
@@ -551,6 +819,7 @@
         try {
           snapshot = await getJSON(`${DATA}/versions/${v}.json`);
           $status.textContent = '';
+          refreshCategoryControl();
           render();
         } catch (e) {
           $status.textContent = `Could not load ${v} (${e.message}).`;
@@ -569,16 +838,36 @@
             descTimelines = {};
           }
           $version.replaceChildren(
-            ...index.versions.map((v) => {
-              const o = document.createElement('option');
-              o.value = v;
-              o.textContent = v === index.latest ? `${v} (latest)` : v;
-              return o;
-            })
+            ...index.versions.map((v) => optionEl(v, v === index.latest ? `${v} (latest)` : v))
           );
           $version.value = index.latest;
           $version.addEventListener('change', () => loadVersion($version.value));
+          $sort.addEventListener('change', render);
+          $type.addEventListener('change', () => {
+            refreshCategoryControl();
+            render();
+          });
+          $category.addEventListener('change', render);
+          $group.addEventListener('change', render);
           $q.addEventListener('input', render);
+          $allVersions.addEventListener('change', async () => {
+            // Lazy-load the catalog the first time; on failure, revert the toggle.
+            if ($allVersions.checked && !catalog) {
+              $status.textContent = 'Loading the all-versions index…';
+              try {
+                const c = await getJSON(`${DATA}/catalog.json`);
+                catalog = c.symbols || [];
+                $status.textContent = '';
+              } catch (e) {
+                $status.textContent = `Could not load the all-versions index (${e.message}).`;
+                $allVersions.checked = false;
+              }
+            }
+            // The version picker doesn't apply to a cross-version search.
+            $version.disabled = $allVersions.checked;
+            refreshCategoryControl();
+            render();
+          });
           await loadVersion(index.latest);
         } catch (e) {
           $status.textContent = `Failed to load the dataset (${e.message}). If viewing locally, serve the folder over HTTP (e.g. "npx serve").`;

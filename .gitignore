@@ -15,6 +15,8 @@ test-report.junit.xml
 # Generated data exports (built in CI from committed JSON, never hand-edited)
 data/**/*.yaml
 data/**/*.toml
+# Cross-version catalog (built at deploy time from data/versions/*.json)
+data/catalog.json
 
 # Python bytecode (from running examples/*.py)
 __pycache__/

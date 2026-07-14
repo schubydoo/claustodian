@@ -41,7 +41,8 @@
     "find-removals": "tsx scripts/find-removals.ts",
     "diff": "tsx scripts/diff-snapshots.ts",
     "coverage": "tsx scripts/check-coverage.ts",
-    "generate-exports": "tsx scripts/generate-exports.ts"
+    "generate-exports": "tsx scripts/generate-exports.ts",
+    "build-catalog": "tsx scripts/build-catalog.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
