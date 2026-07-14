@@ -128,15 +128,17 @@ const DESC_NOTE =
  * the surrounding era — the same version-bounded imprecision as first_seen.
  */
 /**
- * Collapse internal whitespace runs and trim. A cosmetic spacing change in the
- * source (e.g. "Maximum thinking tokens.  (only…" → "…tokens. (only…", a double
- * space becoming single) is NOT a real description change, so normalizing here
- * stops it spawning a spurious "duplicate-looking" era. cleanDescription (the
- * extractor) remains the authoritative content filter; this only tidies the
- * whitespace runs a minified bundle can leave behind.
+ * Collapse runs of repeated spaces and trim the ends. A cosmetic spacing change in
+ * the source (e.g. "Maximum thinking tokens.  (only…" → "…tokens. (only…", a double
+ * space becoming single) is NOT a real description change, so normalizing here stops
+ * it spawning a spurious "duplicate-looking" era. Only repeated SPACES are collapsed
+ * — newlines and tabs are left intact so a genuinely multi-line description (an
+ * indented option list / example that cleanDescription preserves) keeps its structure
+ * and is not flattened or merged with a differently-structured era. cleanDescription
+ * (the extractor) remains the authoritative content filter.
  */
 function normalizeDescriptionWhitespace(text: string): string {
-  return text.replace(/\s+/g, ' ').trim();
+  return text.replace(/ {2,}/g, ' ').trim();
 }
 
 export function distillDescriptions(files: BinaryCacheFile[]): BinaryDescriptions {

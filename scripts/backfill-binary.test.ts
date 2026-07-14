@@ -43,6 +43,20 @@ describe('distillDescriptions', () => {
     ]);
   });
 
+  it('preserves newlines/tabs so structurally-distinct eras stay distinct', () => {
+    // Only repeated spaces are cosmetic; a newline/tab is real structure that
+    // cleanDescription keeps, so a description that gains one is a genuine new era
+    // and its multi-line text must not be flattened.
+    const files = [
+      descFile('1.0.0', [{ symbol: '/x', type: 'command', description: 'Modes: fast, slow' }]),
+      descFile('1.1.0', [{ symbol: '/x', type: 'command', description: 'Modes:\n\tfast\n\tslow' }]),
+    ];
+    expect(distillDescriptions(files).descriptions['command:/x']).toEqual([
+      { from: '1.0.0', description: 'Modes: fast, slow' },
+      { from: '1.1.0', description: 'Modes:\n\tfast\n\tslow' },
+    ]);
+  });
+
   it('spans a recall gap with the surrounding era (no spurious era on a miss)', () => {
     const files = [
       descFile('1.0.0', [{ symbol: '/x', type: 'command', description: 'A' }]),

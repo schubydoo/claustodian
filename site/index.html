@@ -480,11 +480,11 @@
         const baseEras = descTimelines[`${sym.type}:${sym.symbol}`] || [];
         const eras = baseEras.slice();
         const curated = sym.description_source && sym.description_source !== 'binary';
-        if (
+        const appendedCurrent =
           curated &&
           sym.description &&
-          (eras.length === 0 || eras[eras.length - 1].description !== sym.description)
-        ) {
+          (eras.length === 0 || eras[eras.length - 1].description !== sym.description);
+        if (appendedCurrent) {
           eras.push({ current: true, source: sym.description_source, description: sym.description });
         }
         if (eras.length > 1) {
@@ -497,11 +497,17 @@
           const ul = document.createElement('ul');
           ul.className = 'hist';
           ul.hidden = true;
-          // Highlight the era whose text is actually being shown (each era's text is
-          // distinct, so an exact match is unambiguous). Fall back to the newest era
-          // at/before the selected version if the shown string isn't an exact match.
-          let activeIdx = eras.findIndex((era) => era.description === sym.description);
-          if (activeIdx === -1) {
+          // Highlight the era whose text is shown for the selected version. When the
+          // curated current era was appended, that row holds the shown text and is
+          // active. Otherwise the shown text is a binary era: pick the newest era
+          // at/before the selected version — a version comparison, not a text match,
+          // so a description that repeats across non-adjacent eras still resolves to
+          // the era actually in effect (a text match would wrongly pick the first).
+          let activeIdx;
+          if (appendedCurrent) {
+            activeIdx = eras.length - 1;
+          } else {
+            activeIdx = -1;
             eras.forEach((era, i) => {
               if (era.from && verLTE(era.from, snapshot.claudeCodeVersion)) activeIdx = i;
             });
