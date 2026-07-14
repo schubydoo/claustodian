@@ -31,6 +31,18 @@ describe('distillDescriptions', () => {
     ]);
   });
 
+  it('normalizes whitespace so a cosmetic spacing change is not a new era', () => {
+    const files = [
+      descFile('2.0.2', [{ symbol: '--max-thinking-tokens', type: 'cli_flag', description: 'Max tokens.  (only --print)' }]),
+      descFile('2.1.26', [{ symbol: '--max-thinking-tokens', type: 'cli_flag', description: 'Max tokens. (only --print)' }]),
+      descFile('2.1.32', [{ symbol: '--max-thinking-tokens', type: 'cli_flag', description: '  Max tokens. (only --print)  ' }]),
+    ];
+    // Double-space vs single-space vs padded — all collapse to one normalized era.
+    expect(distillDescriptions(files).descriptions['cli_flag:--max-thinking-tokens']).toEqual([
+      { from: '2.0.2', description: 'Max tokens. (only --print)' },
+    ]);
+  });
+
   it('spans a recall gap with the surrounding era (no spurious era on a miss)', () => {
     const files = [
       descFile('1.0.0', [{ symbol: '/x', type: 'command', description: 'A' }]),

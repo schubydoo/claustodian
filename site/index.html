@@ -470,10 +470,24 @@
           li.appendChild(d);
         }
 
-        // Description history: reveal how the description changed across versions
-        // (only when it actually changed — more than one era in the timeline).
-        const eras = descTimelines[`${sym.type}:${sym.symbol}`];
-        if (eras && eras.length > 1) {
+        // Description history: reveal how the description changed across versions.
+        // The timeline comes from the binary observations (binary-descriptions.json),
+        // but the description shown above may instead be a curated docs/changelog
+        // string (description_source !== 'binary'). When it is, append it as a final
+        // "current" era so the history includes the very text being displayed rather
+        // than ending on a stale binary observation. slice() so we never mutate the
+        // cached timeline (render() runs on every keystroke).
+        const baseEras = descTimelines[`${sym.type}:${sym.symbol}`] || [];
+        const eras = baseEras.slice();
+        const curated = sym.description_source && sym.description_source !== 'binary';
+        if (
+          curated &&
+          sym.description &&
+          (eras.length === 0 || eras[eras.length - 1].description !== sym.description)
+        ) {
+          eras.push({ current: true, source: sym.description_source, description: sym.description });
+        }
+        if (eras.length > 1) {
           const label = (open) =>
             `${open ? '▾' : '▸'} description history · ${eras.length} versions`;
           const btn = document.createElement('button');
@@ -483,19 +497,21 @@
           const ul = document.createElement('ul');
           ul.className = 'hist';
           ul.hidden = true;
-          // Highlight the era in effect at the SELECTED version (the one whose text
-          // the card is showing), not always the newest — so an older snapshot marks
-          // the era that was current then. -1 if the symbol predates its first era.
-          let activeIdx = -1;
-          eras.forEach((era, i) => {
-            if (verLTE(era.from, snapshot.claudeCodeVersion)) activeIdx = i;
-          });
+          // Highlight the era whose text is actually being shown (each era's text is
+          // distinct, so an exact match is unambiguous). Fall back to the newest era
+          // at/before the selected version if the shown string isn't an exact match.
+          let activeIdx = eras.findIndex((era) => era.description === sym.description);
+          if (activeIdx === -1) {
+            eras.forEach((era, i) => {
+              if (era.from && verLTE(era.from, snapshot.claudeCodeVersion)) activeIdx = i;
+            });
+          }
           eras.forEach((era, i) => {
             const item = document.createElement('li');
             if (i === activeIdx) item.className = 'now';
             const ver = document.createElement('span');
             ver.className = 'ver';
-            ver.textContent = `since ${era.from}`;
+            ver.textContent = era.current ? `current · ${era.source}` : `since ${era.from}`;
             const txt = document.createElement('span');
             txt.textContent = era.description;
             item.append(ver, txt);
