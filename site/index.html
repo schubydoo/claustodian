@@ -113,6 +113,28 @@
         outline: 2px solid var(--accent);
         outline-offset: 1px;
       }
+      /* The "Group by type" toggle is a checkbox, so undo the full-width input
+         styling above and lay the box + label out inline. */
+      .group-toggle {
+        display: flex;
+        align-items: center;
+      }
+      .group-toggle label {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--fg);
+        white-space: nowrap;
+        cursor: pointer;
+      }
+      .group-toggle input {
+        width: auto;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+      }
       #meta {
         color: var(--muted);
         font-size: 0.85rem;
@@ -130,6 +152,18 @@
         background: var(--card);
         border-radius: 10px;
         padding: 0.75rem 0.9rem;
+      }
+      /* Section header inserted between type runs when "Group by type" is on. */
+      .group-head {
+        margin: 0.5rem 0 0;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+      }
+      .group-head:first-child {
+        margin-top: 0;
       }
       .row1 {
         display: flex;
@@ -383,6 +417,12 @@
             <option value="newest">Since — newest first</option>
           </select>
         </div>
+        <div class="group-toggle">
+          <label for="group">
+            <input type="checkbox" id="group" />
+            Group by type
+          </label>
+        </div>
       </div>
 
       <p id="meta" aria-live="polite"></p>
@@ -420,6 +460,7 @@
       const $type = document.getElementById('type');
       const $category = document.getElementById('category');
       const $categoryWrap = document.getElementById('category-wrap');
+      const $group = document.getElementById('group');
       const $results = document.getElementById('results');
       const $meta = document.getElementById('meta');
       const $status = document.getElementById('status');
@@ -578,6 +619,14 @@
         return o;
       }
 
+      // A section-header row for the grouped-by-type view.
+      function groupHeader(label, count) {
+        const li = document.createElement('li');
+        li.className = 'group-head';
+        li.textContent = `${label} · ${count}`;
+        return li;
+      }
+
       // Category applies only to env vars (for flags/commands it just mirrors the
       // type), so the control is shown only when Type = Env vars, with its options
       // rebuilt from the current snapshot's env-var categories. Selection is kept if
@@ -628,7 +677,31 @@
           const dir = sort === 'oldest' ? 1 : -1;
           matches.sort((a, b) => dir * cmpVersions(a.first_seen, b.first_seen));
         }
-        $results.replaceChildren(...matches.map(card));
+        if ($group.checked) {
+          // Group by type: sections in a fixed type order, with the chosen sort
+          // applied within each (matches is already sorted, and bucketing preserves
+          // that order). Any unlisted type is appended so nothing is ever dropped.
+          const TYPE_GROUPS = [
+            ['cli_flag', 'CLI flags'],
+            ['command', 'Commands'],
+            ['env_var', 'Env vars'],
+          ];
+          const known = new Set(TYPE_GROUPS.map(([t]) => t));
+          const extra = [...new Set(matches.map((s) => s.type))]
+            .filter((t) => !known.has(t))
+            .sort()
+            .map((t) => [t, t]);
+          const nodes = [];
+          for (const [t, label] of [...TYPE_GROUPS, ...extra]) {
+            const group = matches.filter((s) => s.type === t);
+            if (!group.length) continue;
+            nodes.push(groupHeader(label, group.length));
+            for (const s of group) nodes.push(card(s));
+          }
+          $results.replaceChildren(...nodes);
+        } else {
+          $results.replaceChildren(...matches.map(card));
+        }
         $meta.textContent = `${matches.length} of ${snapshot.symbols.length} symbols as of ${snapshot.claudeCodeVersion}`;
       }
 
@@ -666,6 +739,7 @@
             render();
           });
           $category.addEventListener('change', render);
+          $group.addEventListener('change', render);
           $q.addEventListener('input', render);
           await loadVersion(index.latest);
         } catch (e) {
