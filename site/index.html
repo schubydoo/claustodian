@@ -362,9 +362,19 @@
           <select id="version" aria-label="Claude Code version"></select>
         </div>
         <div>
+          <label for="type">Type</label>
+          <select id="type" aria-label="Symbol type">
+            <option value="all">All types</option>
+            <option value="cli_flag">CLI flags</option>
+            <option value="command">Commands</option>
+            <option value="env_var">Env vars</option>
+          </select>
+        </div>
+        <div>
           <label for="sort">Sort by</label>
           <select id="sort" aria-label="Sort order">
-            <option value="alpha">Alphabetical</option>
+            <option value="alpha">Alphabetical (A–Z)</option>
+            <option value="alpha-desc">Alphabetical (Z–A)</option>
             <option value="oldest">Since — oldest first</option>
             <option value="newest">Since — newest first</option>
           </select>
@@ -403,6 +413,7 @@
       const $q = document.getElementById('q');
       const $version = document.getElementById('version');
       const $sort = document.getElementById('sort');
+      const $type = document.getElementById('type');
       const $results = document.getElementById('results');
       const $meta = document.getElementById('meta');
       const $status = document.getElementById('status');
@@ -556,17 +567,22 @@
       function render() {
         if (!snapshot) return;
         const q = $q.value.trim().toLowerCase();
+        const type = $type.value;
         const matches = snapshot.symbols.filter(
           (s) =>
-            !q ||
-            s.symbol.toLowerCase().includes(q) ||
-            (s.description && s.description.toLowerCase().includes(q))
+            (type === 'all' || s.type === type) &&
+            (!q ||
+              s.symbol.toLowerCase().includes(q) ||
+              (s.description && s.description.toLowerCase().includes(q)))
         );
-        // The snapshot's native order is alphabetical by symbol, so "alpha" needs no
-        // re-sort. "oldest"/"newest" sort by first_seen; Array.sort is stable, so
-        // symbols sharing a first_seen keep their alphabetical order as the tie-break.
+        // "alpha" (A–Z) is the snapshot's native order, so it needs no re-sort.
+        // The others sort in place (matches is already a fresh filtered array).
+        // Array.sort is stable and the list starts A–Z, so symbols sharing a
+        // first_seen keep their alphabetical order as the tie-break.
         const sort = $sort.value;
-        if (sort === 'oldest' || sort === 'newest') {
+        if (sort === 'alpha-desc') {
+          matches.sort((a, b) => (a.symbol < b.symbol ? 1 : a.symbol > b.symbol ? -1 : 0));
+        } else if (sort === 'oldest' || sort === 'newest') {
           const dir = sort === 'oldest' ? 1 : -1;
           matches.sort((a, b) => dir * cmpVersions(a.first_seen, b.first_seen));
         }
@@ -607,6 +623,7 @@
           $version.value = index.latest;
           $version.addEventListener('change', () => loadVersion($version.value));
           $sort.addEventListener('change', render);
+          $type.addEventListener('change', render);
           $q.addEventListener('input', render);
           await loadVersion(index.latest);
         } catch (e) {
