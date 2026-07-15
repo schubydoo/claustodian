@@ -581,7 +581,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "View the changelog in an interactive version picker. Select a specific version to see its release notes, or choose to show all versions",
+      "description": "View the changelog in an interactive version picker. Select a specific version to see its release notes, or choose to show all versions. The notes appear in your transcript without entering the conversation Claude sees. Before v2.1.208, the viewed notes entered the conversation, including the entire changelog when showing all versions",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
