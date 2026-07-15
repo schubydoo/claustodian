@@ -1102,8 +1102,8 @@
     {
       "symbol": "/release-notes",
       "type": "command",
-      "description": "View the changelog in an interactive version picker. Select a specific version to see its release notes, or choose to show all versions",
-      "doc_min_version": null,
+      "description": "View the changelog in an interactive version picker. Select a specific version to see its release notes, or choose to show all versions. The notes appear in your transcript without entering the conversation Claude sees. Before v2.1.208, the viewed notes entered the conversation, including the entire changelog when showing all versions",
+      "doc_min_version": "2.1.208",
       "doc_page": "commands"
     },
     {
@@ -1137,7 +1137,7 @@
     {
       "symbol": "/resume",
       "type": "command",
-      "description": "Resume a conversation by ID or name, or open the session picker. As of v2.1.144, background sessions appear in the picker marked with `bg`. Alias: `/continue`",
+      "description": "Resume a conversation by ID or name, or open the session picker. As of v2.1.144, background sessions appear in the picker marked with `bg`; one that is still running can't be resumed here, so attach to it from `claude agents` or stop it there first. Alias: `/continue`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1263,7 +1263,7 @@
     {
       "symbol": "/tasks",
       "type": "command",
-      "description": "View and manage everything running in the background. Also available as `/bashes`",
+      "description": "View and manage background work in the current session, including subagents that have finished. Also available as `/bashes`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1319,7 +1319,7 @@
     {
       "symbol": "/upgrade",
       "type": "command",
-      "description": "Open the upgrade page to switch to a higher plan tier",
+      "description": "Open the upgrade page in your browser to switch to a higher plan tier. When the browser fails to open, the command shows a sign-in prompt without printing the URL",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1975,6 +1975,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_BEDROCK_CONTENT_TYPE_GUARD",
+      "type": "env_var",
+      "description": "Set to `1` to skip the check that an Amazon Bedrock streaming response carries the `application/vnd.amazon.eventstream` content-type. Without this variable, a response with a different content-type fails with an error naming that content-type, which means a gateway or proxy is transforming the response. Set it only when the gateway rewrites the `Content-Type` header but passes the binary event-stream body through unmodified; if the body itself was transformed, requests fail with `Truncated event message received` instead. Requires Claude Code v2.1.208 or later",
+      "doc_min_version": "2.1.208",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_BG_EXIT_HANDOFF",
       "type": "env_var",
       "description": "Set to `1` to stop a background session's running background shell commands, dynamic workflows, and, as of v2.1.198, background subagents when the supervisor stops, restarts, or updates that session's process, instead of handing them to the session's next process. Affects only that handoff: backgrounding a session with `←` or `/background` still carries in-flight work over, and `CLAUDE_DISABLE_ADOPT` turns off both. Requires Claude Code v2.1.196 or later",
@@ -2521,6 +2528,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_PROCESS_WRAPPER",
+      "type": "env_var",
+      "description": "Launch the processes Claude Code starts from its own binary through a wrapper executable, given as an argv prefix such as `/opt/corp/launcher`. Covers the background service that hosts agent view sessions, every session it spawns, and the relaunch Claude Code performs of itself to finish installing an update. The first token must be the absolute path of an executable that ends by running `exec \"$@\"`, and most launchers are that single path. The value is an argument list, not a shell command: whitespace separates tokens, double quotes group a path that contains spaces, and a value that starts with `` is read as a JSON string array. Set it in the `env` block of user or [managed settings, not as a shell export, so the detached background service inherits it; project and local settings can't set it. The VS Code extension configures its own launcher separately through its `claudeProcessWrapper` setting. Ignored on Windows. `CLAUDE_CODE_SHELL_PREFIX` is a separate control: it wraps the shell commands Claude runs as a single quoted string, while this variable wraps Claude Code's own processes as an argv prefix. See Run Claude Code behind a corporate launcher",
+      "doc_min_version": "2.1.208",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_PROPAGATE_TRACEPARENT",
       "type": "env_var",
       "description": "Set to `1` to propagate W3C trace context when `ANTHROPIC_BASE_URL` points at a custom proxy. Propagation covers the `traceparent` header on model and HTTP MCP requests and the `TRACEPARENT` environment variable for Bash, PowerShell, and hook subprocesses. By default, propagation is enabled only when connected directly to the Anthropic API. Added in v2.1.152. See Traces (beta)",
@@ -2883,6 +2897,27 @@
       "description": "Path to a shell script whose contents Claude Code runs before each Bash command in the same shell process, so exports in the file are visible to the command. Use to persist virtualenv or conda activation across commands. Also populated dynamically by SessionStart, Setup, CwdChanged, and FileChanged hooks",
       "doc_min_version": null,
       "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_PLUGIN_DATA",
+      "type": "env_var",
+      "description": "Persistent directory that survives plugin updates, created on first reference",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
+    },
+    {
+      "symbol": "CLAUDE_PLUGIN_ROOT",
+      "type": "env_var",
+      "description": "Absolute path to the plugin's installation directory",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
+    },
+    {
+      "symbol": "CLAUDE_PROJECT_DIR",
+      "type": "env_var",
+      "description": "The project root",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
     },
     {
       "symbol": "CLAUDE_REMOTE_CONTROL_SESSION_NAME_PREFIX",
