@@ -114,7 +114,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Skip permission prompts. Equivalent to `--permission-mode bypassPermissions`. See permission modes for what this does and does not skip",
+      "description": "Skip permission prompts. Equivalent to `--permission-mode bypassPermissions`. See permission modes for what this does and does not skip. For sessions started with `--bg`, the mode persists when the supervisor restarts the session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"

@@ -334,7 +334,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Skip permission prompts. Equivalent to `--permission-mode bypassPermissions`. See permission modes for what this does and does not skip",
+      "description": "Skip permission prompts. Equivalent to `--permission-mode bypassPermissions`. See permission modes for what this does and does not skip. For sessions started with `--bg`, the mode persists when the supervisor restarts the session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1610,7 +1610,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open an interactive diff viewer showing uncommitted changes and per-turn diffs. Use left/right arrows to switch between the current git diff and individual Claude turns, and up/down to browse files. As of v2.1.198, the open viewer also refreshes automatically when the repository's git state changes outside the session, such as a branch switch or commit in another terminal",
+      "description": "Open an interactive diff viewer showing uncommitted changes and per-turn diffs. Use left/right arrows to switch between the current git diff and individual Claude turns, and up/down to browse files. Press Enter to open the selected file's diff, scroll it with up/down or PageUp/PageDown, and press Esc to return to the file list. As of v2.1.198, the open viewer also refreshes automatically when the repository's git state changes outside the session, such as a branch switch or commit in another terminal",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3366,7 +3366,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to strip Anthropic-specific `anthropic-beta` request headers and beta tool-schema fields (such as `defer_loading` and `eager_input_streaming`) from API requests. Use this when a proxy gateway rejects requests with errors like \"Unexpected value(s) for the `anthropic-beta` header\" or \"Extra inputs are not permitted\". Standard fields (`name`, `description`, `input_schema`, `cache_control`) are preserved",
+      "description": "Set to `1` to strip Anthropic-specific `anthropic-beta` request headers and beta tool-schema fields (such as `defer_loading` and `eager_input_streaming`) from API requests. Use this when a proxy gateway rejects requests with errors like \"Unexpected value(s) for the `anthropic-beta` header\" or \"Extra inputs are not permitted\". Standard fields (`name`, `description`, `input_schema`, `cache_control`) are preserved. MCP tool search is disabled and all MCP tools load upfront, even when `ENABLE_TOOL_SEARCH` is set",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -5315,7 +5315,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls MCP tool search. Unset: all MCP tools deferred by default, but loaded upfront on Google Cloud's Agent Platform or when `ANTHROPIC_BASE_URL` points to a non-first-party host. Values: `true` (always defer and send the beta header, requests fail on Google Cloud's Agent Platform models earlier than Sonnet 4.5 or Opus 4.5, or on proxies that do not support `tool_reference`), `auto` (threshold mode: load upfront if tools fit within 10% of context), `auto:N` (custom threshold, e.g., `auto:5` for 5%), `false` (load all upfront)",
+      "description": "Controls MCP tool search. Unset: all MCP tools deferred by default, but loaded upfront on Google Cloud's Agent Platform or when `ANTHROPIC_BASE_URL` points to a non-first-party host. Values: `true` (always defer and send the beta header, requests fail on Google Cloud's Agent Platform models earlier than Sonnet 4.5 or Opus 4.5, or on proxies that do not support `tool_reference`), `auto` (threshold mode: load upfront if tools fit within 10% of context), `auto:N` (custom threshold, e.g., `auto:5` for 5%), `false` (load all upfront). Ignored when `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` is set, which forces all tools to load upfront",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
