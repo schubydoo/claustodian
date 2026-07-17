@@ -24,8 +24,8 @@
     {
       "symbol": "--advisor",
       "type": "cli_flag",
-      "description": "Enable the server-side advisor tool for this session with a model alias: `opus`, `sonnet`, or `fable` (v2.1.170+), or a full model ID. Takes precedence over the `advisorModel` setting for the session",
-      "doc_min_version": "2.1.170",
+      "description": "Enable the server-side advisor tool for this session with a model alias, `opus` or `sonnet`, or a full model ID. Takes precedence over the `advisorModel` setting for the session. Claude Code doesn't offer Fable 5 as the advisor: `claude --advisor fable` exits with an error",
+      "doc_min_version": "2.1.210",
       "doc_page": "cli-reference"
     },
     {
@@ -41,6 +41,13 @@
       "description": "Define custom subagents dynamically via JSON. Uses the same field names as subagent frontmatter, plus a `prompt` field for the agent's instructions",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--all",
+      "type": "cli_flag",
+      "description": "Disable all enabled plugins. Can't be combined with `--scope`",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
     },
     {
       "symbol": "--allow-dangerously-skip-permissions",
@@ -176,6 +183,13 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--config",
+      "type": "cli_flag",
+      "description": "Set a `userConfig` option declared in the plugin's manifest. Repeat the flag to set multiple options",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
+    },
+    {
       "symbol": "--continue",
       "type": "cli_flag",
       "description": "Load the most recent conversation in the current directory. Includes sessions that added this directory with `/add-dir`",
@@ -302,9 +316,16 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--forward-subagent-text",
+      "type": "cli_flag",
+      "description": "Emit subagent text and thinking blocks in the output stream as `assistant` and `user` messages with `parent_tool_use_id` set, so you can reconstruct each subagent's transcript. Without this flag, Claude Code emits only subagent `tool_use` and `tool_result` blocks. Requires `--print` and `--output-format stream-json`. The `CLAUDE_CODE_FORWARD_SUBAGENT_TEXT` environment variable enables the same behavior. Requires Claude Code v2.1.211 or later",
+      "doc_min_version": "2.1.211",
+      "doc_page": "cli-reference"
+    },
+    {
       "symbol": "--from-pr",
       "type": "cli_flag",
-      "description": "Resume sessions linked to a specific pull request. Accepts a PR number, a GitHub or GitHub Enterprise PR URL, a GitLab merge request URL, or a Bitbucket pull request URL. Sessions are linked automatically when Claude creates the pull request",
+      "description": "Open the session picker filtered to sessions linked to a specific pull request. Accepts a PR number, a GitHub or GitHub Enterprise PR URL, a GitLab merge request URL, or a Bitbucket pull request URL. Sessions are linked automatically when Claude creates the pull request",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -405,6 +426,13 @@
       "description": "Load MCP servers from JSON files or strings (space-separated)",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--message",
+      "type": "cli_flag",
+      "description": "Tag annotation message. Use `%s` as a placeholder for the version",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
     },
     {
       "symbol": "--model",
@@ -689,8 +717,8 @@
     {
       "symbol": "/advisor",
       "type": "command",
-      "description": "Enable or disable the advisor tool, which consults a second model for guidance at key moments during a task. Accepts `opus`, `sonnet`, `fable` (v2.1.170+), or a full model ID. Without an argument, opens a picker",
-      "doc_min_version": "2.1.170",
+      "description": "Enable or disable the advisor tool, which consults a second model for guidance at key moments during a task. Accepts `opus`, `sonnet`, or a full model ID. Claude Code doesn't offer Fable 5 as the advisor and rejects `/advisor fable`. Without an argument, opens a picker",
+      "doc_min_version": "2.1.210",
       "doc_page": "commands"
     },
     {
@@ -780,7 +808,7 @@
     {
       "symbol": "/config",
       "type": "command",
-      "description": "Open the Settings interface to adjust theme, model, output style, and other preferences. From v2.1.181, pass one or more `key=value` pairs to set a setting directly without opening the interface, for example `/config thinking=false`. From v2.1.182, named shorthand keys are also accepted, such as `/config theme=dark` or `/config model=sonnet`. The `key=value` form also works in non-interactive mode (`-p`) and from Remote Control. Run `/config --help` to list every settable key with its options. Alias: `/settings`",
+      "description": "Open the Settings interface to adjust theme, model, output style, and other preferences. From v2.1.181, pass one or more `key=value` pairs to set a setting directly without opening the interface, for example `/config thinking=false`. From v2.1.182, named shorthand keys are also accepted, such as `/config theme=dark` or `/config model=sonnet`. The `key=value` form also works in non-interactive mode (`-p`) and from the Claude mobile app via Remote Control. Run `/config --help` to list every settable key with its options. Alias: `/settings`",
       "doc_min_version": "2.1.181",
       "doc_page": "commands"
     },
@@ -1333,8 +1361,8 @@
     {
       "symbol": "/usage-credits",
       "type": "command",
-      "description": "Configure usage credits to keep working when you hit a limit. On Pro and Max plans, opens an in-CLI dialog to buy usage credits, set a monthly spend limit, and configure auto-reload; on Claude Code versions before v2.1.207 and on other plans, opens the usage-credits billing page in your browser, except that Team and Enterprise members without billing access instead send a usage-credits request to their admin from the CLI. When no browser can open the billing page, for example over SSH, the command prints the URL to visit instead; this requires Claude Code v2.1.205 or later, and earlier versions showed nothing in that case. Previously `/extra-usage`",
-      "doc_min_version": "2.1.205",
+      "description": "Configure usage credits, or request them from your admin, when you hit a limit. On Pro and Max plans, opens an in-CLI dialog to buy usage credits, set a monthly spend limit, and configure auto-reload; on Claude Code versions before v2.1.207 and on other plans, opens the usage-credits billing page in your browser, except that Team and Enterprise members without billing access instead send a usage-credits request to their admin from the CLI, after confirming in a dialog that the request notifies their admins. Before v2.1.211, Claude Code sent the request without a confirmation step. When no browser can open the billing page, for example over SSH, the command prints the URL to visit instead; this requires Claude Code v2.1.205 or later, and earlier versions showed nothing in that case. Previously `/extra-usage`",
+      "doc_min_version": "2.1.211",
       "doc_page": "commands"
     },
     {
@@ -2283,6 +2311,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_FORWARD_SUBAGENT_TEXT",
+      "type": "env_var",
+      "description": "Set to `1` to emit subagent text and thinking blocks in `claude -p --output-format stream-json` output, the same behavior as the `--forward-subagent-text` flag. Use the variable when a harness invokes `claude` and can't pass the flag itself. Unlike the flag, which exits with an error outside non-interactive mode with stream-json output, the variable is ignored there so that nested invocations keep working when it's set process-wide. Requires Claude Code v2.1.211 or later",
+      "doc_min_version": "2.1.211",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_GIT_BASH_PATH",
       "type": "env_var",
       "description": "Windows only: path to the Git Bash executable (`bash.exe`). Use when Git Bash is installed but not in your PATH. See Windows setup",
@@ -2530,7 +2565,7 @@
     {
       "symbol": "CLAUDE_CODE_PROCESS_WRAPPER",
       "type": "env_var",
-      "description": "Launch the processes Claude Code starts from its own binary through a wrapper executable, given as an argv prefix such as `/opt/corp/launcher`. Covers the background service that hosts agent view sessions, every session it spawns, and the relaunch Claude Code performs of itself to finish installing an update. The first token must be the absolute path of an executable that ends by running `exec \"$@\"`, and most launchers are that single path. The value is an argument list, not a shell command: whitespace separates tokens, double quotes group a path that contains spaces, and a value that starts with `` is read as a JSON string array. Set it in the `env` block of user or [managed settings, not as a shell export, so the detached background service inherits it; project and local settings can't set it. The VS Code extension configures its own launcher separately through its `claudeProcessWrapper` setting. Ignored on Windows. `CLAUDE_CODE_SHELL_PREFIX` is a separate control: it wraps the shell commands Claude runs as a single quoted string, while this variable wraps Claude Code's own processes as an argv prefix. See Run Claude Code behind a corporate launcher",
+      "description": "Launch the processes Claude Code starts from its own binary, such as the background service that hosts agent view sessions, through a corporate launcher given as an argv prefix like `/opt/corp/launcher`. Set it in the `env` block of user or managed settings, not as a shell export, so the detached background service inherits it; project and local settings can't set it. Equivalent to the `processWrapper` setting, which requires Claude Code v2.1.210 or later; this variable takes precedence when both are set. The VS Code extension configures its own launcher separately through its `claudeProcessWrapper` setting. Ignored on Windows. See Run Claude Code behind a corporate launcher for the value format, what the launcher covers, and the contract the launcher must satisfy. Requires Claude Code v2.1.208 or later",
       "doc_min_version": "2.1.208",
       "doc_page": "env-vars"
     },
@@ -2577,6 +2612,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_RESUME_INTERRUPTED_TURN_MAX_AGE_MS",
+      "type": "env_var",
+      "description": "Maximum age in milliseconds of the last transcript message for a session that ended mid-turn to continue automatically on resume. When the last message is older than this bound, Claude Code skips both the `CLAUDE_CODE_RESUME_INTERRUPTED_TURN` automatic resume and the injected `CLAUDE_CODE_RESUME_PROMPT` continuation message, and the session starts idle so you continue explicitly. Unset or `0` means no bound; a negative or non-numeric value applies a one-hour bound. Spawn scripts for long-running agents can set this so a restart against an old transcript doesn't re-run a stale prompt. Claude Code sets a one-hour bound itself when it restarts a crashed agent view session that inherited its conversation from an interactive session. Requires Claude Code v2.1.211 or later",
+      "doc_min_version": "2.1.211",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_RESUME_PROMPT",
       "type": "env_var",
       "description": "Override the continuation message injected when resuming a session that ended mid-turn. Defaults to `Continue from where you left off.`. Spawn scripts for long-running agents can set this to a more directive boot message. An empty string uses the default",
@@ -2607,7 +2649,7 @@
     {
       "symbol": "CLAUDE_CODE_SCROLL_SPEED",
       "type": "env_var",
-      "description": "Set the mouse wheel scroll multiplier in fullscreen rendering. Accepts values from 1 to 20, and fractional values below 1 such as `0.5` to slow accelerated trackpad and wheel scrolling in terminals that already amplify wheel events. Set to `3` to match `vim` if your terminal sends one wheel event per notch without amplification. Ignored in the JetBrains IDE terminal, where Claude Code uses its own scroll handling",
+      "description": "Set the mouse wheel scroll multiplier in fullscreen rendering. Accepts any positive value up to 20, including fractional values below 1 such as `0.5` to slow accelerated trackpad and wheel scrolling in terminals that already amplify wheel events. Set to `3` to match `vim` if your terminal sends one wheel event per notch without amplification. Ignored in the JetBrains IDE terminal, where Claude Code uses its own scroll handling",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -2769,13 +2811,6 @@
       "symbol": "CLAUDE_CODE_TASK_LIST_ID",
       "type": "env_var",
       "description": "Share a task list across sessions. Set the same ID in multiple Claude Code instances to coordinate on a shared task list. See Task list",
-      "doc_min_version": null,
-      "doc_page": "env-vars"
-    },
-    {
-      "symbol": "CLAUDE_CODE_TEAM_NAME",
-      "type": "env_var",
-      "description": "Name of the agent team this teammate belongs to. Set automatically on agent team members",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -2985,7 +3020,7 @@
     {
       "symbol": "DISABLE_ERROR_REPORTING",
       "type": "env_var",
-      "description": "Set to `1` to opt out of Sentry error reporting",
+      "description": "Set to `1` to opt out of error reporting",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },

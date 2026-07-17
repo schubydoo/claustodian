@@ -23,7 +23,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Enable the server-side advisor tool for this session with a model alias: `opus`, `sonnet`, or `fable` (v2.1.170+), or a full model ID. Takes precedence over the `advisorModel` setting for the session",
+      "description": "Enable the server-side advisor tool for this session with a model alias, `opus` or `sonnet`, or a full model ID. Takes precedence over the `advisorModel` setting for the session. Claude Code doesn't offer Fable 5 as the advisor: `claude --advisor fable` exits with an error",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
@@ -126,10 +126,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Disable all enabled plugins",
+      "description": "Disable all enabled plugins. Can't be combined with `--scope`",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli"
     },
     {
       "symbol": "--allow-dangerously-skip-permissions",
@@ -736,7 +736,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Resume sessions linked to a specific pull request. Accepts a PR number, a GitHub or GitHub Enterprise PR URL, a GitLab merge request URL, or a Bitbucket pull request URL. Sessions are linked automatically when Claude creates the pull request",
+      "description": "Open the session picker filtered to sessions linked to a specific pull request. Accepts a PR number, a GitHub or GitHub Enterprise PR URL, a GitLab merge request URL, or a Bitbucket pull request URL. Sessions are linked automatically when Claude creates the pull request",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1058,11 +1058,11 @@
       "first_seen": "2.1.118",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Tag annotation message (use %s for the version)",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Tag annotation message. Use `%s` as a placeholder for the version",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli"
     },
     {
@@ -1851,11 +1851,11 @@
       "first_seen": "2.1.121",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Skip the `--prune` confirmation prompt. Required when stdin or stdout is not a TTY",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -6577,7 +6577,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set the mouse wheel scroll multiplier in fullscreen rendering. Accepts values from 1 to 20, and fractional values below 1 such as `0.5` to slow accelerated trackpad and wheel scrolling in terminals that already amplify wheel events. Set to `3` to match `vim` if your terminal sends one wheel event per notch without amplification. Ignored in the JetBrains IDE terminal, where Claude Code uses its own scroll handling",
+      "description": "Set the mouse wheel scroll multiplier in fullscreen rendering. Accepts any positive value up to 20, including fractional values below 1 such as `0.5` to slow accelerated trackpad and wheel scrolling in terminals that already amplify wheel events. Set to `3` to match `vim` if your terminal sends one wheel event per notch without amplification. Ignored in the JetBrains IDE terminal, where Claude Code uses its own scroll handling",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -6995,19 +6995,6 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_TEAM_NAME",
-      "type": "env_var",
-      "first_seen": "2.0.60",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
-      "description": "Name of the agent team this teammate belongs to. Set automatically on agent team members",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -7774,7 +7761,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to opt out of Sentry error reporting",
+      "description": "Set to `1` to opt out of error reporting",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"

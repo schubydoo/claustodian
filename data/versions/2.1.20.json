@@ -3437,19 +3437,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_TEAM_NAME",
-      "type": "env_var",
-      "first_seen": "2.0.60",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
-      "description": "Name of the agent team this teammate belongs to. Set automatically on agent team members",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_TEST_FIXTURES_ROOT",
       "type": "env_var",
       "first_seen": "1.0.109",
@@ -3806,7 +3793,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to opt out of Sentry error reporting",
+      "description": "Set to `1` to opt out of error reporting",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
