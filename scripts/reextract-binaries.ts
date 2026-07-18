@@ -34,7 +34,7 @@ import { extractBundleSymbols } from './extract-bundle.js';
 import { compareVersionsAsc, isMain } from './lib.js';
 
 const DEFAULT_ARCHIVE_DIR = 'scratch/binaries';
-const DEFAULT_OUT_DIR = 'scratch/binary-cache';
+const DEFAULT_OUT_DIR = 'binary-cache';
 /** cli.js can be large; allow up to 1 GiB when streaming it out of the tarball. */
 const TAR_MAX_BUFFER = 1 << 30;
 /** A strict `major.minor.patch` — rejects junk version input early. */
