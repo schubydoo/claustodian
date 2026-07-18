@@ -10,6 +10,11 @@ name: Update dataset from changelog
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Claude Code version to scrape the binary for (e.g. 2.1.214). Defaults to data/index.json latest.'
+        required: false
+        type: string
   repository_dispatch:
     types: [new-release]
 
@@ -41,6 +46,31 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # Keep the binary lane current automatically. The hourly detector passes the
+      # new release version; download just that ONE release's compiled binary
+      # (~250 MB from the CDN — not the 139 GB maintainer-local archive), verify it
+      # against the release manifest, and extract it into the committed binary-cache/.
+      # Non-fatal: a CDN hiccup must never block the authoritative changelog update —
+      # the re-distill below then simply reproduces the existing evidence unchanged.
+      - name: Scrape the new release's binary into the cache
+        continue-on-error: true
+        env:
+          # Via env, never interpolated into the shell command — the input is
+          # attacker-controllable (workflow_dispatch), so `${{ }}` in `run:` would
+          # be a template-injection sink. scrape-binary also re-validates it as a
+          # strict major.minor.patch. Empty (e.g. repository_dispatch) → index latest.
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            npm run scrape-binary -- --version "$INPUT_VERSION"
+          else
+            npm run scrape-binary
+          fi
+      # Re-distill data/binary-observations.json + binary-descriptions.json from the
+      # committed cache (no binaries needed). Runs every time so the evidence always
+      # matches the cache, whether or not the scrape step above added a version.
+      - name: Re-distill binary evidence from the cache
+        run: npm run backfill-binary
       # Regenerate the docs lane from the official pages in this same run, so the
       # scrape enriches against freshly-fetched official docs — a hand-edited
       # committed data/docs.json can't reach the shipped dataset via this bot.
