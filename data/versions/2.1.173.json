@@ -2161,7 +2161,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Detach the current session to run as a background agent and free this terminal. Pass a prompt to send one more instruction before detaching. Monitor the session with `claude agents`. Alias: `/bg`",
+      "description": "Detach the current session to run as a background agent and free this terminal. Pass a prompt to send one more instruction before detaching. Monitor the session with `claude agents`. To copy the conversation into a new background session while this one keeps running, use `/fork`. Alias: `/bg`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2201,7 +2201,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Create a branch of the current conversation at this point, so you can try a different direction without losing the conversation as it stands. Switches you into the branch and preserves the original, which you can return to with `/resume`. To hand a side task to a background subagent instead of switching into a copy yourself, use `/fork`",
+      "description": "Create a branch of the current conversation at this point, so you can try a different direction without losing the conversation as it stands. Switches you into the branch and preserves the original, which you can return to with `/resume`. To run a copy as a separate background session instead of switching into it, use `/fork`; to hand a side task to a subagent that reports back into this conversation, use `/subtask`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2240,7 +2240,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Ask a quick side question without adding to the conversation",
+      "description": "Ask a quick side question without adding to the conversation. Without a question, reopens the overlay on your most recent side question from this session so you can browse earlier answers; with no side questions yet, it asks for one. Before v2.1.212, `/btw` required a question",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2267,10 +2267,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Submit feedback about Claude Code",
+      "description": "Report a bug or share your conversation. You choose how much session history to include and confirm on a consent screen before anything is sent. When you're signed in to Anthropic on a first-party connection, the report goes to Anthropic; on a third-party provider, or without Anthropic credentials, Claude Code writes the report to a local archive under `~/.claude/feedback-bundles/` that you forward yourself. Alias: `/share`. Before v2.1.212, `/bug` and `/share` were aliases of `/feedback`",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command",
-      "description_source": "binary"
+      "category": "command"
     },
     {
       "symbol": "/cd",
@@ -2633,7 +2633,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Submit feedback, report a bug, or share your conversation. Sending to Anthropic requires authentication. Aliases: `/bug`, `/share`",
+      "description": "Send product feedback about Claude Code. Opens the same dialog as `/bug` with the same consent step and sending rules",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2672,7 +2672,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Spawn a forked subagent: a background subagent that inherits the full conversation and works on the directive while you keep going. Its result returns to your conversation when it finishes. To switch into a copy of the conversation yourself, use `/branch`. Before v2.1.161, `/fork` is an alias for `/branch`",
+      "description": "Copy the current conversation into a new background session and keep working here. The copy starts with everything in this conversation up to now and runs as its own row in agent view; the two sessions are independent from that point on. Pass a prompt and the copy starts working on it immediately; without one it waits in agent view for its first prompt. To hand a side task to a subagent whose result comes back into this conversation, use `/subtask`. To switch into a copy yourself, use `/branch`. Requires Claude Code v2.1.212 or later; on v2.1.161 through v2.1.211 `/fork` starts a forked subagent instead, and before v2.1.161 it is an alias for `/branch` unless forked subagents were enabled, by setting `CLAUDE_CODE_FORK_SUBAGENT` to `1` from v2.1.117 or by a server-side rollout. When agent view is turned off, `/fork` keeps the forked-subagent behavior",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2698,7 +2698,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Write a JavaScript heap snapshot and a memory breakdown to `~/Desktop`, or your home directory on Linux without a Desktop folder, for diagnosing high memory usage. See troubleshooting",
+      "description": "Write a JavaScript heap snapshot and a memory breakdown to `~/Desktop`, or your home directory on Linux without a Desktop folder, for diagnosing high memory usage. The `.heapsnapshot` file contains your full conversation and credentials, so don't share it. See troubleshooting",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3621,7 +3621,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Run a deep, multi-agent code review in a cloud sandbox with ultrareview. The preferred invocation is now `/code-review ultra`, and `/ultrareview` remains as an alias. Includes 3 free runs on Pro and Max, then requires usage credits",
+      "description": "Run a deep, multi-agent code review in a cloud sandbox with ultrareview. Pass a PR reference to review that pull request, or a branch name to change the comparison base. The preferred invocation is now `/code-review ultra`, and `/ultrareview` remains as an alias. Includes 3 free runs on Pro and Max, then requires usage credits",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4775,7 +4775,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to force-enable automatic backgrounding of long-running agent tasks. When enabled, subagents are moved to the background after running for approximately two minutes",
+      "description": "Set to `1` to force-enable automatic backgrounding of long-running agent tasks. When enabled, subagents are moved to the background after running for approximately two minutes. Also enables automatic backgrounding of long MCP tool calls in non-interactive mode on Claude Code v2.1.212 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -6026,7 +6026,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Equivalent of setting `DISABLE_AUTOUPDATER`, `DISABLE_FEEDBACK_COMMAND`, `DISABLE_ERROR_REPORTING`, and `DISABLE_TELEMETRY`",
+      "description": "Set to any non-empty value to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -6102,7 +6102,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable automatic terminal title updates based on conversation context. In Agent SDK and `claude -p` sessions, this also skips the background Haiku request that generates the session title",
+      "description": "Set to `1` to disable automatic terminal title updates based on conversation context. In Agent SDK and `claude -p` sessions, this also skips the background small/fast-model request that generates the session title",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -6700,7 +6700,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to let Claude spawn forked subagents, or `0` to disable them, overriding any server-side rollout. When enabled, Claude can request the `fork` subagent type to spawn a fork, a subagent that inherits the full conversation context instead of starting fresh. Spawns without a subagent type still use the general-purpose subagent, and all subagent spawns run in the background. The explicit `/fork` command works without this variable. Works in interactive mode and via the SDK or `claude -p`",
+      "description": "Set to `1` to let Claude spawn forked subagents, or `0` to disable them, overriding any server-side rollout. When enabled, Claude can request the `fork` subagent type to spawn a fork, a subagent that inherits the full conversation context instead of starting fresh. When Claude doesn't request a subagent type, it still gets the general-purpose subagent, and every subagent runs in the background. The explicit `/subtask` command, named `/fork` on v2.1.161 through v2.1.211, works without this variable; on v2.1.117 through v2.1.160, `/fork` is the forked-subagent command only when this variable is set to `1` or a server-side rollout enabled it. Works in interactive mode and via the SDK or `claude -p`. When agent view is turned off, `/subtask` isn't available and the command stays `/fork`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -8291,11 +8291,12 @@
       "type": "env_var",
       "first_seen": "2.1.76",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to treat a failed fast mode availability check as available, for networks that block the check's direct request to `api.anthropic.com`. Claude Code still honors a \"disabled by your organization\" response",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -8303,11 +8304,12 @@
       "type": "env_var",
       "first_seen": "2.1.92",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to skip the client-side fast mode availability check, for proxies that intercept the check's request rather than refuse it. The API still rejects fast mode requests when your organization has fast mode disabled",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -9912,7 +9914,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable the `/feedback` command. The older name `DISABLE_BUG_COMMAND` is also accepted",
+      "description": "Set to `1` to disable the `/feedback` command. Also disables `/bug` and `/share`, which report through the same path; before v2.1.212 they were aliases of `/feedback`, so the command was disabled under every name. The older name `DISABLE_BUG_COMMAND` is also accepted",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
