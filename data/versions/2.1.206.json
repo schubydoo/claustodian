@@ -2404,6 +2404,19 @@
       "category": "command"
     },
     {
+      "symbol": "/artifacts",
+      "type": "command",
+      "first_seen": "2.1.206",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Browse your published and shared artifacts",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
       "symbol": "/auto-mode-setup",
       "type": "command",
       "first_seen": "2.1.198",
@@ -2556,8 +2569,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Report a bug or share your conversation. You choose how much session history to include and confirm on a consent screen before anything is sent. When you're signed in to Anthropic on a first-party connection, the report goes to Anthropic; on a third-party provider, or without Anthropic credentials, Claude Code writes the report to a local archive under `~/.claude/feedback-bundles/` that you forward yourself. Alias: `/share`. Before v2.1.212, `/bug` and `/share` were aliases of `/feedback`",
-      "description_source": "docs",
+      "description": "Submit feedback about Claude Code",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3014,8 +3027,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Send product feedback about Claude Code. Opens the same dialog as `/bug` with the same consent step and sending rules",
-      "description_source": "docs",
+      "description": "Submit feedback, report a bug, or share your conversation",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -4158,8 +4171,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Configure usage credits, or request them from your admin, when you hit a limit. On Pro and Max plans, opens an in-CLI dialog to buy usage credits, set a monthly spend limit, and configure auto-reload; on Claude Code versions before v2.1.207 and on other plans, opens the usage-credits billing page in your browser, except that Team and Enterprise members without billing access instead send a usage-credits request to their admin from the CLI, after confirming in a dialog that the request notifies their admins. Before v2.1.211, Claude Code sent the request without a confirmation step. When no browser can open the billing page, for example over SSH, the command prints the URL to visit instead; this requires Claude Code v2.1.205 or later, and earlier versions showed nothing in that case. Previously `/extra-usage`",
-      "description_source": "docs",
+      "description": "Configure usage credits to keep working when you hit a limit",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -5580,6 +5593,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_BRIDGE_REATTACH_GROUPING",
+      "type": "env_var",
+      "first_seen": "2.1.206",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_BRIDGE_REATTACH_OUTBOUND_ONLY",
       "type": "env_var",
       "first_seen": "2.1.147",
@@ -5800,6 +5825,30 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_AGENT_PROXY_GH_SHIM",
+      "type": "env_var",
+      "first_seen": "2.1.202",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_AGENT_PROXY_GIT_CONFIG",
+      "type": "env_var",
+      "first_seen": "2.1.202",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_ALT_SCREEN_FULL_REPAINT",
       "type": "env_var",
       "first_seen": "2.1.144",
@@ -5990,6 +6039,18 @@
       "symbol": "CLAUDE_CODE_AUTO_MODE_MODEL",
       "type": "env_var",
       "first_seen": "2.1.160",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_BASALT_COVE",
+      "type": "env_var",
+      "first_seen": "2.1.205",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -6955,6 +7016,18 @@
       "symbol": "CLAUDE_CODE_DONT_INHERIT_ENV",
       "type": "env_var",
       "first_seen": "0.2.119",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DOWNLOAD_DEADLINE_MS_FOR_TESTING",
+      "type": "env_var",
+      "first_seen": "2.1.205",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -8828,6 +8901,30 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_REFUSAL_FALLBACK_CATCH_ALL",
+      "type": "env_var",
+      "first_seen": "2.1.206",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_RELAUNCH_TERMINAL_SIZE",
+      "type": "env_var",
+      "first_seen": "2.1.203",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_REMOTE",
       "type": "env_var",
       "first_seen": "2.0.20",
@@ -9993,6 +10090,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_TOTAL_TOKENS_REMINDER_AFTER_USER_TURN",
+      "type": "env_var",
+      "first_seen": "2.1.202",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_TOTAL_TOKENS_REMINDER_BUDGET",
       "type": "env_var",
       "first_seen": "2.1.196",
@@ -10292,6 +10401,30 @@
       "symbol": "CLAUDE_CODE_WORKFLOWS",
       "type": "env_var",
       "first_seen": "2.1.146",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_WORKFLOW_SIZE_WARNING_AGENTS",
+      "type": "env_var",
+      "first_seen": "2.1.203",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_WORKFLOW_SIZE_WARNING_TOKENS",
+      "type": "env_var",
+      "first_seen": "2.1.203",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",

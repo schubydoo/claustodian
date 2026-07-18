@@ -1193,8 +1193,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Report a bug or share your conversation. You choose how much session history to include and confirm on a consent screen before anything is sent. When you're signed in to Anthropic on a first-party connection, the report goes to Anthropic; on a third-party provider, or without Anthropic credentials, Claude Code writes the report to a local archive under `~/.claude/feedback-bundles/` that you forward yourself. Alias: `/share`. Before v2.1.212, `/bug` and `/share` were aliases of `/feedback`",
-      "description_source": "docs",
+      "description": "Submit feedback about Claude Code",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -1363,8 +1363,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "**Skill.** Run a setup checkup that diagnoses issues and can fix them. Checks installation health, including duplicate or leftover installs, `PATH` problems, and unparseable settings files. Finds unused skills, MCP servers, and plugins versus their context cost, flags slow hooks, and checks for a newer version on your release channel. Deduplicates local `CLAUDE.md` files against checked-in ones, trims checked-in `CLAUDE.md` files by cutting content Claude could derive from the codebase, and migrates the always-loaded guidance that remains into skills and nested `CLAUDE.md` files that load on demand. The trim cuts sections such as directory layouts, dependency lists, and architecture overviews, and keeps pitfalls, rationale, and conventions that differ from tool defaults. Also offers to make auto mode your default and to pre-approve frequently denied read-only commands. Reports findings first and asks for confirmation before changing anything. From the terminal, `claude doctor` prints read-only installation diagnostics without starting a session. Alias: `/checkup`. The `CLAUDE.md` trim check requires Claude Code v2.1.206 or later. Before v2.1.206, the version check compared Homebrew installs against the `autoUpdatesChannel` setting rather than the installed cask's channel. Before v2.1.205, `/doctor` opened a read-only diagnostics screen and pressing `f` sent the report to Claude",
-      "description_source": "docs",
+      "description": "Diagnose and verify your Claude Code installation and settings",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
