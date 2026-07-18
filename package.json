@@ -37,6 +37,7 @@
     "fetch-docs": "tsx scripts/fetch-docs.ts",
     "backfill-binary": "tsx scripts/backfill-binary.ts",
     "reextract-binaries": "tsx scripts/reextract-binaries.ts",
+    "scrape-binary": "tsx scripts/scrape-binary.ts",
     "scrape": "tsx scripts/scrape-changelog.ts",
     "find-removals": "tsx scripts/find-removals.ts",
     "diff": "tsx scripts/diff-snapshots.ts",

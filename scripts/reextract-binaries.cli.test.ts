@@ -31,8 +31,8 @@ async function writeCompiled(archive: string, version: string, js: string): Prom
 }
 
 describe('reextract-binaries parseArgs', () => {
-  it('defaults to the maintainer-local archive and cache dirs', () => {
-    expect(parseArgs([])).toEqual({ archiveDir: 'scratch/binaries', outDir: 'scratch/binary-cache' });
+  it('defaults to the maintainer-local archive and the committed cache dir', () => {
+    expect(parseArgs([])).toEqual({ archiveDir: 'scratch/binaries', outDir: 'binary-cache' });
   });
 
   it('parses --archive and --out', () => {
