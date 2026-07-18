@@ -38,6 +38,11 @@ const DEFAULT_OUT_DIR = 'binary-cache';
 const DEFAULT_INDEX_PATH = 'data/index.json';
 /** A strict `major.minor.patch` — rejects junk version input early. */
 const VERSION_RE = /^\d+\.\d+\.\d+$/;
+/** Per-request deadline. Bounds a stalled connection (one that accepts but never
+ * responds) so the non-fatal scrape step fails fast and lets the authoritative
+ * changelog update proceed, rather than hanging to the job-level timeout. Ample
+ * for the ~250 MB binary on CI bandwidth; the manifest fetch is tiny. */
+const REQUEST_TIMEOUT_MS = 120_000;
 
 /** One platform's entry in a release `manifest.json`. */
 interface PlatformEntry {
@@ -89,7 +94,10 @@ async function fetchRetry(url: string, tries = 3): Promise<Response> {
   let lastErr: unknown;
   for (let i = 0; i < tries; i++) {
     try {
-      const res = await fetch(url, { headers: { 'User-Agent': 'claustodian-scrape-binary' } });
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'claustodian-scrape-binary' },
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      });
       if (res.ok || (res.status >= 400 && res.status < 500)) return res;
       lastErr = new Error(`HTTP ${res.status}`);
     } catch (e) {
@@ -137,6 +145,15 @@ export async function scrapeBinary(options: CliOptions): Promise<{ path: string;
   }
   if (!manifestRes.ok) throw new Error(`${version}: manifest fetch failed (HTTP ${manifestRes.status}).`);
   const manifest = (await manifestRes.json()) as Manifest;
+
+  // Bind the artifact to the version we asked for. A stale or misrouted manifest
+  // would checksum-verify its OWN binary correctly, yet we'd file those symbols
+  // under `version` — mislabeling evidence and corrupting first_seen/last_seen.
+  if (manifest.version !== version) {
+    throw new Error(
+      `${version}: manifest identifies release "${manifest.version}" — refusing (stale or misrouted manifest).`
+    );
+  }
 
   const entry = manifest.platforms?.[PLATFORM];
   if (!entry) throw new Error(`${version}: manifest has no "${PLATFORM}" platform to extract from.`);

@@ -117,6 +117,35 @@ describe('scrapeBinary', () => {
     await rm(dir, { recursive: true, force: true });
   });
 
+  it('refuses a manifest whose version does not match the requested one', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
+    stubCdn('2.1.999', FAKE_BUNDLE, sha256(FAKE_BUNDLE)); // manifest self-reports 2.1.999
+    await expect(scrapeBinary({ version: '2.1.214', outDir: dir, force: false })).rejects.toThrow(
+      /manifest identifies release "2\.1\.999"/
+    );
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it('retries a transient network throw, then succeeds', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
+    let calls = 0;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        if (url.endsWith('/manifest.json')) {
+          calls++;
+          if (calls === 1) throw new Error('network down'); // transient throw → retried
+          return { ok: true, status: 200, json: async () => ({ version: '2.1.214', platforms: { 'linux-x64': { binary: 'claude', checksum: sha256(FAKE_BUNDLE), size: FAKE_BUNDLE.length } } }) } as unknown as Response;
+        }
+        return { ok: true, status: 200, arrayBuffer: async () => new TextEncoder().encode(FAKE_BUNDLE).buffer } as unknown as Response;
+      })
+    );
+    const result = await scrapeBinary({ version: '2.1.214', outDir: dir, force: false });
+    expect(result).not.toBe('skip');
+    expect(calls).toBe(2);
+    await rm(dir, { recursive: true, force: true });
+  });
+
   it('throws when the release has no compiled binary (manifest 404)', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 404 }) as unknown as Response));
