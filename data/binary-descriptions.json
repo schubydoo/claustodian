@@ -105,6 +105,12 @@
         "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git *) Edit\")"
       }
     ],
+    "cli_flag:--append-subagent-system-prompt": [
+      {
+        "from": "2.1.205",
+        "description": "Append a system prompt to every Task-tool subagent's system prompt, propagated to nested subagents (only works with --print). Implies CLAUDE_CODE_ENABLE_APPEND_SUBAGENT_PROMPT=1."
+      }
+    ],
     "cli_flag:--append-system-prompt": [
       {
         "from": "0.2.117",
@@ -461,6 +467,12 @@
         "description": "When resuming, create a new session ID instead of reusing the original (use with --resume or --continue)"
       }
     ],
+    "cli_flag:--forward-subagent-text": [
+      {
+        "from": "2.1.211",
+        "description": "Forward subagent text and thinking blocks as assistant/user messages with parent_tool_use_id set (only works with --print and --output-format=stream-json)"
+      }
+    ],
     "cli_flag:--from-pr": [
       {
         "from": "2.1.27",
@@ -589,6 +601,12 @@
       {
         "from": "2.1.198",
         "description": "Preserve scaffold dirs for debugging"
+      }
+    ],
+    "cli_flag:--label": [
+      {
+        "from": "2.1.208",
+        "description": "Show only rules whose label starts with this prefix (case-insensitive)"
       }
     ],
     "cli_flag:--maintenance": [
@@ -839,6 +857,12 @@
         "description": "Also remove auto-installed dependencies that are no longer needed (requires -y in non-interactive contexts)"
       }
     ],
+    "cli_flag:--publish-report": [
+      {
+        "from": "2.1.210",
+        "description": "Publish the HTML report privately to claude.ai and print its link"
+      }
+    ],
     "cli_flag:--push": [
       {
         "from": "2.1.118",
@@ -883,6 +907,12 @@
       {
         "from": "2.1.153",
         "description": "When resuming, immediately query if the loaded transcript ends in a user-role message (set by /background mid-turn so the fork continues the in-flight turn)."
+      }
+    ],
+    "cli_flag:--report": [
+      {
+        "from": "2.1.210",
+        "description": "Write a self-contained HTML report (scores, prompts, grader verdicts) to <path>"
       }
     ],
     "cli_flag:--resume": [
@@ -1213,6 +1243,12 @@
         "description": "List all currently approved tools"
       }
     ],
+    "command:/artifacts": [
+      {
+        "from": "2.1.206",
+        "description": "Browse your published and shared artifacts"
+      }
+    ],
     "command:/auto-mode-setup": [
       {
         "from": "2.1.198",
@@ -1307,6 +1343,10 @@
       {
         "from": "1.0.68",
         "description": "Submit feedback about Claude Code"
+      },
+      {
+        "from": "2.1.212",
+        "description": "Report a bug or share your conversation"
       }
     ],
     "command:/cd": [
@@ -1511,6 +1551,14 @@
       {
         "from": "1.0.49",
         "description": "Diagnose and verify your Claude Code installation and settings"
+      },
+      {
+        "from": "2.1.205",
+        "description": "Health-check your setup and fix issues: installation, unused extensions, duplicated memory files, slow hooks, updates, permissions"
+      },
+      {
+        "from": "2.1.206",
+        "description": "Health-check your setup and fix issues: installation, unused extensions, duplicated or bloated memory files, slow hooks, updates, permissions"
       }
     ],
     "command:/dream": [
@@ -1571,6 +1619,10 @@
       {
         "from": "2.1.144",
         "description": "Submit feedback, report a bug, or share your conversation"
+      },
+      {
+        "from": "2.1.212",
+        "description": "Send feedback to Anthropic or report a bug"
       }
     ],
     "command:/fewer-permission-prompts": [
@@ -1645,6 +1697,12 @@
       {
         "from": "0.2.126",
         "description": "Manage IDE integrations and show status"
+      }
+    ],
+    "command:/import": [
+      {
+        "from": "2.1.213",
+        "description": "Import config from another AI coding agent"
       }
     ],
     "command:/init": [
@@ -1767,6 +1825,12 @@
       {
         "from": "1.0.0",
         "description": "Set the AI model for Claude Code"
+      }
+    ],
+    "command:/morning": [
+      {
+        "from": "2.1.207",
+        "description": "Your morning brief — run it now, or set it up as a recurring weekday task"
       }
     ],
     "command:/onboarding": [
@@ -2113,6 +2177,12 @@
         "description": "Set a session-only Stop hook with a quick prompt"
       }
     ],
+    "command:/subtask": [
+      {
+        "from": "2.1.212",
+        "description": "Send a subagent off with your full context; its result comes back here"
+      }
+    ],
     "command:/tag": [
       {
         "from": "2.0.65",
@@ -2225,6 +2295,10 @@
       {
         "from": "2.1.144",
         "description": "Configure usage credits to keep working when you hit a limit"
+      },
+      {
+        "from": "2.1.210",
+        "description": "Configure usage credits or request them from your admin when you hit a limit"
       }
     ],
     "command:/version": [
