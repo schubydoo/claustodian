@@ -567,7 +567,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Deny rules. A bare tool name removes the matching tools from the model's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only matching calls",
+      "description": "Deny rules. A bare tool name removes the matching tools from Claude's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only matching calls. A rule naming `EndConversation` can't remove it while any other tool remains",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
@@ -580,7 +580,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Deny rules. A bare tool name removes the matching tools from the model's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only matching calls",
+      "description": "Deny rules. A bare tool name removes the matching tools from Claude's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only matching calls. A rule naming `EndConversation` can't remove it while any other tool remains",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
@@ -1737,7 +1737,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for all, or tool names like `\"Bash,Edit,Read\"`. MCP tools are not affected; to deny those too, use `--disallowedTools \"mcp__*\"`, or pass `--strict-mcp-config` without `--mcp-config` so no MCP servers load",
+      "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for all, or tool names like `\"Bash,Edit,Read\"`. The flag doesn't affect MCP tools; to deny those too, use `--disallowedTools \"mcp__*\"`, or pass `--strict-mcp-config` without `--mcp-config` so no MCP servers load. A list that omits `EndConversation` doesn't remove it; `\"\"` removes it only when no MCP tools remain",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -2622,11 +2622,11 @@
       "first_seen": "0.2.54",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Edit Claude memory files",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -8605,7 +8605,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Emit Anthropic Messages API request and response JSON as `api_request_body` / `api_response_body` log events. Set to `1` for inline bodies truncated at 60 KB, or `file:<dir>` to write untruncated bodies to disk and emit a `body_ref` path instead. Disabled by default; bodies include the entire conversation history. See Monitoring",
+      "description": "Emit Anthropic Messages API request and response JSON as `api_request_body` / `api_response_body` log events. Set to `1` for inline bodies truncated at the content limit, or `file:<dir>` to write untruncated bodies to disk and emit a `body_ref` path instead. `CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH` configures the content limit, 60 KB by default. Disabled by default; bodies include the entire conversation history. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"

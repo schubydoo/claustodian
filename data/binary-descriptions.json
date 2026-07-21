@@ -2362,6 +2362,12 @@
         "from": "2.1.163",
         "description": "Browse running and completed workflows"
       }
+    ],
+    "command:/workshop": [
+      {
+        "from": "2.1.216",
+        "description": "Workshop a document through artifact decisions"
+      }
     ]
   }
 }
