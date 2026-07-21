@@ -239,6 +239,27 @@ export const SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Tokens the CHANGELOG names incidentally in prose but which are a subprocess
+ * tool's own primitives (git's, here) — not Claude Code's — so they must not be
+ * seeded as symbols from changelog text. Seeded by the 2.1.216 bugfix bullet
+ * "Fixed worktree-isolated subagents redirecting git into the shared checkout
+ * via `git -C`, `--git-dir`, or `GIT_DIR`/`GIT_WORK_TREE`" (`git -C` is already
+ * safe — the space excludes it from the token patterns).
+ *
+ * Deliberately scoped to the changelog lane, NOT folded into the shared
+ * SYMBOL_DENYLIST: extract-bundle consults that denylist too, and a shipped
+ * binary that genuinely reads `process.env.GIT_DIR`/`GIT_WORK_TREE` (plausible —
+ * the fix above is precisely about Claude Code inspecting these) would be real
+ * first-party evidence. Suppressing it there would silently drop the symbol from
+ * binary evidence with no coverage failure to catch it.
+ */
+export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
+  '--git-dir',
+  'GIT_DIR',
+  'GIT_WORK_TREE',
+]);
+
+/**
  * Extracts backtick-delimited cli_flag / command / env_var tokens from a
  * single bullet's text. Returns unique {symbol, type} pairs ordered by where
  * they first appear in the text (left to right), regardless of which of the
@@ -253,7 +274,7 @@ export function extractSymbols(text: string): ExtractedSymbol[] {
       if (symbol === undefined || match.index === undefined) {
         continue;
       }
-      if (SYMBOL_DENYLIST.has(symbol)) {
+      if (SYMBOL_DENYLIST.has(symbol) || CHANGELOG_SYMBOL_DENYLIST.has(symbol)) {
         continue;
       }
       found.push({ symbol, type, index: match.index });
