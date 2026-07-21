@@ -236,6 +236,13 @@ export const SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   'README',
   'TODO',
   'FIXME',
+  // git's own redirection flags/env-vars, named incidentally in bugfix bullets
+  // (e.g. 2.1.216 "Fixed worktree-isolated subagents redirecting git into the
+  // shared checkout via `git -C`, `--git-dir`, or `GIT_DIR`/`GIT_WORK_TREE`").
+  // These belong to git, not Claude Code — the binary lane never observes them.
+  '--git-dir',
+  'GIT_DIR',
+  'GIT_WORK_TREE',
 ]);
 
 /**

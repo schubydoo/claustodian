@@ -128,6 +128,17 @@ describe('extractSymbols', () => {
     );
     expect(symbols.map((s) => s.symbol)).toEqual(['HOME', 'CLAUDE_CODE_SAFE_MODE']);
   });
+
+  it("drops git's own redirection flags/env-vars named in a bugfix bullet", () => {
+    // 2.1.216: git primitives (`--git-dir`, `GIT_DIR`, `GIT_WORK_TREE`) named
+    // incidentally in a fix — they belong to git, not Claude Code, and the
+    // binary lane never observes them. `git -C` is safe (the space excludes it).
+    const symbols = extractSymbols(
+      'Fixed worktree-isolated subagents redirecting git into the shared checkout ' +
+        'via `git -C`, `--git-dir`, or `GIT_DIR`/`GIT_WORK_TREE`.'
+    );
+    expect(symbols).toEqual([]);
+  });
 });
 
 describe('categorize', () => {
