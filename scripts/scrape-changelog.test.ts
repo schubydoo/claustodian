@@ -14,7 +14,9 @@ import {
   buildSnapshots,
   assembleSnapshots,
   categorize,
+  CHANGELOG_SYMBOL_DENYLIST,
   collectChangelogSymbols,
+  SYMBOL_DENYLIST,
   compareVersionsAsc,
   enrichSymbols,
   enrichWithBinary,
@@ -131,13 +133,24 @@ describe('extractSymbols', () => {
 
   it("drops git's own redirection flags/env-vars named in a bugfix bullet", () => {
     // 2.1.216: git primitives (`--git-dir`, `GIT_DIR`, `GIT_WORK_TREE`) named
-    // incidentally in a fix — they belong to git, not Claude Code, and the
-    // binary lane never observes them. `git -C` is safe (the space excludes it).
+    // incidentally in a fix — they belong to git, not Claude Code. `git -C` is
+    // safe (the space excludes it from the token patterns).
     const symbols = extractSymbols(
       'Fixed worktree-isolated subagents redirecting git into the shared checkout ' +
         'via `git -C`, `--git-dir`, or `GIT_DIR`/`GIT_WORK_TREE`.'
     );
     expect(symbols).toEqual([]);
+  });
+
+  it('scopes the git suppression to the changelog lane, leaving the binary denylist clean', () => {
+    // The suppression must NOT leak into the shared SYMBOL_DENYLIST that
+    // extract-bundle consults: a shipped binary that genuinely reads
+    // `process.env.GIT_DIR`/`GIT_WORK_TREE` is real first-party evidence the
+    // binary lane must stay free to record.
+    for (const token of ['--git-dir', 'GIT_DIR', 'GIT_WORK_TREE']) {
+      expect(CHANGELOG_SYMBOL_DENYLIST.has(token)).toBe(true);
+      expect(SYMBOL_DENYLIST.has(token)).toBe(false);
+    }
   });
 });
 
