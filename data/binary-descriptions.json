@@ -2355,6 +2355,12 @@
         "description": "Configure optional break reminders and quiet-hours nudges"
       }
     ],
+    "command:/whiteboard": [
+      {
+        "from": "2.1.218",
+        "description": "Sketch on a whiteboard Artifact you can send to Claude"
+      }
+    ],
     "command:/workflow-launch-exec": [
       {
         "from": "2.1.217",
