@@ -388,7 +388,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Path to a settings JSON file or an inline JSON string. Values you set here override the same keys in your `settings.json` files for this session. Keys you omit keep their file-based values. See settings precedence",
+      "description": "Path to a settings JSON file or an inline JSON string. Values you set here override the same keys in your `settings.json` files for this session. Keys you omit keep their file-based values. The file must be a regular file no larger than 2 MiB. See settings precedence",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1984,6 +1984,18 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "network"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_ENDPOINT",
+      "type": "env_var",
+      "first_seen": "0.2.76",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "telemetry"
     },
     {
       "symbol": "OTEL_LOGS_EXPORTER",
