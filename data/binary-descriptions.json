@@ -1587,6 +1587,12 @@
         "description": "Exit the CLI (in a background session: detach or stop)"
       }
     ],
+    "command:/explain-usage": [
+      {
+        "from": "2.1.217",
+        "description": "See where this session’s tokens went, in plain words"
+      }
+    ],
     "command:/export": [
       {
         "from": "1.0.44",
@@ -2347,6 +2353,12 @@
       {
         "from": "2.1.149",
         "description": "Configure optional break reminders and quiet-hours nudges"
+      }
+    ],
+    "command:/workflow-launch-exec": [
+      {
+        "from": "2.1.217",
+        "description": "Execute a server-launched workflow handoff (workflow_launch event sessions only)"
       }
     ],
     "command:/workflows": [
