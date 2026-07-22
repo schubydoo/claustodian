@@ -8,7 +8,8 @@
     "renovate[bot]",
     "pre-commit-ci[bot]",
     "github-actions[bot]",
-    "allcontributors[bot]"
+    "allcontributors[bot]",
+    "claustodian-ci[bot]"
   ],
   "summarySection": { "included": true, "collapsible": true, "defaultOpen": true },
   "confidenceScoreSection": { "included": true, "collapsible": true, "defaultOpen": true },
