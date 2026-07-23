@@ -6,6 +6,7 @@
   "excludeAuthors": [
     "dependabot[bot]",
     "renovate[bot]",
+    "renokeeper[bot]",
     "pre-commit-ci[bot]",
     "github-actions[bot]",
     "allcontributors[bot]",
