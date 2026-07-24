@@ -409,8 +409,8 @@
     {
       "symbol": "--max-budget-usd",
       "type": "cli_flag",
-      "description": "Maximum dollar amount to spend on API calls before stopping (print mode only)",
-      "doc_min_version": null,
+      "description": "Maximum dollar amount to spend on API calls before stopping (print mode only). Spend from subagents counts toward the cap. Once spend reaches the cap, spawning another subagent fails with `Budget limit reached`, and Claude Code stops background subagents that are still running; the cap-enforcement behaviors require Claude Code v2.1.217 or later",
+      "doc_min_version": "2.1.217",
       "doc_page": "cli-reference"
     },
     {
@@ -577,7 +577,7 @@
     {
       "symbol": "--safe-mode",
       "type": "cli_flag",
-      "description": "Start with all customizations disabled to troubleshoot a broken configuration: CLAUDE.md, skills, plugins, hooks, MCP servers, custom commands and agents, output styles, workflows, custom themes, custom keybindings, status line and file-suggestion commands, LSP servers, and auto-memory do not load. Authentication, model selection, built-in tools, and permissions work normally, which differs from `--bare`. Managed settings policy still applies, including policy-configured hooks, status line, and file-suggestion commands; managed plugins, managed skills, managed CLAUDE.md, and policy-configured MCP servers do not. Useful for checking whether a customization is what triggers automatic fallback from Fable 5. Sets `CLAUDE_CODE_SAFE_MODE`",
+      "description": "Start with all customizations disabled to troubleshoot a broken configuration: CLAUDE.md, skills, plugins, hooks, MCP servers, custom commands and agents, output styles, workflows, custom themes, custom keybindings, status line and file-suggestion commands, LSP servers, and auto-memory do not load. Authentication, model selection, built-in tools, and permissions work normally, which differs from `--bare`. Managed settings policy still applies, including policy-configured hooks, status line, and file-suggestion commands; managed plugins, managed skills, managed CLAUDE.md, and policy-configured MCP servers do not. Useful for checking whether a customization is what triggers automatic model fallback. Sets `CLAUDE_CODE_SAFE_MODE`",
       "doc_min_version": "2.1.169",
       "doc_page": "cli-reference"
     },
@@ -899,7 +899,7 @@
     {
       "symbol": "/effort",
       "type": "command",
-      "description": "Set the model effort level. Accepts `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`; available levels depend on the model, and `max` and `ultracode` are session-only. `ultracode` is a Claude Code setting that combines `xhigh` reasoning with automatic workflow orchestration. `auto` resets to the model default. Without an argument, opens an interactive slider; use left and right arrows to pick a level and `Enter` to apply. Takes effect immediately without waiting for the current response to finish. Also available in non-interactive mode (`-p`) with a level argument, where it applies to the current session only and isn't saved as your default; requires Claude Code v2.1.205 or later. On Fable 5, Opus 4.8, and Opus 4.7, a non-interactive `/effort` reports `Not applied` while the model-default effort hold is in force, so pass `--effort` at launch instead",
+      "description": "Set the model effort level. Accepts `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`; available levels depend on the model, and `max` and `ultracode` are session-only. `auto` resets to the model default. Without an argument, opens an interactive slider. Takes effect immediately without waiting for the current response to finish. Also available in non-interactive mode (`-p`) with a level argument, where it applies to the current session only; requires Claude Code v2.1.205 or later. While the model-default effort hold is in force, a non-interactive `/effort` reports `Not applied`, so pass `--effort` at launch instead",
       "doc_min_version": "2.1.205",
       "doc_page": "commands"
     },
@@ -2388,6 +2388,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS",
+      "type": "env_var",
+      "description": "How many subagents can be running in one session before the Agent tool refuses to spawn another (default: 20). Accepts a positive whole number in plain digits; anything else is ignored, so the variable can adjust the cap but can't disable it. Requires Claude Code v2.1.217 or later",
+      "doc_min_version": "2.1.217",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_MAX_CONTEXT_TOKENS",
       "type": "env_var",
       "description": "Override the context window size Claude Code assumes for the active model. As of v2.1.193, applied directly for model names Claude Code does not recognize as a Claude model; for recognized Claude models it only takes effect when `DISABLE_COMPACT` is also set. Use this when routing to a model through `ANTHROPIC_BASE_URL` whose context window does not match the built-in size for its name",
@@ -2406,6 +2413,13 @@
       "type": "env_var",
       "description": "Override the number of times to retry failed API requests (default: 10). Capped at 15 as of v2.1.186; as of v2.1.199, `CLAUDE_CODE_RETRY_WATCHDOG` raises the default and removes the cap. For unattended sessions that need to wait through longer outages, set `CLAUDE_CODE_RETRY_WATCHDOG` instead",
       "doc_min_version": "2.1.186",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH",
+      "type": "env_var",
+      "description": "Number of subagent layers allowed below the main conversation (default: 1). At the default, subagents can't spawn their own subagents; set `2` or higher to allow it. Accepts a positive whole number in plain digits; anything else is ignored, so the limit can be raised but not turned off. Requires Claude Code v2.1.217 or later",
+      "doc_min_version": "2.1.217",
       "doc_page": "env-vars"
     },
     {
@@ -3547,6 +3561,13 @@
       "type": "env_var",
       "description": "Override region for Claude Opus 4.8 when using Google Cloud's Agent Platform. Added in v2.1.154",
       "doc_min_version": "2.1.154",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "VERTEX_REGION_CLAUDE_5_OPUS",
+      "type": "env_var",
+      "description": "Override region for Claude Opus 5 when using Google Cloud's Agent Platform. Added in v2.1.219",
+      "doc_min_version": "2.1.219",
       "doc_page": "env-vars"
     },
     {

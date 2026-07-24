@@ -659,7 +659,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Maximum dollar amount to spend on API calls before stopping (print mode only)",
+      "description": "Maximum dollar amount to spend on API calls before stopping (print mode only). Spend from subagents counts toward the cap. Once spend reaches the cap, spawning another subagent fails with `Budget limit reached`, and Claude Code stops background subagents that are still running; the cap-enforcement behaviors require Claude Code v2.1.217 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
