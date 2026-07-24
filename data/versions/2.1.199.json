@@ -1177,7 +1177,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Maximum dollar amount to spend on API calls before stopping (print mode only)",
+      "description": "Maximum dollar amount to spend on API calls before stopping (print mode only). Spend from subagents counts toward the cap. Once spend reaches the cap, spawning another subagent fails with `Budget limit reached`, and Claude Code stops background subagents that are still running; the cap-enforcement behaviors require Claude Code v2.1.217 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1772,7 +1772,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Start with all customizations disabled to troubleshoot a broken configuration: CLAUDE.md, skills, plugins, hooks, MCP servers, custom commands and agents, output styles, workflows, custom themes, custom keybindings, status line and file-suggestion commands, LSP servers, and auto-memory do not load. Authentication, model selection, built-in tools, and permissions work normally, which differs from `--bare`. Managed settings policy still applies, including policy-configured hooks, status line, and file-suggestion commands; managed plugins, managed skills, managed CLAUDE.md, and policy-configured MCP servers do not. Useful for checking whether a customization is what triggers automatic fallback from Fable 5. Sets `CLAUDE_CODE_SAFE_MODE`",
+      "description": "Start with all customizations disabled to troubleshoot a broken configuration: CLAUDE.md, skills, plugins, hooks, MCP servers, custom commands and agents, output styles, workflows, custom themes, custom keybindings, status line and file-suggestion commands, LSP servers, and auto-memory do not load. Authentication, model selection, built-in tools, and permissions work normally, which differs from `--bare`. Managed settings policy still applies, including policy-configured hooks, status line, and file-suggestion commands; managed plugins, managed skills, managed CLAUDE.md, and policy-configured MCP servers do not. Useful for checking whether a customization is what triggers automatic model fallback. Sets `CLAUDE_CODE_SAFE_MODE`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -2841,7 +2841,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the model effort level. Accepts `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`; available levels depend on the model, and `max` and `ultracode` are session-only. `ultracode` is a Claude Code setting that combines `xhigh` reasoning with automatic workflow orchestration. `auto` resets to the model default. Without an argument, opens an interactive slider; use left and right arrows to pick a level and `Enter` to apply. Takes effect immediately without waiting for the current response to finish. Also available in non-interactive mode (`-p`) with a level argument, where it applies to the current session only and isn't saved as your default; requires Claude Code v2.1.205 or later. On Fable 5, Opus 4.8, and Opus 4.7, a non-interactive `/effort` reports `Not applied` while the model-default effort hold is in force, so pass `--effort` at launch instead",
+      "description": "Set the model effort level. Accepts `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`; available levels depend on the model, and `max` and `ultracode` are session-only. `auto` resets to the model default. Without an argument, opens an interactive slider. Takes effect immediately without waiting for the current response to finish. Also available in non-interactive mode (`-p`) with a level argument, where it applies to the current session only; requires Claude Code v2.1.205 or later. While the model-default effort hold is in force, a non-interactive `/effort` reports `Not applied`, so pass `--effort` at launch instead",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
