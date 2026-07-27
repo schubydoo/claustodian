@@ -2334,8 +2334,8 @@
     {
       "symbol": "CLAUDE_CODE_GIT_BASH_PATH",
       "type": "env_var",
-      "description": "Windows only: path to the Git Bash executable (`bash.exe`). Use when Git Bash is installed but not in your PATH. See Windows setup",
-      "doc_min_version": null,
+      "description": "Windows only: path to the Git Bash executable (`bash.exe`). Use when Git Bash is installed but not in your PATH. If the path doesn't exist or the file isn't named `bash.exe`, `sh.exe`, `bash`, or `sh`, Claude Code ignores the variable and auto-detects Git Bash as if it were unset, logging a warning visible with `--debug`. Before v2.1.219, Claude Code exited at startup when the path didn't exist, and used any existing file as the shell without checking that it was bash or sh. See Windows setup",
+      "doc_min_version": "2.1.219",
       "doc_page": "env-vars"
     },
     {
@@ -2418,7 +2418,7 @@
     {
       "symbol": "CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH",
       "type": "env_var",
-      "description": "Number of subagent layers allowed below the main conversation (default: 1). At the default, subagents can't spawn their own subagents; set `2` or higher to allow it. Accepts a positive whole number in plain digits; anything else is ignored, so the limit can be raised but not turned off. Requires Claude Code v2.1.217 or later",
+      "description": "Number of subagent layers allowed below the main conversation (default: 3). At the default, subagents can spawn their own subagents, and a subagent at the third layer can't spawn further; set `1` to turn nesting off. In v2.1.217 through v2.1.218, the default was 1, so a subagent couldn't spawn its own unless you raised the limit; v2.1.219 raised the default to 3. Accepts a positive whole number in plain digits; anything else is ignored, so the limit can be adjusted but not removed. Requires Claude Code v2.1.217 or later",
       "doc_min_version": "2.1.217",
       "doc_page": "env-vars"
     },
