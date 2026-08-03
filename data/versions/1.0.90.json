@@ -935,7 +935,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Analyze pending changes on the current branch for security vulnerabilities. Reviews the git diff and identifies risks like injection, auth issues, and data exposure",
+      "description": "Analyze the changes on your current branch for security vulnerabilities. Reviews the diff between your branch and origin's default branch, identifying risks like injection, auth issues, and data exposure. Needs an `origin` remote; if the review fails with an `ambiguous argument` error, see the error reference",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -1104,7 +1104,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "See Model configuration",
+      "description": "Model ID that the `opus` alias resolves to, and that `opusplan` uses while Plan Mode is active. See Model configuration",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -1117,7 +1117,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "See Model configuration",
+      "description": "Model ID that the `sonnet` alias resolves to, and that `opusplan` uses when Plan Mode is not active. See Model configuration",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -1409,7 +1409,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
+      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -1549,7 +1549,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Increasing this value reduces the effective context window available before auto-compaction triggers",
+      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code defaults to 32000 for model IDs it doesn't recognize, such as gateway-specific names, and lowers values above a model's cap to the cap. Increasing this value reduces the effective context window available before auto-compaction triggers",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -1664,7 +1664,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "See Model configuration. As of v2.1.196, setting it to `inherit` is the same as leaving it unset; earlier versions treated `inherit` as an override that forced every subagent onto the main conversation's model",
+      "description": "The model Claude Code uses for all subagents, agent teams, and agents in a workflow. Accepts an alias such as `haiku` or a full model name, and takes precedence over the per-invocation `model` parameter and the subagent definition's `model` frontmatter. See Model configuration. Setting it to `inherit` is the same as leaving it unset; before v2.1.196, `inherit` was an override that forced every subagent onto the main conversation's model",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -1828,7 +1828,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to opt out of error reporting",
+      "description": "Set to any non-empty value, such as `1`, to opt out of error reporting. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn error reporting back on",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -1930,7 +1930,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to opt out of telemetry. Telemetry events do not include user data like code, file paths, or bash commands. Also disables feature-flag fetching with the same effect as `DISABLE_GROWTHBOOK`, so some flagged features may be unavailable",
+      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events do not include user data like code, file paths, or bash commands. Also disables feature-flag fetching with the same effect as `DISABLE_GROWTHBOOK`, which makes Remote Control unavailable",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -2018,7 +2018,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to enable demo mode: hides your email and organization name from the header and `/status` output, and skips onboarding. Useful when streaming or recording a session",
+      "description": "Set to any non-empty value, such as `1`, to enable demo mode: hides your email and organization name from the header and `/status` output, and skips onboarding. **Setting it to `0` or `false` still enables demo mode**, unlike most on/off variables; unset the variable to turn it off. Useful when streaming or recording a session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -2056,7 +2056,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override the extended thinking token budget. The ceiling is the model's max output tokens minus one. Set to `0` to disable thinking on the Anthropic API except on Fable 5, which cannot have thinking turned off. On third-party providers, `0` omits the `thinking` parameter instead, and models with adaptive reasoning may still think. For nonzero values on adaptive reasoning models, the budget is ignored unless adaptive reasoning is disabled via `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING`",
+      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024; see `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Fable 5, which cannot have thinking turned off; on third-party providers, `0` omits the `thinking` parameter instead. Nonzero values are ignored on adaptive reasoning models unless `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` is set",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"

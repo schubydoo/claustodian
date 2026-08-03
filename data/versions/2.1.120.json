@@ -2169,7 +2169,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Continue the current session in the Claude Code Desktop app. Requires macOS or Windows and a Claude subscription. Alias: `/app`",
+      "description": "Continue the current session in the Claude Code Desktop app. Requires macOS or x64 Windows and a Claude subscription. Alias: `/app`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2923,7 +2923,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Analyze pending changes on the current branch for security vulnerabilities. Reviews the git diff and identifies risks like injection, auth issues, and data exposure",
+      "description": "Analyze the changes on your current branch for security vulnerabilities. Reviews the diff between your branch and origin's default branch, identifying risks like injection, auth issues, and data exposure. Needs an `origin` remote; if the review fails with an `ambiguous argument` error, see the error reference",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3495,7 +3495,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "See Model configuration",
+      "description": "Model ID that the `haiku` alias resolves to, also used for background functionality. See Model configuration",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -3508,7 +3508,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "See Model configuration",
+      "description": "Display description for the pinned Haiku model in the `/model` picker. Defaults to `Custom Haiku model` when not set. See Model configuration",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -3521,7 +3521,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "See Model configuration",
+      "description": "Display name for the pinned Haiku model in the `/model` picker. Defaults to the model ID when not set. See Model configuration",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -3534,7 +3534,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "See Model configuration",
+      "description": "Model ID that the `opus` alias resolves to, and that `opusplan` uses while Plan Mode is active. See Model configuration",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -3547,7 +3547,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "See Model configuration",
+      "description": "Display description for the pinned Opus model in the `/model` picker. When not set, defaults to `Custom Opus model`, or `Custom Opus model (1M context)` if the pinned model ID has the `[1m]` suffix and `CLAUDE_CODE_DISABLE_1M_CONTEXT` isn't turned on. See Model configuration",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -3560,7 +3560,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "See Model configuration",
+      "description": "Display name for the pinned Opus model in the `/model` picker. Defaults to the model ID when not set. See Model configuration",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -3573,7 +3573,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "See Model configuration",
+      "description": "Model ID that the `sonnet` alias resolves to, and that `opusplan` uses when Plan Mode is not active. See Model configuration",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -3586,7 +3586,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "See Model configuration",
+      "description": "Display description for the pinned Sonnet model in the `/model` picker. When not set, defaults to `Custom Sonnet model`, or `Custom Sonnet model (1M context)` if the pinned model ID has the `[1m]` suffix and `CLAUDE_CODE_DISABLE_1M_CONTEXT` isn't turned on. See Model configuration",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -3599,7 +3599,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "See Model configuration",
+      "description": "Display name for the pinned Sonnet model in the `/model` picker. Defaults to the model ID when not set. See Model configuration",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -4420,7 +4420,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `0` to omit the attribution block (client version and prompt fingerprint) from the start of the system prompt. Disabling it improves prompt-cache hit rates when routing through an LLM gateway. Caching on a direct connection to the Anthropic API is unaffected either way",
+      "description": "Set to `0` to omit the attribution block, which carries the client version and a prompt fingerprint, from the start of the system prompt. Caching on a direct connection to the Anthropic API is unaffected either way. Before v2.1.181 the block included a per-request token on custom base URLs and Microsoft Foundry connections, so on those versions set it to `0` when your LLM gateway caches on the request body or forwards requests to a third-party provider, or when you connect to Microsoft Foundry directly",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -4884,7 +4884,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable file checkpointing. The `/rewind` command will not be able to restore code changes",
+      "description": "Set to `1` to disable file checkpointing. The `/rewind` command will not be able to restore code changes. Overrides the `fileCheckpointingEnabled` setting",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -4936,7 +4936,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
+      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -4962,7 +4962,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to skip automatic addition of the official plugin marketplace on first run",
+      "description": "Set to `1` to disable automatic registration of the official plugin marketplace. Claude Code reads the variable when it is about to register the marketplace, usually during a machine's first interactive launch. If the variable is set at that point, Claude Code skips the registration permanently. Unsetting the variable later doesn't undo the skip. Run `claude plugin marketplace add anthropics/claude-plugins-official` to register the marketplace at any time",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -5649,7 +5649,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Increasing this value reduces the effective context window available before auto-compaction triggers",
+      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code defaults to 32000 for model IDs it doesn't recognize, such as gateway-specific names, and lowers values above a model's cap to the cap. Increasing this value reduces the effective context window available before auto-compaction triggers",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -6128,7 +6128,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set automatically to `true` when Claude Code is running as a cloud session. Read this from a hook or setup script to detect whether you are in a cloud environment",
+      "description": "Set automatically to `true` when Claude Code is running as a cloud session. Read this from a hook or setup script to detect whether you are in a cloud session",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -6226,7 +6226,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to automatically resume if the previous session ended mid-turn. Used in SDK mode so the model continues without requiring the SDK to re-send the prompt",
+      "description": "Set to `1` to automatically resume if the previous session ended mid-turn. Used in SDK mode so the model continues without requiring the SDK to re-send the prompt. To turn this off, unset the variable, because setting it to `0` still triggers the resume in non-interactive mode",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -6605,7 +6605,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "See Model configuration. As of v2.1.196, setting it to `inherit` is the same as leaving it unset; earlier versions treated `inherit` as an override that forced every subagent onto the main conversation's model",
+      "description": "The model Claude Code uses for all subagents, agent teams, and agents in a workflow. Accepts an alias such as `haiku` or a full model name, and takes precedence over the per-invocation `model` parameter and the subagent definition's `model` frontmatter. See Model configuration. Setting it to `inherit` is the same as leaving it unset; before v2.1.196, `inherit` was an override that forced every subagent onto the main conversation's model",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -6804,7 +6804,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to allow 24-bit truecolor output inside tmux. By default, Claude Code clamps to 256 colors when `$TMUX` is set because tmux does not pass through truecolor escape sequences unless configured to. Set this after adding `set -ga terminal-overrides ',*:Tc'` to your `~/.tmux.conf`. See Terminal configuration for other tmux settings",
+      "description": "Set to any non-empty value, such as `1`, to allow 24-bit truecolor output inside tmux. **Setting it to `0` or `false` still allows truecolor**, unlike most on/off variables; unset the variable to restore the 256-color clamp. By default, Claude Code clamps to 256 colors when `$TMUX` is set because tmux does not pass through truecolor escape sequences unless configured to. Set this after adding `set -ga terminal-overrides ',*:Tc'` to your `~/.tmux.conf`. See Terminal configuration for other tmux settings",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -7375,7 +7375,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable automatic compaction when approaching the context limit. The manual `/compact` command remains available. Use when you want explicit control over when compaction occurs",
+      "description": "Set to `1` to disable automatic compaction when approaching the context limit. The manual `/compact` command remains available. Use when you want explicit control over when compaction occurs. Overrides the `autoCompactEnabled` setting",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -7439,7 +7439,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to opt out of error reporting",
+      "description": "Set to any non-empty value, such as `1`, to opt out of error reporting. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn error reporting back on",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -7595,7 +7595,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to opt out of telemetry. Telemetry events do not include user data like code, file paths, or bash commands. Also disables feature-flag fetching with the same effect as `DISABLE_GROWTHBOOK`, so some flagged features may be unavailable",
+      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events do not include user data like code, file paths, or bash commands. Also disables feature-flag fetching with the same effect as `DISABLE_GROWTHBOOK`, which makes Remote Control unavailable",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -7634,7 +7634,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to opt out of telemetry. Equivalent to setting `DISABLE_TELEMETRY`. Claude Code honors this as the cross-tool convention recognized by many developer CLIs",
+      "description": "Set to `1` to opt out of telemetry, with the same effect as `DISABLE_TELEMETRY`, including making Remote Control unavailable. Claude Code reads this variable as a standard boolean, so `0` leaves telemetry on, and honors it as the cross-tool convention recognized by many developer CLIs",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -7722,7 +7722,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls MCP tool search. Unset: all MCP tools deferred by default, but loaded upfront on Google Cloud's Agent Platform or when `ANTHROPIC_BASE_URL` points to a non-first-party host. Values: `true` (always defer and send the beta header, requests fail on Google Cloud's Agent Platform models earlier than Sonnet 4.5 or Opus 4.5, or on proxies that do not support `tool_reference`), `auto` (threshold mode: load upfront if tools fit within 10% of context), `auto:N` (custom threshold, e.g., `auto:5` for 5%), `false` (load all upfront). Ignored when `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` is set, which forces all tools to load upfront",
+      "description": "Controls MCP tool search. Unset: all MCP tools deferred by default, but loaded upfront on Google Cloud's Agent Platform, when `ANTHROPIC_BASE_URL` points to a non-first-party host, or on a Microsoft Foundry deployment hosted on Azure. Values: `true` (always defer and send the beta header, except on a Microsoft Foundry deployment hosted on Azure, where the server-side rejection still forces upfront loading; requests fail on Google Cloud's Agent Platform models earlier than Sonnet 4.5 or Opus 4.5, or on proxies that do not support `tool_reference`), `auto` (threshold mode: load upfront if tools fit within 10% of context), `auto:N` (custom threshold, e.g., `auto:5` for 5%), `false` (load all upfront). Ignored when `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` is set, which forces all tools to load upfront",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -7735,7 +7735,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to any non-empty value to make all models, not only Opus, stop retrying with a repeated-overload error when no fallback model is configured. As of v2.1.160, a configured fallback model chain triggers on repeated overload errors for any primary model, so this variable does not affect switching to a fallback model",
+      "description": "Set to any non-empty value, such as `1`, to make every model stop retrying with a repeated-overload error when no fallback model is configured. **Setting it to `0` or `false` still enables this**, unlike most on/off variables; unset the variable to restore the default retry behavior. Without it, models Claude Code recognizes as Opus, Fable 5, or Mythos models stop retrying this way when you authenticate with an API key or a third-party provider rather than a Claude subscription. As of v2.1.160, a configured fallback model chain triggers on repeated overload errors for any primary model, so this variable does not affect switching to a fallback model",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -7786,7 +7786,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Set to `1` to enable clickable OSC 8 hyperlinks when your terminal supports them but isn't auto-detected, or `0` to disable them",
+      "description": "Set to `1` to enable clickable OSC 8 hyperlinks when your terminal supports them but isn't auto-detected, or `0` to disable them. Claude Code parses this value as a number, not a boolean, so word spellings such as `false`, `no`, or `off` enable hyperlinks rather than disabling them",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -7850,7 +7850,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to enable demo mode: hides your email and organization name from the header and `/status` output, and skips onboarding. Useful when streaming or recording a session",
+      "description": "Set to any non-empty value, such as `1`, to enable demo mode: hides your email and organization name from the header and `/status` output, and skips onboarding. **Setting it to `0` or `false` still enables demo mode**, unlike most on/off variables; unset the variable to turn it off. Useful when streaming or recording a session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -7925,7 +7925,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override the extended thinking token budget. The ceiling is the model's max output tokens minus one. Set to `0` to disable thinking on the Anthropic API except on Fable 5, which cannot have thinking turned off. On third-party providers, `0` omits the `thinking` parameter instead, and models with adaptive reasoning may still think. For nonzero values on adaptive reasoning models, the budget is ignored unless adaptive reasoning is disabled via `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING`",
+      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024; see `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Fable 5, which cannot have thinking turned off; on third-party providers, `0` omits the `thinking` parameter instead. Nonzero values are ignored on adaptive reasoning models unless `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` is set",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
