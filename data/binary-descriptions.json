@@ -145,6 +145,12 @@
         "description": "Author email (default: git config user.email)"
       }
     ],
+    "cli_flag:--autocompact": [
+      {
+        "from": "2.1.222",
+        "description": "Auto-compact window size (auto, or 100k–1M tokens)"
+      }
+    ],
     "cli_flag:--available": [
       {
         "from": "2.1.8",
@@ -1945,6 +1951,12 @@
       {
         "from": "2.1.118",
         "description": "Options shown when the Pro plan Claude Code trial has ended"
+      }
+    ],
+    "command:/prototype": [
+      {
+        "from": "2.1.222",
+        "description": "Prototype an idea as a working Artifact"
       }
     ],
     "command:/radio": [
