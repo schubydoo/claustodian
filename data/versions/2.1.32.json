@@ -1637,7 +1637,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Manage Claude Code plugins. Run with no argument to open the plugin menu, or pass a subcommand such as `list`, `install`, `enable`, or `disable` to act directly",
+      "description": "Manage Claude Code plugins. Run with no argument to open the plugin menu, or pass a subcommand such as `list`, `install`, `enable`, or `disable` to act directly. Claude Code can activate a plugin during the install; the install summary tells you whether it did or whether to run `/reload-plugins`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2324,7 +2324,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum number of characters in bash outputs before the full output is saved to a file and Claude receives the path plus a short preview. See Bash tool behavior",
+      "description": "Maximum number of characters of bash output that Claude Code reads back into a command's result (default: 30000; maximum: 150000). See Output limits",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -2337,7 +2337,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum timeout the model can set for long-running bash commands (default: 600000, or 10 minutes)",
+      "description": "Maximum timeout the model can set for long-running bash commands (default: 600000, or 10 minutes). The effective ceiling is the larger of this and `BASH_DEFAULT_TIMEOUT_MS`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -2412,7 +2412,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set the percentage (1-100) of the auto-compaction window at which auto-compaction triggers. Use lower values like `50` to compact earlier. This variable only causes earlier compaction when Claude Code compacts proactively: when `CLAUDE_CODE_AUTO_COMPACT_WINDOW` is set, in cloud sessions, and on Sonnet 4.6 and Opus 4.6 without extended context, which compact at the 200K boundary by default. On Sonnet 5, proactive compaction applies at the model's default threshold. In other cases, such as a local session on Opus 4.8, auto-compaction triggers when the conversation reaches the model's context limit. The override can only lower the threshold, so values above the default have no effect. Applies to both main conversations and subagents",
+      "description": "Set the percentage (1-100) of the auto-compact window at which auto-compaction triggers. Use lower values like `50` to compact earlier; the variable can't raise the threshold, so values above the default percentage are ignored. It applies only in sessions that compact before the model's context limit. Applies to both main conversations and subagents",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -4357,7 +4357,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls MCP tool search. Unset: all MCP tools deferred by default, but loaded upfront on Google Cloud's Agent Platform, when `ANTHROPIC_BASE_URL` points to a non-first-party host, or on a Microsoft Foundry deployment hosted on Azure. Values: `true` (always defer and send the beta header, except on a Microsoft Foundry deployment hosted on Azure, where the server-side rejection still forces upfront loading; requests fail on Google Cloud's Agent Platform models earlier than Sonnet 4.5 or Opus 4.5, or on proxies that do not support `tool_reference`), `auto` (threshold mode: load upfront if tools fit within 10% of context), `auto:N` (custom threshold, e.g., `auto:5` for 5%), `false` (load all upfront). Ignored when `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` is set, which forces all tools to load upfront",
+      "description": "Controls MCP tool search. Unset: all MCP tools deferred by default, but loaded upfront on Google Cloud's Agent Platform models earlier than the Claude 4.5 generation, when `ANTHROPIC_BASE_URL` points to a non-first-party host, or on a Microsoft Foundry deployment hosted on Azure. Values: `true` (always defer and send the beta header, except on a Microsoft Foundry deployment hosted on Azure and on Google Cloud's Agent Platform models earlier than the Claude 4.5 generation, where Claude Code still loads tools upfront; requests fail on proxies that don't support `tool_reference`), `auto` (threshold mode: load upfront if tools fit within 10% of context), `auto:N` (custom threshold, e.g., `auto:5` for 5%), `false` (load all upfront). Ignored when `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` is set, which forces all tools to load upfront. Before v2.1.221, Claude Code disabled tool search for all models on Google Cloud's Agent Platform unless you set this variable to `true`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
