@@ -935,10 +935,20 @@
         "description": "Resume a conversation by session ID, or open interactive picker with optional search term"
       }
     ],
+    "cli_flag:--resume-drops-turn": [
+      {
+        "from": "2.1.223",
+        "description": "With --resume-session-at in print mode: declare the prompt uuid of the turn the truncating resume intends to discard; the resume is refused if the discarded range contains anything not attributable to that turn (absorbed queued messages, task notifications, content from other turns). Ignored outside print mode, like --resume-session-at."
+      }
+    ],
     "cli_flag:--resume-session-at": [
       {
         "from": "1.0.125",
         "description": "When resuming, only messages up to and including the assistant message with <message.id> (use with --resume in print mode)"
+      },
+      {
+        "from": "2.1.223",
+        "description": "When resuming, only messages up to and including the chain entry with <message.id> — any chain-entry UUID, typically the kept turn's last entry (use with --resume in print mode)"
       }
     ],
     "cli_flag:--rewind-files": [
