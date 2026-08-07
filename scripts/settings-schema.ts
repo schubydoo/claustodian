@@ -365,6 +365,11 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
   };
   walk(root, '', 0);
 
+  // Invariant guard, not a reachable path today: schemaRootStart only accepts a
+  // root after scanLevel proves it declares the anchor key, so a located root
+  // always yields at least that one. Kept — and deliberately untestable — because
+  // it is the last thing standing between a future change in root-finding and
+  // silently publishing "this version has no settings".
   if (keys.length === 0) {
     throw new SettingsSchemaError(
       'settings schema: reached the root but read zero keys. Refusing to report an empty schema.'

@@ -97,6 +97,15 @@ describe('extractSettingsKeys — sub-schema references', () => {
     expect(paths(src)).not.toContain('sandbox.right');
   });
 
+  it('resolves a sub-schema defined AFTER its use', () => {
+    // Lazy bindings are emitted below their reference, so there is nothing behind
+    // to find and the search has to look ahead.
+    const src =
+      'Q=v.object({apiKeyHelper:v.string(),worktree:W10.optional()});' +
+      'W10=Se(()=>v.object({baseRef:v.string(),sparsePaths:v.array(v.string())}))';
+    expect(paths(src)).toEqual(['apiKeyHelper', 'worktree', 'worktree.baseRef', 'worktree.sparsePaths']);
+  });
+
   it('emits the key but no children when a reference resolves to a non-object', () => {
     // `env` and `hooks` are record schemas keyed by caller-supplied names: no
     // fixed key set to enumerate. That is a legitimate answer, not a failure,
@@ -104,6 +113,49 @@ describe('extractSettingsKeys — sub-schema references', () => {
     const src =
       'IU4=v.record(v.string(),v.string());' + 'Q=v.object({apiKeyHelper:v.string(),env:IU4.optional()})';
     expect(paths(src)).toEqual(['apiKeyHelper', 'env']);
+  });
+});
+
+describe('extractSettingsKeys — depth accounting at the object top level', () => {
+  it('steps over a spread call without mistaking its arguments for keys', () => {
+    // `...withDefaults(base)` sits at the object's top level, so its parens are
+    // walked by the outer loop rather than skipped as part of a value.
+    const src = 'Q=v.object({...withDefaults(base),apiKeyHelper:v.string(),model:v.string()})';
+    expect(paths(src)).toEqual(['apiKeyHelper', 'model']);
+  });
+
+  it('does not settle on a previous sibling sub-object when locating the root', () => {
+    // The anchor is preceded by an inline sub-object, so the nearest call-opened
+    // brace going backward is the SIBLING, not the root. Anchoring on it would
+    // root the walk one level too deep and lose every earlier top-level key.
+    const src =
+      'Q=v.object({attribution:v.object({commit:v.string()}),cleanupPeriodDays:v.number()})';
+    expect(paths(src)).toEqual(['attribution', 'attribution.commit', 'cleanupPeriodDays']);
+  });
+
+  it('steps over a nested object literal at the top level', () => {
+    const src = 'Q=v.object({...{legacy:1},apiKeyHelper:v.string()})';
+    expect(paths(src)).toEqual(['apiKeyHelper']);
+  });
+
+  it('steps over a computed key without leaking the bracket contents', () => {
+    const src = 'Q=v.object({["computed,name"]:v.string(),apiKeyHelper:v.string()})';
+    expect(paths(src)).toEqual(['apiKeyHelper']);
+  });
+
+  it('does not treat a brace inside a string value as the end of the object', () => {
+    const src =
+      'Q=v.object({apiKeyHelper:v.string().describe("Use {braces} and, commas"),model:v.string()})';
+    const keys = extractSettingsKeys(src);
+    expect(keys.map((k) => k.path)).toEqual(['apiKeyHelper', 'model']);
+    expect(keys[0]?.description).toBe('Use {braces} and, commas');
+  });
+
+  it('terminates on a truncated bundle instead of running off the end', () => {
+    // An unterminated string literal: the scanner must stop, not loop forever.
+    expect(() => extractSettingsKeys('Q=v.object({apiKeyHelper:v.string().describe("unclosed')).not.toThrow(
+      RangeError
+    );
   });
 });
 
