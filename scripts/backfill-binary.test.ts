@@ -110,6 +110,35 @@ describe('distillObservations', () => {
     });
   });
 
+  /** One version's observation of a single flag, with its evidence. */
+  const evFile = (version: string, symbol: string, evidence: string): BinaryCacheFile => ({
+    version,
+    symbols: [{ symbol, type: 'cli_flag', evidence }],
+  });
+
+  it('marks a symbol switch_case_only when every version proved it that way', () => {
+    const files = [
+      evFile('2.1.223', '--health-port', 'argv-switch'),
+      evFile('2.1.224', '--health-port', 'argv-switch'),
+    ];
+    expect(distillObservations(files).symbols[0]).toMatchObject({ switch_case_only: true });
+  });
+
+  it('drops the switch_case_only mark as soon as one version has stronger evidence', () => {
+    // A flag parsed by a switch in one release and commander-registered in the next
+    // is no longer scope-ambiguous, so it must publish normally.
+    const files = [
+      evFile('2.1.223', '--base-dir', 'argv-switch'),
+      evFile('2.1.224', '--base-dir', 'registration'),
+    ];
+    expect(distillObservations(files).symbols[0]?.switch_case_only).toBeUndefined();
+  });
+
+  it('leaves the mark off symbols found by the ordinary evidence paths', () => {
+    const { symbols } = distillObservations([cacheFile('1.0.0', [['--print', 'cli_flag']])]);
+    expect(symbols[0]?.switch_case_only).toBeUndefined();
+  });
+
   it('sets removed_in for a clean pre-cliff disappearance', () => {
     // present 1.0.0-1.0.2, then absent across 1.0.3-1.0.5 (all reliable era).
     const files = [

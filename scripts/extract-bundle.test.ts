@@ -299,6 +299,42 @@ describe('extractFlags — positive evidence only', () => {
     expect(flags.has('--allowedTools')).toBe(false);
     expect(flags.get('--allowed-tools')).toBe('registration');
   });
+
+  it('includes flags dispatched by a hand-rolled switch over argv', () => {
+    // The exact 2.1.224 `self-hosted-runner` parser shape. This subcommand is
+    // argv-dispatched (`if(t[0]==="self-hosted-runner")`) and hidden from --help, so
+    // no other evidence path reaches its ~28 flags.
+    const src =
+      'switch(n){case"--health-port":if(i){let s=Ld(i)}break;case"--drain-grace-sec":t.drainGraceSec=s;break;}';
+    const flags = extractFlags(src);
+    expect(flags.get('--health-port')).toBe('argv-switch');
+    expect(flags.get('--drain-grace-sec')).toBe('argv-switch');
+  });
+
+  it('reads every label of a fall-through case group, ignoring short flags', () => {
+    const flags = extractFlags('switch(n){case"--help":case"-h":t.help=!0;break;}');
+    expect(flags.get('--help')).toBe('argv-switch');
+    expect(flags.has('-h')).toBe(false);
+  });
+
+  it('lets a registration outrank a switch-case label for the same flag', () => {
+    // The switch pass is additive — it must never downgrade stronger evidence.
+    const src = '.option("--verbose","Show full output");switch(n){case"--verbose":t.v=!0;break;}';
+    expect(extractFlags(src).get('--verbose')).toBe('registration');
+  });
+
+  it('rejects a camelCase case label whole rather than truncating it', () => {
+    expect(extractFlags('switch(n){case"--dryRun":t.d=!0;break;}').size).toBe(0);
+  });
+
+  it('does not admit a subprocess flag that is merely passed, never switched on', () => {
+    // `git commit --no-verify` — forwarded in an args array. You cannot switch on a
+    // string you are only forwarding, which is what makes the case label sound.
+    const src = 'switch(n){case"--log-level":t.l=i;break;}await w1(g,["commit","--no-verify"]);';
+    const flags = extractFlags(src);
+    expect(flags.get('--log-level')).toBe('argv-switch');
+    expect(flags.has('--no-verify')).toBe(false);
+  });
 });
 
 describe('extractCommands — registry objects', () => {

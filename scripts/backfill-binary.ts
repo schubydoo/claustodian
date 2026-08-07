@@ -83,18 +83,28 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
     .sort((a, b) => compareVersionsAsc(b, a));
 
   // Collect every version each symbol was seen in, then derive the window.
-  const seenIn = new Map<string, { symbol: string; type: ExtractedSymbolType; versions: string[] }>();
+  const seenIn = new Map<
+    string,
+    { symbol: string; type: ExtractedSymbolType; versions: string[]; strongEvidence: boolean }
+  >();
   for (const file of files) {
-    for (const { symbol, type } of file.symbols) {
+    for (const { symbol, type, evidence } of file.symbols) {
       const key = `${type}:${symbol}`;
+      // Evidence is per-version and can strengthen over releases (a flag parsed by a
+      // switch in one release may be commander-registered in the next). Track whether
+      // ANY version proved it by something other than a switch-case label, so the
+      // scope caveat is dropped the moment better evidence exists.
+      const strong = evidence !== 'argv-switch';
       const entry = seenIn.get(key);
-      if (entry) entry.versions.push(file.version);
-      else seenIn.set(key, { symbol, type, versions: [file.version] });
+      if (entry) {
+        entry.versions.push(file.version);
+        entry.strongEvidence ||= strong;
+      } else seenIn.set(key, { symbol, type, versions: [file.version], strongEvidence: strong });
     }
   }
 
   const symbols: BinaryObservation[] = [];
-  for (const { symbol, type, versions } of seenIn.values()) {
+  for (const { symbol, type, versions, strongEvidence } of seenIn.values()) {
     const sorted = [...versions].sort(compareVersionsAsc);
     symbols.push({
       symbol,
@@ -102,6 +112,7 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       first_seen: sorted[0] as string,
       last_seen: sorted[sorted.length - 1] as string,
       removed_in: computeBinaryRemoval(versions, observedVersions),
+      ...(strongEvidence ? {} : { switch_case_only: true as const }),
     });
   }
 

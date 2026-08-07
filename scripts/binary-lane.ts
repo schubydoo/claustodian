@@ -40,6 +40,13 @@ export interface BinaryObservation {
    * in the recall-unreliable era (>= RELIABLE_EXTRACTION_CEILING) never sets this.
    */
   removed_in: string | null;
+  /**
+   * True when EVERY version that observed this symbol proved it only by a
+   * `case"--flag":` label in a hand-rolled argv parser. Observed, recorded, and
+   * deliberately not published — see isPublishableBinaryFlag. Absent means the
+   * symbol has stronger evidence somewhere and publishes normally.
+   */
+  switch_case_only?: true;
 }
 
 export interface BinaryObservations {
@@ -173,6 +180,29 @@ export const NEEDS_REVIEW_ENV: ReadonlySet<string> = new Set([
  */
 export function isPublishableBinaryEnv(symbol: string, category: string): boolean {
   return category === 'claude-code' || PROMOTE_CC_ENV.has(symbol) || NEEDS_REVIEW_ENV.has(symbol);
+}
+
+/**
+ * True when a binary-observed flag may be published. The gate is scope, not
+ * ownership: a `case"--flag":` label proves the flag is Claude Code's own, but it
+ * only ever appears in a hand-rolled parser for a SUBCOMMAND — at 2.1.224 all 44
+ * such flags belong to `claude self-hosted-runner` or deeper (`--verify` is
+ * `self-hosted-runner decode-token`), and not one is valid on bare `claude`.
+ *
+ * The dataset is a flat namespace, so publishing them would assert that
+ * `claude --verify` works, which it does not. They stay in
+ * `data/binary-observations.json` as recorded evidence and out of the published
+ * per-version answer — the same observe-but-withhold posture
+ * isPublishableBinaryEnv takes for env vars Claude Code merely reads.
+ *
+ * This is a holding position, not a verdict: once the schema can express scope
+ * (the `scope`/`parent` field in the backlog), these publish with their owning
+ * command and the gate goes away. Withholding also keeps them from re-dating an
+ * existing record — a decode-token parser accepting `--help` is no evidence about
+ * when the top-level `--help` appeared.
+ */
+export function isPublishableBinaryFlag(observation: BinaryObservation): boolean {
+  return observation.switch_case_only !== true;
 }
 
 /**
