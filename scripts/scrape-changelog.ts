@@ -43,6 +43,7 @@ import {
   descriptionAt,
   isCurrentDescriptionEra,
   isPublishableBinaryEnv,
+  isPublishableBinaryFlag,
   loadBinaryDescriptions,
   loadBinaryObservations,
   promotionFor,
@@ -662,8 +663,10 @@ export function enrichSymbols(
  *    provenance:"binary" / status:"needs_review" (null source_url, empty
  *    description, confidence "medium"), carrying the observation's conservative
  *    `removed_in` (null unless it cleanly disappeared pre-cliff). Env vars are
- *    gated to first-party ones (isPublishableBinaryEnv); flags and commands are
- *    all first-party by the extractor's registration/registry evidence. A symbol
+ *    gated to first-party ones (isPublishableBinaryEnv); flags proved only by a
+ *    subcommand's argv switch are withheld as unscopeable (isPublishableBinaryFlag),
+ *    and the rest are first-party by the extractor's registration/registry
+ *    evidence. A symbol
  *    a maintainer has audited (PROMOTED_BINARY_SYMBOLS) is instead published
  *    active/high with a first-party description (still provenance:"binary").
  *
@@ -680,6 +683,11 @@ export function enrichWithBinary(
   const merged = records.map((record) => {
     const obs = observedByKey.get(`${record.type}:${record.symbol}`);
     if (!obs || compareVersionsAsc(obs.first_seen, record.first_seen) >= 0) {
+      return record;
+    }
+    // A switch-case-only observation is subcommand-scoped, so it says nothing about
+    // when the top-level flag of the same name appeared — it must not re-date it.
+    if (!isPublishableBinaryFlag(obs)) {
       return record;
     }
     // Binary saw the symbol earlier than any other lane — earliest evidence wins.
@@ -699,6 +707,11 @@ export function enrichWithBinary(
     const baseCategory = categorize(obs.symbol, obs.type);
     if (obs.type === 'env_var' && !isPublishableBinaryEnv(obs.symbol, baseCategory)) {
       // An external env var Claude Code merely reads — left unpublished by omission.
+      continue;
+    }
+    if (!isPublishableBinaryFlag(obs)) {
+      // Claude Code's own flag, but only ever proved by a subcommand's argv switch —
+      // unpublishable in a flat namespace. Recorded in binary-observations.json.
       continue;
     }
     // A maintainer-audited symbol graduates from the needs_review default to

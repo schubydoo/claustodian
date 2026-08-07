@@ -37,6 +37,7 @@ import { categorize, SYMBOL_DENYLIST, type ExtractedSymbolType } from './scrape-
 export type Evidence =
   | 'registration'
   | 'argv'
+  | 'argv-switch'
   | 'process-env'
   | 'accessor-map'
   | 'command-registry'
@@ -78,6 +79,8 @@ const COMMAND_BACK = 700;
  *   - args-array predicate: `.find`/`.some`/`.filter((o)=>o==="--flag" …)`, including
  *     `||`/`&&`-chained comparisons in the same predicate (e.g.
  *     `t.slice(1).find((o)=>o==="--enabled"||o==="--disabled")`).
+ *   - switch-case dispatch: `case"--flag":` in a hand-rolled argv parser — matched
+ *     separately (FLAG_SWITCH_CASE), see that constant.
  * All are self-referential — a subprocess/browser flag never appears this way.
  * Each branch requires the flag to be *inside* the check, not merely near it:
  * an unrelated `process.argv.slice(2)` next to a `spawn(g,["--x"])` must not
@@ -86,6 +89,25 @@ const COMMAND_BACK = 700;
  */
 const FLAG_OWN_EVIDENCE =
   /\.(?:option|addOption)\([^)]{0,85}$|process\.argv(?:\.slice\(\s*\d*\s*\))?\.(?:includes|indexOf)\(\s*["'`]$|\.(?:find|some|filter)\([\s\S]{0,80}?\b\w+\s*===?\s*["'`]$/;
+
+/**
+ * A `case"--flag":` label — Claude Code dispatching on its own already-parsed argv
+ * in a hand-rolled parser, the shape commander-free subcommands use. `claude
+ * self-hosted-runner` is the whole reason this exists: it is dispatched by raw argv
+ * (`if(t[0]==="self-hosted-runner")`), hidden from `claude --help`, and parses ~28
+ * flags this way, none of which the other evidence paths can see.
+ *
+ * Sound for the same reason the other paths are: it is self-referential. A flag
+ * Claude Code merely PASSES to git or docker appears in an args array, never as a
+ * case label in Claude Code's own switch — you cannot switch on a string you are
+ * only forwarding. This is a narrower claim than the general `===` comparison the
+ * 2026-07-10 backlog note worried about: `case` is a statement position, so it
+ * cannot match a comparison against a subprocess's output or a config value.
+ *
+ * Capitals are captured so a camelCase label is rejected whole by FLAG_GRAMMAR
+ * rather than truncated into a phantom — the same reason FLAG_TOKEN scans them.
+ */
+const FLAG_SWITCH_CASE = /case\s*(["'`])(--[A-Za-z][A-Za-z0-9-]*)\1\s*:/g;
 
 /** An Option constructor and its first string argument — the candidate spec. */
 const FLAG_CTOR_SPEC = /new [A-Za-z_$][\w$]*\(\s*(["'`])((?:(?!\1)[^\\\n]|\\.)*)\1/g;
@@ -262,6 +284,13 @@ export function extractFlags(src: string): Map<string, Evidence> {
     const before = src.slice(Math.max(0, m.index - FLAG_EVIDENCE_WINDOW), m.index);
     if (!FLAG_OWN_EVIDENCE.test(before)) continue;
     out.set(flag, /\.(?:option|addOption)\(/.test(before) ? 'registration' : 'argv');
+  }
+  // Last, and additive only: a switch-case label never relabels a flag the stronger
+  // paths above already proved, it only reaches the hand-rolled parsers they cannot.
+  for (const m of src.matchAll(FLAG_SWITCH_CASE)) {
+    const flag = m[2];
+    if (flag === undefined || out.has(flag) || !FLAG_GRAMMAR.test(flag)) continue;
+    out.set(flag, 'argv-switch');
   }
   return out;
 }

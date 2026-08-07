@@ -526,6 +526,55 @@ describe('enrichWithBinary', () => {
     expect(r?.first_seen_estimated).toBeUndefined();
   });
 
+  it('withholds a switch-case-only flag from the published set', () => {
+    // Claude Code's own flag, but only ever seen as a `case"--x":` label in a
+    // subcommand's argv parser. At 2.1.224 every such flag belongs to
+    // `claude self-hosted-runner` or deeper; none is valid on bare `claude`, and a
+    // flat record would assert otherwise. Stays in binary-observations.json.
+    const out = enrichWithBinary(
+      [],
+      binary([
+        {
+          symbol: '--health-port',
+          type: 'cli_flag',
+          first_seen: '2.1.224',
+          last_seen: '2.1.224',
+          switch_case_only: true,
+        },
+      ])
+    );
+    expect(byKey(out).has('cli_flag:--health-port')).toBe(false);
+  });
+
+  it('still publishes a binary-only flag that has ordinary evidence', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([{ symbol: '--cowork', type: 'cli_flag', first_seen: '2.1.15', last_seen: '2.1.224' }])
+    );
+    expect(byKey(out).get('cli_flag:--cowork')).toMatchObject({
+      provenance: 'binary',
+      status: 'needs_review',
+    });
+  });
+
+  it('does not let a switch-case-only observation re-date an existing record', () => {
+    // A `self-hosted-runner decode-token` parser accepting --help is no evidence
+    // about when the TOP-LEVEL --help appeared.
+    const out = enrichWithBinary(
+      [record({ symbol: '--help', first_seen: '2.1.200', first_seen_estimated: true, confidence: 'medium' })],
+      binary([
+        {
+          symbol: '--help',
+          type: 'cli_flag',
+          first_seen: '2.0.29',
+          last_seen: '2.1.224',
+          switch_case_only: true,
+        },
+      ])
+    );
+    expect(byKey(out).get('cli_flag:--help')).toMatchObject({ first_seen: '2.1.200' });
+  });
+
   it('does not touch first_seen when the binary observed the symbol no earlier', () => {
     const input = [record({ symbol: '--foo', first_seen: '1.0.0' })];
     const out = enrichWithBinary(
