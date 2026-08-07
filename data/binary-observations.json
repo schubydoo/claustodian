@@ -6,6 +6,7 @@
     "2.1.224",
     "2.1.223",
     "2.1.222",
+    "2.1.221",
     "2.1.220",
     "2.1.219",
     "2.1.218",
@@ -572,18 +573,19 @@
       "removed_in": null
     },
     {
-      "symbol": "--allowed",
-      "type": "cli_flag",
-      "first_seen": "0.2.33",
-      "last_seen": "2.1.224",
-      "removed_in": null
-    },
-    {
       "symbol": "--allowed-tools",
       "type": "cli_flag",
       "first_seen": "1.0.86",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--api-url",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--append-subagent-system-prompt",
@@ -630,7 +632,7 @@
     {
       "symbol": "--autocompact",
       "type": "cli_flag",
-      "first_seen": "2.1.222",
+      "first_seen": "2.1.221",
       "last_seen": "2.1.224",
       "removed_in": null
     },
@@ -663,6 +665,14 @@
       "removed_in": null
     },
     {
+      "symbol": "--base-dir",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--betas",
       "type": "cli_flag",
       "first_seen": "2.0.58",
@@ -689,6 +699,14 @@
       "first_seen": "2.1.30",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--capacity",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--case",
@@ -747,6 +765,22 @@
       "removed_in": null
     },
     {
+      "symbol": "--configure-git",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--confine-repo-settings",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--console",
       "type": "cli_flag",
       "first_seen": "2.1.79",
@@ -771,8 +805,8 @@
       "symbol": "--cowork",
       "type": "cli_flag",
       "first_seen": "2.1.15",
-      "last_seen": "2.1.83",
-      "removed_in": "2.1.84"
+      "last_seen": "2.1.224",
+      "removed_in": null
     },
     {
       "symbol": "--cwd",
@@ -803,6 +837,14 @@
       "removed_in": null
     },
     {
+      "symbol": "--debug-dir",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--debug-file",
       "type": "cli_flag",
       "first_seen": "2.1.20",
@@ -815,6 +857,14 @@
       "first_seen": "1.0.63",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--debug-token-dir",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--deep-link-cwd-b64",
@@ -873,18 +923,35 @@
       "removed_in": null
     },
     {
-      "symbol": "--disallowed",
-      "type": "cli_flag",
-      "first_seen": "0.2.83",
-      "last_seen": "2.1.224",
-      "removed_in": null
-    },
-    {
       "symbol": "--disallowed-tools",
       "type": "cli_flag",
       "first_seen": "1.0.86",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--drain-grace-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--drain-wait-bg-tasks-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--drain-wait-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--dry-run",
@@ -950,11 +1017,43 @@
       "removed_in": null
     },
     {
+      "symbol": "--environment-secret-file",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--exclude-dynamic-system-prompt-sections",
       "type": "cli_flag",
       "first_seen": "2.1.98",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--exec-path",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--exit-if-unused-min",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--expected-spawn-seconds",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--fallback-model",
@@ -999,6 +1098,22 @@
       "removed_in": null
     },
     {
+      "symbol": "--git-host-rewrite",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--git-ssh-rewrite",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--global",
       "type": "cli_flag",
       "first_seen": "0.2.9",
@@ -1025,6 +1140,46 @@
       "first_seen": "0.2.106",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--health-port",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--help",
+      "type": "cli_flag",
+      "first_seen": "2.0.12",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--hook-concurrency",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--hook-timeout",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--hooks-dir",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--host",
@@ -1146,11 +1301,43 @@
       "removed_in": null
     },
     {
+      "symbol": "--kill-session-after-min",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--label",
       "type": "cli_flag",
       "first_seen": "2.1.208",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--lock-to-account",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--log-file",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--log-level",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--maintenance",
@@ -1223,6 +1410,21 @@
       "removed_in": null
     },
     {
+      "symbol": "--messaging-socket-path",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "--min-idle",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--model",
       "type": "cli_flag",
       "first_seen": "1.0.0",
@@ -1242,6 +1444,14 @@
       "first_seen": "2.1.186",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--no-check-expiry",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--no-chrome",
@@ -1277,6 +1487,14 @@
       "first_seen": "2.0.63",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--no-verify",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--on-branch",
@@ -1370,11 +1588,27 @@
       "removed_in": null
     },
     {
+      "symbol": "--pool-secret-file",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--port",
       "type": "cli_flag",
       "first_seen": "2.1.64",
       "last_seen": "2.1.69",
       "removed_in": null
+    },
+    {
+      "symbol": "--post-session-hook-timeout-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--prefill",
@@ -1426,6 +1660,14 @@
       "removed_in": null
     },
     {
+      "symbol": "--push-outcome-on-release",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--rc",
       "type": "cli_flag",
       "first_seen": "2.1.73",
@@ -1438,6 +1680,14 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--release-idle-session-min",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--remote",
@@ -1510,6 +1760,14 @@
       "removed_in": null
     },
     {
+      "symbol": "--retire-at",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--rewind-files",
       "type": "cli_flag",
       "first_seen": "2.0.63",
@@ -1543,6 +1801,46 @@
       "first_seen": "2.1.198",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--scm-connector-ca-file",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--scm-connector-host",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--scm-connector-host-rewrite",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--scm-connector-id",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
+      "symbol": "--scm-connector-provider",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--scope",
@@ -1580,6 +1878,14 @@
       "removed_in": null
     },
     {
+      "symbol": "--session-stop-grace-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--setting-sources",
       "type": "cli_flag",
       "first_seen": "1.0.125",
@@ -1592,6 +1898,14 @@
       "first_seen": "1.0.61",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--sigkill-timeout-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--skip-dts",
@@ -1613,6 +1927,14 @@
       "first_seen": "2.1.40",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--startup-timeout-min",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--strict",
@@ -1734,6 +2056,14 @@
       "removed_in": null
     },
     {
+      "symbol": "--trust-workspace",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--unix",
       "type": "cli_flag",
       "first_seen": "2.1.64",
@@ -1741,11 +2071,27 @@
       "removed_in": null
     },
     {
+      "symbol": "--use-anthropic-git-proxy",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
+    },
+    {
       "symbol": "--verbose",
       "type": "cli_flag",
       "first_seen": "0.2.9",
       "last_seen": "2.1.224",
       "removed_in": null
+    },
+    {
+      "symbol": "--verify",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null,
+      "switch_case_only": true
     },
     {
       "symbol": "--watch",
@@ -2464,7 +2810,7 @@
     {
       "symbol": "/prototype",
       "type": "command",
-      "first_seen": "2.1.222",
+      "first_seen": "2.1.221",
       "last_seen": "2.1.222",
       "removed_in": null
     },
@@ -4347,14 +4693,14 @@
     {
       "symbol": "CLAUDE_CODE_ARTIFACTS_API_TOKEN",
       "type": "env_var",
-      "first_seen": "2.1.222",
+      "first_seen": "2.1.221",
       "last_seen": "2.1.224",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_ARTIFACT_ASSET_BASE_URL",
       "type": "env_var",
-      "first_seen": "2.1.222",
+      "first_seen": "2.1.221",
       "last_seen": "2.1.224",
       "removed_in": null
     },
@@ -4368,14 +4714,14 @@
     {
       "symbol": "CLAUDE_CODE_ARTIFACT_COMMENTS",
       "type": "env_var",
-      "first_seen": "2.1.222",
+      "first_seen": "2.1.221",
       "last_seen": "2.1.224",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_ARTIFACT_COMMENTS_AUTOREACT",
       "type": "env_var",
-      "first_seen": "2.1.222",
+      "first_seen": "2.1.221",
       "last_seen": "2.1.224",
       "removed_in": null
     },
@@ -4396,7 +4742,7 @@
     {
       "symbol": "CLAUDE_CODE_ARTIFACT_LIVE_BASE_URL",
       "type": "env_var",
-      "first_seen": "2.1.222",
+      "first_seen": "2.1.221",
       "last_seen": "2.1.224",
       "removed_in": null
     },
@@ -7154,7 +7500,7 @@
     {
       "symbol": "CLAUDE_CODE_THRIFTY_SONIC",
       "type": "env_var",
-      "first_seen": "2.1.222",
+      "first_seen": "2.1.221",
       "last_seen": "2.1.224",
       "removed_in": null
     },
@@ -8876,7 +9222,7 @@
     {
       "symbol": "GIT_CONFIG_COUNT",
       "type": "env_var",
-      "first_seen": "2.1.222",
+      "first_seen": "2.1.221",
       "last_seen": "2.1.224",
       "removed_in": null
     },
@@ -9310,7 +9656,7 @@
     {
       "symbol": "NODE",
       "type": "env_var",
-      "first_seen": "2.1.222",
+      "first_seen": "2.1.221",
       "last_seen": "2.1.224",
       "removed_in": null
     },
@@ -9359,7 +9705,7 @@
     {
       "symbol": "NODE_TEST_WORKER_ID",
       "type": "env_var",
-      "first_seen": "2.1.222",
+      "first_seen": "2.1.221",
       "last_seen": "2.1.224",
       "removed_in": null
     },

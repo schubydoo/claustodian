@@ -57,13 +57,6 @@
       "doc_page": "cli-reference"
     },
     {
-      "symbol": "--allowed",
-      "type": "cli_flag",
-      "description": "Tools that execute without prompting for permission. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead",
-      "doc_min_version": null,
-      "doc_page": "cli-reference"
-    },
-    {
       "symbol": "--allowed-tools",
       "type": "cli_flag",
       "description": "Tools that execute without prompting for permission. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead",
@@ -242,13 +235,6 @@
       "symbol": "--disable-slash-commands",
       "type": "cli_flag",
       "description": "Disable all skills and commands for this session",
-      "doc_min_version": null,
-      "doc_page": "cli-reference"
-    },
-    {
-      "symbol": "--disallowed",
-      "type": "cli_flag",
-      "description": "Deny rules. A bare tool name removes the matching tools from Claude's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only matching calls. A rule naming `EndConversation` can't remove it while any other tool remains",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -976,7 +962,7 @@
     {
       "symbol": "/fork",
       "type": "command",
-      "description": "Copy the current conversation into a new background session and keep working here; the two sessions are independent from that point on. Pass a prompt and the copy starts working on it immediately; without one it waits in agent view for its first prompt. Except when the copy edits in place, Claude Code instructs it to create a worktree of its own before making code changes; the isolation instruction requires Claude Code v2.1.221 or later. To hand a side task to a subagent whose result comes back into this conversation, use `/subtask`; to switch into a copy yourself, use `/branch`. Requires Claude Code v2.1.212 or later; on v2.1.161 through v2.1.211, and whenever agent view is turned off, `/fork` starts a forked subagent instead",
+      "description": "Copy the current conversation into a new background session and keep working here. Pass a prompt and the copy starts working on it immediately; without one it waits in agent view for its first prompt. Except when the copy edits in place, Claude Code instructs it to create a worktree of its own before making code changes; the isolation instruction requires Claude Code v2.1.221 or later. To hand a side task to a subagent whose result comes back into this conversation, use `/subtask`; to switch into a copy yourself, use `/branch`. Requires Claude Code v2.1.212 or later; on v2.1.161 through v2.1.211, and whenever agent view is turned off, `/fork` starts a forked subagent instead",
       "doc_min_version": "2.1.212",
       "doc_page": "commands"
     },
@@ -1048,6 +1034,13 @@
       "type": "command",
       "description": "Open your keyboard shortcuts file",
       "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
+      "symbol": "/list-agents",
+      "type": "command",
+      "description": "List the subagents and other Claude Code sessions Claude can message, with the name to use for each; agent team teammates aren't listed, since Claude reaches them through the team's roster. See cross-session messaging. Also available as `/peers`. Requires Claude Code v2.1.224 or later; earlier versions report `Unknown command: /list-agents`. Available only in sessions where cross-session messaging is enabled",
+      "doc_min_version": "2.1.224",
       "doc_page": "commands"
     },
     {
@@ -1489,6 +1482,13 @@
       "type": "env_var",
       "description": "Override the Amazon Bedrock Mantle endpoint URL. See Mantle endpoint",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "ANTHROPIC_BEDROCK_REGION_PREFIX",
+      "type": "env_var",
+      "description": "Cross-region inference profile prefix (`us`, `eu`, `apac`, `jp`, `au`, or `global`) Claude Code tries first instead of the one derived from the AWS region. Ignored in AWS GovCloud regions. Requires Claude Code v2.1.224 or later. See Amazon Bedrock",
+      "doc_min_version": "2.1.224",
       "doc_page": "env-vars"
     },
     {
@@ -2159,7 +2159,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
       "type": "env_var",
-      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
+      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and cross-session messaging unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -2504,6 +2504,13 @@
       "type": "env_var",
       "description": "Idle timeout in milliseconds for MCP tool calls. When a stdio, HTTP, SSE, WebSocket, or claude.ai connector MCP server sends no response and no progress notification for this long, the tool call aborts with an error instead of waiting for the overall `MCP_TOOL_TIMEOUT`. Overrides the per-transport defaults of 300000 (5 minutes) for network servers and 1800000 (30 minutes) for stdio servers. Set to `0` to disable the idle check. Values below 1000 are raised to one second, and the value is capped at the effective `MCP_TOOL_TIMEOUT`. A per-server `timeout` in `.mcp.json` of at least 1000 raises that server's idle window to at least the `timeout` value. Doesn't apply to IDE servers or SDK in-process servers. Requires Claude Code v2.1.187 or later. Before v2.1.203, stdio servers were exempt from the idle timeout",
       "doc_min_version": "2.1.187",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MESSAGING_SOCKET",
+      "type": "env_var",
+      "description": "Set by Claude Code, not by you: in sessions that bind an inbox socket, Claude Code exports that socket's path to hooks and Bash commands before any hook runs. Other sessions on the machine deliver messages to this path. Each session exports its own socket rather than one inherited from a parent, and messages arriving on it go through the session's inbound controls. Settings `env` blocks can't set it. Requires Claude Code v2.1.224 or later",
+      "doc_min_version": "2.1.224",
       "doc_page": "env-vars"
     },
     {
@@ -2992,7 +2999,7 @@
     {
       "symbol": "CLAUDE_CODE_USER_DIALOG_TIMEOUT_MS",
       "type": "env_var",
-      "description": "Deadline in milliseconds for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, before Claude Code cancels them; permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by it. Overrides the `dialogExpiry` setting; `0` or a negative value disables the deadline",
+      "description": "Deadline in milliseconds for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, and for the approval dialog for a held cross-session message, before Claude Code cancels them; permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by it. Overrides the `dialogExpiry` setting; `0` or a negative value disables the deadline",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3167,7 +3174,7 @@
     {
       "symbol": "DISABLE_GROWTHBOOK",
       "type": "env_var",
-      "description": "Set to `1` to disable GrowthBook feature-flag fetching and use code defaults for every flag. This makes Remote Control unavailable. Telemetry event logging stays on unless `DISABLE_TELEMETRY` is also set",
+      "description": "Set to `1` to disable GrowthBook feature-flag fetching and use code defaults for every flag. This makes Remote Control and cross-session messaging unavailable. Telemetry event logging stays on unless `DISABLE_TELEMETRY` is also set",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3244,7 +3251,7 @@
     {
       "symbol": "DISABLE_TELEMETRY",
       "type": "env_var",
-      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events do not include user data like code, file paths, or bash commands. Also disables feature-flag fetching with the same effect as `DISABLE_GROWTHBOOK`, which makes Remote Control unavailable",
+      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events do not include user data like code, file paths, or bash commands. Also disables feature-flag fetching with the same effect as `DISABLE_GROWTHBOOK`, which makes Remote Control and cross-session messaging unavailable",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3265,7 +3272,7 @@
     {
       "symbol": "DO_NOT_TRACK",
       "type": "env_var",
-      "description": "Set to `1` to opt out of telemetry, with the same effect as `DISABLE_TELEMETRY`, including making Remote Control unavailable. Claude Code reads this variable as a standard boolean, so `0` leaves telemetry on, and honors it as the cross-tool convention recognized by many developer CLIs",
+      "description": "Set to `1` to opt out of telemetry, with the same effect as `DISABLE_TELEMETRY`, including making Remote Control and cross-session messaging unavailable. Claude Code reads this variable as a standard boolean, so `0` leaves telemetry on, and honors it as the cross-tool convention recognized by many developer CLIs",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },

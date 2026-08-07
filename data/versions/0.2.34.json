@@ -3,19 +3,6 @@
   "schemaVersion": "1.0.0",
   "symbols": [
     {
-      "symbol": "--allowed",
-      "type": "cli_flag",
-      "first_seen": "0.2.33",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
-      "description": "Comma-separated list of tool names to allow (e.g. \"Bash(git*),Edit,Replace\")",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--cwd",
       "type": "cli_flag",
       "first_seen": "0.2.9",
