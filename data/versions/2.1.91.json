@@ -145,19 +145,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--allowed",
-      "type": "cli_flag",
-      "first_seen": "0.2.33",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
-      "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git:*) Edit\")",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--allowed-tools",
       "type": "cli_flag",
       "first_seen": "1.0.86",
@@ -165,8 +152,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Tools that execute without prompting for permission. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead",
-      "description_source": "docs",
+      "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git:*) Edit\")",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
     },
@@ -379,6 +366,19 @@
       "category": "cli"
     },
     {
+      "symbol": "--cowork",
+      "type": "cli_flag",
+      "first_seen": "2.1.15",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Use cowork_plugins directory",
+      "source_url": null,
+      "category": "cli",
+      "description_source": "binary"
+    },
+    {
       "symbol": "--cwd",
       "type": "cli_flag",
       "first_seen": "0.2.9",
@@ -521,19 +521,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--disallowed",
-      "type": "cli_flag",
-      "first_seen": "0.2.83",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
-      "description": "Comma or space-separated list of tool names to deny (e.g. \"Bash(git:*) Edit\")",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--disallowed-tools",
       "type": "cli_flag",
       "first_seen": "1.0.86",
@@ -541,8 +528,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Deny rules. A bare tool name removes the matching tools from Claude's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only matching calls. A rule naming `EndConversation` can't remove it while any other tool remains",
-      "description_source": "docs",
+      "description": "Comma or space-separated list of tool names to deny (e.g. \"Bash(git:*) Edit\")",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
     },
@@ -4293,7 +4280,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
+      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and cross-session messaging unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -6466,7 +6453,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events do not include user data like code, file paths, or bash commands. Also disables feature-flag fetching with the same effect as `DISABLE_GROWTHBOOK`, which makes Remote Control unavailable",
+      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events do not include user data like code, file paths, or bash commands. Also disables feature-flag fetching with the same effect as `DISABLE_GROWTHBOOK`, which makes Remote Control and cross-session messaging unavailable",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"

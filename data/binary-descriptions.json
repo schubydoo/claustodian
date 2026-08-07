@@ -79,25 +79,9 @@
         "description": "Operator grant for gated tools (Bash, Write, Edit, WebFetch, mcp__*). Supports Tool(pattern:*) syntax"
       }
     ],
-    "cli_flag:--allowed": [
+    "cli_flag:--allowed-tools": [
       {
-        "from": "0.2.33",
-        "description": "Comma-separated list of tool names to allow (e.g. \"Bash(git*),Edit,Replace\")"
-      },
-      {
-        "from": "0.2.52",
-        "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git*) Edit Replace\")"
-      },
-      {
-        "from": "0.2.83",
-        "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git*) Edit Write\")"
-      },
-      {
-        "from": "1.0.3",
-        "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git:*) Edit Write\")"
-      },
-      {
-        "from": "1.0.5",
+        "from": "1.0.86",
         "description": "Comma or space-separated list of tool names to allow (e.g. \"Bash(git:*) Edit\")"
       },
       {
@@ -147,7 +131,7 @@
     ],
     "cli_flag:--autocompact": [
       {
-        "from": "2.1.222",
+        "from": "2.1.221",
         "description": "Auto-compact window size (auto, or 100k–1M tokens)"
       }
     ],
@@ -161,6 +145,12 @@
       {
         "from": "2.1.181",
         "description": "Render screen-reader friendly output (flat text, no decorative borders or animations)."
+      }
+    ],
+    "cli_flag:--background": [
+      {
+        "from": "2.1.187",
+        "description": "Start the session as a background agent and return immediately (manage with `claude agents`)"
       }
     ],
     "cli_flag:--bare": [
@@ -365,17 +355,9 @@
         "description": "Disable all skills"
       }
     ],
-    "cli_flag:--disallowed": [
+    "cli_flag:--disallowed-tools": [
       {
-        "from": "0.2.83",
-        "description": "Comma or space-separated list of tool names to deny (e.g. \"Bash(git*) Edit Write\")"
-      },
-      {
-        "from": "1.0.3",
-        "description": "Comma or space-separated list of tool names to deny (e.g. \"Bash(git:*) Edit Write\")"
-      },
-      {
-        "from": "1.0.5",
+        "from": "1.0.86",
         "description": "Comma or space-separated list of tool names to deny (e.g. \"Bash(git:*) Edit\")"
       },
       {
@@ -705,6 +687,12 @@
       {
         "from": "2.1.118",
         "description": "Tag annotation message (use %s for the version)"
+      }
+    ],
+    "cli_flag:--messaging-socket-path": [
+      {
+        "from": "2.1.224",
+        "description": "Cross-session messaging server path: a Unix domain socket on Mac/Linux, a \\\\.\\pipe\\ name on Windows (defaults to an auto-generated path)"
       }
     ],
     "cli_flag:--model": [
@@ -2015,7 +2003,7 @@
     ],
     "command:/prototype": [
       {
-        "from": "2.1.222",
+        "from": "2.1.221",
         "description": "Prototype an idea as a working Artifact"
       }
     ],
