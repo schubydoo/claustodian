@@ -9,10 +9,17 @@
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
-/** The three symbol kinds every lane extracts (changelog, docs, binary). Lives
- * here — a dependency-free leaf — so lane modules share it without importing one
- * another. Narrower than a full SymbolRecord's `type` (no config keys). */
-export type ExtractedSymbolType = 'cli_flag' | 'command' | 'env_var';
+/** The symbol kinds the lanes extract. Lives here — a dependency-free leaf — so
+ * lane modules share it without importing one another. The changelog and docs
+ * lanes only ever produce the first three; the binary lane also reads settings
+ * keys out of the embedded zod schema, which is where the config kinds come
+ * from. Now the full SymbolRecord `type` enum. */
+export type ExtractedSymbolType =
+  | 'cli_flag'
+  | 'command'
+  | 'env_var'
+  | 'config_key'
+  | 'internal_config_flag';
 
 export const CHANGELOG_URL =
   'https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md';

@@ -339,6 +339,9 @@ const ENV_CATEGORY_RULES: ReadonlyArray<readonly [RegExp, string]> = [
 export function categorize(symbol: string, type: ExtractedSymbolType): string {
   if (type === 'cli_flag') return 'cli';
   if (type === 'command') return 'command';
+  // Settings keys are their own surface; the env-var prefix rules below would
+  // otherwise bucket them all as "other".
+  if (type === 'config_key' || type === 'internal_config_flag') return 'settings';
   for (const [pattern, category] of ENV_CATEGORY_RULES) {
     if (pattern.test(symbol)) return category;
   }

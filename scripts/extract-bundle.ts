@@ -32,6 +32,7 @@
  * diffing. The backfill and the forward CI wrap this with those concerns.
  */
 import { categorize, SYMBOL_DENYLIST, type ExtractedSymbolType } from './scrape-changelog.js';
+import { extractSettingsKeys, settingsKeyType } from './settings-schema.js';
 
 /** How a candidate earned inclusion — recorded so the review queue can triage. */
 export type Evidence =
@@ -41,7 +42,8 @@ export type Evidence =
   | 'process-env'
   | 'accessor-map'
   | 'command-registry'
-  | 'skill-registry';
+  | 'skill-registry'
+  | 'settings-schema';
 
 export interface BundleSymbol {
   symbol: string;
@@ -515,6 +517,20 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
       category: categorize(symbol, 'command'),
       evidence: 'skill-registry',
       ...(description ? { description } : {}),
+    });
+  }
+  // Settings keys from the embedded zod schema. This throws rather than
+  // returning a partial set when the schema is present but unwalkable, and that
+  // is deliberate: a shrunken key set is indistinguishable downstream from ~230
+  // keys being deleted upstream. Failing the whole version is the safe answer.
+  for (const key of extractSettingsKeys(src)) {
+    const type = settingsKeyType(key);
+    symbols.push({
+      symbol: key.path,
+      type,
+      category: categorize(key.path, type),
+      evidence: 'settings-schema',
+      ...(key.description ? { description: key.description } : {}),
     });
   }
   return symbols.sort((a, b) =>

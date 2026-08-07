@@ -499,6 +499,37 @@ describe('extractSkillCommands — skill/menu registry', () => {
   });
 });
 
+describe('extractBundleSymbols — settings keys', () => {
+  it('emits settings keys as config symbols carrying the schema description', () => {
+    const src =
+      '.option("--verbose","v");' +
+      'Q=v.object({apiKeyHelper:v.string().describe("Path to an auth script"),' +
+      'skipWorkflowUsageWarning:v.boolean().describe("@internal Accepted the warning")})';
+    const out = extractBundleSymbols(src);
+    expect(out.find((s) => s.symbol === 'apiKeyHelper')).toMatchObject({
+      type: 'config_key',
+      category: 'settings',
+      evidence: 'settings-schema',
+      description: 'Path to an auth script',
+    });
+    // An @internal key is plumbing, not a user-facing setting.
+    expect(out.find((s) => s.symbol === 'skipWorkflowUsageWarning')?.type).toBe('internal_config_flag');
+  });
+
+  it('fails the whole extraction when the schema is present but unwalkable', () => {
+    // Never return a partial set: downstream it is indistinguishable from the
+    // missing keys having been deleted upstream.
+    const src = 'Q=v.object({apiKeyHelper:v.string(),permissions:zWl(e)})';
+    expect(() => extractBundleSymbols(src)).toThrow(/no resolvable definition/);
+  });
+
+  it('extracts normally from a bundle with no settings schema', () => {
+    const out = extractBundleSymbols('.option("--verbose","v")');
+    expect(out.some((s) => s.type === 'config_key')).toBe(false);
+    expect(out.find((s) => s.symbol === '--verbose')?.type).toBe('cli_flag');
+  });
+});
+
 describe('extractBundleSymbols', () => {
   it('merges all three types, sorted by type then symbol, with evidence', () => {
     const src = [
