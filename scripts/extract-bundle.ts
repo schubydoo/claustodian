@@ -101,9 +101,14 @@ const FLAG_CTOR_SPEC = /new [A-Za-z_$][\w$]*\(\s*(["'`])((?:(?!\1)[^\\\n]|\\.)*)
  * restore hook stubs …")` and several like it, which is how a first attempt at this
  * fix published `--configure-git` and `--messaging-socket-path` as registered flags.
  * Prose after the flag is not spec syntax, so it is rejected here.
+ *
+ * The alias separator is a comma OR bare whitespace, because commander accepts
+ * both (`"-d --debug"` is as valid as `"-d, --debug"`). 2.1.224 happens to use the
+ * comma form everywhere, so this costs nothing today and stops a future style
+ * change from silently dropping a flag.
  */
 const OPTION_SPEC =
-  /^-{1,2}[A-Za-z][A-Za-z0-9-]*(?:\s*,\s*\[?\s*-{1,2}[A-Za-z][A-Za-z0-9-]*\s*\]?)*(?:\s+[<[][^>\]]*[>\]])?$/;
+  /^-{1,2}[A-Za-z][A-Za-z0-9-]*(?:(?:\s*,\s*|\s+)\[?\s*-{1,2}[A-Za-z][A-Za-z0-9-]*\s*\]?)*(?:\s+[<[][^>\]]*[>\]])?$/;
 
 /**
  * Every long-flag-shaped token, capitals INCLUDED, so a camelCase flag is seen

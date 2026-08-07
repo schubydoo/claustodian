@@ -53,6 +53,11 @@ describe('extractFlagDescriptions', () => {
     expect(d.get('--verbose')).toBe('Same text');
   });
 
+  it('records no description for a short-only spec (no long flag to attach it to)', () => {
+    const d = extractFlagDescriptions('.option("-v","Verbose output")', new Set(['--verbose']));
+    expect(d.size).toBe(0);
+  });
+
   it('describes every in-grammar alias in a spec, and never the camelCase phantom', () => {
     // Reading only the spec's FIRST token gave the phantom `--allowed` this exact
     // description and left the real alias undescribed.
@@ -249,6 +254,28 @@ describe('extractFlags — positive evidence only', () => {
     const flags = extractFlags(src);
     expect(flags.has('--configure-git')).toBe(false);
     expect(flags.has('--messaging-socket-path')).toBe(false);
+  });
+
+  it('records nothing for a short-only constructor spec (no long flag to key on)', () => {
+    // `-v` is a valid spec but declares no long flag; the lane's grammar is
+    // long-flag-only, so the spec is accepted and contributes zero symbols.
+    expect(extractFlags('new Q("-v","Verbose output")').size).toBe(0);
+  });
+
+  it('rejects only the out-of-grammar alias in a constructor spec, keeping the rest', () => {
+    // The real --allowedTools spec shape, reached through a constructor instead of
+    // `.option(` — the camelCase token must be dropped without taking the lowercase
+    // alias with it.
+    const src = 'new Q("--allowedTools, --allowed-tools <tools...>","Tools to allow")';
+    const flags = extractFlags(src);
+    expect(flags.has('--allowedTools')).toBe(false);
+    expect(flags.has('--allowed')).toBe(false);
+    expect(flags.get('--allowed-tools')).toBe('registration');
+  });
+
+  it('accepts a whitespace-separated alias spec (commander allows it without a comma)', () => {
+    const flags = extractFlags('new Q("-d --debug [filter]","Enable debug mode")');
+    expect(flags.get('--debug')).toBe('registration');
   });
 
   it('reads an aliased spec and an arg placeholder from an Option constructor', () => {
