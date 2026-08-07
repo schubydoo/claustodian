@@ -58,7 +58,12 @@ const CALL_BEFORE_BRACE = /(?:[A-Za-z_$][\w$]*\.)?[A-Za-z_$][\w$]*\($/;
 
 /** How far back from the anchor to look for the schema root. */
 const ROOT_WINDOW = 400_000;
-/** Depth cap; the real schema nests 3 deep (`sandbox.network.allowedDomains`). */
+/**
+ * Runaway guard, not a scope limit. The real schema nests 3 deep
+ * (`sandbox.network.allowedDomains`), so exceeding this means a sub-schema
+ * reference cycle rather than a genuinely deep schema — and it throws rather
+ * than truncating, like every other failure here.
+ */
 const MAX_DEPTH = 6;
 
 export interface SettingsKey {
@@ -86,6 +91,19 @@ export class SettingsSchemaError extends Error {}
  */
 function detach(s: string): string {
   return Buffer.from(s, 'utf8').toString('utf8');
+}
+
+/**
+ * Escapes every regex metacharacter in `s` so it can be embedded in a pattern.
+ *
+ * A minified identifier can currently only contain `[A-Za-z0-9_$]`, so `$` is the
+ * only metacharacter that actually shows up — but escaping just `$` leaves the
+ * backslash and the rest unescaped, which is a latent injection into a regex
+ * built from bundle content. Escape the whole set rather than the one case seen
+ * so far.
+ */
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /** Advance past a string literal starting at `j` (which is its opening quote). */
@@ -246,7 +264,7 @@ function factoryBodyStart(
   refAt: number,
   cache: Map<string, RegExpExecArray[]>
 ): number {
-  const id = name.replace(/\$/g, '\\$');
+  const id = escapeRegExp(name);
   const patterns = [
     // memoized lazy binding — `NAME=Se(()=>Xt({…}))`
     `(?<![\\w$])${id}\\s*=\\s*[A-Za-z_$][\\w$]*\\(\\([^)]{0,40}\\)\\s*=>\\s*`,
@@ -310,7 +328,16 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
   const alias = anchorMatch[1];
   const defCache = new Map<string, RegExpExecArray[]>();
   const walk = (start: number, prefix: string, depth: number, viaFactory?: string): void => {
-    if (depth > MAX_DEPTH) return;
+    if (depth > MAX_DEPTH) {
+      // Returning here would drop every key below this point while reporting
+      // success — the exact silent shrink this module exists to prevent. The cap
+      // is a runaway guard (a cyclic sub-schema reference), not a scope limit:
+      // the real schema nests 3 deep, so reaching 6 means something is wrong.
+      throw new SettingsSchemaError(
+        `settings schema: nesting exceeded ${MAX_DEPTH} levels at "${prefix}". ` +
+          `Refusing to emit a truncated key set.`
+      );
+    }
     for (const { key, valueStart, valueEnd } of scanLevel(src, start)) {
       const value = src.slice(valueStart, valueEnd);
       const path = prefix ? `${prefix}.${key}` : key;

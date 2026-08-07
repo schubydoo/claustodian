@@ -123,6 +123,13 @@ describe('extractSettingsKeys — hard-fail rather than shrink', () => {
     expect(() => extractSettingsKeys('let o={cleanupPeriodDays:v.number()}')).toThrow(SettingsSchemaError);
   });
 
+  it('throws rather than truncating when nesting runs away', () => {
+    // A self-referential sub-schema. Returning at the depth cap would drop every
+    // key below it while reporting success.
+    const src = 'C=Se(()=>v.object({deeper:C.optional()}));Q=v.object({apiKeyHelper:v.string(),root:C.optional()})';
+    expect(() => extractSettingsKeys(src)).toThrow(/nesting exceeded/);
+  });
+
   it('names the offending key so a failure is diagnosable', () => {
     const src = 'Q=v.object({apiKeyHelper:v.string(),sandbox:missingFn(e)})';
     expect(() => extractSettingsKeys(src)).toThrow(/sandbox/);
