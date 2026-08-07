@@ -136,8 +136,14 @@ function minVersion(cell: string): string | null {
  * cell's first backtick span; skips `claude sub command` rows and prose.
  */
 function symbolFromInner(inner: string): { symbol: string; type: DocSymbolType } | null {
-  const flag = inner.match(/(--[a-z][a-z0-9-]+)/);
-  if (flag?.[1]) return { symbol: flag[1], type: 'cli_flag' };
+  // Capitals are matched so a camelCase flag is seen whole and rejected by the
+  // grammar, not truncated at its first capital. cli-reference.md writes the pair
+  // as `--allowedTools`, `--allowed-tools`; a `/--[a-z][a-z0-9-]+/` match stops at
+  // the `T` and yields the phantom `--allowed`, which shipped with the real flag's
+  // description. Same defect the binary lane carried (see extract-bundle FLAG_TOKEN).
+  for (const token of inner.match(/--[A-Za-z][A-Za-z0-9-]*/g) ?? []) {
+    if (/^--[a-z][a-z0-9-]+$/.test(token)) return { symbol: token, type: 'cli_flag' };
+  }
 
   // A slash command names the WHOLE cell (`/compact`, optionally `/compact <arg>`)
   // — anchored at the start. An embedded slash in a path or capability name
@@ -166,7 +172,13 @@ export function symbolFromCell(cell: string): { symbol: string; type: DocSymbolT
 export function symbolsFromCell(cell: string): Array<{ symbol: string; type: DocSymbolType }> {
   // Group 1 is always present when the pattern matches, so the cast is safe.
   const spans = [...cell.matchAll(/`([^`]+)`/g)].map((m) => (m[1] as string).trim());
-  const first = spans[0] !== undefined ? symbolFromInner(spans[0]) : null;
+  const resolved = spans.map((span) => symbolFromInner(span));
+  // The subject is the first span that names a symbol, not necessarily span 0: an
+  // alias cell can LEAD with an out-of-grammar spelling (`--allowedTools`,
+  // `--allowed-tools`), and anchoring on span 0 would drop the whole row — losing
+  // the valid alias along with the rejected one.
+  const firstIndex = resolved.findIndex((sym) => sym !== null);
+  const first = firstIndex === -1 ? null : (resolved[firstIndex] ?? null);
   if (!first) return [];
 
   // Multi-emit only for an alias/pair cell: >1 span and the text outside every
@@ -176,8 +188,7 @@ export function symbolsFromCell(cell: string): Array<{ symbol: string; type: Doc
 
   const out = [first];
   const seen = new Set([`${first.type}:${first.symbol}`]);
-  for (const span of spans.slice(1)) {
-    const sym = symbolFromInner(span);
+  for (const sym of resolved.slice(firstIndex + 1)) {
     if (sym && sym.type === first.type && !seen.has(`${sym.type}:${sym.symbol}`)) {
       seen.add(`${sym.type}:${sym.symbol}`);
       out.push(sym);
