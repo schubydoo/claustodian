@@ -180,6 +180,15 @@
         color: var(--muted);
         max-width: 40ch;
       }
+      input.draft {
+        display: block;
+        margin-top: 0.25rem;
+        width: 26ch;
+        font-size: 0.78rem;
+      }
+      input.draft.missing {
+        border-color: var(--cmd);
+      }
       .nowrap {
         white-space: nowrap;
         font-variant-numeric: tabular-nums;
@@ -249,12 +258,21 @@
         <kbd>3</kbd> internal · <kbd>0</kbd> clear — decisions apply to the highlighted row and jump
         to the next undecided one.
       </p>
+      <p class="note" style="margin: 0.35rem 0 0">
+        <strong>promote</strong> → becomes <code>status: active</code>,
+        <code>confidence: high</code> via a <code>PROMOTED_BINARY_SYMBOLS</code> entry, so it
+        <em>requires</em> a first-party description (420 of 494 have none to inherit).
+        <strong>keep</strong> → stays <code>needs_review</code>; the honest default.
+        <strong>internal</strong> → <em>no dataset effect today</em>; it only records "looked at
+        this, it's plumbing" so it stops coming back as undecided.
+      </p>
     </div>
 
     <div class="panel">
       <div class="row">
         <button id="copy">Copy save code</button>
         <button id="load">Load from code</button>
+        <button id="promos">Copy promotions for binary-lane.ts</button>
         <button id="md">Copy decisions as Markdown</button>
         <button id="reset">Clear all</button>
         <span class="note" id="saveNote"></span>
@@ -303,6 +321,7 @@
 
       let items = []; // ordered, canonical — index IS the save-code position
       let decisions = []; // parallel array of 0..3
+      let drafts = []; // parallel array of typed promotion descriptions
       let view = []; // current filtered view (indices into items)
       let cursor = 0; // index into view
       let datasetVersion = '';
@@ -356,9 +375,30 @@
         return out;
       }
 
+      /**
+       * Typed promotion descriptions, keyed by item index. Only present for a row
+       * whose text differs from what the dataset already publishes — the common
+       * case (promoting a symbol that already has a binary description) adds
+       * nothing to the code, so it stays the short CLAU1 form.
+       */
+      function overrideEntries() {
+        return items
+          .map((s, i) => [i, (drafts[i] ?? '').trim()])
+          .filter(([i, t]) => t && t !== (items[i].description || ''));
+      }
+
       function buildCode() {
-        const body = `${datasetVersion}.${b64.enc(pack(decisions))}`;
-        return `${CODE_PREFIX}.${body}.${checksum(body)}`;
+        const packed = b64.enc(pack(decisions));
+        const overrides = overrideEntries();
+        if (overrides.length === 0) {
+          const body = `${datasetVersion}.${packed}`;
+          return `CLAU1.${body}.${checksum(body)}`;
+        }
+        // Free text cannot pack into two bits, so it rides in a second segment and
+        // only when it exists. The code grows with what you actually typed.
+        const blob = b64.enc(new TextEncoder().encode(JSON.stringify(overrides)));
+        const body = `${datasetVersion}.${packed}.${blob}`;
+        return `CLAU2.${body}.${checksum(body)}`;
       }
 
       /**
@@ -370,16 +410,27 @@
        */
       async function applyCode(raw) {
         const text = raw.trim();
-        const m = /^CLAU1\.([0-9.]+)\.([A-Za-z0-9_-]+)\.([a-z0-9]+)$/.exec(text);
+        const m =
+          /^CLAU1\.([0-9.]+)\.([A-Za-z0-9_-]+)\.([a-z0-9]+)$/.exec(text) ??
+          /^CLAU2\.([0-9.]+)\.([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)\.([a-z0-9]+)$/.exec(text);
         if (!m) throw new Error('Not a Claustodian save code.');
-        const [, ver, payload, sum] = m;
-        if (checksum(`${ver}.${payload}`) !== sum)
+        const isV2 = text.startsWith('CLAU2.');
+        const ver = m[1];
+        const payload = m[2];
+        const blob = isV2 ? m[3] : '';
+        const sum = isV2 ? m[4] : m[3];
+        if (checksum(isV2 ? `${ver}.${payload}.${blob}` : `${ver}.${payload}`) !== sum)
           throw new Error('Checksum mismatch — the code looks truncated or edited.');
         const bytes = b64.dec(payload);
+        const overrides = blob ? JSON.parse(new TextDecoder().decode(b64.dec(blob))) : [];
 
         if (ver === datasetVersion) {
           decisions = unpack(bytes, items.length);
-          return `Loaded ${decisions.filter(Boolean).length} decision(s).`;
+          drafts = items.map(() => '');
+          for (const [i, t] of overrides) if (items[i]) drafts[i] = t;
+          return `Loaded ${decisions.filter(Boolean).length} decision(s)${
+            overrides.length ? ` and ${overrides.length} description(s)` : ''
+          }.`;
         }
 
         const res = await fetch(`../data/versions/${ver}.json`);
@@ -390,6 +441,13 @@
           .sort(order);
         const oldDecisions = unpack(bytes, old.length);
         const byKey = new Map(old.map((s, i) => [`${s.type}:${s.symbol}`, oldDecisions[i]]));
+        // Typed descriptions are re-mapped by name too — they are the part that
+        // took actual effort, so losing them to a version bump would be the worst
+        // possible failure of this page.
+        const draftByKey = new Map(
+          overrides.filter(([i]) => old[i]).map(([i, t]) => [`${old[i].type}:${old[i].symbol}`, t])
+        );
+        drafts = items.map((s) => draftByKey.get(`${s.type}:${s.symbol}`) ?? '');
         let carried = 0;
         decisions = items.map((s) => {
           const d = byKey.get(`${s.type}:${s.symbol}`) ?? 0;
@@ -482,13 +540,39 @@
             sel.appendChild(o);
           });
           sel.value = String(decisions[idx]);
+          td.appendChild(sel);
+
+          // Promotion is not a boolean: PROMOTED_BINARY_SYMBOLS is keyed to a
+          // description, so a promoted symbol has to say what it does. 420 of the
+          // 494 have no description to inherit, so most promotions need text typed
+          // here before they can become a map entry.
+          const desc = document.createElement('input');
+          desc.type = 'text';
+          desc.className = 'draft';
+          desc.placeholder = 'first-party description (required to promote)';
+          desc.value = drafts[idx] || s.description || '';
+          desc.addEventListener('input', () => {
+            drafts[idx] = desc.value;
+            persist();
+            refreshProgress();
+          });
+          const syncDesc = () => {
+            const promoting = decisions[idx] === 1;
+            desc.style.display = promoting ? '' : 'none';
+            desc.classList.toggle('missing', promoting && !desc.value.trim());
+          };
+          syncDesc();
+          td.appendChild(desc);
+
           sel.addEventListener('change', () => {
             decisions[idx] = Number(sel.value);
+            if (decisions[idx] === 1 && !drafts[idx]) drafts[idx] = s.description || '';
+            desc.value = drafts[idx] || s.description || '';
+            syncDesc();
             persist();
             refreshProgress();
             tr.className = (pos === cursor ? 'sel' : '') + (decisions[idx] ? ' done' : '');
           });
-          td.appendChild(sel);
           tr.appendChild(td);
           tr.addEventListener('click', () => {
             cursor = pos;
@@ -571,7 +655,18 @@
         }
       });
 
-      $('md').addEventListener('click', async () => {
+      const put = async (textOut, label) => {
+        try {
+          await navigator.clipboard.writeText(textOut);
+          $('saveNote').textContent = `${label} copied`;
+        } catch {
+          $('code').value = textOut;
+          $('saveNote').textContent = `${label} put in the box`;
+        }
+        setTimeout(() => ($('saveNote').textContent = ''), 2500);
+      };
+
+      $('md').addEventListener('click', () => {
         const lines = ['| symbol | type | first seen | decision |', '| --- | --- | --- | --- |'];
         items.forEach((s, i) => {
           if (decisions[i])
@@ -579,20 +674,55 @@
               `| \`${s.symbol}\` | ${s.type} | ${s.first_seen} | ${DECISIONS[decisions[i]]} |`
             );
         });
-        const md = lines.length > 2 ? lines.join('\n') : '_no decisions yet_';
-        try {
-          await navigator.clipboard.writeText(md);
-          $('saveNote').textContent = 'markdown copied';
-        } catch {
-          $('code').value = md;
-          $('saveNote').textContent = 'markdown put in the box';
-        }
-        setTimeout(() => ($('saveNote').textContent = ''), 2500);
+        void put(lines.length > 2 ? lines.join('\n') : '_no decisions yet_', 'markdown');
+      });
+
+      /**
+       * The promotions as PROMOTED_BINARY_SYMBOLS entries, ready to paste into
+       * scripts/binary-lane.ts. This is the actual deliverable of a triage session:
+       * without it the decisions are a list someone has to re-research.
+       *
+       * description_source is inferred, and the inference is stated in the header
+       * so it gets checked rather than trusted: text left as the dataset published
+       * it came from the binary registry; text you typed did not, and `help` (the
+       * symbol's own `claude --help` output) is the only other first-party source
+       * CONTRIBUTING allows.
+       */
+      $('promos').addEventListener('click', () => {
+        const rows = items
+          .map((s, i) => ({ s, i }))
+          .filter(({ i }) => decisions[i] === 1)
+          .map(({ s, i }) => {
+            const text = (drafts[i] ?? '').trim() || s.description || '';
+            const source = text === (s.description || '') && text ? 'binary' : 'help';
+            return { s, text, source };
+          });
+        const missing = rows.filter((r) => !r.text);
+        const out = [
+          `// ${rows.length - missing.length} promotion(s) from the review page, dataset ${datasetVersion}.`,
+          `// description_source: 'binary' = the text the dataset already carried;`,
+          `//                     'help'   = typed here, so verify it against \`claude --help\`.`,
+          ...rows
+            .filter((r) => r.text)
+            .map(
+              (r) =>
+                `  ['${r.s.type}:${r.s.symbol}', { description: ${JSON.stringify(r.text)}, description_source: '${r.source}' }],`
+            ),
+          ...(missing.length
+            ? [
+                ``,
+                `// ${missing.length} marked promote but have no description, so they cannot become`,
+                `// map entries yet: ${missing.map((r) => r.s.symbol).join(', ')}`,
+              ]
+            : []),
+        ].join('\n');
+        void put(rows.length ? out : '// nothing marked promote yet', 'promotions');
       });
 
       $('reset').addEventListener('click', () => {
         if (!confirm('Clear every decision on this page?')) return;
         decisions = items.map(() => 0);
+        drafts = items.map(() => '');
         persist();
         refreshProgress();
         applyFilters();
@@ -636,6 +766,7 @@
           }
 
           decisions = items.map(() => 0);
+          drafts = items.map(() => '');
           const saved = localStorage.getItem(lsKey());
           if (saved) {
             try {
