@@ -337,6 +337,27 @@
         letter-spacing: 0.05em;
         opacity: 0.85;
       }
+      /* A symbol the binary lane found that no human has curated yet. It exists —
+         that is what the binary proves — but its description may be terse or
+         absent. Muted on purpose: this is a caveat, not a warning. */
+      .unreviewed {
+        display: inline-flex;
+        align-items: baseline;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-radius: 999px;
+        padding: 0.18rem 0.5rem;
+        border: 1px dashed var(--border);
+        background: transparent;
+        color: var(--muted);
+        cursor: help;
+      }
       /* Description-history disclosure: revealed eras of a symbol's description
          across versions (from data/binary-descriptions.json). */
       .hist-btn {
@@ -492,6 +513,12 @@
           docs where available.
         </p>
         <p>
+          An <span class="unreviewed">unreviewed</span> badge means the symbol was found in an
+          official release binary but has not been human-curated yet. It exists — that is what the
+          binary proves — but its description may be terse or missing. Treat it as real, not as
+          "maybe."
+        </p>
+        <p>
           Raw data: <a href="data/latest.json">latest.json</a> ·
           <a href="data/index.json">index.json</a> — fetch any
           <code>data/versions/X.Y.Z.json</code> directly, in any language.
@@ -591,7 +618,13 @@
         const removed = sym.removed_in
           ? `<span class="removed"><span class="lbl">removed</span>${sym.removed_in}</span>`
           : '';
-        life.innerHTML = seen + deprecated + removed;
+        // Existence is not the caveat here — the binary lane proved that. What is
+        // missing is human curation, so the description may be terse or absent.
+        const unreviewed =
+          sym.status === 'needs_review'
+            ? `<span class="unreviewed" title="Found in a release binary but not yet human-curated. The symbol exists; its description may be terse or missing.">unreviewed</span>`
+            : '';
+        life.innerHTML = seen + deprecated + removed + unreviewed;
         row.appendChild(life);
         li.appendChild(row);
 
