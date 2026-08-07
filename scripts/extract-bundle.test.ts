@@ -53,6 +53,15 @@ describe('extractFlagDescriptions', () => {
     expect(d.get('--verbose')).toBe('Same text');
   });
 
+  it('describes every in-grammar alias in a spec, and never the camelCase phantom', () => {
+    // Reading only the spec's FIRST token gave the phantom `--allowed` this exact
+    // description and left the real alias undescribed.
+    const src = '.option("--allowedTools, [--allowed-tools] <tools...>","Tools to allow")';
+    const d = extractFlagDescriptions(src, new Set(['--allowed', '--allowed-tools']));
+    expect(d.get('--allowed-tools')).toBe('Tools to allow');
+    expect(d.has('--allowed')).toBe(false);
+  });
+
   it('drops a BACKTICK template-literal description (${VAR} churns every release)', () => {
     const d = extractFlagDescriptions('.option("--verbose",`Effort (${UV.join(", ")})`)', known);
     expect(d.has('--verbose')).toBe(false);
@@ -218,6 +227,50 @@ describe('extractFlags — positive evidence only', () => {
     const flags = extractFlags('.option("--verbose","desc");const x=["--verbose"];');
     expect(flags.get('--verbose')).toBe('registration');
     expect(flags.size).toBe(1);
+  });
+
+  it('keeps a flag built by a shared Option factory with no .addOption in the look-back', () => {
+    // The real 2.1.83 → 2.1.84 refactor: 11 per-subcommand
+    // `.addOption(new i4("--cowork",…))` sites collapsed into one factory. Zero sites
+    // then had `.option`/`.addOption` in the window, so the lane reported --cowork
+    // REMOVED at 2.1.84 when it was still registered through 2.1.112+.
+    const src =
+      'let w=()=>new G5("--cowork","Use cowork_plugins directory").hideHelp(),$=q.command("plugin");';
+    expect(extractFlags(src).get('--cowork')).toBe('registration');
+  });
+
+  it('does not treat an Error whose message starts with a flag name as a registration', () => {
+    // Real 2.1.224 shapes. A look-back that only requires `new X("--` admits these,
+    // which published --configure-git and --messaging-socket-path as registered
+    // flags on the strength of an error string. The spec must be a spec end to end.
+    const src =
+      'throw new lr(`--configure-git: could not restore hook stubs under ${n}`,"--configure-git: could not restore git hook stubs");' +
+      'throw new Ie("--messaging-socket-path points to a live socket: "+p);';
+    const flags = extractFlags(src);
+    expect(flags.has('--configure-git')).toBe(false);
+    expect(flags.has('--messaging-socket-path')).toBe(false);
+  });
+
+  it('reads an aliased spec and an arg placeholder from an Option constructor', () => {
+    const src =
+      'new Q("-c, --continue <id>","Continue a conversation");new Q("--bg, --background","Run in background")';
+    const flags = extractFlags(src);
+    expect(flags.get('--continue')).toBe('registration');
+    expect(flags.get('--bg')).toBe('registration');
+    expect(flags.get('--background')).toBe('registration');
+  });
+
+  it('rejects a camelCase flag whole instead of truncating it to a phantom', () => {
+    // The real global spec. A bare /--[a-z][a-z0-9-]+/ scan stops at the capital `T`
+    // and emits `--allowed`, which shipped from 0.2.33 with --allowedTools's own
+    // description attached. The camelCase token is out of the lane's grammar; the
+    // bracketed lowercase alias is in it.
+    const src =
+      '.option("--allowedTools, [--allowed-tools] <tools...>","Comma or space-separated list")';
+    const flags = extractFlags(src);
+    expect(flags.has('--allowed')).toBe(false);
+    expect(flags.has('--allowedTools')).toBe(false);
+    expect(flags.get('--allowed-tools')).toBe('registration');
   });
 });
 
