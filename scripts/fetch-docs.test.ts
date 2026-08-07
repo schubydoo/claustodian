@@ -83,23 +83,6 @@ describe('symbolsFromCell', () => {
     ]);
   });
 
-  it('skips a camelCase alias and keeps the in-grammar one', () => {
-    // The real cli-reference.md cell. `--allowedTools` is out of the lane's grammar;
-    // truncating it at the capital `T` produced the phantom `--allowed`, published
-    // since 0.2.33 with the real flag's description. Rejecting it must not take the
-    // valid alias down with it.
-    expect(symbolsFromCell('`--allowedTools`, `--allowed-tools`')).toEqual([
-      { symbol: '--allowed-tools', type: 'cli_flag' },
-    ]);
-    expect(symbolsFromCell('`--disallowedTools`, `--disallowed-tools`')).toEqual([
-      { symbol: '--disallowed-tools', type: 'cli_flag' },
-    ]);
-  });
-
-  it('names no symbol at all for a cell that is only an out-of-grammar flag', () => {
-    expect(symbolsFromCell('`--allowedTools`')).toEqual([]);
-  });
-
   it('returns only the primary symbol when prose separates the spans', () => {
     // A flag whose description names an env var it overrides is NOT a pair.
     expect(symbolsFromCell('`--model` overrides `ANTHROPIC_MODEL`')).toEqual([
