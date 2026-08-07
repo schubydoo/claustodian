@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Claustodian — needs_review triage</title>
+    <meta name="robots" content="noindex" />
+    <meta
+      name="description"
+      content="Maintainer tool: triage every needs_review symbol in the Claustodian dataset."
+    />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <style>
+      :root {
+        --bg: #ffffff;
+        --fg: #1a1a1a;
+        --muted: #666;
+        --border: #e2e2e2;
+        --card: #fafafa;
+        --accent: #3b5bdb;
+        --flag: #1971c2;
+        --env: #2f9e44;
+        --cmd: #e8590c;
+        --warn: #b8860b;
+        --config: #9c36b5;
+        --ok: #2f9e44;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16181d;
+          --fg: #e9ecef;
+          --muted: #9aa0a6;
+          --border: #2c2f36;
+          --card: #1e2127;
+          --accent: #748ffc;
+          --flag: #4dabf7;
+          --env: #69db7c;
+          --cmd: #ffa94d;
+          --warn: #ffd43b;
+          --config: #da77f2;
+          --ok: #69db7c;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 1.2rem;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 0 0 0.2rem;
+      }
+      .sub {
+        color: var(--muted);
+        font-size: 0.85rem;
+        margin: 0 0 1rem;
+      }
+      a {
+        color: var(--accent);
+      }
+      .panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.7rem 0.85rem;
+        margin-bottom: 0.9rem;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      input[type='search'],
+      select,
+      textarea {
+        font: inherit;
+        color: var(--fg);
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.3rem 0.45rem;
+      }
+      textarea {
+        width: 100%;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.78rem;
+        min-height: 4.2rem;
+        resize: vertical;
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--fg);
+        border-radius: 6px;
+        padding: 0.32rem 0.7rem;
+      }
+      button:hover {
+        border-color: var(--accent);
+      }
+      .progress {
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+      }
+      .bar {
+        height: 6px;
+        border-radius: 999px;
+        background: var(--border);
+        overflow: hidden;
+        margin-top: 0.4rem;
+      }
+      .bar > i {
+        display: block;
+        height: 100%;
+        background: var(--ok);
+        width: 0;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.82rem;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 0.34rem 0.5rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      th {
+        position: sticky;
+        top: 0;
+        background: var(--bg);
+        border-bottom: 2px solid var(--border);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      tbody tr.sel {
+        outline: 2px solid var(--accent);
+        outline-offset: -2px;
+      }
+      tbody tr.done {
+        background: color-mix(in srgb, var(--ok) 7%, transparent);
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.85em;
+      }
+      .sym {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .t-cli_flag {
+        color: var(--flag);
+      }
+      .t-env_var {
+        color: var(--env);
+      }
+      .t-command {
+        color: var(--cmd);
+      }
+      .t-config_key,
+      .t-internal_config_flag {
+        color: var(--config);
+      }
+      .desc {
+        color: var(--muted);
+        max-width: 40ch;
+      }
+      .nowrap {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      .gone {
+        color: var(--cmd);
+      }
+      .note {
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+      .err {
+        color: var(--cmd);
+        font-size: 0.82rem;
+      }
+      kbd {
+        font-family: ui-monospace, monospace;
+        font-size: 0.75rem;
+        border: 1px solid var(--border);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        padding: 0 0.28rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>needs_review triage</h1>
+    <p class="sub">
+      Every <code>status: needs_review</code> symbol in the published dataset. Decisions live in
+      this browser and in a save code you can paste anywhere. Nothing is uploaded.
+      <a href="../">← dataset</a>
+    </p>
+
+    <div class="panel">
+      <div class="row">
+        <span class="progress" id="prog">…</span>
+        <span class="note" id="breakdown"></span>
+      </div>
+      <div class="bar"><i id="bar"></i></div>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <input type="search" id="q" placeholder="filter symbol or description…" size="26" />
+        <select id="fType">
+          <option value="">any type</option>
+        </select>
+        <select id="fProv">
+          <option value="">any provenance</option>
+        </select>
+        <select id="fDec">
+          <option value="">any decision</option>
+          <option value="0">undecided</option>
+          <option value="1">promote</option>
+          <option value="2">keep</option>
+          <option value="3">internal</option>
+        </select>
+        <select id="fLive">
+          <option value="">live or vanished</option>
+          <option value="live">live at tip</option>
+          <option value="gone">vanished</option>
+        </select>
+        <span class="note" id="shown"></span>
+      </div>
+      <p class="note" style="margin: 0.5rem 0 0">
+        <kbd>j</kbd>/<kbd>k</kbd> move · <kbd>1</kbd> promote · <kbd>2</kbd> keep ·
+        <kbd>3</kbd> internal · <kbd>0</kbd> clear — decisions apply to the highlighted row and jump
+        to the next undecided one.
+      </p>
+    </div>
+
+    <div class="panel">
+      <div class="row">
+        <button id="copy">Copy save code</button>
+        <button id="load">Load from code</button>
+        <button id="md">Copy decisions as Markdown</button>
+        <button id="reset">Clear all</button>
+        <span class="note" id="saveNote"></span>
+      </div>
+      <textarea
+        id="code"
+        spellcheck="false"
+        placeholder="save code appears here — paste one and press Load"
+      ></textarea>
+      <p class="note" id="loadMsg"></p>
+    </div>
+
+    <p class="err" id="fatal"></p>
+    <table>
+      <thead>
+        <tr>
+          <th data-sort="symbol">symbol</th>
+          <th data-sort="type">type</th>
+          <th data-sort="category">category</th>
+          <th data-sort="provenance">from</th>
+          <th data-sort="first_seen">first seen</th>
+          <th data-sort="last_seen">last seen</th>
+          <th data-sort="removed_in">removed</th>
+          <th>description</th>
+          <th>decision</th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+
+    <script>
+      // Decision codes are two bits so the whole save fits in one paste: 494 items
+      // pack into 124 bytes. The vocabulary matches scratch/needs-review-audit.csv
+      // so earlier decisions carry over unchanged.
+      const DECISIONS = ['undecided', 'promote', 'keep', 'internal'];
+      const CODE_PREFIX = 'CLAU1';
+
+      const $ = (id) => document.getElementById(id);
+      const cmpVer = (a, b) => {
+        const x = a.split('.').map(Number);
+        const y = b.split('.').map(Number);
+        for (let i = 0; i < 3; i++)
+          if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) - (y[i] || 0);
+        return 0;
+      };
+
+      let items = []; // ordered, canonical — index IS the save-code position
+      let decisions = []; // parallel array of 0..3
+      let view = []; // current filtered view (indices into items)
+      let cursor = 0; // index into view
+      let datasetVersion = '';
+      let sortKey = 'symbol';
+      let sortDir = 1;
+
+      /** Canonical order. The save code is positional, so this must be stable. */
+      const order = (a, b) =>
+        a.type === b.type
+          ? a.symbol < b.symbol
+            ? -1
+            : a.symbol > b.symbol
+              ? 1
+              : 0
+          : a.type < b.type
+            ? -1
+            : 1;
+
+      /** FNV-1a over the code body — catches a truncated or mangled paste. */
+      function checksum(s) {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < s.length; i++) {
+          h ^= s.charCodeAt(i);
+          h = Math.imul(h, 0x01000193) >>> 0;
+        }
+        return h.toString(36).slice(0, 5);
+      }
+
+      const b64 = {
+        enc: (bytes) =>
+          btoa(String.fromCharCode(...bytes))
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, ''),
+        dec: (s) => {
+          const t = s.replace(/-/g, '+').replace(/_/g, '/');
+          const bin = atob(t + '==='.slice((t.length + 3) % 4));
+          return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+        },
+      };
+
+      /** Pack 4 decisions per byte. */
+      function pack(list) {
+        const bytes = new Uint8Array(Math.ceil(list.length / 4));
+        list.forEach((d, i) => (bytes[i >> 2] |= (d & 3) << ((i % 4) * 2)));
+        return bytes;
+      }
+      function unpack(bytes, count) {
+        const out = new Array(count).fill(0);
+        for (let i = 0; i < count; i++) out[i] = (bytes[i >> 2] >> ((i % 4) * 2)) & 3;
+        return out;
+      }
+
+      function buildCode() {
+        const body = `${datasetVersion}.${b64.enc(pack(decisions))}`;
+        return `${CODE_PREFIX}.${body}.${checksum(body)}`;
+      }
+
+      /**
+       * Apply a save code. When it was made against a different dataset version the
+       * positions may have shifted, so rebuild THAT version's list from the
+       * published snapshot and re-map decisions by symbol name rather than trusting
+       * the index. Silently applying a stale positional code would attach decisions
+       * to the wrong symbols.
+       */
+      async function applyCode(raw) {
+        const text = raw.trim();
+        const m = /^CLAU1\.([0-9.]+)\.([A-Za-z0-9_-]+)\.([a-z0-9]+)$/.exec(text);
+        if (!m) throw new Error('Not a Claustodian save code.');
+        const [, ver, payload, sum] = m;
+        if (checksum(`${ver}.${payload}`) !== sum)
+          throw new Error('Checksum mismatch — the code looks truncated or edited.');
+        const bytes = b64.dec(payload);
+
+        if (ver === datasetVersion) {
+          decisions = unpack(bytes, items.length);
+          return `Loaded ${decisions.filter(Boolean).length} decision(s).`;
+        }
+
+        const res = await fetch(`../data/versions/${ver}.json`);
+        if (!res.ok)
+          throw new Error(`Code is for ${ver}, which is not published — cannot re-map safely.`);
+        const old = (await res.json()).symbols
+          .filter((s) => s.status === 'needs_review')
+          .sort(order);
+        const oldDecisions = unpack(bytes, old.length);
+        const byKey = new Map(old.map((s, i) => [`${s.type}:${s.symbol}`, oldDecisions[i]]));
+        let carried = 0;
+        decisions = items.map((s) => {
+          const d = byKey.get(`${s.type}:${s.symbol}`) ?? 0;
+          if (d) carried++;
+          return d;
+        });
+        const dropped = [...byKey.values()].filter(Boolean).length - carried;
+        return `Code was made against ${ver}; re-mapped by symbol name. Carried ${carried} decision(s)${
+          dropped > 0 ? `, dropped ${dropped} whose symbol is no longer in needs_review` : ''
+        }.`;
+      }
+
+      const lsKey = () => `claustodian-review:${datasetVersion}`;
+      const persist = () => {
+        try {
+          localStorage.setItem(lsKey(), buildCode());
+        } catch {
+          /* private mode — the save code is still the durable path */
+        }
+      };
+
+      function refreshProgress() {
+        const done = decisions.filter(Boolean).length;
+        $('prog').textContent = `${done} / ${items.length} decided`;
+        $('bar').style.width = `${items.length ? (done / items.length) * 100 : 0}%`;
+        const tally = [1, 2, 3].map(
+          (d) => `${DECISIONS[d]} ${decisions.filter((x) => x === d).length}`
+        );
+        $('breakdown').textContent = tally.join(' · ');
+        $('code').value = buildCode();
+      }
+
+      function applyFilters() {
+        const q = $('q').value.trim().toLowerCase();
+        const ft = $('fType').value;
+        const fp = $('fProv').value;
+        const fd = $('fDec').value;
+        const fl = $('fLive').value;
+        view = items
+          .map((_, i) => i)
+          .filter((i) => {
+            const s = items[i];
+            if (ft && s.type !== ft) return false;
+            if (fp && s.provenance !== fp) return false;
+            if (fd !== '' && decisions[i] !== Number(fd)) return false;
+            if (fl === 'live' && !s.live) return false;
+            if (fl === 'gone' && s.live) return false;
+            if (q && !`${s.symbol} ${s.description || ''}`.toLowerCase().includes(q)) return false;
+            return true;
+          });
+        const dir = sortDir;
+        view.sort((a, b) => {
+          const x = items[a][sortKey] ?? '';
+          const y = items[b][sortKey] ?? '';
+          if (sortKey === 'first_seen' || sortKey === 'last_seen' || sortKey === 'removed_in') {
+            if (!x) return 1;
+            if (!y) return -1;
+            return cmpVer(String(x), String(y)) * dir;
+          }
+          return (x < y ? -1 : x > y ? 1 : 0) * dir;
+        });
+        if (cursor >= view.length) cursor = Math.max(0, view.length - 1);
+        render();
+      }
+
+      function render() {
+        const tb = $('rows');
+        tb.textContent = '';
+        const frag = document.createDocumentFragment();
+        view.forEach((idx, pos) => {
+          const s = items[idx];
+          const tr = document.createElement('tr');
+          if (pos === cursor) tr.className = 'sel';
+          if (decisions[idx]) tr.className += ' done';
+          tr.innerHTML =
+            `<td class="sym t-${s.type}">${esc(s.symbol)}</td>` +
+            `<td class="nowrap">${s.type}</td>` +
+            `<td class="nowrap">${esc(s.category || '')}</td>` +
+            `<td class="nowrap">${esc(s.provenance)}</td>` +
+            `<td class="nowrap">${s.first_seen}</td>` +
+            `<td class="nowrap${s.live ? '' : ' gone'}">${s.last_seen || '—'}</td>` +
+            `<td class="nowrap">${s.removed_in || '—'}</td>` +
+            `<td class="desc">${esc(s.description || '')}</td>`;
+          const td = document.createElement('td');
+          const sel = document.createElement('select');
+          DECISIONS.forEach((label, v) => {
+            const o = document.createElement('option');
+            o.value = String(v);
+            o.textContent = label;
+            sel.appendChild(o);
+          });
+          sel.value = String(decisions[idx]);
+          sel.addEventListener('change', () => {
+            decisions[idx] = Number(sel.value);
+            persist();
+            refreshProgress();
+            tr.className = (pos === cursor ? 'sel' : '') + (decisions[idx] ? ' done' : '');
+          });
+          td.appendChild(sel);
+          tr.appendChild(td);
+          tr.addEventListener('click', () => {
+            cursor = pos;
+            render();
+          });
+          frag.appendChild(tr);
+        });
+        tb.appendChild(frag);
+        $('shown').textContent = `${view.length} shown`;
+        const sel = tb.querySelector('tr.sel');
+        if (sel) sel.scrollIntoView({ block: 'nearest' });
+      }
+
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"]/g,
+          (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]
+        );
+
+      function decide(v) {
+        if (!view.length) return;
+        const idx = view[cursor];
+        decisions[idx] = v;
+        persist();
+        const next = view.findIndex((i, p) => p > cursor && !decisions[i]);
+        cursor = next === -1 ? Math.min(cursor + 1, view.length - 1) : next;
+        refreshProgress();
+        render();
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+        if (e.key === 'j') {
+          cursor = Math.min(cursor + 1, view.length - 1);
+          render();
+        } else if (e.key === 'k') {
+          cursor = Math.max(cursor - 1, 0);
+          render();
+        } else if ('0123'.includes(e.key)) {
+          decide(Number(e.key));
+        } else return;
+        e.preventDefault();
+      });
+
+      for (const id of ['q', 'fType', 'fProv', 'fDec', 'fLive']) {
+        $(id).addEventListener('input', () => {
+          cursor = 0;
+          applyFilters();
+        });
+      }
+      document.querySelectorAll('th[data-sort]').forEach((th) => {
+        th.addEventListener('click', () => {
+          const k = th.dataset.sort;
+          sortDir = sortKey === k ? -sortDir : 1;
+          sortKey = k;
+          applyFilters();
+        });
+      });
+
+      $('copy').addEventListener('click', async () => {
+        $('code').value = buildCode();
+        try {
+          await navigator.clipboard.writeText($('code').value);
+          $('saveNote').textContent = 'copied';
+        } catch {
+          $('code').select();
+          $('saveNote').textContent = 'select-all shown — press ⌘/Ctrl+C';
+        }
+        setTimeout(() => ($('saveNote').textContent = ''), 2500);
+      });
+
+      $('load').addEventListener('click', async () => {
+        try {
+          $('loadMsg').textContent = await applyCode($('code').value);
+          persist();
+          refreshProgress();
+          applyFilters();
+        } catch (err) {
+          $('loadMsg').textContent = `Could not load: ${err.message}`;
+        }
+      });
+
+      $('md').addEventListener('click', async () => {
+        const lines = ['| symbol | type | first seen | decision |', '| --- | --- | --- | --- |'];
+        items.forEach((s, i) => {
+          if (decisions[i])
+            lines.push(
+              `| \`${s.symbol}\` | ${s.type} | ${s.first_seen} | ${DECISIONS[decisions[i]]} |`
+            );
+        });
+        const md = lines.length > 2 ? lines.join('\n') : '_no decisions yet_';
+        try {
+          await navigator.clipboard.writeText(md);
+          $('saveNote').textContent = 'markdown copied';
+        } catch {
+          $('code').value = md;
+          $('saveNote').textContent = 'markdown put in the box';
+        }
+        setTimeout(() => ($('saveNote').textContent = ''), 2500);
+      });
+
+      $('reset').addEventListener('click', () => {
+        if (!confirm('Clear every decision on this page?')) return;
+        decisions = items.map(() => 0);
+        persist();
+        refreshProgress();
+        applyFilters();
+      });
+
+      async function init() {
+        try {
+          const latest = await (await fetch('../data/latest.json')).json();
+          datasetVersion = latest.claudeCodeVersion || latest.version || 'unknown';
+          items = latest.symbols.filter((s) => s.status === 'needs_review').sort(order);
+
+          // binary-observations.json carries the observation window, which the
+          // published record does not: last_seen is what tells you whether a
+          // symbol is still in the tip binary or vanished mid-history.
+          try {
+            const obs = await (await fetch('../data/binary-observations.json')).json();
+            const byKey = new Map(obs.symbols.map((o) => [`${o.type}:${o.symbol}`, o]));
+            const newest = obs.observedVersions?.[0];
+            for (const s of items) {
+              const o = byKey.get(`${s.type}:${s.symbol}`);
+              s.last_seen = o?.last_seen || '';
+              s.live = !!newest && s.last_seen === newest;
+            }
+          } catch {
+            for (const s of items) {
+              s.last_seen = '';
+              s.live = true;
+            }
+          }
+
+          for (const [id, key] of [
+            ['fType', 'type'],
+            ['fProv', 'provenance'],
+          ]) {
+            [...new Set(items.map((s) => s[key]))].sort().forEach((v) => {
+              const o = document.createElement('option');
+              o.value = v;
+              o.textContent = v;
+              $(id).appendChild(o);
+            });
+          }
+
+          decisions = items.map(() => 0);
+          const saved = localStorage.getItem(lsKey());
+          if (saved) {
+            try {
+              $('loadMsg').textContent = `${await applyCode(saved)} (restored from this browser)`;
+            } catch {
+              /* stale local copy — start clean rather than guess */
+            }
+          }
+          document
+            .querySelector('.sub')
+            .insertAdjacentHTML(
+              'beforeend',
+              ` <span class="note">Dataset <code>${esc(datasetVersion)}</code>.</span>`
+            );
+          refreshProgress();
+          applyFilters();
+        } catch (err) {
+          $('fatal').textContent = `Could not load the dataset: ${err.message}`;
+        }
+      }
+      init();
+    </script>
+  </body>
+</html>

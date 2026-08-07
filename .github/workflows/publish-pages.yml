@@ -52,6 +52,12 @@ jobs:
           mkdir -p _site
           cp -r data _site/data
           if [ -f site/index.html ]; then cp site/index.html _site/index.html; fi
+          # Maintainer triage view at <pages-url>/review/. Reads the same published
+          # data/, so it refreshes with every deploy and stores nothing server-side.
+          if [ -f site/review/index.html ]; then
+            mkdir -p _site/review
+            cp site/review/index.html _site/review/index.html
+          fi
           # Favicon referenced by index.html as href="favicon.svg" (site root).
           if [ -f assets/logo/favicon.svg ]; then cp assets/logo/favicon.svg _site/favicon.svg; fi
           # llms.txt at the site root so agents can fetch <pages-url>/llms.txt.
