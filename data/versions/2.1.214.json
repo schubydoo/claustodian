@@ -491,7 +491,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Create a new web session on claude.ai with the provided task description",
+      "description": "With a task description, create a new web session on claude.ai. With a session ID (`session_...` or `cse_...`) or a claude.ai/code URL, target that existing session instead: `-p` queues the message into it, and no `-p` attaches your terminal. See send a follow-up message.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
@@ -608,7 +608,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Enable debug mode with optional category filtering (for example, `\"api,hooks\"` or `\"!statsig,!file\"`)",
+      "description": "Enable debug mode with optional category filtering, such as `--debug='mcp,startup'` or `--debug='!1p'`. The filter binds only in the `=` form; a space-separated filter enables debug mode without filtering",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -776,7 +776,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "List what would be removed without removing anything",
+      "description": "Bring configuration from other coding agents on your machine, currently OpenAI Codex and Google Gemini CLI, into Claude Code, including instruction files, MCP servers, commands, subagents, and skills. In non-interactive mode with `-p`, `/import` lists what it found and gives you the command that confirms the import. Add `--dry-run` to preview without writing anything, or `--yes` to skip the interactive picker. Requires Claude Code v2.1.213 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1775,7 +1775,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Deprecated alias for `--cloud`",
+      "description": "Deprecated alias for `--cloud`, including the existing-session form",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
@@ -1867,7 +1867,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Resume a specific session by ID or name, or show an interactive picker to choose a session. The picker and name search include sessions that added this directory with `/add-dir`; passing a session ID searches only the current project directory and its git worktrees. As of v2.1.144, background sessions appear in the picker marked with `bg`",
+      "description": "Resume a specific session by ID or name, or show an interactive picker to choose a session. The picker and name search include sessions that added this directory with `/add-dir`. When you pass a session ID, Claude Code searches the current project directory and its git worktrees, then every other project on this machine. Before v2.1.223, the ID search covered only the current project directory and its git worktrees. Background sessions appear in the picker marked with `bg`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -2686,7 +2686,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Move this session to a new working directory. The conversation's prompt cache is preserved: the new directory's `CLAUDE.md` is appended as a message instead of rebuilding the system prompt. The session is relocated to the new directory's project storage, so `--resume` and `--continue` find it from there. Prompts you to trust the directory if you haven't worked in it before. Typing a partial path shows matching directory suggestions; press `Tab` to accept one. The suggestions require Claude Code v2.1.206 or later. To grant access to an extra directory without moving the session, use `/add-dir`. Restrict or disable `/cd` targets with `Cd` permission rules. Requires Claude Code v2.1.169 or later; earlier versions report `Unknown command: /cd`",
+      "description": "Move this session to a new working directory. The conversation's prompt cache is preserved: the new directory's `CLAUDE.md` is appended as a message instead of rebuilding the system prompt. The session is relocated to the new directory's project storage, so `--resume` and `--continue` find it from there. `claude --resume <session-id>` also finds the moved session from any other directory; this requires Claude Code v2.1.223 or later. Prompts you to trust the directory if you haven't worked in it before. Typing a partial path shows matching directory suggestions; press `Tab` to accept one. The suggestions require Claude Code v2.1.206 or later. To grant access to an extra directory without moving the session, use `/add-dir`. Restrict or disable `/cd` targets with `Cd` permission rules. Requires Claude Code v2.1.169 or later; earlier versions report `Unknown command: /cd`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3263,7 +3263,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Initialize project with a `CLAUDE.md` guide. Set `CLAUDE_CODE_NEW_INIT=1` for an interactive flow that also walks through skills, hooks, and personal memory files",
+      "description": "Initialize project with a `CLAUDE.md` guide. Set `CLAUDE_CODE_NEW_INIT=1` for an interactive flow that also walks through skills, hooks, and personal memory files. If `/init` finds configuration from a coding agent that `/import` supports, it offers to carry it over with `/import`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3822,10 +3822,10 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Run a fast single-pass, read-only review of a GitHub pull request by number. With no argument, lists open PRs to pick from; text after the PR number becomes additional review instructions. From v2.1.186 through v2.1.201, `/review` instead ran the same multi-agent engine as `/code-review medium`. For a multi-agent review at a chosen effort level, use `/code-review <level> <pr#>`; for a cloud-based review, see `/code-review ultra`",
-      "description_source": "docs",
+      "description": "Review a GitHub pull request; for your working diff use /code-review",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/rewind",
@@ -3887,7 +3887,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Create, update, list, or run routines, which execute on Anthropic-managed cloud infrastructure. Claude walks you through the setup conversationally. Alias: `/routines`",
+      "description": "Create, update, list, or run routines, which execute in the cloud. Claude walks you through the setup conversationally. Alias: `/routines`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4030,7 +4030,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "List available skills. As of v2.1.121, type to filter the list by name. Press `t` to sort by token count. Press `Space` to cycle a skill's visibility to Claude and the `/` menu, then `Enter` to save",
+      "description": "List available skills. Type to filter the list by name. Press `t` to sort by token count. Press `Space` to cycle a skill's visibility to Claude and the `/` menu, then `Enter` to save",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6741,7 +6741,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable adaptive reasoning on Opus 4.6 and Sonnet 4.6 and fall back to the fixed thinking budget controlled by `MAX_THINKING_TOKENS`. From v2.1.111, has no effect on Fable 5, Sonnet 5, or Opus 4.7 and later, which always use adaptive reasoning",
+      "description": "Set to `1` to disable adaptive reasoning on Opus 4.6 and Sonnet 4.6 and fall back to the fixed thinking budget controlled by `MAX_THINKING_TOKENS`. Has no effect on Fable 5, Sonnet 5, or Opus 4.7 and later, which always use adaptive reasoning",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -8486,7 +8486,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Cap on the number of subagents one session can spawn with the Agent tool (default: 200). When Claude reaches the cap, spawning another subagent fails with an error telling Claude to finish the remaining work directly. Accepts a positive whole number in plain digits with no upper bound; this variable doesn't take the scientific notation or digit-separator spellings. Anything else is ignored and the default applies, so the cap can be raised but not turned off. Requires Claude Code v2.1.212 or later",
+      "description": "Removed in v2.1.224 and now a no-op. Previously capped the total number of subagents Claude could spawn with the Agent tool in one session (default: 200); spawning past the cap failed with `Subagent spawn limit reached`. The concurrent subagent limit and the depth limit still apply",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -10683,11 +10683,12 @@
       "type": "env_var",
       "first_seen": "2.1.169",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Deadline in milliseconds for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, before Claude Code cancels them; permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by it. Overrides the `dialogExpiry` setting; `0` or a negative value disables the deadline",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -11704,11 +11705,12 @@
       "type": "env_var",
       "first_seen": "2.1.133",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Maximum lifetime in milliseconds for a background shell command that a subagent started, after which Claude Code terminates the command. Default `3600000` (60 minutes). Setting `0` doesn't disable the cap: Claude Code applies the 60-minute default instead. Claude Code doesn't apply a lifetime cap to background commands in the main session; `CLAUDE_CODE_DISABLE_BG_SHELL_PRESSURE_REAP` covers the separate memory-pressure limit that applies to them. Requires Claude Code v2.1.133 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
