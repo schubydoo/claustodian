@@ -69,6 +69,11 @@ const COMMAND_BACK = 700;
  * A flag literal is Claude Code's own when the code positively inspects it —
  * one of:
  *   - commander registration: `.option(…)` / `.addOption(…)` (the flag is the arg);
+ *   - Option construction: `new G5("--flag", …)` whose first argument is a complete
+ *     option spec — matched separately (FLAG_CTOR_SPEC + OPTION_SPEC), not by the
+ *     look-back below, because a shared-factory refactor puts the `.addOption(` call
+ *     out of window range entirely. See those two constants for why the spec must
+ *     match end to end.
  *   - `process.argv` membership: `.includes`/`.indexOf` (optionally after `.slice(n)`);
  *   - args-array predicate: `.find`/`.some`/`.filter((o)=>o==="--flag" …)`, including
  *     `||`/`&&`-chained comparisons in the same predicate (e.g.
@@ -81,6 +86,43 @@ const COMMAND_BACK = 700;
  */
 const FLAG_OWN_EVIDENCE =
   /\.(?:option|addOption)\([^)]{0,85}$|process\.argv(?:\.slice\(\s*\d*\s*\))?\.(?:includes|indexOf)\(\s*["'`]$|\.(?:find|some|filter)\([\s\S]{0,80}?\b\w+\s*===?\s*["'`]$/;
+
+/** An Option constructor and its first string argument — the candidate spec. */
+const FLAG_CTOR_SPEC = /new [A-Za-z_$][\w$]*\(\s*(["'`])((?:(?!\1)[^\\\n]|\\.)*)\1/g;
+
+/**
+ * A commander option spec IN FULL: one or more `-x` / `--long` tokens (comma- or
+ * space-separated, aliases optionally bracketed) and an optional `<arg>` / `[arg]`
+ * placeholder — and nothing else.
+ *
+ * Anchored end to end, and that anchoring is the whole point. A look-back that
+ * merely requires the literal to START with the flag admits any Error whose message
+ * opens with a flag name — the bundle has `new lr("--configure-git: could not
+ * restore hook stubs …")` and several like it, which is how a first attempt at this
+ * fix published `--configure-git` and `--messaging-socket-path` as registered flags.
+ * Prose after the flag is not spec syntax, so it is rejected here.
+ *
+ * The alias separator is a comma OR bare whitespace, because commander accepts
+ * both (`"-d --debug"` is as valid as `"-d, --debug"`). 2.1.224 happens to use the
+ * comma form everywhere, so this costs nothing today and stops a future style
+ * change from silently dropping a flag.
+ */
+const OPTION_SPEC =
+  /^-{1,2}[A-Za-z][A-Za-z0-9-]*(?:(?:\s*,\s*|\s+)\[?\s*-{1,2}[A-Za-z][A-Za-z0-9-]*\s*\]?)*(?:\s+[<[][^>\]]*[>\]])?$/;
+
+/**
+ * Every long-flag-shaped token, capitals INCLUDED, so a camelCase flag is seen
+ * whole and can be rejected by the grammar rather than silently truncated at its
+ * first capital. `--allowedTools, [--allowed-tools] <tools...>` must yield
+ * `--allowedTools` (rejected, out of grammar) and `--allowed-tools` (kept) — never
+ * the phantom `--allowed` a bare `/--[a-z][a-z0-9-]+/` scan produces by stopping at
+ * the `T`. That phantom shipped with `--allowedTools`'s real description attached,
+ * which made it look well-evidenced (scratch/parser-proto FINDINGS defect 2).
+ */
+const FLAG_TOKEN = /--[A-Za-z][A-Za-z0-9-]*/g;
+/** The lane's flag grammar — lowercase, at least two chars. Shared with the other
+ * lanes, so a binary find coalesces instead of forking a divergent symbol. */
+const FLAG_GRAMMAR = /^--[a-z][a-z0-9-]+$/;
 
 /** `process.env.NAME` and `process.env["NAME"]` — the positive signal for env. */
 const ENV_ACCESS: readonly RegExp[] = [
@@ -148,7 +190,15 @@ const SKILL_GET_DESC = /get description\(\)\s*\{\s*return\s*(["'`])((?:(?!\1)[^\
 function cleanDescription(raw: string | undefined, delimiter: string | undefined): string | undefined {
   if (raw === undefined) return undefined;
   if (delimiter === '`' && raw.includes('${')) return undefined;
-  const ESCAPES: Record<string, string> = { n: '\n', t: '\t', r: '', b: '\b', f: '\f', v: '\v', '0': '\0' };
+  const ESCAPES: Record<string, string> = {
+    n: '\n',
+    t: '\t',
+    r: '',
+    b: '\b',
+    f: '\f',
+    v: '\v',
+    '0': '\0',
+  };
   return raw.replace(/\\(u[0-9a-fA-F]{4}|.)/gs, (_m, e: string) =>
     e[0] === 'u' ? String.fromCharCode(parseInt(e.slice(1), 16)) : (ESCAPES[e] ?? e)
   );
@@ -196,9 +246,19 @@ export function extractAccessorEnvVars(src: string): Map<string, string> {
  */
 export function extractFlags(src: string): Map<string, Evidence> {
   const out = new Map<string, Evidence>();
-  for (const m of src.matchAll(/--[a-z][a-z0-9-]+/g)) {
+  // Option constructors first: a shared factory moves the `.addOption(` call away
+  // from the spec, so the look-back below cannot see it (the 2.1.84 `--cowork`
+  // refactor). Registration is also the stronger label, so it should win.
+  for (const m of src.matchAll(FLAG_CTOR_SPEC)) {
+    const spec = m[2] ?? '';
+    if (!OPTION_SPEC.test(spec)) continue;
+    for (const flag of spec.match(FLAG_TOKEN) ?? []) {
+      if (FLAG_GRAMMAR.test(flag)) out.set(flag, 'registration');
+    }
+  }
+  for (const m of src.matchAll(FLAG_TOKEN)) {
     const flag = m[0];
-    if (out.has(flag) || m.index === undefined) continue;
+    if (!FLAG_GRAMMAR.test(flag) || out.has(flag) || m.index === undefined) continue;
     const before = src.slice(Math.max(0, m.index - FLAG_EVIDENCE_WINDOW), m.index);
     if (!FLAG_OWN_EVIDENCE.test(before)) continue;
     out.set(flag, /\.(?:option|addOption)\(/.test(before) ? 'registration' : 'argv');
@@ -227,6 +287,11 @@ const FLAG_SPEC_DESC =
  * is UNAMBIGUOUS (exactly one distinct description). Guards: intersect with `flags`;
  * drop template-literal / flag-looking captures. A genuine cross-VERSION reword
  * (one description per bundle) is preserved.
+ *
+ * Every in-grammar long token the spec declares gets the description, aliases
+ * included — `"--allowedTools, [--allowed-tools] <tools...>"` describes
+ * `--allowed-tools`. Reading only the spec's FIRST token both truncated
+ * `--allowedTools` to the phantom `--allowed` and left the real alias undescribed.
  */
 export function extractFlagDescriptions(
   src: string,
@@ -234,13 +299,15 @@ export function extractFlagDescriptions(
 ): Map<string, string> {
   const seen = new Map<string, Set<string>>();
   for (const m of src.matchAll(FLAG_SPEC_DESC)) {
-    const long = (m[2] ?? '').match(/--[a-z][a-z0-9-]+/)?.[0];
     const description = cleanDescription(m[4], m[3]);
-    if (!long || !flags.has(long) || !description) continue;
+    if (!description) continue;
     if (/^-{1,2}[a-z]/.test(description)) continue; // a flag, not a description
-    let set = seen.get(long);
-    if (!set) seen.set(long, (set = new Set()));
-    set.add(description);
+    for (const long of (m[2] ?? '').match(FLAG_TOKEN) ?? []) {
+      if (!FLAG_GRAMMAR.test(long) || !flags.has(long)) continue;
+      let set = seen.get(long);
+      if (!set) seen.set(long, (set = new Set()));
+      set.add(description);
+    }
   }
   const out = new Map<string, string>();
   for (const [long, descs] of seen) {
