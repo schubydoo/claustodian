@@ -257,6 +257,12 @@
         "description": "Continue the most recent conversation in the current directory"
       }
     ],
+    "cli_flag:--correlation-id": [
+      {
+        "from": "2.1.224",
+        "description": "Opaque id echoed back to the environment orchestrator on the work order (requires --environment)."
+      }
+    ],
     "cli_flag:--cowork": [
       {
         "from": "2.1.15",
@@ -433,6 +439,12 @@
       {
         "from": "0.2.9",
         "description": "Set environment variables (e.g. -e KEY=value)"
+      }
+    ],
+    "cli_flag:--environment": [
+      {
+        "from": "2.1.224",
+        "description": "Create a new cloud session that runs on the given self-hosted environment (ccpool_...)."
       }
     ],
     "cli_flag:--exclude-dynamic-system-prompt-sections": [
@@ -731,6 +743,12 @@
         "description": "Disable Claude in Chrome integration"
       }
     ],
+    "cli_flag:--no-publish": [
+      {
+        "from": "2.1.224",
+        "description": "Keep the HTML report local only; skip publishing it to claude.ai"
+      }
+    ],
     "cli_flag:--no-scaffold": [
       {
         "from": "2.1.198",
@@ -741,6 +759,12 @@
       {
         "from": "2.0.63",
         "description": "Disable session persistence - sessions will not be saved to disk and cannot be resumed (only works with --print)"
+      }
+    ],
+    "cli_flag:--on-branch": [
+      {
+        "from": "2.1.224",
+        "description": "Work directly on <branch> in the remote session (checkout and push to it). On self-hosted environments this includes pushing to the default branch when it is not protected — use GitHub branch protection to restrict. Mutually exclusive with --ref. Requires --cloud or --environment."
       }
     ],
     "cli_flag:--output-dir": [
@@ -815,6 +839,12 @@
         "description": "Fetch a plugin .zip from a URL for this session only (repeatable: --plugin-url A --plugin-url B)"
       }
     ],
+    "cli_flag:--pool": [
+      {
+        "from": "2.1.224",
+        "description": "Deprecated alias for --environment"
+      }
+    ],
     "cli_flag:--port": [
       {
         "from": "2.1.64",
@@ -867,6 +897,10 @@
       {
         "from": "2.1.210",
         "description": "Publish the HTML report privately to claude.ai and print its link"
+      },
+      {
+        "from": "2.1.224",
+        "description": "Also require publishing the report to claude.ai (already the default when your account supports it); explains why if unavailable"
       }
     ],
     "cli_flag:--push": [
@@ -879,6 +913,12 @@
       {
         "from": "2.1.73",
         "description": "Alias for --remote-control"
+      }
+    ],
+    "cli_flag:--ref": [
+      {
+        "from": "2.1.224",
+        "description": "Branch, tag, or SHA to check out in the remote session; defaults to local current branch. Requires --cloud or --environment."
       }
     ],
     "cli_flag:--remote": [
@@ -919,6 +959,10 @@
       {
         "from": "2.1.210",
         "description": "Write a self-contained HTML report (scores, prompts, grader verdicts) to <path>"
+      },
+      {
+        "from": "2.1.224",
+        "description": "Write the self-contained HTML report (scores, prompts, grader verdicts) to <path> instead of the results dir"
       }
     ],
     "cli_flag:--resume": [
@@ -1771,6 +1815,12 @@
       {
         "from": "2.1.163",
         "description": "Open your keyboard shortcuts file"
+      }
+    ],
+    "command:/list-agents": [
+      {
+        "from": "2.1.224",
+        "description": "List subagents and other Claude sessions you can message"
       }
     ],
     "command:/logout": [
