@@ -250,6 +250,7 @@
           <option value="">live or vanished</option>
           <option value="live">live at tip</option>
           <option value="gone">vanished</option>
+          <option value="unknown">no observation</option>
         </select>
         <span class="note" id="shown"></span>
       </div>
@@ -308,7 +309,6 @@
       // pack into 124 bytes. The vocabulary matches scratch/needs-review-audit.csv
       // so earlier decisions carry over unchanged.
       const DECISIONS = ['undecided', 'promote', 'keep', 'internal'];
-      const CODE_PREFIX = 'CLAU1';
 
       const $ = (id) => document.getElementById(id);
       const cmpVer = (a, b) => {
@@ -376,88 +376,104 @@
       }
 
       /**
-       * Typed promotion descriptions, keyed by item index. Only present for a row
-       * whose text differs from what the dataset already publishes — the common
-       * case (promoting a symbol that already has a binary description) adds
-       * nothing to the code, so it stays the short CLAU1 form.
+       * A 30-bit FNV-1a of `type:symbol` — the identity a decision is attached to.
+       *
+       * Decisions used to be positional, which was wrong in a way that would have
+       * bitten immediately: the code recorded the CLAUDE CODE version, but a
+       * dataset regeneration changes the needs_review set WITHOUT changing that
+       * version (the settings lane is about to add ~229 entries at 2.1.224). Every
+       * decision after the first insertion would have silently shifted onto the
+       * wrong symbol. Keying on the symbol itself removes the failure mode rather
+       * than detecting it, and it also drops the old "refetch the previous
+       * snapshot" path — which could not have worked here anyway, since the
+       * superseded list is no longer published anywhere.
        */
-      function overrideEntries() {
-        return items
-          .map((s, i) => [i, (drafts[i] ?? '').trim()])
-          .filter(([i, t]) => t && t !== (items[i].description || ''));
+      function keyHash(type, symbol) {
+        let h = 0x811c9dc5;
+        const s = `${type}:${symbol}`;
+        for (let i = 0; i < s.length; i++) {
+          h ^= s.charCodeAt(i);
+          h = Math.imul(h, 0x01000193) >>> 0;
+        }
+        return h >>> 2; // 30 bits; the low 2 carry the decision
       }
 
-      function buildCode() {
-        const packed = b64.enc(pack(decisions));
-        const overrides = overrideEntries();
-        if (overrides.length === 0) {
-          const body = `${datasetVersion}.${packed}`;
-          return `CLAU1.${body}.${checksum(body)}`;
-        }
-        // Free text cannot pack into two bits, so it rides in a second segment and
-        // only when it exists. The code grows with what you actually typed.
-        const blob = b64.enc(new TextEncoder().encode(JSON.stringify(overrides)));
-        const body = `${datasetVersion}.${packed}.${blob}`;
-        return `CLAU2.${body}.${checksum(body)}`;
+      /** Typed descriptions that differ from what the dataset already publishes. */
+      function overrideEntries() {
+        return items
+          .map((s, i) => [s, (drafts[i] ?? '').trim()])
+          .filter(([s, t]) => t && t !== (s.description || ''));
       }
 
       /**
-       * Apply a save code. When it was made against a different dataset version the
-       * positions may have shifted, so rebuild THAT version's list from the
-       * published snapshot and re-map decisions by symbol name rather than trusting
-       * the index. Silently applying a stale positional code would attach decisions
-       * to the wrong symbols.
+       * Sparse and self-describing: one 4-byte word per DECIDED symbol, holding its
+       * 30-bit key and 2-bit decision. Undecided rows cost nothing, so the code
+       * grows with the work done — measured at 82 chars for 4 decisions, 3.9 KB
+       * for a fully triaged 723. Longer than a positional payload, and worth it:
+       * this one cannot attach a decision to the wrong symbol.
        */
-      async function applyCode(raw) {
+      function buildCode() {
+        const decided = items.map((s, i) => ({ s, d: decisions[i] })).filter(({ d }) => d);
+        const bytes = new Uint8Array(decided.length * 4);
+        const dv = new DataView(bytes.buffer);
+        decided.forEach(({ s, d }, n) => dv.setUint32(n * 4, (keyHash(s.type, s.symbol) << 2) | d));
+        const entries = b64.enc(bytes);
+        const overrides = overrideEntries();
+        const descs = overrides.length
+          ? b64.enc(
+              new TextEncoder().encode(
+                JSON.stringify(overrides.map(([s, t]) => [keyHash(s.type, s.symbol), t]))
+              )
+            )
+          : '-';
+        const body = `${datasetVersion}.${entries}.${descs}`;
+        return `CLAU3.${body}.${checksum(body)}`;
+      }
+
+      /**
+       * Apply a save code. Decisions are matched by symbol identity, so a code
+       * survives any change to the list: insertions, removals, reordering, and a
+       * regeneration that leaves the version untouched. Anything whose symbol is no
+       * longer in needs_review is reported rather than dropped silently — it
+       * usually means the decision already took effect.
+       */
+      function applyCode(raw) {
         const text = raw.trim();
-        const m =
-          /^CLAU1\.([0-9.]+)\.([A-Za-z0-9_-]+)\.([a-z0-9]+)$/.exec(text) ??
-          /^CLAU2\.([0-9.]+)\.([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]+)\.([a-z0-9]+)$/.exec(text);
-        if (!m) throw new Error('Not a Claustodian save code.');
-        const isV2 = text.startsWith('CLAU2.');
-        const ver = m[1];
-        const payload = m[2];
-        const blob = isV2 ? m[3] : '';
-        const sum = isV2 ? m[4] : m[3];
-        if (checksum(isV2 ? `${ver}.${payload}.${blob}` : `${ver}.${payload}`) !== sum)
+        const m = /^CLAU3\.([0-9.]+)\.([A-Za-z0-9_-]*)\.([A-Za-z0-9_-]+)\.([a-z0-9]+)$/.exec(text);
+        if (!m) throw new Error('Not a Claustodian save code (expected CLAU3).');
+        const [, ver, entriesB64, descsB64, sum] = m;
+        if (checksum(`${ver}.${entriesB64}.${descsB64}`) !== sum)
           throw new Error('Checksum mismatch — the code looks truncated or edited.');
-        const bytes = b64.dec(payload);
-        const overrides = blob ? JSON.parse(new TextDecoder().decode(b64.dec(blob))) : [];
 
-        if (ver === datasetVersion) {
-          decisions = unpack(bytes, items.length);
-          drafts = items.map(() => '');
-          for (const [i, t] of overrides) if (items[i]) drafts[i] = t;
-          return `Loaded ${decisions.filter(Boolean).length} decision(s)${
-            overrides.length ? ` and ${overrides.length} description(s)` : ''
-          }.`;
+        const bytes = entriesB64 ? b64.dec(entriesB64) : new Uint8Array(0);
+        if (bytes.length % 4 !== 0)
+          throw new Error('Corrupt payload — length is not a whole number of entries.');
+        const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        const byKey = new Map();
+        for (let n = 0; n < bytes.length / 4; n++) {
+          const word = dv.getUint32(n * 4);
+          byKey.set(word >>> 2, word & 3);
         }
-
-        const res = await fetch(`../data/versions/${ver}.json`);
-        if (!res.ok)
-          throw new Error(`Code is for ${ver}, which is not published — cannot re-map safely.`);
-        const old = (await res.json()).symbols
-          .filter((s) => s.status === 'needs_review')
-          .sort(order);
-        const oldDecisions = unpack(bytes, old.length);
-        const byKey = new Map(old.map((s, i) => [`${s.type}:${s.symbol}`, oldDecisions[i]]));
-        // Typed descriptions are re-mapped by name too — they are the part that
-        // took actual effort, so losing them to a version bump would be the worst
-        // possible failure of this page.
-        const draftByKey = new Map(
-          overrides.filter(([i]) => old[i]).map(([i, t]) => [`${old[i].type}:${old[i].symbol}`, t])
+        const descByKey = new Map(
+          descsB64 === '-' ? [] : JSON.parse(new TextDecoder().decode(b64.dec(descsB64)))
         );
-        drafts = items.map((s) => draftByKey.get(`${s.type}:${s.symbol}`) ?? '');
+
         let carried = 0;
         decisions = items.map((s) => {
-          const d = byKey.get(`${s.type}:${s.symbol}`) ?? 0;
+          const d = byKey.get(keyHash(s.type, s.symbol)) ?? 0;
           if (d) carried++;
           return d;
         });
-        const dropped = [...byKey.values()].filter(Boolean).length - carried;
-        return `Code was made against ${ver}; re-mapped by symbol name. Carried ${carried} decision(s)${
-          dropped > 0 ? `, dropped ${dropped} whose symbol is no longer in needs_review` : ''
-        }.`;
+        drafts = items.map((s) => descByKey.get(keyHash(s.type, s.symbol)) ?? '');
+        const orphaned = byKey.size - carried;
+        return (
+          `Loaded ${carried} decision(s)` +
+          (descByKey.size ? ` and ${descByKey.size} description(s)` : '') +
+          (ver !== datasetVersion ? ` (code was made against ${ver})` : '') +
+          (orphaned > 0
+            ? `. ${orphaned} no longer in needs_review — already actioned, or renamed.`
+            : '.')
+        );
       }
 
       const lsKey = () => `claustodian-review:${datasetVersion}`;
@@ -493,8 +509,9 @@
             if (ft && s.type !== ft) return false;
             if (fp && s.provenance !== fp) return false;
             if (fd !== '' && decisions[i] !== Number(fd)) return false;
-            if (fl === 'live' && !s.live) return false;
-            if (fl === 'gone' && s.live) return false;
+            if (fl === 'live' && s.live !== true) return false;
+            if (fl === 'gone' && s.live !== false) return false;
+            if (fl === 'unknown' && s.live !== null) return false;
             if (q && !`${s.symbol} ${s.description || ''}`.toLowerCase().includes(q)) return false;
             return true;
           });
@@ -528,7 +545,7 @@
             `<td class="nowrap">${esc(s.category || '')}</td>` +
             `<td class="nowrap">${esc(s.provenance)}</td>` +
             `<td class="nowrap">${s.first_seen}</td>` +
-            `<td class="nowrap${s.live ? '' : ' gone'}">${s.last_seen || '—'}</td>` +
+            `<td class="nowrap${s.live === false ? ' gone' : ''}">${s.last_seen || '<span title="No binary observation for this symbol.">unknown</span>'}</td>` +
             `<td class="nowrap">${s.removed_in || '—'}</td>` +
             `<td class="desc">${esc(s.description || '')}</td>`;
           const td = document.createElement('td');
@@ -646,7 +663,7 @@
 
       $('load').addEventListener('click', async () => {
         try {
-          $('loadMsg').textContent = await applyCode($('code').value);
+          $('loadMsg').textContent = applyCode($('code').value);
           persist();
           refreshProgress();
           applyFilters();
@@ -744,12 +761,15 @@
             for (const s of items) {
               const o = byKey.get(`${s.type}:${s.symbol}`);
               s.last_seen = o?.last_seen || '';
-              s.live = !!newest && s.last_seen === newest;
+              // Three states, not two. No observation means we do not know, and
+              // showing that as "vanished" would invent a lifecycle claim from
+              // missing data — the exact error the dataset's removal logic avoids.
+              s.live = !s.last_seen ? null : !!newest && s.last_seen === newest;
             }
           } catch {
             for (const s of items) {
               s.last_seen = '';
-              s.live = true;
+              s.live = null; // observations unavailable — unknown, not live
             }
           }
 
@@ -770,7 +790,7 @@
           const saved = localStorage.getItem(lsKey());
           if (saved) {
             try {
-              $('loadMsg').textContent = `${await applyCode(saved)} (restored from this browser)`;
+              $('loadMsg').textContent = `${applyCode(saved)} (restored from this browser)`;
             } catch {
               /* stale local copy — start clean rather than guess */
             }
