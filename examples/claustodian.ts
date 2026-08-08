@@ -14,7 +14,7 @@
  * data, so you can unit-test them without the network.
  */
 
-export const DEFAULT_BASE = 'https://schubydoo.github.io/claustodian/data';
+export const DEFAULT_BASE = 'https://claustodian.dev/data';
 
 // All five values the schema's `type` enum allows. cli_flag, command, env_var and
 // config_key are all populated; internal_config_flag is reserved by the schema and

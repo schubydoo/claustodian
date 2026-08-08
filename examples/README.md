@@ -27,7 +27,7 @@ All three implement the same three rules below.
 
 ## Endpoints
 
-Base URL: **`https://schubydoo.github.io/claustodian/data`**
+Base URL: **`https://claustodian.dev/data`**
 (raw-file fallback: `https://raw.githubusercontent.com/schubydoo/claustodian/main/data`)
 
 | Path                       | Contents                                                                       |

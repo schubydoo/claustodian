@@ -42,7 +42,7 @@ const { Ajv2020 } = require('ajv/dist/2020.js') as typeof import('ajv/dist/2020.
 const addFormats = (require('ajv-formats') as typeof import('ajv-formats')).default;
 
 const SCHEMA_VERSION_SCHEMA = {
-  $id: 'https://schubydoo.github.io/claustodian/schema/schema-version.schema.json',
+  $id: 'https://claustodian.dev/schema/schema-version.schema.json',
   type: 'object',
   properties: {
     version: { type: 'string' },
