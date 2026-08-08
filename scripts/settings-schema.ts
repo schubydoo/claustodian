@@ -237,6 +237,48 @@ function objectBodyStart(value: string, valueStart: number): number {
 }
 
 /**
+ * Index just past the `}` that closes the object body starting at `bodyStart`,
+ * or -1 if it never closes. Quote-aware, so a brace inside a description string
+ * cannot desync the count.
+ */
+function objectEnd(src: string, bodyStart: number): number {
+  let depth = 1;
+  for (let j = bodyStart; j < src.length; j++) {
+    const ch = src[j];
+    if (ch === '"' || ch === "'" || ch === '`') {
+      j = skipString(src, j) - 1;
+      continue;
+    }
+    if (ch === '{' || ch === '[' || ch === '(') depth++;
+    else if (ch === '}' || ch === ']' || ch === ')') {
+      depth--;
+      if (depth === 0) return j + 1;
+    }
+  }
+  return -1;
+}
+
+/**
+ * A key's own description.
+ *
+ * For a plain value that is the whole story. For an OBJECT value it is not:
+ * `describeOf` takes the first `.describe()` it sees, and every child inside the
+ * body has one, so a parent object silently inherited its first child's text —
+ * `worktree` was published describing the symlink array that is actually
+ * `worktree.symlinkDirectories`, and 8 of 20 parents were wrong the same way.
+ * A parent's own description is chained AFTER the object closes
+ * (`Xt({…}).describe("…")`), so for an object we read only the tail. Parents with
+ * no such chain (`sandbox`, `sandbox.network`) correctly get nothing rather than
+ * a borrowed sentence.
+ */
+function describeKey(src: string, value: string, valueStart: number, valueEnd: number): string | undefined {
+  const bodyStart = objectBodyStart(value, valueStart);
+  if (bodyStart === -1) return describeOf(value);
+  const end = objectEnd(src, bodyStart);
+  return end === -1 || end >= valueEnd ? undefined : describeOf(src.slice(end, valueEnd));
+}
+
+/**
  * Where a sub-schema factory's object body begins, or -1 when the factory
  * resolves to something that is not an object literal.
  *
@@ -388,7 +430,11 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
     for (const { key, valueStart, valueEnd } of scanLevel(src, start)) {
       const value = src.slice(valueStart, valueEnd);
       const path = prefix ? `${prefix}.${key}` : key;
-      keys.push({ path: detach(path), description: describeOf(value), viaFactory });
+      keys.push({
+        path: detach(path),
+        description: describeKey(src, value, valueStart, valueEnd),
+        viaFactory,
+      });
 
       const inlineBody = objectBodyStart(value, valueStart);
       if (inlineBody !== -1) {

@@ -285,3 +285,59 @@ describe('extractSettingsKeys — feature-gated fragments', () => {
     expect(paths(ROOT)).toEqual(['apiKeyHelper']);
   });
 });
+
+describe('extractSettingsKeys — a parent object never borrows a child description', () => {
+  it('leaves a parent undescribed when only its children carry describe()', () => {
+    // The shipped defect: describeOf took the first `.describe()` in the value,
+    // and for an object that is the FIRST CHILD's. `worktree` was published
+    // describing the symlink array that is really `worktree.symlinkDirectories`,
+    // and 8 of 20 parents were wrong the same way at 2.1.226.
+    const src =
+      'Q=v.object({apiKeyHelper:v.string(),' +
+      'worktree:v.object({symlinkDirectories:v.array().describe("Dirs to symlink"),' +
+      'baseRef:v.string().describe("Which ref")}).optional()})';
+    const keys = extractSettingsKeys(src);
+    const by = new Map(keys.map((k) => [k.path, k.description]));
+    expect(by.get('worktree')).toBeUndefined();
+    expect(by.get('worktree.symlinkDirectories')).toBe('Dirs to symlink');
+    expect(by.get('worktree.baseRef')).toBe('Which ref');
+  });
+
+  it('reads a parent description chained after the object closes', () => {
+    const src =
+      'Q=v.object({apiKeyHelper:v.string(),' +
+      'remote:v.object({defaultEnvironmentId:v.string().describe("Default env ID")})' +
+      '.describe("Cloud session configuration").optional()})';
+    const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
+    expect(by.get('remote')).toBe('Cloud session configuration');
+    expect(by.get('remote.defaultEnvironmentId')).toBe('Default env ID');
+  });
+
+  it('is not desynced by a brace inside a child description', () => {
+    // The tail is found by counting braces, so a `{` inside a string would make
+    // the object appear to close late and swallow the parent's own describe().
+    const src =
+      'Q=v.object({apiKeyHelper:v.string(),' +
+      'statusLine:v.object({command:v.string().describe("Use {cwd} in the template")})' +
+      '.describe("Status line configuration")})';
+    const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
+    expect(by.get('statusLine')).toBe('Status line configuration');
+    expect(by.get('statusLine.command')).toBe('Use {cwd} in the template');
+  });
+
+  it('still describes an ordinary scalar key from its own chain', () => {
+    const src = 'Q=v.object({apiKeyHelper:v.string(),cleanupPeriodDays:v.number().describe("Days")})';
+    const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
+    expect(by.get('cleanupPeriodDays')).toBe('Days');
+  });
+
+  it('gives a grandparent nothing when only a grandchild is described', () => {
+    const src =
+      'Q=v.object({apiKeyHelper:v.string(),' +
+      'sandbox:v.object({network:v.object({allowedDomains:v.array().describe("Domains")})})})';
+    const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
+    expect(by.get('sandbox')).toBeUndefined();
+    expect(by.get('sandbox.network')).toBeUndefined();
+    expect(by.get('sandbox.network.allowedDomains')).toBe('Domains');
+  });
+});
