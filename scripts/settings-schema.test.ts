@@ -224,3 +224,64 @@ describe('settingsKeyCategory', () => {
     expect(settingsKeyCategory('Disable the Workflows feature')).toBe('settings');
   });
 });
+
+describe('extractSettingsKeys — feature-gated fragments', () => {
+  /** A minimal root the anchor regex can find, so the walk has somewhere to start. */
+  const ROOT = 'Q=v.object({apiKeyHelper:v.string().optional()})';
+
+  it('reads keys from a gated fragment the root cannot reach', () => {
+    // The registry is merged into the schema at build time, so nothing in the root
+    // object points at it. At 2.1.226 this hid six keys settings.md documents.
+    const src =
+      `${ROOT};Nlo={voice:{buildGate:()=>!0,` +
+      'shape:()=>({voiceEnabled:v.boolean().optional().describe("Enable voice mode")})}}';
+    const keys = extractSettingsKeys(src);
+    expect(keys.map((k) => k.path)).toEqual(['apiKeyHelper', 'voiceEnabled']);
+    expect(keys[1]?.description).toBe('Enable voice mode');
+    expect(keys[1]?.viaFactory).toBe('gated-fragment');
+  });
+
+  it('descends into a nested object inside a fragment', () => {
+    const src =
+      `${ROOT};N={autoMode:{buildGate:()=>!0,shape:()=>({` +
+      'autoMode:v.object({allow:v.array().optional().describe("Allow rules"),soft_deny:v.array().optional()})})}}';
+    expect(paths(src)).toEqual(['apiKeyHelper', 'autoMode', 'autoMode.allow', 'autoMode.soft_deny']);
+  });
+
+  it("ignores zod's own shape() factories", () => {
+    // ZodObject.extend()/merge() build `shape:()=>({...this._def.shape(), …})`.
+    // Walking those would emit library plumbing as Claude Code settings.
+    const src = `${ROOT};class KN{extend(e){return new KN({shape:()=>({...this._def.shape(),...e})})}}`;
+    expect(paths(src)).toEqual(['apiKeyHelper']);
+  });
+
+  it('throws on an unrecognised shape() factory rather than dropping its keys', () => {
+    // Neither gated by buildGate nor zod's own. Silently skipping it would report
+    // success while a whole fragment of keys went missing — the failure this
+    // module exists to prevent.
+    const src = `${ROOT};X={shape:()=>({mysteryKey:Ut().optional()})}`;
+    expect(() => extractSettingsKeys(src)).toThrow(SettingsSchemaError);
+    expect(() => extractSettingsKeys(src)).toThrow(/neither gated by buildGate/);
+  });
+
+  it('collects a fragment key only once when the bundle embeds it twice', () => {
+    // 2.1.113 carries two copies of the module graph, so every gated key was
+    // read twice and published as a duplicate symbol.
+    const frag = 'F={voice:{buildGate:()=>!0,shape:()=>({voiceEnabled:v.boolean().optional()})}}';
+    expect(paths(`${ROOT};${frag};${frag}`)).toEqual(['apiKeyHelper', 'voiceEnabled']);
+  });
+
+  it('lets a root declaration win over a same-named fragment key', () => {
+    // The root is the authoritative shape; the fragment copy is the duplicate.
+    const src =
+      'Q=v.object({apiKeyHelper:v.string(),voiceEnabled:v.boolean().describe("From the root")});' +
+      'F={voice:{buildGate:()=>!0,shape:()=>({voiceEnabled:v.boolean().optional().describe("From a fragment")})}}';
+    const keys = extractSettingsKeys(src);
+    expect(keys.filter((k) => k.path === 'voiceEnabled')).toHaveLength(1);
+    expect(keys.find((k) => k.path === 'voiceEnabled')?.description).toBe('From the root');
+  });
+
+  it('is unaffected in an era with no fragments at all', () => {
+    expect(paths(ROOT)).toEqual(['apiKeyHelper']);
+  });
+});
