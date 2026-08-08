@@ -134,6 +134,48 @@ describe('distillObservations', () => {
     expect(distillObservations(files).symbols[0]?.switch_case_only).toBeUndefined();
   });
 
+  it('carries a switch-case flag\'s scopes into the observation', () => {
+    const files: BinaryCacheFile[] = [
+      { version: '2.1.224', symbols: [{ symbol: '--min-idle', type: 'cli_flag', evidence: 'argv-switch', scopes: ['self-hosted-runner orchestrator'] }] },
+    ];
+    expect(distillObservations(files).symbols[0]).toMatchObject({
+      switch_case_only: true,
+      scopes: ['self-hosted-runner orchestrator'],
+    });
+  });
+
+  it('unions scopes across versions and sorts them', () => {
+    // A parser may gain a flag in a later release; the observation window is one
+    // record, so its scope set is the union over every version that saw it.
+    const files: BinaryCacheFile[] = [
+      { version: '2.1.224', symbols: [{ symbol: '--api-url', type: 'cli_flag', evidence: 'argv-switch', scopes: ['self-hosted-runner orchestrator'] }] },
+      { version: '2.1.226', symbols: [{ symbol: '--api-url', type: 'cli_flag', evidence: 'argv-switch', scopes: ['self-hosted-runner', 'self-hosted-runner decode-token'] }] },
+    ];
+    expect(distillObservations(files).symbols[0]?.scopes).toEqual([
+      'self-hosted-runner',
+      'self-hosted-runner decode-token',
+      'self-hosted-runner orchestrator',
+    ]);
+  });
+
+  it('drops scopes together with the caveat when stronger evidence appears', () => {
+    // Scope narrows a flag to a subcommand. Once a version proves the flag by
+    // commander registration, keeping the narrowing would assert it is NOT valid
+    // on bare `claude` on the strength of an older subcommand parser.
+    const files: BinaryCacheFile[] = [
+      { version: '2.1.224', symbols: [{ symbol: '--base-dir', type: 'cli_flag', evidence: 'argv-switch', scopes: ['self-hosted-runner'] }] },
+      { version: '2.1.226', symbols: [{ symbol: '--base-dir', type: 'cli_flag', evidence: 'registration' }] },
+    ];
+    const [record] = distillObservations(files).symbols;
+    expect(record?.switch_case_only).toBeUndefined();
+    expect(record?.scopes).toBeUndefined();
+  });
+
+  it('omits scopes entirely when no version established one', () => {
+    const files = [evFile('2.1.223', '--help', 'argv-switch')];
+    expect(distillObservations(files).symbols[0]?.scopes).toBeUndefined();
+  });
+
   it('leaves the mark off symbols found by the ordinary evidence paths', () => {
     const { symbols } = distillObservations([cacheFile('1.0.0', [['--print', 'cli_flag']])]);
     expect(symbols[0]?.switch_case_only).toBeUndefined();

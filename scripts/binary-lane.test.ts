@@ -13,6 +13,9 @@ import {
   type DescriptionEra,
   isCurrentDescriptionEra,
   isPublishableBinaryEnv,
+  isPublishableBinaryFlag,
+  mayRedateFromBinary,
+  type BinaryObservation,
   loadBinaryDescriptions,
   loadBinaryObservations,
   NEEDS_REVIEW_ENV,
@@ -241,5 +244,49 @@ describe('description timeline', () => {
       descriptions: { 'command:/x': [{ from: '1.0.0' } as unknown as DescriptionEra] },
     };
     expect(() => assertBinaryDescriptions(badEra, 'p')).toThrow(/missing string from\/description/);
+  });
+});
+
+describe('isPublishableBinaryFlag / mayRedateFromBinary', () => {
+  const obs = (extra: Partial<BinaryObservation> = {}): BinaryObservation => ({
+    symbol: '--min-idle',
+    type: 'cli_flag',
+    first_seen: '2.1.224',
+    last_seen: '2.1.226',
+    removed_in: null,
+    ...extra,
+  });
+
+  it('publishes a flag proved by an ordinary evidence path', () => {
+    expect(isPublishableBinaryFlag(obs())).toBe(true);
+  });
+
+  it('withholds a switch-case-only flag with no established scope', () => {
+    // Every release before 2.1.224, and `--help`, whose scope cannot be complete.
+    expect(isPublishableBinaryFlag(obs({ switch_case_only: true }))).toBe(false);
+    expect(isPublishableBinaryFlag(obs({ switch_case_only: true, scopes: [] }))).toBe(false);
+  });
+
+  it('publishes a switch-case-only flag once its scope is known', () => {
+    const scoped = obs({ switch_case_only: true, scopes: ['self-hosted-runner orchestrator'] });
+    expect(isPublishableBinaryFlag(scoped)).toBe(true);
+  });
+
+  it('still refuses to re-date an existing record from a scoped observation', () => {
+    // The gates diverge here, and that is the point. `--capacity` is ONE record
+    // spanning `claude remote-control --capacity` (older, docs) and
+    // `claude self-hosted-runner --capacity` (2.1.224). The runner sighting may
+    // publish its scope but must not answer "when did --capacity appear?".
+    const scoped = obs({
+      symbol: '--capacity',
+      switch_case_only: true,
+      scopes: ['self-hosted-runner'],
+    });
+    expect(isPublishableBinaryFlag(scoped)).toBe(true);
+    expect(mayRedateFromBinary(scoped)).toBe(false);
+  });
+
+  it('lets an ordinary observation re-date a record', () => {
+    expect(mayRedateFromBinary(obs())).toBe(true);
   });
 });

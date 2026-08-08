@@ -104,8 +104,26 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
  * Only `cli_flag` is scoped. Commands are their own surface, env vars are read
  * from the environment regardless of subcommand, and settings keys live in a
  * file — none of them have a subcommand to be valid under.
+ *
+ * `binaryScopes` are the paths scripts/argv-scopes.ts proved from a bundle's own
+ * usage banners. They UNION with the curated table rather than replacing it,
+ * because each source sees a surface the other cannot: the `claude --help` sweep
+ * cannot reach `self-hosted-runner` (argv-dispatched and hidden from help), and
+ * the binary lane only sees hand-rolled argv switches, never a commander
+ * registration. Where they overlap they agree — `--base-dir` is
+ * `['self-hosted-runner']` from both — and where they do not, the union is the
+ * more complete answer: the sweep recorded `--capacity` as `remote-control` only
+ * because the runner's copy was invisible to it, and completeness is precisely
+ * what this field asserts.
  */
-export function scopesFor(type: string, symbol: string): readonly string[] | undefined {
+export function scopesFor(
+  type: string,
+  symbol: string,
+  binaryScopes?: readonly string[]
+): readonly string[] | undefined {
   if (type !== 'cli_flag') return undefined;
-  return SYMBOL_SCOPES.get(symbol);
+  const curated = SYMBOL_SCOPES.get(symbol);
+  if (!binaryScopes?.length) return curated;
+  if (!curated) return [...binaryScopes].sort();
+  return [...new Set([...curated, ...binaryScopes])].sort();
 }

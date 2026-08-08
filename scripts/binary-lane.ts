@@ -48,6 +48,14 @@ export interface BinaryObservation {
    * symbol has stronger evidence somewhere and publishes normally.
    */
   switch_case_only?: true;
+  /**
+   * For a `switch_case_only` flag: the complete set of invocation paths whose
+   * argv parsers accept it, unioned across every version that observed it.
+   * Evidence, not policy — the bundle's own `Usage: claude <path>` banner proved
+   * each entry (see scripts/argv-scopes.ts). Absent when no version could
+   * establish a complete scope, which is what keeps the flag withheld.
+   */
+  scopes?: readonly string[];
 }
 
 export interface BinaryObservations {
@@ -223,13 +231,32 @@ export function isAccessorEvidenceEnv(symbol: string, category: string): boolean
  * per-version answer — the same observe-but-withhold posture
  * isPublishableBinaryEnv takes for env vars Claude Code merely reads.
  *
- * This is a holding position, not a verdict: once the schema can express scope
- * (the `scope`/`parent` field in the backlog), these publish with their owning
- * command and the gate goes away. Withholding also keeps them from re-dating an
- * existing record — a decode-token parser accepting `--help` is no evidence about
- * when the top-level `--help` appeared.
+ * That holding position is now lifted for the flags whose scope IS known. The
+ * schema gained `scopes` (a complete set of invocation paths), and
+ * extractSwitchCaseScopes proves each one from the parser module's own
+ * `Usage: claude <path>` banner, so those flags publish with their owning command
+ * instead of being dropped. A switch-case flag with no established scope stays
+ * withheld exactly as before — that is every such flag before 2.1.224, and
+ * `--help`, whose scope cannot be complete because the `/plugin` slash-command
+ * parser also switches on it.
  */
 export function isPublishableBinaryFlag(observation: BinaryObservation): boolean {
+  return observation.switch_case_only !== true || (observation.scopes?.length ?? 0) > 0;
+}
+
+/**
+ * True when a binary observation may move an EXISTING record's `first_seen`.
+ *
+ * Deliberately stricter than isPublishableBinaryFlag, and not folded into it. A
+ * scoped flag now publishes, but its dates describe the SUBCOMMAND's flag, and
+ * identity here is `type:symbol` with no room for the distinction: `--capacity`
+ * is one record covering both `claude remote-control --capacity` (docs, older)
+ * and `claude self-hosted-runner --capacity` (2.1.224). Letting the runner
+ * sighting re-date that record would answer "when did --capacity appear?" with
+ * the wrong event. The same argument the withholding gate used to make about
+ * `--help` applies to every scoped flag, so it outlives the gate.
+ */
+export function mayRedateFromBinary(observation: BinaryObservation): boolean {
   return observation.switch_case_only !== true;
 }
 

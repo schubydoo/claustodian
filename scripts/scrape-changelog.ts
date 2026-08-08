@@ -45,6 +45,7 @@ import {
   isCurrentDescriptionEra,
   isPublishableBinaryEnv,
   isPublishableBinaryFlag,
+  mayRedateFromBinary,
   loadBinaryDescriptions,
   loadBinaryObservations,
   promotionFor,
@@ -508,11 +509,22 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
  * had at that version (from the archived binaries); and a symbol with no curated
  * description at all is filled from the binary at every version. All binary-sourced
  * descriptions are stamped `description_source: "binary"`.
+ *
+ * `scopes` is resolved per version as well: a binary-proved scope applies only
+ * from the version whose binary evidenced it, so a historical snapshot never
+ * claims a subcommand that did not exist yet.
  */
+/** A binary-proved scope set and the earliest version that evidenced it. */
+export interface BinaryScopeWindow {
+  from: string;
+  scopes: readonly string[];
+}
+
 export function assembleSnapshots(
   records: SymbolRecord[],
   blocks: ChangelogBlock[],
-  binaryDescriptions?: BinaryDescriptions['descriptions']
+  binaryDescriptions?: BinaryDescriptions['descriptions'],
+  binaryScopes?: ReadonlyMap<string, BinaryScopeWindow>
 ): VersionSnapshot[] {
   const versionsOldestFirst = blocks
     .map((block) => block.version)
@@ -537,8 +549,18 @@ export function assembleSnapshots(
    * constructed it, and scope is a property of the symbol rather than of the lane
    * that happened to find it.
    */
-  const withScopes = (record: SymbolRecord): SymbolRecord => {
-    const scopes = scopesFor(record.type, record.symbol);
+  const withScopes = (record: SymbolRecord, version: string): SymbolRecord => {
+    // A binary scope is evidence from a specific version ONWARD, and applying it
+    // to earlier snapshots would claim an invocation that did not exist yet:
+    // `--capacity` is remote-control's alone at 2.1.100, because
+    // `claude self-hosted-runner` does not ship until 2.1.224. The curated table
+    // carries no version and still applies to every snapshot — that point-in-time
+    // trade is documented in symbol-scopes.ts — but the binary lane KNOWS when it
+    // saw the parser, so discarding that would be throwing away evidence we have.
+    const observed = binaryScopes?.get(`${record.type}:${record.symbol}`);
+    const proved =
+      observed && compareVersionsAsc(version, observed.from) >= 0 ? observed.scopes : undefined;
+    const scopes = scopesFor(record.type, record.symbol, proved);
     return scopes ? { ...record, scopes } : record;
   };
 
@@ -575,7 +597,7 @@ export function assembleSnapshots(
     version,
     symbols: records
       .filter((record) => liveAt(record, version))
-      .map((record) => withScopes(describeAt(statusAt(record, version), version)))
+      .map((record) => withScopes(describeAt(statusAt(record, version), version), version))
       .sort(compareSymbolRecords),
   }));
 }
@@ -699,9 +721,10 @@ export function enrichSymbols(
  *    description, confidence "medium"), carrying the observation's conservative
  *    `removed_in` (null unless it cleanly disappeared pre-cliff). Env vars are
  *    gated to first-party ones (isPublishableBinaryEnv); flags proved only by a
- *    subcommand's argv switch are withheld as unscopeable (isPublishableBinaryFlag),
- *    and the rest are first-party by the extractor's registration/registry
- *    evidence. A symbol
+ *    subcommand's argv switch publish with their `scopes` when containment
+ *    established the owning invocation and are withheld otherwise
+ *    (isPublishableBinaryFlag), and the rest are first-party by the extractor's
+ *    registration/registry evidence. A symbol
  *    a maintainer has audited (PROMOTED_BINARY_SYMBOLS) is instead published
  *    active/high with a first-party description (still provenance:"binary").
  *
@@ -723,7 +746,11 @@ export function enrichWithBinary(
     }
     // A switch-case-only observation is subcommand-scoped, so it says nothing about
     // when the top-level flag of the same name appeared — it must not re-date it.
-    if (!isPublishableBinaryFlag(obs)) {
+    // This stays gated on the scope caveat itself, NOT on publishability: a scoped
+    // flag publishes now, but `--capacity` is still one record spanning both
+    // `remote-control` (older, from docs) and `self-hosted-runner` (2.1.224), and
+    // the runner's sighting is the wrong answer to "when did --capacity appear?".
+    if (!mayRedateFromBinary(obs)) {
       return record;
     }
     // Binary saw the symbol earlier than any other lane — earliest evidence wins.
@@ -751,8 +778,9 @@ export function enrichWithBinary(
       continue;
     }
     if (!isPublishableBinaryFlag(obs)) {
-      // Claude Code's own flag, but only ever proved by a subcommand's argv switch —
-      // unpublishable in a flat namespace. Recorded in binary-observations.json.
+      // Claude Code's own flag, proved only by a subcommand's argv switch AND with
+      // no scope established for it — publishing it into a flat namespace would
+      // claim it works on bare `claude`. Recorded in binary-observations.json.
       continue;
     }
     // A maintainer-audited symbol graduates from the needs_review default to
@@ -828,7 +856,30 @@ export function buildEnrichedSnapshots(
   const frozen = priorFirstSeen
     ? freezeEstimatedFirstSeen(withDeprecations, priorFirstSeen)
     : withDeprecations;
-  return assembleSnapshots(frozen, blocks, binaryDescriptions);
+  return assembleSnapshots(frozen, blocks, binaryDescriptions, binaryScopeMap(binary));
+}
+
+/**
+ * Binary-proved scopes keyed `type:symbol`, for assembleSnapshots to union with
+ * the curated table. Only observations that actually carry scopes appear, so a
+ * run without the binary lane behaves exactly as before.
+ *
+ * `from` is the observation's first_seen — the earliest archived binary whose
+ * parser proved the scope — and it bounds the claim below. The scope SET is a
+ * union over the observation window rather than a per-version timeline, which is
+ * exact as long as the set does not change inside that window; at 2.1.224-2.1.226
+ * none of the 43 scoped flags changes. Should a flag ever move between
+ * subcommands mid-window, this would apply the later scope from `from` onward,
+ * and the fix would be scope eras alongside the description ones.
+ */
+function binaryScopeMap(binary?: BinaryObservations): ReadonlyMap<string, BinaryScopeWindow> {
+  const out = new Map<string, BinaryScopeWindow>();
+  for (const obs of binary?.symbols ?? []) {
+    if (obs.scopes?.length) {
+      out.set(`${obs.type}:${obs.symbol}`, { from: obs.first_seen, scopes: obs.scopes });
+    }
+  }
+  return out;
 }
 
 /**
