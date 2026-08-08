@@ -449,6 +449,85 @@
         color: var(--accent);
         font-weight: 600;
       }
+      /* Usage block. CSS-only tabs: three radios in one group, each panel shown
+         by a sibling selector on its checked radio. No JS, so the snippets are
+         still readable if the dataset fetch or the script fails. */
+      .usage {
+        margin-top: 2.5rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--border);
+      }
+      .usage h2 {
+        margin: 0 0 0.25rem;
+        font-size: 1.05rem;
+      }
+      .usage > p {
+        margin: 0 0 0.9rem;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+      .usage input[type='radio'] {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .tabs {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        margin-bottom: -1px;
+      }
+      .tabs label {
+        cursor: pointer;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 0.4rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 8px 8px 0 0;
+        background: transparent;
+        color: var(--muted);
+      }
+      .usage pre {
+        margin: 0;
+        padding: 0.9rem 1rem;
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        border-radius: 0 8px 8px 8px;
+        background: var(--card);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.82rem;
+        line-height: 1.55;
+      }
+      .usage pre .c {
+        color: var(--muted);
+      }
+      .panel {
+        display: none;
+      }
+      /* Without this the links fall back to the UA's default blue — outside
+         `footer`, so `footer a` never reached them. axe flagged all four as a
+         serious contrast failure against the dark background. */
+      .usage a {
+        color: var(--accent);
+      }
+      /* Keyboard focus lands on the radio, which is visually hidden — so mirror
+         the ring onto its label or the tab strip is unusable without a mouse. */
+      .usage input[type='radio']:focus-visible + label {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      #tab-sh:checked ~ .tabs label[for='tab-sh'],
+      #tab-py:checked ~ .tabs label[for='tab-py'],
+      #tab-ts:checked ~ .tabs label[for='tab-ts'] {
+        background: var(--card);
+        border-bottom-color: var(--card);
+        color: var(--fg);
+      }
+      #tab-sh:checked ~ #panel-sh,
+      #tab-py:checked ~ #panel-py,
+      #tab-ts:checked ~ #panel-ts {
+        display: block;
+      }
       footer {
         margin-top: 2.5rem;
         padding-top: 1rem;
@@ -621,6 +700,54 @@
       <p id="meta" aria-live="polite"></p>
       <ul id="results"></ul>
       <p id="status" class="status">Loading dataset…</p>
+
+      <section class="usage">
+        <h2>Use it from your own code</h2>
+        <p>
+          Static JSON at stable URLs — no API, no key, no install. A version snapshot lists only the
+          symbols available at that version, so presence <em>is</em> the answer.
+        </p>
+        <input type="radio" name="usage-tab" id="tab-sh" checked />
+        <input type="radio" name="usage-tab" id="tab-py" />
+        <input type="radio" name="usage-tab" id="tab-ts" />
+        <div class="tabs">
+          <label for="tab-sh">curl + jq</label>
+          <label for="tab-py">Python</label>
+          <label for="tab-ts">TypeScript</label>
+        </div>
+        <pre
+          class="panel"
+          id="panel-sh"
+        ><span class="c"># Does --safe-mode exist in 2.1.169?  (exit 0 = yes)</span>
+curl -fsSL https://claustodian.dev/data/versions/2.1.169.json \
+  | jq -e '.symbols[] | select(.symbol == "--safe-mode")' &gt;/dev/null \
+  &amp;&amp; echo available || echo "not available"</pre>
+        <pre class="panel" id="panel-py"><span class="c"># stdlib only</span>
+import json, urllib.request
+
+url = "https://claustodian.dev/data/versions/2.1.169.json"
+with urllib.request.urlopen(url) as r:
+    snap = json.load(r)
+
+print(any(s["symbol"] == "--safe-mode" for s in snap["symbols"]))</pre>
+        <pre class="panel" id="panel-ts"><span class="c">// zero dependencies, Node 18+</span>
+const url = 'https://claustodian.dev/data/versions/2.1.169.json';
+const snap = await fetch(url).then((r) =&gt; r.json());
+
+console.log(snap.symbols.some((s) =&gt; s.symbol === '--safe-mode'));</pre>
+        <p style="margin: 0.9rem 0 0">
+          Fuller clients, all runnable and dependency-light:
+          <a href="https://github.com/schubydoo/claustodian/blob/main/examples/quickstart.sh"
+            >quickstart.sh</a
+          >,
+          <a href="https://github.com/schubydoo/claustodian/blob/main/examples/claustodian.py"
+            >claustodian.py</a
+          >,
+          <a href="https://github.com/schubydoo/claustodian/blob/main/examples/claustodian.ts"
+            >claustodian.ts</a
+          >. Building on top of this with an agent? Point it at <a href="llms.txt">llms.txt</a>.
+        </p>
+      </section>
 
       <footer>
         <p>
