@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schubydoo.github.io/claustodian/schema/symbol.schema.json",
+  "$id": "https://claustodian.dev/schema/symbol.schema.json",
   "title": "Claustodian Symbol Record",
   "description": "One trackable Claude Code symbol (a CLI flag, environment variable, command, config key, or internal config flag), along with its lifecycle metadata and provenance.",
   "type": "object",

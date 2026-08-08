@@ -26,11 +26,11 @@ Every version is a static file. To check whether a symbol exists in a version:
 
 ```bash
 # What does the latest snapshot say about --safe-mode?
-curl -s https://schubydoo.github.io/claustodian/data/latest.json \
+curl -fsSL https://claustodian.dev/data/latest.json \
   | jq '.symbols[] | select(.symbol == "--safe-mode") | {first_seen, removed_in, status}'
 
 # Is CLAUDE_CODE_SAFE_MODE present in 2.1.169?  (exit code: 0 = yes, 1 = no)
-curl -s https://schubydoo.github.io/claustodian/data/versions/2.1.169.json \
+curl -fsSL https://claustodian.dev/data/versions/2.1.169.json \
   | jq -e '.symbols[] | select(.symbol == "CLAUDE_CODE_SAFE_MODE")' > /dev/null \
   && echo "available" || echo "not available"
 ```
@@ -39,7 +39,7 @@ A symbol is available in version Y when `first_seen <= Y` and (`removed_in` is n
 
 ## Use it with an AI agent
 
-Point your agent at [`llms.txt`](llms.txt) (served at `https://schubydoo.github.io/claustodian/llms.txt`)
+Point your agent at [`llms.txt`](llms.txt) (served at `https://claustodian.dev/llms.txt`)
 or the [agent guide in `examples/`](examples/README.md) to teach it how to consume this data and
 make its features version-accurate. The `examples/` directory has runnable, dependency-light clients
 you can copy — [`quickstart.sh`](examples/quickstart.sh) (curl + jq),
