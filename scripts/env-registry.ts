@@ -74,6 +74,24 @@ const builderCallRe = (names: string[]): RegExp =>
 const ASSIGN_BEFORE = /(?<![\w$])([A-Za-z_$][\w$]*)\s*=\s*$/;
 /** How far back from a builder call the assignment target may be. */
 const ASSIGN_LOOKBACK = 48;
+/**
+ * How far a getter may sit from the typed binding it resolves to.
+ *
+ * This is the bound on how wrong the proximity heuristic can be. Regex cannot do
+ * lexical scoping, so in principle a getter could resolve to a same-named binding
+ * in a sibling scope that merely happens to be closer. Measured at 2.1.224, that
+ * risk is small and bounded: 845 of the 846 typed-binding names have exactly ONE
+ * binding, so there is no choice to get wrong, and every real resolution lies
+ * within 12,791 characters (median 3,215; p99 12,182) because the registry module
+ * is contiguous. 64k is ~5x the observed maximum — loose enough to absorb growth,
+ * tight enough that a match in an unrelated part of a 20 MB bundle cannot qualify.
+ *
+ * Residual, stated plainly: a same-named typed binding inside the window, in a
+ * different scope, with nothing reassigning the name in between, would still
+ * resolve. Closing that needs a real parser (see scratch/parser-proto), which the
+ * measured payoff has not yet justified.
+ */
+const MAX_BINDING_DISTANCE = 64_000;
 
 /** Escapes regex metacharacters — minified builder names are often `$`-prefixed. */
 function escapeRegExp(s: string): string {
@@ -254,6 +272,7 @@ export function extractRegistryEnvVars(src: string): Map<string, string> {
     const at = candidates.reduce((best, p) =>
       Math.abs(p - m.index) < Math.abs(best - m.index) ? p : best
     );
+    if (Math.abs(at - m.index) > MAX_BINDING_DISTANCE) continue;
     if (hasInterveningAssignment(src, ref, m.index, at, at)) continue;
     const declaredType = bindings.get(at);
     if (declaredType) out.set(name, declaredType);

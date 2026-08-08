@@ -50,6 +50,14 @@ describe('extractRegistryEnvVars', () => {
     expect(extractRegistryEnvVars(src).get('NEAR_VAR')).toBe('int');
   });
 
+  it("rejects a binding too far away to be in the getter's module", () => {
+    // Bounds how wrong the proximity heuristic can be. Real resolutions at
+    // 2.1.224 are all within 12,791 chars; a match megabytes away in an unrelated
+    // part of the bundle is a different scope, not this getter's binding.
+    const src = `${BUILDER}Y={DISTANT:()=>zz};` + 'q;'.repeat(40_000) + 'zz=$e.bool();';
+    expect(extractRegistryEnvVars(src).has('DISTANT')).toBe(false);
+  });
+
   it('rejects a getter whose name is reassigned between it and the binding', () => {
     // An intervening assignment means the getter closes over a DIFFERENT `tag`.
     const src =
