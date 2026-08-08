@@ -9,12 +9,45 @@ describe('scopesFor', () => {
     expect(scopesFor('cli_flag', '--sandbox')).toEqual(['remote-control']);
   });
 
-  it('returns every subcommand a flag is accepted under, not just one', () => {
-    // The case a single-valued `scope` cannot describe: `--json` works under
-    // three different subcommands, so claiming any one of them would be wrong.
-    expect(scopesFor('cli_flag', '--json')).toEqual(['agents', 'plugin', 'ultrareview']);
-    expect(scopesFor('cli_flag', '--all')).toEqual(['agents', 'plugin']);
-    expect(scopesFor('cli_flag', '--config')).toEqual(['gateway', 'plugin']);
+  it('returns every invocation a flag is accepted under, not just one', () => {
+    // The case a single-valued `scope` cannot describe.
+    expect(scopesFor('cli_flag', '--json')).toEqual([
+      'agents',
+      'auth status',
+      'plugin eval',
+      'plugin list',
+      'ultrareview',
+    ]);
+    expect(scopesFor('cli_flag', '--all')).toEqual(['agents', 'plugin disable', 'project purge']);
+    expect(scopesFor('cli_flag', '--config')).toEqual(['gateway', 'plugin install']);
+  });
+
+  it('records the sub-subcommand that owns a flag, not its parent', () => {
+    // commander rejects a sub-subcommand's flag at the parent, so the coarse
+    // `['plugin']` these once carried was a false claim, not merely a vague one:
+    //   claude plugin --scaffold  -> error: unknown option '--scaffold'
+    //   claude plugin --strict    -> error: unknown option '--strict'
+    //   claude mcp --header x     -> error: unknown option '--header'
+    expect(scopesFor('cli_flag', '--scaffold')).toEqual(['plugin eval']);
+    expect(scopesFor('cli_flag', '--strict')).toEqual(['plugin validate']);
+    expect(scopesFor('cli_flag', '--header')).toEqual(['mcp add']);
+  });
+
+  it('spans commands when one flag is shared across them', () => {
+    // `--scope` is the widest: coarse scoping recorded it as `['plugin']` alone,
+    // hiding both its real depth and the whole `mcp` half of its surface.
+    expect(scopesFor('cli_flag', '--scope')).toEqual([
+      'mcp add',
+      'mcp add-from-claude-desktop',
+      'mcp add-json',
+      'mcp remove',
+      'plugin disable',
+      'plugin enable',
+      'plugin install',
+      'plugin prune',
+      'plugin uninstall',
+      'plugin update',
+    ]);
   });
 
   it('scopes the one runner flag the changelog publishes', () => {
@@ -61,6 +94,21 @@ describe('SYMBOL_SCOPES table', () => {
     for (const [flag, scopes] of SYMBOL_SCOPES) {
       expect([...scopes], `${flag} is not sorted`).toEqual([...scopes].sort());
       expect(new Set(scopes).size, `${flag} has duplicates`).toBe(scopes.length);
+    }
+  });
+
+  it('never lists a path together with a strict prefix of it', () => {
+    // `['plugin', 'plugin eval']` would be self-contradictory: the bare parent
+    // claims the flag works at `claude plugin`, which is what the sub-path
+    // denies. Catches a half-applied refinement.
+    for (const [flag, scopes] of SYMBOL_SCOPES) {
+      for (const a of scopes) {
+        for (const b of scopes) {
+          if (a !== b && b.startsWith(`${a} `)) {
+            throw new Error(`${flag}: "${a}" is a strict prefix of "${b}"`);
+          }
+        }
+      }
     }
   });
 
