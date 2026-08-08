@@ -39,11 +39,18 @@ Base URL: **`https://claustodian.dev/data`**
 | `binary-descriptions.json` | Per-symbol **description timeline** (change-point eras)                        |
 | `binary-observations.json` | Raw binary-lane first/last-seen observations (provenance detail)               |
 | `docs.json`                | Symbols/descriptions harvested from the official docs                          |
+| `catalog.json`             | Every symbol **ever** seen, including removed ones, with its full lifecycle    |
 
 Core files are also published as `.yaml` and `.toml` (swap the extension); **JSON is the
-source of truth**, and the newest few per-version files plus the `binary-*` files may be
-JSON-only — prefer `.json`. Published `versions/<X.Y.Z>.json` files are effectively
-immutable, so cache them hard by version.
+source of truth**. `catalog.json` is the exception — it is built after the export step, so
+`catalog.yaml`/`.toml` do not exist. Prefer `.json` throughout.
+
+**Snapshots are not immutable — do not pin them indefinitely.** A published
+`versions/<X.Y.Z>.json` is regenerated whenever the pipeline learns something new, including
+for long-past releases. Records gain descriptions and categories, `first_seen` gets
+sharpened, `needs_review` flips to `active`, and symbols are _added_ when a lane first finds
+evidence for them — so **absence from an old snapshot is provisional, not proof**. The site serves `cache-control: max-age=600`
+with an ETag; revalidate rather than caching by version forever.
 
 ## The record schema
 
@@ -54,13 +61,15 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
 {
   "symbol": "--output-format",
   "type": "cli_flag", // schema enum: cli_flag | command | env_var | config_key | internal_config_flag (all but the last are populated)
-  "first_seen": "1.0.19", // earliest version OBSERVED (semver string)
+  "first_seen": "0.2.66", // earliest version OBSERVED (semver string)
   "removed_in": null, // version it vanished, or null if still present
-  "deprecated_in": "2.1.73", // OPTIONAL: version it was marked deprecated
+  // "deprecated_in": "2.1.73",  OPTIONAL, and rare — only 2 records carry it
+  //   (`/output-style` at 2.1.73, CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE at
+  //   2.1.154). --output-format itself is NOT deprecated.
   "status": "active", // "active" | "deprecated" | "removed" | "needs_review"
   "scopes": ["remote-control"], // optional; FULL invocation paths, e.g. "plugin eval"
   "provenance": "changelog", // "changelog" | "docs" | "binary" — which lane proved existence
-  "confidence": "high", // "high" | "medium" | "low"
+  "confidence": "high", // "high" | "medium" ("low" is in the schema but unused)
   "first_seen_estimated": true, // OPTIONAL: first_seen is an UPPER BOUND, not exact
   "description": "Output format…",
   "description_source": "docs", // OPTIONAL: "docs" | "changelog" | "binary" | "help"

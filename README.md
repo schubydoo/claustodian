@@ -50,14 +50,17 @@ and [`claustodian.py`](examples/claustodian.py) (stdlib-only Python).
 
 Stable, predictable URLs under `data/`:
 
-| Path                       | What                                              |
-| -------------------------- | ------------------------------------------------- |
-| `data/latest.json`         | Full symbol list as of the newest tracked version |
-| `data/versions/X.Y.Z.json` | Full symbol list as of version X.Y.Z              |
-| `data/index.json`          | All tracked versions + the latest                 |
-| `data/schema-version.json` | Version of this data format                       |
+| Path                            | What                                              |
+| ------------------------------- | ------------------------------------------------- |
+| `data/latest.json`              | Full symbol list as of the newest tracked version |
+| `data/versions/X.Y.Z.json`      | Full symbol list as of version X.Y.Z              |
+| `data/index.json`               | All tracked versions + the latest                 |
+| `data/catalog.json`             | Every symbol ever seen, incl. removed ones        |
+| `data/docs.json`                | Symbols harvested from the official docs pages    |
+| `data/binary-descriptions.json` | Per-symbol description timeline                   |
+| `data/schema-version.json`      | Version of this data format                       |
 
-Each file is also published as `.yaml` and `.toml` (generated in CI from the JSON; JSON is the source of truth). Each record follows [`schema/symbol.schema.json`](schema/symbol.schema.json) (JSON Schema draft 2020-12):
+Each file is also published as `.yaml` and `.toml` (generated in CI from the JSON; JSON is the source of truth) — except `catalog.json`, which is JSON-only because it is built after the export step runs. Each record follows [`schema/symbol.schema.json`](schema/symbol.schema.json) (JSON Schema draft 2020-12):
 
 ```json
 {
@@ -68,29 +71,26 @@ Each file is also published as `.yaml` and `.toml` (generated in CI from the JSO
   "status": "active",
   "provenance": "changelog",
   "confidence": "high",
-  "description": "Starts Claude Code with all customizations disabled, for troubleshooting.",
+  "description": "Start with all customizations disabled to troubleshoot a broken configuration…",
+  "description_source": "docs",
   "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-  "category": "startup"
+  "category": "cli"
 }
 ```
 
-## Important: what `first_seen` means
-
-`first_seen` is the **earliest version in which Claustodian observed a symbol — not a guarantee of the first version it truly existed in.** Changelog-sourced entries are bounded by when the changelog first mentioned the symbol; binary-sourced entries by the earliest release we extracted. Treat it as a lower bound on availability, not an absolute origin.
-
 ## Provenance & trust
+
+`first_seen` is the **earliest version Claustodian observed a symbol — not proof of the version it truly appeared in.** Treat it as a lower bound. `first_seen_estimated: true` marks the ones that are an _upper_ bound instead (an incidental changelog mention, or a docs page with no `min-version`); those carry `confidence: medium` until the binary lane pins them.
 
 Every record carries a `provenance`:
 
-- **`changelog`** — extracted from the official `CHANGELOG.md`. Authoritative for existence.
-- **`docs`** — from the official Claude Code documentation pages (`code.claude.com/docs`). Supplies the authoritative description and, where a page states a `min-version`, an anchored `first_seen`.
-- **`binary`** — extracted from published release binaries by positive-evidence detection: CLI flags (commander registration or `process.argv` checks), environment variables (`process.env` access), and **built-in commands from the bundled command registry**. Every binary find starts as `status: needs_review` until a human confirms it; `first_seen` (and a conservative, cliff-aware `removed_in`) come from the versions it was actually observed in.
+- **`changelog`** — the official `CHANGELOG.md`. Authoritative for existence.
+- **`docs`** — the official documentation pages (`code.claude.com/docs`). Supplies the authoritative description and, where a page states a `min-version`, an anchored `first_seen`.
+- **`binary`** — published release binaries, by positive-evidence detection: CLI flags (commander registration or `argv` checks), env vars (the typed registry), built-in _and_ skill/menu commands, and `settings.json` keys read out of the embedded schema. Binary finds land as `status: needs_review` until a first-party description confirms them.
 
-`first_seen_estimated: true` flags records whose `first_seen` is an upper bound (an incidental changelog mention or a docs page with no `min-version`); those carry `confidence: medium` until the binary lane confirms them.
+> **Coverage limitation — plugin commands.** Commands supplied by the **plugin/marketplace** subsystem (e.g. `/channel`) are registered outside the CLI binary, so the binary lane cannot date them at all. Their absence is **not** evidence they never existed. Skill-provided commands (`/schedule`, `/loop`) _are_ captured.
 
-> **Coverage limitation — commands.** The binary lane sees only Claude Code's **built-in** command registry. **Skill- and plugin-provided slash-commands (e.g. `/schedule`, `/loop`) are not captured** — they are registered through a separate mechanism the extractor does not scan. A skill-command's absence from the dataset is **not** evidence it never existed. (Roadmap item — see Status.)
-
-**Claustodian uses only material Anthropic has publicly published and distributed** — the changelog, the official docs pages, and official release binaries. It does not use leaked or otherwise non-public material. See CONTRIBUTING.
+**Claustodian uses only material Anthropic has publicly published and distributed.** It does not use leaked or otherwise non-public material. See CONTRIBUTING.
 
 ## Status
 
@@ -102,10 +102,11 @@ Three lanes feed the dataset today:
 
 ### Roadmap / backlog
 
-- **Extract skill- and plugin-provided commands** (e.g. `/schedule`, `/loop`) — currently missed because the binary lane only reads the built-in command registry. Evaluate parsing skill/plugin command manifests in a future release.
-- Teach the extractor **commander built-ins** (`--help`, `--version`).
-- Fix the **~2.1.160 extraction-recall regression** to tighten late-era per-version accuracy.
-- Detect explicit **changelog removals** so `removed_in` can be set on confirmed (changelog/docs) symbols, not just binary-only ones.
+- Teach the extractor **commander's built-in `--help`/`--version`**. They are auto-registered rather than declared, so the extractor misses them and their `first_seen` comes from a late changelog/docs mention (2.1.200 / 2.1.205) instead of 0.2.x.
+- Parse explicit **changelog removal prose** so `removed_in` can be set on changelog- and docs-sourced symbols; today only the binary lane sets it.
+- A lane for **plugin/marketplace commands**, which live outside the CLI binary entirely.
+- A site **"what changed in vX"** view — `catalog.json` already carries the full lifecycle.
+- **Release dates** (`released_on`) from the docs changelog's `<Update>` annotations.
 
 ## Development
 

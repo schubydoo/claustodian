@@ -19,11 +19,11 @@ A record whose accuracy depends on non-public material will be rejected. This po
 
 ## The three provenance lanes
 
-| Lane      | `provenance` | Trust                      | Merge policy                                                                                                                                                                                                     |
-| --------- | ------------ | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Changelog | `changelog`  | `confidence: high`         | Authoritative — bot PRs are auto-mergeable once CI passes.                                                                                                                                                       |
-| Docs      | `docs`       | `high` / `medium`          | Official docs pages; supply authoritative descriptions and, via a doc `min-version`, an anchored `first_seen`. Absent a min-version, `first_seen` is an estimate (`first_seen_estimated`, `confidence: medium`). |
-| Binary    | `binary`     | `confidence: medium`/`low` | Lands as `status: needs_review`; a human must confirm before it flips to `active`.                                                                                                                               |
+| Lane      | `provenance` | Trust                | Merge policy                                                                                                                                                                                                     |
+| --------- | ------------ | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Changelog | `changelog`  | `confidence: high`   | Authoritative — bot PRs are auto-mergeable once CI passes.                                                                                                                                                       |
+| Docs      | `docs`       | `high` / `medium`    | Official docs pages; supply authoritative descriptions and, via a doc `min-version`, an anchored `first_seen`. Absent a min-version, `first_seen` is an estimate (`first_seen_estimated`, `confidence: medium`). |
+| Binary    | `binary`     | `confidence: medium` | Lands as `status: needs_review`; a human must confirm before it flips to `active` (and to `confidence: high`).                                                                                                   |
 
 `first_seen_estimated: true` marks an upper bound (an incidental changelog mention, or a docs page with no min-version); the binary lane confirms these. Never move a `binary`/`needs_review` record to `active` without confirming the symbol against an official artifact. Keep the lanes distinct.
 
@@ -38,10 +38,14 @@ A record whose accuracy depends on non-public material will be rejected. This po
 ```bash
 npm ci
 npm run lint
+npx prettier --check .   # CI fails on formatting; generated data is excluded
 npx tsc --noEmit
 npm test
 npm run validate
 ```
+
+`prettier --check` reads the working tree while CI reads the commit, so format
+before you stage, not after.
 
 ## Licensing of contributions
 
