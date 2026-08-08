@@ -65,7 +65,8 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
   "description": "Output format…",
   "description_source": "docs", // OPTIONAL: "docs" | "changelog" | "binary" | "help"
   "source_url": "https://…", // citation, or null
-  "category": "cli"
+  "category": "cli" // "cli" | "cli-internal" (hidden from --help) | "settings" |
+  //   "settings-internal" | "global-config" (~/.claude.json) | env topic buckets
 }
 ```
 
