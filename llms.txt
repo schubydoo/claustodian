@@ -30,6 +30,7 @@ Core files are also served as `.yaml` and `.toml` (swap the extension); JSON is 
 ## Notes
 
 - `status: needs_review` means the symbol provably exists (observed in a release binary) but isn't yet human-curated — treat it as real, not "maybe."
+- `scopes` (optional, `cli_flag` only) is the complete list of subcommands a flag is accepted under, e.g. `["remote-control"]`. Present means the flag is NOT accepted on bare `claude`: `claude --sandbox` fails where `claude remote-control --sandbox` works. Absent means no scope information was recorded — it does NOT mean the flag is top-level.
 - `first_seen_estimated: true` (or `confidence: medium`) means `first_seen` is an upper bound, not an exact introduction point.
 - Not every Claude Code version is tracked; check `index.json.versions` and fall back to the nearest tracked version `<= Y`. A 404 means untracked, not "symbol absent."
 - License: code Apache-2.0, data CC-BY-4.0. Source: https://github.com/schubydoo/claustodian
