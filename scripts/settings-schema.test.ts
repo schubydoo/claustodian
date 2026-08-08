@@ -205,17 +205,13 @@ describe('extractSettingsKeys — descriptions', () => {
 });
 
 describe('settingsKeyCategory', () => {
-  it('routes an @internal key to settings-internal', () => {
-    expect(settingsKeyCategory({ path: 'x', description: '@internal Plumbing only' })).toBe(
-      'settings-internal'
-    );
+  it('routes an @internal description to settings-internal', () => {
+    expect(settingsKeyCategory('@internal Plumbing only')).toBe('settings-internal');
   });
 
-  it('routes an ordinary key to settings', () => {
-    expect(settingsKeyCategory({ path: 'model', description: 'Override the default model' })).toBe(
-      'settings'
-    );
-    expect(settingsKeyCategory({ path: 'model' })).toBe('settings');
+  it('routes an ordinary or absent description to settings', () => {
+    expect(settingsKeyCategory('Override the default model')).toBe('settings');
+    expect(settingsKeyCategory(undefined)).toBe('settings');
   });
 
   it('marks internal-ness on CATEGORY so a description edit cannot split identity', () => {
@@ -224,9 +220,7 @@ describe('settingsKeyCategory', () => {
     // publishing a false removal of the old type at exactly that version while
     // the key sat untouched in the schema. Category is not identity, so the same
     // edit is now just an update.
-    const before = { path: 'disableWorkflows', description: '@internal Disable the Workflows feature' };
-    const after = { path: 'disableWorkflows', description: 'Disable the Workflows feature' };
-    expect(settingsKeyCategory(before)).toBe('settings-internal');
-    expect(settingsKeyCategory(after)).toBe('settings');
+    expect(settingsKeyCategory('@internal Disable the Workflows feature')).toBe('settings-internal');
+    expect(settingsKeyCategory('Disable the Workflows feature')).toBe('settings');
   });
 });

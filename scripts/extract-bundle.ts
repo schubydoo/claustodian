@@ -527,7 +527,7 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
     symbols.push({
       symbol: key.path,
       type: 'config_key',
-      category: settingsKeyCategory(key),
+      category: settingsKeyCategory(key.description),
       evidence: 'settings-schema',
       ...(key.description ? { description: key.description } : {}),
     });

@@ -398,6 +398,6 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
  * it is a published contract — but nothing emits it: no stable signal
  * distinguishes an internal settings key from a regular one at the type level.
  */
-export function settingsKeyCategory(key: SettingsKey): 'settings' | 'settings-internal' {
-  return /@internal\b/i.test(key.description ?? '') ? 'settings-internal' : 'settings';
+export function settingsKeyCategory(description?: string): 'settings' | 'settings-internal' {
+  return /@internal\b/i.test(description ?? '') ? 'settings-internal' : 'settings';
 }

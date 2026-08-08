@@ -526,6 +526,58 @@ describe('enrichWithBinary', () => {
     expect(r?.first_seen_estimated).toBeUndefined();
   });
 
+  it('publishes an @internal settings key as settings-internal', () => {
+    // The category cannot be recomputed from the symbol name, so it has to come
+    // from the description timeline. Losing it publishes internal plumbing
+    // indistinguishably from user-facing configuration.
+    const out = enrichWithBinary(
+      [],
+      binary([
+        { symbol: 'skipWorkflowUsageWarning', type: 'config_key', first_seen: '2.1.180', last_seen: '2.1.224' },
+        { symbol: 'model', type: 'config_key', first_seen: '2.1.180', last_seen: '2.1.224' },
+      ]),
+      {
+        'config_key:skipWorkflowUsageWarning': [
+          { from: '2.1.180', description: '@internal Accepted the workflow warning' },
+        ],
+        'config_key:model': [{ from: '2.1.180', description: 'Override the default model' }],
+      }
+    );
+    expect(byKey(out).get('config_key:skipWorkflowUsageWarning')?.category).toBe('settings-internal');
+    expect(byKey(out).get('config_key:model')?.category).toBe('settings');
+  });
+
+  it('reads the category from the era in effect at that version, not the newest', () => {
+    // disableWorkflows lost its @internal prefix at 2.1.154. A record observed
+    // only up to 2.1.153 must still read as internal.
+    const eras = {
+      'config_key:disableWorkflows': [
+        { from: '2.1.152', description: '@internal Disable the Workflows feature' },
+        { from: '2.1.154', description: 'Disable the Workflows feature' },
+      ],
+    };
+    const early = enrichWithBinary(
+      [],
+      binary([{ symbol: 'disableWorkflows', type: 'config_key', first_seen: '2.1.152', last_seen: '2.1.153' }]),
+      eras
+    );
+    const late = enrichWithBinary(
+      [],
+      binary([{ symbol: 'disableWorkflows', type: 'config_key', first_seen: '2.1.152', last_seen: '2.1.224' }]),
+      eras
+    );
+    expect(byKey(early).get('config_key:disableWorkflows')?.category).toBe('settings-internal');
+    expect(byKey(late).get('config_key:disableWorkflows')?.category).toBe('settings');
+  });
+
+  it('falls back to the name-based category when no description timeline is supplied', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([{ symbol: 'model', type: 'config_key', first_seen: '2.1.180', last_seen: '2.1.224' }])
+    );
+    expect(byKey(out).get('config_key:model')?.category).toBe('settings');
+  });
+
   it('withholds a switch-case-only flag from the published set', () => {
     // Claude Code's own flag, but only ever seen as a `case"--x":` label in a
     // subcommand's argv parser. At 2.1.224 every such flag belongs to

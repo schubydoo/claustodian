@@ -27,6 +27,7 @@
  */
 import { readFile } from 'node:fs/promises';
 import { compareVersionsAsc, type ExtractedSymbolType } from './lib.js';
+import { settingsKeyCategory } from './settings-schema.js';
 
 /** A symbol's observation window across the archived binaries. */
 export interface BinaryObservation {
@@ -414,6 +415,28 @@ export interface BinaryDescriptions {
   source: string;
   note: string;
   descriptions: Record<string, DescriptionEra[]>;
+}
+
+/**
+ * The published category for a binary-observed settings key.
+ *
+ * `settings-internal` is read off an `@internal` marker in the schema's own
+ * description, so `categorize()` — which sees only a symbol name and a type —
+ * cannot reconstruct it, and a config key would otherwise publish as plain
+ * `settings` with its internal-ness silently dropped.
+ *
+ * Derived here rather than carried on the observation on purpose:
+ * `data/binary-observations.json` is evidence, not interpretation (see the
+ * "pure evidence out" contract in backfill-binary), and the description timeline
+ * this reads is already policy input owned by this module. It also comes out
+ * more accurate — the era in effect AT THAT VERSION, rather than one
+ * newest-wins value smeared across a symbol's whole history.
+ */
+export function binaryConfigCategory(
+  eras: readonly DescriptionEra[] | undefined,
+  version: string
+): 'settings' | 'settings-internal' {
+  return settingsKeyCategory(eras ? descriptionAt(eras, version)?.description : undefined);
 }
 
 /**

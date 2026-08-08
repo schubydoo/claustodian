@@ -37,6 +37,7 @@ import { join, resolve } from 'node:path';
 import {
   assertBinaryDescriptions,
   assertBinaryObservations,
+  binaryConfigCategory,
   binaryEnvCategory,
   type BinaryDescriptions,
   type BinaryObservations,
@@ -679,7 +680,8 @@ export function enrichSymbols(
  */
 export function enrichWithBinary(
   records: SymbolRecord[],
-  binary: BinaryObservations
+  binary: BinaryObservations,
+  binaryDescriptions?: BinaryDescriptions['descriptions']
 ): SymbolRecord[] {
   const observedByKey = new Map(binary.symbols.map((obs) => [`${obs.type}:${obs.symbol}`, obs]));
 
@@ -707,7 +709,12 @@ export function enrichWithBinary(
     if (known.has(`${obs.type}:${obs.symbol}`)) {
       continue;
     }
-    const baseCategory = categorize(obs.symbol, obs.type);
+    // A config key's internal-ness lives in its description, which categorize()
+    // never sees; every other type it handles from the name alone.
+    const baseCategory =
+      obs.type === 'config_key'
+        ? binaryConfigCategory(binaryDescriptions?.[`${obs.type}:${obs.symbol}`], obs.last_seen)
+        : categorize(obs.symbol, obs.type);
     if (obs.type === 'env_var' && !isPublishableBinaryEnv(obs.symbol, baseCategory)) {
       // An external env var Claude Code merely reads — left unpublished by omission.
       continue;
@@ -784,7 +791,7 @@ export function buildEnrichedSnapshots(
   const latest =
     blocks.map((block) => block.version).sort((a, b) => compareVersionsAsc(b, a))[0] ?? '';
   const enriched = enrichSymbols(collected, docs, latest);
-  const withBinary = binary ? enrichWithBinary(enriched, binary) : enriched;
+  const withBinary = binary ? enrichWithBinary(enriched, binary, binaryDescriptions) : enriched;
   const withRemovals = applyChangelogRemovals(withBinary);
   const withDeprecations = applyChangelogDeprecations(withRemovals);
   const frozen = priorFirstSeen
