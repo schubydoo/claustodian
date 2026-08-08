@@ -907,7 +907,7 @@ describe('assembleSnapshots — per-version deprecation status', () => {
       [rec({ symbol: '--capacity', type: 'cli_flag', first_seen: '1.5.0', category: 'cli' })],
       blocks,
       undefined,
-      new Map([['cli_flag:--capacity', ['self-hosted-runner']]])
+      new Map([['cli_flag:--capacity', { from: '1.5.0', scopes: ['self-hosted-runner'] }]])
     );
     const f = snaps.find((s) => s.version === '2.6.0')?.symbols.find((x) => x.symbol === '--capacity');
     expect(f?.scopes).toEqual(['remote-control', 'self-hosted-runner']);
@@ -918,7 +918,9 @@ describe('assembleSnapshots — per-version deprecation status', () => {
       [rec({ symbol: '--min-idle', type: 'cli_flag', first_seen: '1.5.0', category: 'cli' })],
       blocks,
       undefined,
-      new Map([['cli_flag:--min-idle', ['self-hosted-runner orchestrator']]])
+      new Map([
+        ['cli_flag:--min-idle', { from: '1.5.0', scopes: ['self-hosted-runner orchestrator'] }],
+      ])
     );
     const f = snaps.find((s) => s.version === '2.6.0')?.symbols.find((x) => x.symbol === '--min-idle');
     expect(f?.scopes).toEqual(['self-hosted-runner orchestrator']);
@@ -931,10 +933,50 @@ describe('assembleSnapshots — per-version deprecation status', () => {
       [rec({ symbol: '--min-idle', type: 'cli_flag', first_seen: '1.5.0', category: 'cli' })],
       blocks,
       undefined,
-      new Map([['cli_flag:--min-idle', ['self-hosted-runner orchestrator']]])
+      new Map([
+        ['cli_flag:--min-idle', { from: '1.5.0', scopes: ['self-hosted-runner orchestrator'] }],
+      ])
     );
     const f = snaps.find((s) => s.version === '2.6.0')?.symbols.find((x) => x.symbol === '--min-idle');
     expect(f?.scopes).not.toContain('self-hosted-runner');
+  });
+
+  it('does not apply a binary scope to snapshots before the binary proved it', () => {
+    // Greptile P1 on PR 136, and the same defect class as the config_key category
+    // one: a value we KNOW is version-bounded leaking into historical snapshots.
+    // `--capacity` exists from 1.5.0 (remote-control, docs) but the runner's
+    // parser only appears at 2.4.0 here. The 2.0.0 snapshot must not claim
+    // `claude self-hosted-runner --capacity` worked when the subcommand did not
+    // exist; the curated remote-control scope still applies throughout.
+    const snaps = assembleSnapshots(
+      [rec({ symbol: '--capacity', type: 'cli_flag', first_seen: '1.5.0', category: 'cli' })],
+      blocks,
+      undefined,
+      new Map([['cli_flag:--capacity', { from: '2.4.0', scopes: ['self-hosted-runner'] }]])
+    );
+    const at = (v: string) =>
+      snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === '--capacity');
+    expect(at('1.5.0')?.scopes).toEqual(['remote-control']);
+    expect(at('2.0.0')?.scopes).toEqual(['remote-control']);
+    // From the proving version onward the union applies.
+    expect(at('2.4.0')?.scopes).toEqual(['remote-control', 'self-hosted-runner']);
+    expect(at('2.6.0')?.scopes).toEqual(['remote-control', 'self-hosted-runner']);
+  });
+
+  it('omits a binary-only scope entirely before its proving version', () => {
+    // With nothing curated to fall back on, the field is absent rather than empty.
+    const snaps = assembleSnapshots(
+      [rec({ symbol: '--min-idle', type: 'cli_flag', first_seen: '1.5.0', category: 'cli' })],
+      blocks,
+      undefined,
+      new Map([
+        ['cli_flag:--min-idle', { from: '2.4.0', scopes: ['self-hosted-runner orchestrator'] }],
+      ])
+    );
+    const at = (v: string) =>
+      snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === '--min-idle');
+    expect(at('2.0.0')?.scopes).toBeUndefined();
+    expect(at('2.4.0')?.scopes).toEqual(['self-hosted-runner orchestrator']);
   });
 
   it('leaves a top-level flag and a non-flag symbol unscoped', () => {

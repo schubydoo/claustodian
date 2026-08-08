@@ -509,12 +509,22 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
  * had at that version (from the archived binaries); and a symbol with no curated
  * description at all is filled from the binary at every version. All binary-sourced
  * descriptions are stamped `description_source: "binary"`.
+ *
+ * `scopes` is resolved per version as well: a binary-proved scope applies only
+ * from the version whose binary evidenced it, so a historical snapshot never
+ * claims a subcommand that did not exist yet.
  */
+/** A binary-proved scope set and the earliest version that evidenced it. */
+export interface BinaryScopeWindow {
+  from: string;
+  scopes: readonly string[];
+}
+
 export function assembleSnapshots(
   records: SymbolRecord[],
   blocks: ChangelogBlock[],
   binaryDescriptions?: BinaryDescriptions['descriptions'],
-  binaryScopes?: ReadonlyMap<string, readonly string[]>
+  binaryScopes?: ReadonlyMap<string, BinaryScopeWindow>
 ): VersionSnapshot[] {
   const versionsOldestFirst = blocks
     .map((block) => block.version)
@@ -539,12 +549,18 @@ export function assembleSnapshots(
    * constructed it, and scope is a property of the symbol rather than of the lane
    * that happened to find it.
    */
-  const withScopes = (record: SymbolRecord): SymbolRecord => {
-    const scopes = scopesFor(
-      record.type,
-      record.symbol,
-      binaryScopes?.get(`${record.type}:${record.symbol}`)
-    );
+  const withScopes = (record: SymbolRecord, version: string): SymbolRecord => {
+    // A binary scope is evidence from a specific version ONWARD, and applying it
+    // to earlier snapshots would claim an invocation that did not exist yet:
+    // `--capacity` is remote-control's alone at 2.1.100, because
+    // `claude self-hosted-runner` does not ship until 2.1.224. The curated table
+    // carries no version and still applies to every snapshot — that point-in-time
+    // trade is documented in symbol-scopes.ts — but the binary lane KNOWS when it
+    // saw the parser, so discarding that would be throwing away evidence we have.
+    const observed = binaryScopes?.get(`${record.type}:${record.symbol}`);
+    const proved =
+      observed && compareVersionsAsc(version, observed.from) >= 0 ? observed.scopes : undefined;
+    const scopes = scopesFor(record.type, record.symbol, proved);
     return scopes ? { ...record, scopes } : record;
   };
 
@@ -581,7 +597,7 @@ export function assembleSnapshots(
     version,
     symbols: records
       .filter((record) => liveAt(record, version))
-      .map((record) => withScopes(describeAt(statusAt(record, version), version)))
+      .map((record) => withScopes(describeAt(statusAt(record, version), version), version))
       .sort(compareSymbolRecords),
   }));
 }
@@ -847,11 +863,21 @@ export function buildEnrichedSnapshots(
  * Binary-proved scopes keyed `type:symbol`, for assembleSnapshots to union with
  * the curated table. Only observations that actually carry scopes appear, so a
  * run without the binary lane behaves exactly as before.
+ *
+ * `from` is the observation's first_seen — the earliest archived binary whose
+ * parser proved the scope — and it bounds the claim below. The scope SET is a
+ * union over the observation window rather than a per-version timeline, which is
+ * exact as long as the set does not change inside that window; at 2.1.224-2.1.226
+ * none of the 43 scoped flags changes. Should a flag ever move between
+ * subcommands mid-window, this would apply the later scope from `from` onward,
+ * and the fix would be scope eras alongside the description ones.
  */
-function binaryScopeMap(binary?: BinaryObservations): ReadonlyMap<string, readonly string[]> {
-  const out = new Map<string, readonly string[]>();
+function binaryScopeMap(binary?: BinaryObservations): ReadonlyMap<string, BinaryScopeWindow> {
+  const out = new Map<string, BinaryScopeWindow>();
   for (const obs of binary?.symbols ?? []) {
-    if (obs.scopes?.length) out.set(`${obs.type}:${obs.symbol}`, obs.scopes);
+    if (obs.scopes?.length) {
+      out.set(`${obs.type}:${obs.symbol}`, { from: obs.first_seen, scopes: obs.scopes });
+    }
   }
   return out;
 }
