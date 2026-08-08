@@ -530,6 +530,24 @@
         render();
       }
 
+      /**
+       * Moves the row highlight without re-rendering. classList (rather than
+       * assigning className) keeps the `done` marker the decision handler sets.
+       */
+      function setCursor(pos) {
+        const rows = $('rows').children;
+        rows[cursor]?.classList.remove('sel');
+        cursor = pos;
+        const row = rows[cursor];
+        row?.classList.add('sel');
+        // render() did this at the end of every rebuild, so bypassing it for j/k
+        // would let the cursor walk off-screen while 0-3 still acted on it. Kept
+        // here rather than at the call sites so every path that moves the cursor
+        // reveals it. `nearest` is a no-op when the row is already fully visible,
+        // so clicking a visible row does not jerk the viewport.
+        row?.scrollIntoView({ block: 'nearest' });
+      }
+
       function render() {
         const tb = $('rows');
         tb.textContent = '';
@@ -591,9 +609,30 @@
             tr.className = (pos === cursor ? 'sel' : '') + (decisions[idx] ? ' done' : '');
           });
           tr.appendChild(td);
-          tr.addEventListener('click', () => {
-            cursor = pos;
-            render();
+          tr.addEventListener('click', (e) => {
+            // Moving the cursor must NOT rebuild the table. render() replaces every
+            // row, which destroys the very thing the click was for: an open <select>
+            // popup closes with its element, a focused draft input loses focus
+            // mid-edit, and a drag-selected range is wiped before it can be copied.
+            // setCursor only swaps a class, so it is safe during all three.
+            // The click that ends a drag-select: leave everything alone, the user
+            // is copying, not navigating. ANY live selection is the test, not one
+            // anchored in this row — a drag from row 3 to row 5 has its anchor in
+            // neither the row that receives the click nor, if it passes over one,
+            // any middle row, and moving the cursor there would aim the next 0-3
+            // shortcut at a row the user never chose.
+            //
+            // Checking only "is something selected" is precise rather than broad:
+            // mousedown collapses the selection, so a selection can still be live
+            // at click time ONLY when this click ended the drag (or a dblclick
+            // word-select). A deliberate click elsewhere has already collapsed it
+            // and moves the cursor normally.
+            const sel = window.getSelection();
+            if (sel && !sel.isCollapsed) return;
+            // A click on this row's own control still moves the highlight — the
+            // 0-3 shortcuts act on the cursor, so leaving it behind would let a
+            // later keypress decide a different row than the one being worked on.
+            setCursor(pos);
           });
           frag.appendChild(tr);
         });
@@ -623,11 +662,9 @@
       document.addEventListener('keydown', (e) => {
         if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
         if (e.key === 'j') {
-          cursor = Math.min(cursor + 1, view.length - 1);
-          render();
+          setCursor(Math.min(cursor + 1, view.length - 1));
         } else if (e.key === 'k') {
-          cursor = Math.max(cursor - 1, 0);
-          render();
+          setCursor(Math.max(cursor - 1, 0));
         } else if ('0123'.includes(e.key)) {
           decide(Number(e.key));
         } else return;
