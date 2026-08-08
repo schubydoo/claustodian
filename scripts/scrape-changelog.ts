@@ -699,7 +699,12 @@ export function enrichSymbols(
         description: entry.description,
         description_source: 'docs',
         source_url: `${DOCS_BASE}${entry.doc_page}.md`,
-        category: categorize(entry.symbol, entry.type),
+        // A page-declared category wins over the name-based guess. categorize()
+        // sees only the symbol name, so it cannot tell a `~/.claude.json`
+        // global-config key from a `settings.json` one — they look identical and
+        // differ only by which file reads them, which is a fact the page states
+        // and the name never carries.
+        category: entry.category ?? categorize(entry.symbol, entry.type),
       })
     );
   }
