@@ -303,7 +303,8 @@ export function binaryFlagCategory(
 /**
  * Whether the flag was hidden at `version` — the latest era whose `from` is
  * <= version. False before the first era, which is the honest answer: we have no
- * observation of it being hidden that early.
+ * observation of it being hidden that early, and distillation drops a leading
+ * public era as information-free.
  */
 export function hiddenAt(eras: readonly HiddenEra[] | undefined, version: string): boolean {
   let state = false;

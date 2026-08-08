@@ -1432,3 +1432,41 @@ describe('assembleSnapshots — flag visibility per version', () => {
     expect(snaps.at(-1)?.symbols.find((x) => x.symbol === '--print')?.category).toBe('cli');
   });
 });
+
+describe('assembleSnapshots — a flag that became hidden later', () => {
+  it('reports cli before the flag was hidden, not the tip category', () => {
+    // The record is created with the LAST_SEEN category (cli-internal here), so a
+    // resolver that returns "whatever the record already has" when not hidden
+    // leaks the tip's answer backwards.
+    const rec = {
+      symbol: '--task-budget',
+      type: 'cli_flag',
+      first_seen: '1.5.0',
+      first_seen_estimated: false,
+      removed_in: null,
+      status: 'needs_review',
+      provenance: 'binary',
+      confidence: 'medium',
+      description: '',
+      source_url: null,
+      category: 'cli-internal',
+    } as SymbolRecord;
+    const snaps = assembleSnapshots(
+      [rec],
+      [
+        { version: '1.5.0', bullets: [] },
+        { version: '2.4.0', bullets: [] },
+        { version: '2.6.0', bullets: [] },
+      ],
+      undefined,
+      undefined,
+      new Map([['cli_flag:--task-budget', [{ from: '2.4.0', hidden: true }]]])
+    );
+    const at = (v: string) =>
+      snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === '--task-budget')
+        ?.category;
+    expect(at('1.5.0')).toBe('cli');
+    expect(at('2.4.0')).toBe('cli-internal');
+    expect(at('2.6.0')).toBe('cli-internal');
+  });
+});

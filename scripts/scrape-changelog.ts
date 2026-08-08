@@ -585,7 +585,14 @@ export function assembleSnapshots(
     if (record.type !== 'cli_flag') return record;
     const eras = binaryHidden?.get(`${record.type}:${record.symbol}`);
     if (!eras) return record;
-    return withCategory(record, binaryFlagCategory(eras, version, record.category));
+    // Resolve against the NAME-BASED category, never record.category. The record
+    // was created with the last_seen value, so feeding it back in makes "not
+    // hidden at this version" return the tip's answer — a flag that only became
+    // hidden later would read cli-internal for its whole public life.
+    return withCategory(
+      record,
+      binaryFlagCategory(eras, version, categorize(record.symbol, record.type))
+    );
   };
 
   // Resolve the description from the binary timeline: a curated (non-empty)
