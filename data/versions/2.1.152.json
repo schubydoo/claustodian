@@ -4088,9 +4088,9 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Show a friendly nudge after sustained continuous use (default false). Must be true for the reminder to fire.",
+      "description": "@internal Opt-in break reminder. When enabled, shows a dismissible nudge after sustained continuous use. Never blocks \\u2014 just a friendly heads-up.",
       "source_url": null,
-      "category": "settings",
+      "category": "settings-internal",
       "description_source": "binary"
     },
     {
@@ -5061,9 +5061,9 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Show a one-time nudge when you start or keep using the CLI inside your quiet-hours window (default false).",
+      "description": "@internal Opt-in quiet hours. When enabled, shows a single soft nudge per session while inside the configured local-time window. Never blocks.",
       "source_url": null,
-      "category": "settings",
+      "category": "settings-internal",
       "description_source": "binary"
     },
     {
@@ -5113,7 +5113,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Default environment ID to use for remote sessions",
+      "description": "Remote session configuration",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -5165,7 +5165,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Network access restrictions",
+      "description": "Sandbox configuration for network and filesystem restrictions",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -6151,7 +6151,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Directories to symlink from main repository to worktrees to avoid disk bloat. Must be explicitly configured - no directories are symlinked by default. Common examples: \"node_modules\", \".cache\", \".bin\"",
+      "description": "Git worktree configuration for --worktree flag.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"

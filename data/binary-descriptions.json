@@ -2526,7 +2526,7 @@
     "config_key:attribution": [
       {
         "from": "2.0.62",
-        "description": "Attribution text for git commits, including any trailers. Empty string hides attribution."
+        "description": "Customize attribution text for commits and PRs. Each field defaults to the standard Claude Code attribution if not set."
       }
     ],
     "config_key:attribution.commit": [
@@ -2580,11 +2580,7 @@
     "config_key:autoMode": [
       {
         "from": "2.1.108",
-        "description": "Rules for the auto mode classifier allow section"
-      },
-      {
-        "from": "2.1.118",
-        "description": "Rules for the auto mode classifier allow section. Include the literal string \"$defaults\" to inherit the built-in rules at that position."
+        "description": "Auto mode classifier prompt customization"
       }
     ],
     "config_key:autoMode.allow": [
@@ -2698,7 +2694,7 @@
     "config_key:breakReminder": [
       {
         "from": "2.1.149",
-        "description": "Show a friendly nudge after sustained continuous use (default false). Must be true for the reminder to fire."
+        "description": "@internal Opt-in break reminder. When enabled, shows a dismissible nudge after sustained continuous use. Never blocks \\u2014 just a friendly heads-up."
       }
     ],
     "config_key:breakReminder.breakThresholdMinutes": [
@@ -3320,7 +3316,7 @@
     "config_key:proactive": [
       {
         "from": "2.1.92",
-        "description": "When true, autonomous background operation is activated automatically at launch (if entitled). When false or null, the user must opt in via the /proactive command or --proactive flag. Existing entitlement gates (GrowthBook flag, ZDR, managed-settings) still apply."
+        "description": "Autonomous background operation configuration"
       }
     ],
     "config_key:proactive.autoEnable": [
@@ -3350,7 +3346,7 @@
     "config_key:quietHours": [
       {
         "from": "2.1.149",
-        "description": "Show a one-time nudge when you start or keep using the CLI inside your quiet-hours window (default false)."
+        "description": "@internal Opt-in quiet hours. When enabled, shows a single soft nudge per session while inside the configured local-time window. Never blocks."
       }
     ],
     "config_key:quietHours.enabled": [
@@ -3374,11 +3370,11 @@
     "config_key:remote": [
       {
         "from": "2.0.47",
-        "description": "Default environment ID to use for remote sessions"
+        "description": "Remote session configuration"
       },
       {
         "from": "2.1.169",
-        "description": "Default environment ID to use for cloud sessions"
+        "description": "Cloud session configuration"
       }
     ],
     "config_key:remote.defaultEnvironmentId": [
@@ -3424,7 +3420,7 @@
     "config_key:sandbox": [
       {
         "from": "1.0.110",
-        "description": "Network access restrictions"
+        "description": "Sandbox configuration for network and filesystem restrictions"
       }
     ],
     "config_key:sandbox.allowUnsandboxedCommands": [
@@ -3510,11 +3506,7 @@
     "config_key:sandbox.filesystem": [
       {
         "from": "1.0.110",
-        "description": "Additional directories where writes are allowed (e.g., [\"~/projects\", \"./output\"])"
-      },
-      {
-        "from": "1.0.114",
-        "description": "Read access restrictions"
+        "description": "Filesystem access restrictions"
       },
       {
         "from": "1.0.116",
@@ -3767,10 +3759,6 @@
       {
         "from": "1.0.64",
         "description": "Custom status line display configuration"
-      },
-      {
-        "from": "2.1.97",
-        "description": "Re-run the status line command every N seconds in addition to event-driven updates"
       }
     ],
     "config_key:statusLine.hideVimModeIndicator": [
@@ -3910,7 +3898,15 @@
     "config_key:voice": [
       {
         "from": "2.1.92",
-        "description": "'hold' (default): hold to talk. 'tap': tap to start, tap to stop+submit."
+        "description": "@internal Voice handsfree settings; behavior gated at read sites by feature(VOICE_HANDSFREE). Hidden from public SDK types until external launch; see TODO on voiceEnabled above."
+      },
+      {
+        "from": "2.1.108",
+        "description": "@internal Voice handsfree settings; behavior gated at read sites by feature(VOICE_HANDSFREE). Hidden from public SDK types until external launch; see TODO on voiceEnabled in entitlements.ts."
+      },
+      {
+        "from": "2.1.116",
+        "description": "Voice mode settings (hold-to-talk / tap-to-toggle dictation)"
       }
     ],
     "config_key:voice.autoSubmit": [
@@ -3956,7 +3952,11 @@
     "config_key:worktree": [
       {
         "from": "2.1.38",
-        "description": "Directories to symlink from main repository to worktrees to avoid disk bloat. Must be explicitly configured - no directories are symlinked by default. Common examples: \"node_modules\", \".cache\", \".bin\""
+        "description": "Git worktree configuration for --worktree flag. Symlinks prevent duplicating large directories like node_modules across worktrees."
+      },
+      {
+        "from": "2.1.76",
+        "description": "Git worktree configuration for --worktree flag."
       }
     ],
     "config_key:worktree.baseRef": [

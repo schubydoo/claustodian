@@ -4819,7 +4819,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Default environment ID to use for remote sessions",
+      "description": "Remote session configuration",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -4871,7 +4871,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Network access restrictions",
+      "description": "Sandbox configuration for network and filesystem restrictions",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -5857,7 +5857,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Directories to symlink from main repository to worktrees to avoid disk bloat. Must be explicitly configured - no directories are symlinked by default. Common examples: \"node_modules\", \".cache\", \".bin\"",
+      "description": "Git worktree configuration for --worktree flag.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"

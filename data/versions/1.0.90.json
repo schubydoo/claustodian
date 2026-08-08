@@ -1390,8 +1390,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Custom status line display configuration",
-      "description_source": "binary",
+      "description": "Configure a custom status line to display context. The object's optional `padding`, `refreshInterval`, and `hideVimModeIndicator` fields control spacing, periodic re-runs, and whether the built-in vim mode indicator below the prompt is hidden. See `statusLine` documentation",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },

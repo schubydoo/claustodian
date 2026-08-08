@@ -3433,8 +3433,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Rules for the auto mode classifier allow section",
-      "description_source": "binary",
+      "description": "Customize what the auto mode classifier blocks and allows. Contains `environment`, `allow`, `soft_deny`, and `hard_deny` arrays of prose rules. Include the literal string `\"$defaults\"` in an array to inherit the built-in rules at that position. See Configure auto mode. Read from user settings, the `--settings` flag, and managed settings only. Ignored in project `.claude/settings.json` and local `.claude/settings.local.json`. Before v2.1.207, `.claude/settings.local.json` was also read",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -4224,7 +4224,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Default environment ID to use for remote sessions",
+      "description": "Remote session configuration",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -4263,7 +4263,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Network access restrictions",
+      "description": "Sandbox configuration for network and filesystem restrictions",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -5005,10 +5005,10 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Voice dictation settings: `enabled` turns dictation on, `mode` selects `\"hold\"` or `\"tap\"`, and `autoSubmit` sends the prompt on key release in hold mode. Written automatically when you run `/voice`. Requires a Claude.ai account",
-      "description_source": "docs",
+      "description": "@internal Voice handsfree settings; behavior gated at read sites by feature(VOICE_HANDSFREE). Hidden from public SDK types until external launch; see TODO on voiceEnabled in entitlements.ts.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
-      "category": "settings"
+      "category": "settings-internal"
     },
     {
       "symbol": "voice.autoSubmit",
@@ -5069,7 +5069,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Directories to symlink from main repository to worktrees to avoid disk bloat. Must be explicitly configured - no directories are symlinked by default. Common examples: \"node_modules\", \".cache\", \".bin\"",
+      "description": "Git worktree configuration for --worktree flag.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
