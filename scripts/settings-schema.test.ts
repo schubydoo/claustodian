@@ -2,7 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
-import { extractSettingsKeys, SettingsSchemaError, settingsKeyType } from './settings-schema.js';
+import {
+  extractSettingsKeys,
+  SettingsSchemaError,
+  settingsKeyCategory,
+} from './settings-schema.js';
 
 /** Paths only, for terse assertions. */
 const paths = (src: string): string[] => extractSettingsKeys(src).map((k) => k.path);
@@ -200,15 +204,23 @@ describe('extractSettingsKeys — descriptions', () => {
   });
 });
 
-describe('settingsKeyType', () => {
-  it('routes an @internal key to internal_config_flag', () => {
-    expect(settingsKeyType({ path: 'x', description: '@internal Plumbing only' })).toBe(
-      'internal_config_flag'
-    );
+describe('settingsKeyCategory', () => {
+  it('routes an @internal description to settings-internal', () => {
+    expect(settingsKeyCategory('@internal Plumbing only')).toBe('settings-internal');
   });
 
-  it('routes an ordinary key to config_key', () => {
-    expect(settingsKeyType({ path: 'model', description: 'Override the default model' })).toBe('config_key');
-    expect(settingsKeyType({ path: 'model' })).toBe('config_key');
+  it('routes an ordinary or absent description to settings', () => {
+    expect(settingsKeyCategory('Override the default model')).toBe('settings');
+    expect(settingsKeyCategory(undefined)).toBe('settings');
+  });
+
+  it('marks internal-ness on CATEGORY so a description edit cannot split identity', () => {
+    // At 2.1.154 the `@internal` prefix was dropped from disableWorkflows. When
+    // that drove the symbol TYPE it changed the record's `type:symbol` identity,
+    // publishing a false removal of the old type at exactly that version while
+    // the key sat untouched in the schema. Category is not identity, so the same
+    // edit is now just an update.
+    expect(settingsKeyCategory('@internal Disable the Workflows feature')).toBe('settings-internal');
+    expect(settingsKeyCategory('Disable the Workflows feature')).toBe('settings');
   });
 });

@@ -526,6 +526,58 @@ describe('enrichWithBinary', () => {
     expect(r?.first_seen_estimated).toBeUndefined();
   });
 
+  it('publishes an @internal settings key as settings-internal', () => {
+    // The category cannot be recomputed from the symbol name, so it has to come
+    // from the description timeline. Losing it publishes internal plumbing
+    // indistinguishably from user-facing configuration.
+    const out = enrichWithBinary(
+      [],
+      binary([
+        { symbol: 'skipWorkflowUsageWarning', type: 'config_key', first_seen: '2.1.180', last_seen: '2.1.224' },
+        { symbol: 'model', type: 'config_key', first_seen: '2.1.180', last_seen: '2.1.224' },
+      ]),
+      {
+        'config_key:skipWorkflowUsageWarning': [
+          { from: '2.1.180', description: '@internal Accepted the workflow warning' },
+        ],
+        'config_key:model': [{ from: '2.1.180', description: 'Override the default model' }],
+      }
+    );
+    expect(byKey(out).get('config_key:skipWorkflowUsageWarning')?.category).toBe('settings-internal');
+    expect(byKey(out).get('config_key:model')?.category).toBe('settings');
+  });
+
+  it('reads the category from the era in effect at that version, not the newest', () => {
+    // disableWorkflows lost its @internal prefix at 2.1.154. A record observed
+    // only up to 2.1.153 must still read as internal.
+    const eras = {
+      'config_key:disableWorkflows': [
+        { from: '2.1.152', description: '@internal Disable the Workflows feature' },
+        { from: '2.1.154', description: 'Disable the Workflows feature' },
+      ],
+    };
+    const early = enrichWithBinary(
+      [],
+      binary([{ symbol: 'disableWorkflows', type: 'config_key', first_seen: '2.1.152', last_seen: '2.1.153' }]),
+      eras
+    );
+    const late = enrichWithBinary(
+      [],
+      binary([{ symbol: 'disableWorkflows', type: 'config_key', first_seen: '2.1.152', last_seen: '2.1.224' }]),
+      eras
+    );
+    expect(byKey(early).get('config_key:disableWorkflows')?.category).toBe('settings-internal');
+    expect(byKey(late).get('config_key:disableWorkflows')?.category).toBe('settings');
+  });
+
+  it('falls back to the name-based category when no description timeline is supplied', () => {
+    const out = enrichWithBinary(
+      [],
+      binary([{ symbol: 'model', type: 'config_key', first_seen: '2.1.180', last_seen: '2.1.224' }])
+    );
+    expect(byKey(out).get('config_key:model')?.category).toBe('settings');
+  });
+
   it('withholds a switch-case-only flag from the published set', () => {
     // Claude Code's own flag, but only ever seen as a `case"--x":` label in a
     // subcommand's argv parser. At 2.1.224 every such flag belongs to
@@ -811,6 +863,50 @@ describe('assembleSnapshots — per-version deprecation status', () => {
   ];
   const statusAt = (snaps: ReturnType<typeof assembleSnapshots>, v: string, sym: string) =>
     snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === sym)?.status;
+
+  it('resolves a config key category per version as the @internal marker moves', () => {
+    // ONE observation window spanning the edit, which is what the real pipeline
+    // produces: disableWorkflows is present 2.1.152 -> 2.1.224 and lost its
+    // @internal prefix at 2.1.154. enrichWithBinary can only stamp one category
+    // on the record, so without per-version resolution every snapshot would show
+    // the tip's value and the versions where it WAS internal would say otherwise.
+    const snaps = assembleSnapshots(
+      [
+        rec({
+          symbol: 'disableWorkflows',
+          type: 'config_key',
+          first_seen: '1.5.0',
+          category: 'settings',
+          description: 'Disable the Workflows feature',
+          provenance: 'binary',
+        }),
+      ],
+      blocks,
+      {
+        'config_key:disableWorkflows': [
+          { from: '1.5.0', description: '@internal Disable the Workflows feature' },
+          { from: '2.4.0', description: 'Disable the Workflows feature' },
+        ],
+      }
+    );
+    const catAt = (v: string) =>
+      snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === 'disableWorkflows')
+        ?.category;
+    expect(catAt('1.5.0')).toBe('settings-internal');
+    expect(catAt('2.0.0')).toBe('settings-internal');
+    expect(catAt('2.4.0')).toBe('settings');
+    expect(catAt('2.6.0')).toBe('settings');
+  });
+
+  it('leaves a non-config symbol category untouched by the description timeline', () => {
+    const snaps = assembleSnapshots([rec({ category: 'command' })], blocks, {
+      'command:/output-style': [{ from: '1.5.0', description: '@internal looks internal' }],
+    });
+    const cat = snaps
+      .find((s) => s.version === '2.6.0')
+      ?.symbols.find((x) => x.symbol === '/output-style')?.category;
+    expect(cat).toBe('command');
+  });
 
   it('reads active before deprecated_in and deprecated at/after (still present)', () => {
     const snaps = assembleSnapshots([rec({ deprecated_in: '2.0.0' })], blocks);
