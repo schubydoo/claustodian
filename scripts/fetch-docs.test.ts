@@ -414,7 +414,8 @@ describe('parseDocPage — settings page', () => {
   const page = (body: string) => parseDocPage('settings', body, known);
 
   it('reads a flat key from the definitional table', () => {
-    const md = '### Available settings\n\n| Key | Description |\n| :-- | :-- |\n| `advisorModel` | Model for the advisor tool |\n';
+    const md =
+      '### Available settings\n\n| Key | Description |\n| :-- | :-- |\n| `advisorModel` | Model for the advisor tool |\n';
     expect(page(md)).toEqual([
       {
         symbol: 'advisorModel',
@@ -427,14 +428,16 @@ describe('parseDocPage — settings page', () => {
   });
 
   it('qualifies a bare key with its section namespace', () => {
-    const md = '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `allow` | Rules to allow tool use |\n';
+    const md =
+      '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `allow` | Rules to allow tool use |\n';
     expect(page(md)[0]?.symbol).toBe('permissions.allow');
   });
 
   it('keeps a sub-namespace rooted at the section, not treated as already qualified', () => {
     // Sandbox rows use sub-namespaces. Testing "contains a dot" instead of
     // "already rooted here" strands 23 keys as bare `filesystem.*`.
-    const md = '### Sandbox settings\n\n| Keys | Description |\n| :-- | :-- |\n| `filesystem.allowWrite` | Extra writable paths |\n';
+    const md =
+      '### Sandbox settings\n\n| Keys | Description |\n| :-- | :-- |\n| `filesystem.allowWrite` | Extra writable paths |\n';
     expect(page(md)[0]?.symbol).toBe('sandbox.filesystem.allowWrite');
   });
 
@@ -442,17 +445,20 @@ describe('parseDocPage — settings page', () => {
     // The page groups by topic, not JSON nesting: this key sits under "Permission
     // settings" while the schema has it flat. Prefixing blindly would publish
     // `permissions.skipDangerousModePermissionPrompt`, which does not exist.
-    const md = '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `skipDangerousModePermissionPrompt` | Skip the confirmation prompt |\n';
+    const md =
+      '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `skipDangerousModePermissionPrompt` | Skip the confirmation prompt |\n';
     expect(page(md)[0]?.symbol).toBe('skipDangerousModePermissionPrompt');
   });
 
   it('throws when a namespaced row matches no real path', () => {
-    const md = '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `inventedKey` | Something new |\n';
+    const md =
+      '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `inventedKey` | Something new |\n';
     expect(() => page(md)).toThrow(/matches neither/);
   });
 
   it('refuses to resolve a namespaced section with no schema supplied', () => {
-    const md = '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `allow` | Rules |\n';
+    const md =
+      '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `allow` | Rules |\n';
     expect(() => parseDocPage('settings', md)).toThrow(/Refusing to guess a key path/);
   });
 
@@ -498,7 +504,8 @@ describe('parseDocPage — settings page', () => {
   });
 
   it('leaves settings.json keys without a category override', () => {
-    const md = '### Available settings\n\n| Key | Description |\n| :-- | :-- |\n| `advisorModel` | Model for the advisor |\n';
+    const md =
+      '### Available settings\n\n| Key | Description |\n| :-- | :-- |\n| `advisorModel` | Model for the advisor |\n';
     expect(page(md)[0]).not.toHaveProperty('category');
   });
 

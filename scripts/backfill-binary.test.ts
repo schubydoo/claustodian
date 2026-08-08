@@ -12,7 +12,11 @@ import {
 /** A cache file whose symbols carry descriptions. */
 function descFile(
   version: string,
-  symbols: Array<{ symbol: string; type: BinaryCacheFile['symbols'][number]['type']; description?: string }>
+  symbols: Array<{
+    symbol: string;
+    type: BinaryCacheFile['symbols'][number]['type'];
+    description?: string;
+  }>
 ): BinaryCacheFile {
   return { version, symbols };
 }
@@ -22,7 +26,9 @@ describe('distillDescriptions', () => {
     const files = [
       descFile('0.2.9', [{ symbol: '/review', type: 'command', description: 'Review a PR' }]),
       descFile('1.0.0', [{ symbol: '/review', type: 'command', description: 'Review a PR' }]),
-      descFile('2.1.186', [{ symbol: '/review', type: 'command', description: 'Review a GitHub PR' }]),
+      descFile('2.1.186', [
+        { symbol: '/review', type: 'command', description: 'Review a GitHub PR' },
+      ]),
     ];
     const { descriptions } = distillDescriptions(files);
     expect(descriptions['command:/review']).toEqual([
@@ -33,9 +39,27 @@ describe('distillDescriptions', () => {
 
   it('normalizes whitespace so a cosmetic spacing change is not a new era', () => {
     const files = [
-      descFile('2.0.2', [{ symbol: '--max-thinking-tokens', type: 'cli_flag', description: 'Max tokens.  (only --print)' }]),
-      descFile('2.1.26', [{ symbol: '--max-thinking-tokens', type: 'cli_flag', description: 'Max tokens. (only --print)' }]),
-      descFile('2.1.32', [{ symbol: '--max-thinking-tokens', type: 'cli_flag', description: '  Max tokens. (only --print)  ' }]),
+      descFile('2.0.2', [
+        {
+          symbol: '--max-thinking-tokens',
+          type: 'cli_flag',
+          description: 'Max tokens.  (only --print)',
+        },
+      ]),
+      descFile('2.1.26', [
+        {
+          symbol: '--max-thinking-tokens',
+          type: 'cli_flag',
+          description: 'Max tokens. (only --print)',
+        },
+      ]),
+      descFile('2.1.32', [
+        {
+          symbol: '--max-thinking-tokens',
+          type: 'cli_flag',
+          description: '  Max tokens. (only --print)  ',
+        },
+      ]),
     ];
     // Double-space vs single-space vs padded — all collapse to one normalized era.
     expect(distillDescriptions(files).descriptions['cli_flag:--max-thinking-tokens']).toEqual([
@@ -88,7 +112,10 @@ describe('distillDescriptions', () => {
 });
 
 /** A minimal cache file for a version, listing symbol/type pairs. */
-function cacheFile(version: string, symbols: Array<[string, BinaryCacheFile['symbols'][number]['type']]>): BinaryCacheFile {
+function cacheFile(
+  version: string,
+  symbols: Array<[string, BinaryCacheFile['symbols'][number]['type']]>
+): BinaryCacheFile {
   return { version, symbols: symbols.map(([symbol, type]) => ({ symbol, type })) };
 }
 
@@ -134,9 +161,19 @@ describe('distillObservations', () => {
     expect(distillObservations(files).symbols[0]?.switch_case_only).toBeUndefined();
   });
 
-  it('carries a switch-case flag\'s scopes into the observation', () => {
+  it("carries a switch-case flag's scopes into the observation", () => {
     const files: BinaryCacheFile[] = [
-      { version: '2.1.224', symbols: [{ symbol: '--min-idle', type: 'cli_flag', evidence: 'argv-switch', scopes: ['self-hosted-runner orchestrator'] }] },
+      {
+        version: '2.1.224',
+        symbols: [
+          {
+            symbol: '--min-idle',
+            type: 'cli_flag',
+            evidence: 'argv-switch',
+            scopes: ['self-hosted-runner orchestrator'],
+          },
+        ],
+      },
     ];
     expect(distillObservations(files).symbols[0]).toMatchObject({
       switch_case_only: true,
@@ -148,8 +185,28 @@ describe('distillObservations', () => {
     // A parser may gain a flag in a later release; the observation window is one
     // record, so its scope set is the union over every version that saw it.
     const files: BinaryCacheFile[] = [
-      { version: '2.1.224', symbols: [{ symbol: '--api-url', type: 'cli_flag', evidence: 'argv-switch', scopes: ['self-hosted-runner orchestrator'] }] },
-      { version: '2.1.226', symbols: [{ symbol: '--api-url', type: 'cli_flag', evidence: 'argv-switch', scopes: ['self-hosted-runner', 'self-hosted-runner decode-token'] }] },
+      {
+        version: '2.1.224',
+        symbols: [
+          {
+            symbol: '--api-url',
+            type: 'cli_flag',
+            evidence: 'argv-switch',
+            scopes: ['self-hosted-runner orchestrator'],
+          },
+        ],
+      },
+      {
+        version: '2.1.226',
+        symbols: [
+          {
+            symbol: '--api-url',
+            type: 'cli_flag',
+            evidence: 'argv-switch',
+            scopes: ['self-hosted-runner', 'self-hosted-runner decode-token'],
+          },
+        ],
+      },
     ];
     expect(distillObservations(files).symbols[0]?.scopes).toEqual([
       'self-hosted-runner',
@@ -163,8 +220,21 @@ describe('distillObservations', () => {
     // commander registration, keeping the narrowing would assert it is NOT valid
     // on bare `claude` on the strength of an older subcommand parser.
     const files: BinaryCacheFile[] = [
-      { version: '2.1.224', symbols: [{ symbol: '--base-dir', type: 'cli_flag', evidence: 'argv-switch', scopes: ['self-hosted-runner'] }] },
-      { version: '2.1.226', symbols: [{ symbol: '--base-dir', type: 'cli_flag', evidence: 'registration' }] },
+      {
+        version: '2.1.224',
+        symbols: [
+          {
+            symbol: '--base-dir',
+            type: 'cli_flag',
+            evidence: 'argv-switch',
+            scopes: ['self-hosted-runner'],
+          },
+        ],
+      },
+      {
+        version: '2.1.226',
+        symbols: [{ symbol: '--base-dir', type: 'cli_flag', evidence: 'registration' }],
+      },
     ];
     const [record] = distillObservations(files).symbols;
     expect(record?.switch_case_only).toBeUndefined();
@@ -207,10 +277,18 @@ describe('distillObservations', () => {
   });
 
   it('keys on type+symbol so a flag and a command of the same name stay distinct', () => {
-    const files = [cacheFile('1.0.0', [['--compact', 'cli_flag'], ['/compact', 'command']])];
+    const files = [
+      cacheFile('1.0.0', [
+        ['--compact', 'cli_flag'],
+        ['/compact', 'command'],
+      ]),
+    ];
     const { symbols } = distillObservations(files);
     expect(symbols).toHaveLength(2);
-    expect(symbols.map((s) => `${s.type}:${s.symbol}`)).toEqual(['cli_flag:--compact', 'command:/compact']);
+    expect(symbols.map((s) => `${s.type}:${s.symbol}`)).toEqual([
+      'cli_flag:--compact',
+      'command:/compact',
+    ]);
   });
 
   it('sorts symbols by type then name deterministically', () => {
@@ -223,7 +301,12 @@ describe('distillObservations', () => {
       ]),
     ];
     const keys = distillObservations(files).symbols.map((s) => `${s.type}:${s.symbol}`);
-    expect(keys).toEqual(['cli_flag:--add-dir', 'cli_flag:--zoom', 'command:/apply', 'env_var:ZED_TERM']);
+    expect(keys).toEqual([
+      'cli_flag:--add-dir',
+      'cli_flag:--zoom',
+      'command:/apply',
+      'env_var:ZED_TERM',
+    ]);
   });
 
   it('records observedVersions newest-first across every scanned version', () => {
@@ -249,7 +332,15 @@ describe('distillObservations', () => {
         version: '1.0.0',
         source: 'npm',
         count: 1,
-        symbols: [{ symbol: 'CLAUDE_CODE_FOO', type: 'env_var', category: 'claude-code', evidence: 'process-env', description: 'x' }],
+        symbols: [
+          {
+            symbol: 'CLAUDE_CODE_FOO',
+            type: 'env_var',
+            category: 'claude-code',
+            evidence: 'process-env',
+            description: 'x',
+          },
+        ],
       },
     ];
     const [obs] = distillObservations(files).symbols;

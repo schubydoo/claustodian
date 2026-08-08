@@ -406,7 +406,13 @@ export function parseDocPage(
     // (e.g. remote-control's 2.1.51 must not stamp cli-reference's `--verbose`).
     const doc_min_version = minVersion(descCell) ?? minVersion(symbolCell);
     for (const sym of syms) {
-      entries.push({ symbol: sym.symbol, type: sym.type, description, doc_min_version, doc_page: page });
+      entries.push({
+        symbol: sym.symbol,
+        type: sym.type,
+        description,
+        doc_min_version,
+        doc_page: page,
+      });
     }
   }
   return entries;

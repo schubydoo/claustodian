@@ -230,7 +230,10 @@ const SKILL_GET_DESC = /get description\(\)\s*\{\s*return\s*(["'`])((?:(?!\1)[^\
  * backslash (`\\`) consumes the next char before `\n`/`\t`/`\uXXXX` can misfire on
  * it (`"C:\\new"` stays `C:\new`, not `C:` + newline + `ew`).
  */
-function cleanDescription(raw: string | undefined, delimiter: string | undefined): string | undefined {
+function cleanDescription(
+  raw: string | undefined,
+  delimiter: string | undefined
+): string | undefined {
   if (raw === undefined) return undefined;
   if (delimiter === '`' && raw.includes('${')) return undefined;
   const ESCAPES: Record<string, string> = {

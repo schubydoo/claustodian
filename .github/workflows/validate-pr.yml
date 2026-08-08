@@ -27,6 +27,11 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      # Formatting is a gate, not a suggestion. Without this the repo drifted to
+      # 27 unformatted source files, because `npm run format` only ever ran when
+      # someone remembered. Generated data is excluded in .prettierignore — see
+      # the note there for why formatting it would fight the generator.
+      - run: npx prettier --check .
       - run: npx tsc --noEmit
       # Run tests with coverage: enforces the vitest threshold and produces
       # coverage/lcov.info for the Codecov upload below.

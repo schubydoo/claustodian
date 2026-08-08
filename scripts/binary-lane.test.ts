@@ -32,7 +32,13 @@ function observations(overrides: Partial<BinaryObservations> = {}): BinaryObserv
     note: 'x',
     observedVersions: ['1.0.0'],
     symbols: [
-      { symbol: '--x', type: 'cli_flag', first_seen: '1.0.0', last_seen: '1.0.0', removed_in: null },
+      {
+        symbol: '--x',
+        type: 'cli_flag',
+        first_seen: '1.0.0',
+        last_seen: '1.0.0',
+        removed_in: null,
+      },
     ],
     ...overrides,
   };
@@ -164,7 +170,14 @@ describe('computeBinaryRemoval', () => {
   });
 
   it('never trusts a disappearance in the recall-unreliable (post-cliff) era', () => {
-    const observed = ['2.1.158', '2.1.159', RELIABLE_EXTRACTION_CEILING, '2.1.161', '2.1.162', '2.1.163'];
+    const observed = [
+      '2.1.158',
+      '2.1.159',
+      RELIABLE_EXTRACTION_CEILING,
+      '2.1.161',
+      '2.1.162',
+      '2.1.163',
+    ];
     // solidly present then gone, but the last sighting is AT the cliff ceiling.
     expect(
       computeBinaryRemoval(['2.1.158', '2.1.159', RELIABLE_EXTRACTION_CEILING], observed)
@@ -248,9 +261,14 @@ describe('description timeline', () => {
       descriptions: { 'command:/x': eras },
     };
     expect(() => assertBinaryDescriptions(good, 'p')).not.toThrow();
-    expect(() => assertBinaryDescriptions({ ...good, source: 'hand' }, 'p')).toThrow(/not a scripts/);
+    expect(() => assertBinaryDescriptions({ ...good, source: 'hand' }, 'p')).toThrow(
+      /not a scripts/
+    );
     expect(() =>
-      assertBinaryDescriptions({ ...good, descriptions: null as unknown as BinaryDescriptions['descriptions'] }, 'p')
+      assertBinaryDescriptions(
+        { ...good, descriptions: null as unknown as BinaryDescriptions['descriptions'] },
+        'p'
+      )
     ).toThrow(/malformed/);
   });
 

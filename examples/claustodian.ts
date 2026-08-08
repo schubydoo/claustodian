@@ -134,16 +134,26 @@ export async function describeAt(
 // --- Demo: `npx tsx examples/claustodian.ts` ---------------------------------
 async function main(): Promise<void> {
   const idx = await fetchIndex();
-  console.log(`Claustodian schema ${idx.schemaVersion}, latest ${idx.latest}, ${idx.versions.length} versions tracked`);
+  console.log(
+    `Claustodian schema ${idx.schemaVersion}, latest ${idx.latest}, ${idx.versions.length} versions tracked`
+  );
 
   const latest = await fetchSnapshot('latest');
   const flag = findSymbol(latest, '--output-format');
-  console.log(`--output-format in ${latest.claudeCodeVersion}:`, flag ? `first_seen ${flag.first_seen}, status ${flag.status}` : 'absent');
+  console.log(
+    `--output-format in ${latest.claudeCodeVersion}:`,
+    flag ? `first_seen ${flag.first_seen}, status ${flag.status}` : 'absent'
+  );
 
   // Removal = vanish: /vim was removed in 2.1.92, so it's present at .91, gone at .92.
   const at91 = findSymbol(await fetchSnapshot('2.1.91'), '/vim');
   const at92 = findSymbol(await fetchSnapshot('2.1.92'), '/vim');
-  console.log(`/vim @2.1.91:`, at91 ? `present (removed_in=${at91.removed_in})` : 'absent', '| @2.1.92:', at92 ? 'present' : 'vanished');
+  console.log(
+    `/vim @2.1.91:`,
+    at91 ? `present (removed_in=${at91.removed_in})` : 'absent',
+    '| @2.1.92:',
+    at92 ? 'present' : 'vanished'
+  );
 
   // Description-at-version: --add-dir's help text changed at 1.0.23.
   console.log('--add-dir @1.0.18:', await describeAt('cli_flag', '--add-dir', '1.0.18'));

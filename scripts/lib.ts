@@ -15,11 +15,7 @@ import { pathToFileURL } from 'node:url';
  * keys out of the embedded zod schema, which is where the config kinds come
  * from. Now the full SymbolRecord `type` enum. */
 export type ExtractedSymbolType =
-  | 'cli_flag'
-  | 'command'
-  | 'env_var'
-  | 'config_key'
-  | 'internal_config_flag';
+  'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag';
 
 export const CHANGELOG_URL =
   'https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md';

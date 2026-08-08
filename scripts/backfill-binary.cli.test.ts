@@ -45,7 +45,13 @@ describe('backfill-binary main()', () => {
     expect(out.$generated_by).toBe('scripts/backfill-binary.ts');
     expect(out.observedVersions).toEqual(['1.0.1', '1.0.0']);
     expect(out.symbols).toEqual([
-      { symbol: '--foo', type: 'cli_flag', first_seen: '1.0.0', last_seen: '1.0.1', removed_in: null },
+      {
+        symbol: '--foo',
+        type: 'cli_flag',
+        first_seen: '1.0.0',
+        last_seen: '1.0.1',
+        removed_in: null,
+      },
     ]);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Distilled 1 binary symbol(s)'));
   });

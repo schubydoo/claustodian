@@ -81,10 +81,16 @@ export function parseArgs(argv: string[]): CliOptions {
 }
 
 /** The version to scrape: the CLI value, else `data/index.json`'s `latest`. */
-export function resolveVersion(explicit: string | undefined, indexPath = DEFAULT_INDEX_PATH): string {
-  const version = explicit ?? (JSON.parse(readFileSync(indexPath, 'utf-8')) as { latest?: string }).latest;
+export function resolveVersion(
+  explicit: string | undefined,
+  indexPath = DEFAULT_INDEX_PATH
+): string {
+  const version =
+    explicit ?? (JSON.parse(readFileSync(indexPath, 'utf-8')) as { latest?: string }).latest;
   if (!version || !VERSION_RE.test(version)) {
-    throw new Error(`No valid version to scrape (got "${version ?? '<none>'}"). Pass --version X.Y.Z.`);
+    throw new Error(
+      `No valid version to scrape (got "${version ?? '<none>'}"). Pass --version X.Y.Z.`
+    );
   }
   return version;
 }
@@ -131,19 +137,26 @@ function writeCacheFile(outDir: string, record: BinaryCacheRecord): string {
   return path;
 }
 
-export async function scrapeBinary(options: CliOptions): Promise<{ path: string; count: number } | 'skip'> {
+export async function scrapeBinary(
+  options: CliOptions
+): Promise<{ path: string; count: number } | 'skip'> {
   const version = resolveVersion(options.version);
   const outPath = join(options.outDir, `${version}.json`);
   if (existsSync(outPath) && !options.force) {
-    console.log(`${version}: cache file already present (${outPath}); pass --force to re-scrape. Skipping.`);
+    console.log(
+      `${version}: cache file already present (${outPath}); pass --force to re-scrape. Skipping.`
+    );
     return 'skip';
   }
 
   const manifestRes = await fetchRetry(`${CDN_BASE}/${version}/manifest.json`);
   if (manifestRes.status === 404) {
-    throw new Error(`${version}: no compiled release on the CDN (manifest 404). Nothing to scrape.`);
+    throw new Error(
+      `${version}: no compiled release on the CDN (manifest 404). Nothing to scrape.`
+    );
   }
-  if (!manifestRes.ok) throw new Error(`${version}: manifest fetch failed (HTTP ${manifestRes.status}).`);
+  if (!manifestRes.ok)
+    throw new Error(`${version}: manifest fetch failed (HTTP ${manifestRes.status}).`);
   const manifest = (await manifestRes.json()) as Manifest;
 
   // Bind the artifact to the version we asked for. A stale or misrouted manifest
@@ -156,10 +169,12 @@ export async function scrapeBinary(options: CliOptions): Promise<{ path: string;
   }
 
   const entry = manifest.platforms?.[PLATFORM];
-  if (!entry) throw new Error(`${version}: manifest has no "${PLATFORM}" platform to extract from.`);
+  if (!entry)
+    throw new Error(`${version}: manifest has no "${PLATFORM}" platform to extract from.`);
 
   const binRes = await fetchRetry(`${CDN_BASE}/${version}/${PLATFORM}/${entry.binary}`);
-  if (!binRes.ok) throw new Error(`${version}/${PLATFORM}: binary fetch failed (HTTP ${binRes.status}).`);
+  if (!binRes.ok)
+    throw new Error(`${version}/${PLATFORM}: binary fetch failed (HTTP ${binRes.status}).`);
   const buf = Buffer.from(await binRes.arrayBuffer());
 
   const got = createHash('sha256').update(buf).digest('hex');

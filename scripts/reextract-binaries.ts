@@ -42,9 +42,7 @@ const VERSION_RE = /^\d+\.\d+\.\d+$/;
 
 /** Resolving one archived version's source: extractable, absent, or not official. */
 export type BundleResult =
-  | { kind: 'ok'; src: string }
-  | { kind: 'missing' }
-  | { kind: 'unverified'; file: string };
+  { kind: 'ok'; src: string } | { kind: 'missing' } | { kind: 'unverified'; file: string };
 
 /** The official SHA-256 for `relPath` from a version dir's `SHA256SUMS`, if any. */
 function officialSha(versionDir: string, relPath: string): string | undefined {
@@ -96,7 +94,8 @@ export function readBundleSource(archiveDir: string, version: string): BundleRes
 
   const compiled = join(dir, 'linux-x64', 'claude');
   if (existsSync(compiled)) {
-    if (!isOfficial(compiled, dir, 'linux-x64/claude')) return { kind: 'unverified', file: compiled };
+    if (!isOfficial(compiled, dir, 'linux-x64/claude'))
+      return { kind: 'unverified', file: compiled };
     return { kind: 'ok', src: readFileSync(compiled, 'utf-8') };
   }
 
@@ -193,9 +192,12 @@ export async function main(argv: string[]): Promise<number> {
   }
 
   const notes: string[] = [];
-  if (missing.length) notes.push(`${missing.length} without a readable binary: ${missing.join(', ')}`);
+  if (missing.length)
+    notes.push(`${missing.length} without a readable binary: ${missing.join(', ')}`);
   if (unverified.length) {
-    notes.push(`${unverified.length} refused (checksum mismatch or missing SHA256SUMS): ${unverified.join(', ')}`);
+    notes.push(
+      `${unverified.length} refused (checksum mismatch or missing SHA256SUMS): ${unverified.join(', ')}`
+    );
   }
   console.log(
     `Re-extracted ${extracted}/${versions.length} version(s) into ${options.outDir}` +

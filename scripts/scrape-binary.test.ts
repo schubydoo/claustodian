@@ -7,7 +7,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { buildCacheRecord, main, parseArgs, resolveVersion, scrapeBinary } from './scrape-binary.js';
+import {
+  buildCacheRecord,
+  main,
+  parseArgs,
+  resolveVersion,
+  scrapeBinary,
+} from './scrape-binary.js';
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
@@ -24,7 +30,10 @@ function stubCdn(version: string, binary: string, checksum: string): void {
         return {
           ok: true,
           status: 200,
-          json: async () => ({ version, platforms: { 'linux-x64': { binary: 'claude', checksum, size: binary.length } } }),
+          json: async () => ({
+            version,
+            platforms: { 'linux-x64': { binary: 'claude', checksum, size: binary.length } },
+          }),
         } as unknown as Response;
       }
       if (url.endsWith('/linux-x64/claude')) {
@@ -135,9 +144,26 @@ describe('scrapeBinary', () => {
         if (url.endsWith('/manifest.json')) {
           calls++;
           if (calls === 1) throw new Error('network down'); // transient throw → retried
-          return { ok: true, status: 200, json: async () => ({ version: '2.1.214', platforms: { 'linux-x64': { binary: 'claude', checksum: sha256(FAKE_BUNDLE), size: FAKE_BUNDLE.length } } }) } as unknown as Response;
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              version: '2.1.214',
+              platforms: {
+                'linux-x64': {
+                  binary: 'claude',
+                  checksum: sha256(FAKE_BUNDLE),
+                  size: FAKE_BUNDLE.length,
+                },
+              },
+            }),
+          } as unknown as Response;
         }
-        return { ok: true, status: 200, arrayBuffer: async () => new TextEncoder().encode(FAKE_BUNDLE).buffer } as unknown as Response;
+        return {
+          ok: true,
+          status: 200,
+          arrayBuffer: async () => new TextEncoder().encode(FAKE_BUNDLE).buffer,
+        } as unknown as Response;
       })
     );
     const result = await scrapeBinary({ version: '2.1.214', outDir: dir, force: false });
@@ -148,7 +174,10 @@ describe('scrapeBinary', () => {
 
   it('throws when the release has no compiled binary (manifest 404)', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 404 }) as unknown as Response));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: false, status: 404 }) as unknown as Response)
+    );
 
     await expect(scrapeBinary({ version: '9.9.9', outDir: dir, force: false })).rejects.toThrow(
       /no compiled release/
@@ -158,7 +187,10 @@ describe('scrapeBinary', () => {
 
   it('skips when the cache file already exists and --force is not set', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
-    await writeFile(join(dir, '2.1.214.json'), '{"version":"2.1.214","source":"binary","count":0,"symbols":[]}');
+    await writeFile(
+      join(dir, '2.1.214.json'),
+      '{"version":"2.1.214","source":"binary","count":0,"symbols":[]}'
+    );
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);
 
@@ -184,7 +216,14 @@ describe('scrapeBinary', () => {
     const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ version: '2.1.214', platforms: {} }) }) as unknown as Response)
+      vi.fn(
+        async () =>
+          ({
+            ok: true,
+            status: 200,
+            json: async () => ({ version: '2.1.214', platforms: {} }),
+          }) as unknown as Response
+      )
     );
     await expect(scrapeBinary({ version: '2.1.214', outDir: dir, force: false })).rejects.toThrow(
       /no "linux-x64" platform/
@@ -198,7 +237,14 @@ describe('scrapeBinary', () => {
       'fetch',
       vi.fn(async (url: string) =>
         url.endsWith('/manifest.json')
-          ? ({ ok: true, status: 200, json: async () => ({ version: '2.1.214', platforms: { 'linux-x64': { binary: 'claude', checksum: 'x', size: 1 } } }) } as unknown as Response)
+          ? ({
+              ok: true,
+              status: 200,
+              json: async () => ({
+                version: '2.1.214',
+                platforms: { 'linux-x64': { binary: 'claude', checksum: 'x', size: 1 } },
+              }),
+            } as unknown as Response)
           : ({ ok: false, status: 403 } as unknown as Response)
       )
     );
@@ -210,7 +256,10 @@ describe('scrapeBinary', () => {
 
   it('throws when the manifest fetch fails with a non-404 status', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 403 }) as unknown as Response));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: false, status: 403 }) as unknown as Response)
+    );
     await expect(scrapeBinary({ version: '2.1.214', outDir: dir, force: false })).rejects.toThrow(
       /manifest fetch failed \(HTTP 403\)/
     );
@@ -226,9 +275,26 @@ describe('scrapeBinary', () => {
         if (url.endsWith('/manifest.json')) {
           manifestCalls++;
           if (manifestCalls === 1) return { ok: false, status: 503 } as unknown as Response;
-          return { ok: true, status: 200, json: async () => ({ version: '2.1.214', platforms: { 'linux-x64': { binary: 'claude', checksum: sha256(FAKE_BUNDLE), size: FAKE_BUNDLE.length } } }) } as unknown as Response;
+          return {
+            ok: true,
+            status: 200,
+            json: async () => ({
+              version: '2.1.214',
+              platforms: {
+                'linux-x64': {
+                  binary: 'claude',
+                  checksum: sha256(FAKE_BUNDLE),
+                  size: FAKE_BUNDLE.length,
+                },
+              },
+            }),
+          } as unknown as Response;
         }
-        return { ok: true, status: 200, arrayBuffer: async () => new TextEncoder().encode(FAKE_BUNDLE).buffer } as unknown as Response;
+        return {
+          ok: true,
+          status: 200,
+          arrayBuffer: async () => new TextEncoder().encode(FAKE_BUNDLE).buffer,
+        } as unknown as Response;
       })
     );
     const result = await scrapeBinary({ version: '2.1.214', outDir: dir, force: false });

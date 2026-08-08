@@ -17,9 +17,9 @@ Claustodian answers one question:
 The data is static JSON on GitHub Pages (also YAML/TOML). There's nothing to install:
 fetch a URL and read it. Three tiny reference clients live next to this file:
 
-| File | Runtime | Run it |
-| --- | --- | --- |
-| [`quickstart.sh`](quickstart.sh) | curl + jq | `bash examples/quickstart.sh` |
+| File                               | Runtime              | Run it                            |
+| ---------------------------------- | -------------------- | --------------------------------- |
+| [`quickstart.sh`](quickstart.sh)   | curl + jq            | `bash examples/quickstart.sh`     |
 | [`claustodian.ts`](claustodian.ts) | Node 18+ (zero deps) | `npx tsx examples/claustodian.ts` |
 | [`claustodian.py`](claustodian.py) | Python 3.9+ (stdlib) | `python3 examples/claustodian.py` |
 
@@ -30,15 +30,15 @@ All three implement the same three rules below.
 Base URL: **`https://schubydoo.github.io/claustodian/data`**
 (raw-file fallback: `https://raw.githubusercontent.com/schubydoo/claustodian/main/data`)
 
-| Path | Contents |
-| --- | --- |
-| `index.json` | `{ schemaVersion, latest, versions[] }` — every tracked version (newest-first) |
-| `latest.json` | Full symbol snapshot for the newest tracked version |
-| `versions/<X.Y.Z>.json` | Full symbol snapshot **as of that version** — the ground truth for it |
-| `schema-version.json` | `{ "version": "1.0.0" }` — a bump signals a format change |
-| `binary-descriptions.json` | Per-symbol **description timeline** (change-point eras) |
-| `binary-observations.json` | Raw binary-lane first/last-seen observations (provenance detail) |
-| `docs.json` | Symbols/descriptions harvested from the official docs |
+| Path                       | Contents                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------ |
+| `index.json`               | `{ schemaVersion, latest, versions[] }` — every tracked version (newest-first) |
+| `latest.json`              | Full symbol snapshot for the newest tracked version                            |
+| `versions/<X.Y.Z>.json`    | Full symbol snapshot **as of that version** — the ground truth for it          |
+| `schema-version.json`      | `{ "version": "1.0.0" }` — a bump signals a format change                      |
+| `binary-descriptions.json` | Per-symbol **description timeline** (change-point eras)                        |
+| `binary-observations.json` | Raw binary-lane first/last-seen observations (provenance detail)               |
+| `docs.json`                | Symbols/descriptions harvested from the official docs                          |
 
 Core files are also published as `.yaml` and `.toml` (swap the extension); **JSON is the
 source of truth**, and the newest few per-version files plus the `binary-*` files may be
@@ -53,18 +53,18 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
 ```json
 {
   "symbol": "--output-format",
-  "type": "cli_flag",            // schema enum: cli_flag | command | env_var | config_key | internal_config_flag (only the first three are populated today)
-  "first_seen": "1.0.19",        // earliest version OBSERVED (semver string)
-  "removed_in": null,            // version it vanished, or null if still present
-  "deprecated_in": "2.1.73",     // OPTIONAL: version it was marked deprecated
-  "status": "active",            // "active" | "deprecated" | "removed" | "needs_review"
-  "scopes": ["remote-control"],  // optional; subcommands the flag is accepted under
-  "provenance": "changelog",     // "changelog" | "docs" | "binary" — which lane proved existence
-  "confidence": "high",          // "high" | "medium" | "low"
-  "first_seen_estimated": true,  // OPTIONAL: first_seen is an UPPER BOUND, not exact
+  "type": "cli_flag", // schema enum: cli_flag | command | env_var | config_key | internal_config_flag (only the first three are populated today)
+  "first_seen": "1.0.19", // earliest version OBSERVED (semver string)
+  "removed_in": null, // version it vanished, or null if still present
+  "deprecated_in": "2.1.73", // OPTIONAL: version it was marked deprecated
+  "status": "active", // "active" | "deprecated" | "removed" | "needs_review"
+  "scopes": ["remote-control"], // optional; subcommands the flag is accepted under
+  "provenance": "changelog", // "changelog" | "docs" | "binary" — which lane proved existence
+  "confidence": "high", // "high" | "medium" | "low"
+  "first_seen_estimated": true, // OPTIONAL: first_seen is an UPPER BOUND, not exact
   "description": "Output format…",
-  "description_source": "docs",  // OPTIONAL: "docs" | "changelog" | "binary" | "help"
-  "source_url": "https://…",     // citation, or null
+  "description_source": "docs", // OPTIONAL: "docs" | "changelog" | "binary" | "help"
+  "source_url": "https://…", // citation, or null
   "category": "cli"
 }
 ```
@@ -76,11 +76,11 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
 (`2.1.9 < 2.1.10`). Simplest of all: fetch `versions/<Y>.json` and test whether the
 symbol is present — that snapshot already encodes availability for that version.
 
-**2. Removal = vanish.** A removed symbol is *absent* from snapshots at and after
+**2. Removal = vanish.** A removed symbol is _absent_ from snapshots at and after
 `removed_in`. In the last snapshot where it still exists, its record carries
 `removed_in: "<next version>"`. Detect removal from that field, not from absence alone.
 
-**3. Deprecation = status flip.** A deprecated symbol stays *present* but flips `status`
+**3. Deprecation = status flip.** A deprecated symbol stays _present_ but flips `status`
 to `"deprecated"` at `deprecated_in`. It may later be removed too — the states compose
 (active → deprecated → absent).
 

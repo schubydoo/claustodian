@@ -2,6 +2,15 @@ node_modules/
 dist/
 scratch/
 .claude/
+# Generated data. Prettier must not touch any of it: binary-cache is written as
+# single-line JSON and data/ snapshots are written by JSON.stringify, so
+# formatting them would be undone by the next regeneration — permanent churn,
+# and it would break the "two passes produce zero diff" reproducibility check
+# the data PRs rely on. The yaml/toml were already excluded; the JSON was not,
+# which left 839 generated files failing `prettier --check` and made the check
+# useless as a gate.
+data/**/*.json
 data/**/*.yaml
 data/**/*.toml
+binary-cache/
 package-lock.json

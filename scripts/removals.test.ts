@@ -99,7 +99,9 @@ describe('applyChangelogDeprecations', () => {
   });
 
   it('keeps an already-earlier deprecated_in (earliest wins)', () => {
-    const out = applyChangelogDeprecations([depRec({ symbol: '/output-style', deprecated_in: '2.1.50' })]);
+    const out = applyChangelogDeprecations([
+      depRec({ symbol: '/output-style', deprecated_in: '2.1.50' }),
+    ]);
     expect(out[0]?.deprecated_in).toBe('2.1.50');
   });
 });

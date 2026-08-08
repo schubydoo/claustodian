@@ -50,7 +50,10 @@ describe('extractFlagDescriptions', () => {
   });
 
   it('keeps a flag described identically twice (one distinct description)', () => {
-    const d = extractFlagDescriptions('.option("--verbose","Same text");.option("--verbose","Same text")', known);
+    const d = extractFlagDescriptions(
+      '.option("--verbose","Same text");.option("--verbose","Same text")',
+      known
+    );
     expect(d.get('--verbose')).toBe('Same text');
   });
 
@@ -171,7 +174,8 @@ describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
         '{EMBEDDED_SEARCH_TOOLS:()=>a,NUMBER_FORMAT_RANGES:()=>b,CLAUBBIT:()=>c}'
       ).entries(),
     ];
-    for (const [name, category] of admitted) expect(isPublishableBinaryEnv(name, category)).toBe(true);
+    for (const [name, category] of admitted)
+      expect(isPublishableBinaryEnv(name, category)).toBe(true);
     expect(admitted.map(([n]) => n)).toEqual(['EMBEDDED_SEARCH_TOOLS']);
     // ...and the wider predicate genuinely is wider, or this test proves nothing.
     expect(isPublishableBinaryEnv('CLAUBBIT', 'other')).toBe(true);
@@ -183,7 +187,9 @@ describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
     // the claude-code gate must exclude every one of them.
     // None of these are on an audited list, so widening the gate must not admit
     // them: the map is ~43% non-env constants.
-    const env = extractAccessorEnvVars('{NEVER:()=>0,BROWSER_TOOLS:()=>t,NODE_OPTIONS:()=>o,AWS_REGION:()=>r}');
+    const env = extractAccessorEnvVars(
+      '{NEVER:()=>0,BROWSER_TOOLS:()=>t,NODE_OPTIONS:()=>o,AWS_REGION:()=>r}'
+    );
     expect(env.size).toBe(0);
   });
 
@@ -393,7 +399,9 @@ describe('extractCommands — registry objects', () => {
 
   it('keeps the command but drops a template-literal (${VAR}) description', () => {
     // `Submit feedback about ${K4}` — the minified var churns every release.
-    const cmds = extractCommands('{type:"local",name:"bug",description:`Submit feedback about ${K4}`}');
+    const cmds = extractCommands(
+      '{type:"local",name:"bug",description:`Submit feedback about ${K4}`}'
+    );
     expect(cmds.has('/bug')).toBe(true);
     expect(cmds.get('/bug')).toBeUndefined();
   });
@@ -582,7 +590,13 @@ describe('extractBundleSymbols', () => {
     ].join(';');
     const out = extractBundleSymbols(src);
     expect(out).toEqual([
-      { symbol: '--verbose', type: 'cli_flag', category: 'cli', evidence: 'registration', description: 'v' },
+      {
+        symbol: '--verbose',
+        type: 'cli_flag',
+        category: 'cli',
+        evidence: 'registration',
+        description: 'v',
+      },
       {
         symbol: '/bug',
         type: 'command',

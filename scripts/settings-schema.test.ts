@@ -25,7 +25,12 @@ describe('extractSettingsKeys — namespaced era (0.2.123 → 2.1.223)', () => {
     const src =
       'Q=v.object({apiKeyHelper:v.string(),' +
       'attribution:v.object({commit:v.string().describe("Commit trailer"),pr:v.string()}).optional()})';
-    expect(paths(src)).toEqual(['apiKeyHelper', 'attribution', 'attribution.commit', 'attribution.pr']);
+    expect(paths(src)).toEqual([
+      'apiKeyHelper',
+      'attribution',
+      'attribution.commit',
+      'attribution.pr',
+    ]);
   });
 
   it('does not descend into the zod alias itself', () => {
@@ -61,7 +66,12 @@ describe('extractSettingsKeys — sub-schema references', () => {
     const src =
       'function zWl(e){return v.object({allow:v.array(v.string()),deny:v.array(v.string())})}' +
       'Q=v.object({apiKeyHelper:v.string(),permissions:zWl(e).optional()})';
-    expect(paths(src)).toEqual(['apiKeyHelper', 'permissions', 'permissions.allow', 'permissions.deny']);
+    expect(paths(src)).toEqual([
+      'apiKeyHelper',
+      'permissions',
+      'permissions.allow',
+      'permissions.deny',
+    ]);
   });
 
   it('resolves a CHAINED sub-schema reference', () => {
@@ -107,7 +117,12 @@ describe('extractSettingsKeys — sub-schema references', () => {
     const src =
       'Q=v.object({apiKeyHelper:v.string(),worktree:W10.optional()});' +
       'W10=Se(()=>v.object({baseRef:v.string(),sparsePaths:v.array(v.string())}))';
-    expect(paths(src)).toEqual(['apiKeyHelper', 'worktree', 'worktree.baseRef', 'worktree.sparsePaths']);
+    expect(paths(src)).toEqual([
+      'apiKeyHelper',
+      'worktree',
+      'worktree.baseRef',
+      'worktree.sparsePaths',
+    ]);
   });
 
   it('emits the key but no children when a reference resolves to a non-object', () => {
@@ -115,7 +130,8 @@ describe('extractSettingsKeys — sub-schema references', () => {
     // fixed key set to enumerate. That is a legitimate answer, not a failure,
     // and must not be mistaken for an unwalkable schema.
     const src =
-      'IU4=v.record(v.string(),v.string());' + 'Q=v.object({apiKeyHelper:v.string(),env:IU4.optional()})';
+      'IU4=v.record(v.string(),v.string());' +
+      'Q=v.object({apiKeyHelper:v.string(),env:IU4.optional()})';
     expect(paths(src)).toEqual(['apiKeyHelper', 'env']);
   });
 });
@@ -157,9 +173,9 @@ describe('extractSettingsKeys — depth accounting at the object top level', () 
 
   it('terminates on a truncated bundle instead of running off the end', () => {
     // An unterminated string literal: the scanner must stop, not loop forever.
-    expect(() => extractSettingsKeys('Q=v.object({apiKeyHelper:v.string().describe("unclosed')).not.toThrow(
-      RangeError
-    );
+    expect(() =>
+      extractSettingsKeys('Q=v.object({apiKeyHelper:v.string().describe("unclosed')
+    ).not.toThrow(RangeError);
   });
 });
 
@@ -176,13 +192,16 @@ describe('extractSettingsKeys — hard-fail rather than shrink', () => {
 
   it('throws when an anchor is present but the root cannot be reached', () => {
     // An anchor not enclosed by a call-opened object: the emission shape changed.
-    expect(() => extractSettingsKeys('let o={cleanupPeriodDays:v.number()}')).toThrow(SettingsSchemaError);
+    expect(() => extractSettingsKeys('let o={cleanupPeriodDays:v.number()}')).toThrow(
+      SettingsSchemaError
+    );
   });
 
   it('throws rather than truncating when nesting runs away', () => {
     // A self-referential sub-schema. Returning at the depth cap would drop every
     // key below it while reporting success.
-    const src = 'C=Se(()=>v.object({deeper:C.optional()}));Q=v.object({apiKeyHelper:v.string(),root:C.optional()})';
+    const src =
+      'C=Se(()=>v.object({deeper:C.optional()}));Q=v.object({apiKeyHelper:v.string(),root:C.optional()})';
     expect(() => extractSettingsKeys(src)).toThrow(/nesting exceeded/);
   });
 
@@ -220,7 +239,9 @@ describe('settingsKeyCategory', () => {
     // publishing a false removal of the old type at exactly that version while
     // the key sat untouched in the schema. Category is not identity, so the same
     // edit is now just an update.
-    expect(settingsKeyCategory('@internal Disable the Workflows feature')).toBe('settings-internal');
+    expect(settingsKeyCategory('@internal Disable the Workflows feature')).toBe(
+      'settings-internal'
+    );
     expect(settingsKeyCategory('Disable the Workflows feature')).toBe('settings');
   });
 });
@@ -245,7 +266,12 @@ describe('extractSettingsKeys — feature-gated fragments', () => {
     const src =
       `${ROOT};N={autoMode:{buildGate:()=>!0,shape:()=>({` +
       'autoMode:v.object({allow:v.array().optional().describe("Allow rules"),soft_deny:v.array().optional()})})}}';
-    expect(paths(src)).toEqual(['apiKeyHelper', 'autoMode', 'autoMode.allow', 'autoMode.soft_deny']);
+    expect(paths(src)).toEqual([
+      'apiKeyHelper',
+      'autoMode',
+      'autoMode.allow',
+      'autoMode.soft_deny',
+    ]);
   });
 
   it("ignores zod's own shape() factories", () => {
@@ -326,7 +352,8 @@ describe('extractSettingsKeys — a parent object never borrows a child descript
   });
 
   it('still describes an ordinary scalar key from its own chain', () => {
-    const src = 'Q=v.object({apiKeyHelper:v.string(),cleanupPeriodDays:v.number().describe("Days")})';
+    const src =
+      'Q=v.object({apiKeyHelper:v.string(),cleanupPeriodDays:v.number().describe("Days")})';
     const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
     expect(by.get('cleanupPeriodDays')).toBe('Days');
   });
@@ -348,7 +375,8 @@ describe('extractSettingsKeys — an object whose body never closes', () => {
     // otherwise run to the end of the bundle and hand back whatever `.describe()`
     // it found there — a description belonging to an unrelated key.
     // Truncated mid-object: the brace never arrives before end-of-source.
-    const src = 'Q=v.object({apiKeyHelper:v.string(),broken:v.object({a:v.string().describe("Child")';
+    const src =
+      'Q=v.object({apiKeyHelper:v.string(),broken:v.object({a:v.string().describe("Child")';
     const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
     expect(by.get('broken')).toBeUndefined();
     expect(by.get('broken.a')).toBe('Child');

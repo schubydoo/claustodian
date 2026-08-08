@@ -135,7 +135,12 @@ function skipString(src: string, j: number): number {
  * string or regex often enough to desync the stack and lose the root entirely.
  * Verification removes the guesswork: a wrong candidate simply fails the check.
  */
-function schemaRootStart(src: string, anchor: number, anchorKey: string, anchorValueAt: number): number {
+function schemaRootStart(
+  src: string,
+  anchor: number,
+  anchorKey: string,
+  anchorValueAt: number
+): number {
   const floor = Math.max(0, anchor - ROOT_WINDOW);
   for (let i = anchor - 1; i >= floor; i--) {
     if (src[i] !== '{') continue;
@@ -153,7 +158,10 @@ function schemaRootStart(src: string, anchor: number, anchorKey: string, anchorV
  * Nested structures are skipped wholesale by depth counting, so a key's own
  * arguments never leak out as siblings.
  */
-function scanLevel(src: string, start: number): { key: string; valueStart: number; valueEnd: number }[] {
+function scanLevel(
+  src: string,
+  start: number
+): { key: string; valueStart: number; valueEnd: number }[] {
   const out: { key: string; valueStart: number; valueEnd: number }[] = [];
   let depth = 0;
   let i = start;
@@ -271,7 +279,12 @@ function objectEnd(src: string, bodyStart: number): number {
  * no such chain (`sandbox`, `sandbox.network`) correctly get nothing rather than
  * a borrowed sentence.
  */
-function describeKey(src: string, value: string, valueStart: number, valueEnd: number): string | undefined {
+function describeKey(
+  src: string,
+  value: string,
+  valueStart: number,
+  valueEnd: number
+): string | undefined {
   const bodyStart = objectBodyStart(value, valueStart);
   if (bodyStart === -1) return describeOf(value);
   const end = objectEnd(src, bodyStart);
