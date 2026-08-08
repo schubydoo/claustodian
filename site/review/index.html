@@ -538,7 +538,14 @@
         const rows = $('rows').children;
         rows[cursor]?.classList.remove('sel');
         cursor = pos;
-        rows[cursor]?.classList.add('sel');
+        const row = rows[cursor];
+        row?.classList.add('sel');
+        // render() did this at the end of every rebuild, so bypassing it for j/k
+        // would let the cursor walk off-screen while 0-3 still acted on it. Kept
+        // here rather than at the call sites so every path that moves the cursor
+        // reveals it. `nearest` is a no-op when the row is already fully visible,
+        // so clicking a visible row does not jerk the viewport.
+        row?.scrollIntoView({ block: 'nearest' });
       }
 
       function render() {
@@ -608,10 +615,20 @@
             // popup closes with its element, a focused draft input loses focus
             // mid-edit, and a drag-selected range is wiped before it can be copied.
             // setCursor only swaps a class, so it is safe during all three.
-            const sel = window.getSelection();
             // The click that ends a drag-select: leave everything alone, the user
-            // is copying, not navigating.
-            if (sel && !sel.isCollapsed && tr.contains(sel.anchorNode)) return;
+            // is copying, not navigating. ANY live selection is the test, not one
+            // anchored in this row — a drag from row 3 to row 5 has its anchor in
+            // neither the row that receives the click nor, if it passes over one,
+            // any middle row, and moving the cursor there would aim the next 0-3
+            // shortcut at a row the user never chose.
+            //
+            // Checking only "is something selected" is precise rather than broad:
+            // mousedown collapses the selection, so a selection can still be live
+            // at click time ONLY when this click ended the drag (or a dblclick
+            // word-select). A deliberate click elsewhere has already collapsed it
+            // and moves the cursor normally.
+            const sel = window.getSelection();
+            if (sel && !sel.isCollapsed) return;
             // A click on this row's own control still moves the highlight — the
             // 0-3 shortcuts act on the cursor, so leaving it behind would let a
             // later keypress decide a different row than the one being worked on.
