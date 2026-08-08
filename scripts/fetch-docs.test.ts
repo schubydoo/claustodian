@@ -469,12 +469,37 @@ describe('parseDocPage — settings page', () => {
   });
 
   it('ignores sections that do not define settings keys', () => {
-    // "Global config settings" live in ~/.claude.json and the page says they are
-    // silently ignored in settings.json; "Permission rule syntax" lists rules.
+    // "Permission rule syntax" lists rules (`Bash`), not keys; a behaviour table
+    // describes error handling rather than what a key does.
     const md =
-      '### Global config settings\n\n| Key | Description |\n| :-- | :-- |\n| `diffTool` | Where to show diffs |\n' +
-      '### Permission rule syntax\n\n| Rule | Effect |\n| :-- | :-- |\n| `Bash` | Matches all Bash commands |\n';
+      '### Permission rule syntax\n\n| Rule | Effect |\n| :-- | :-- |\n| `Bash` | Matches all Bash commands |\n' +
+      '### Plugin settings\n\n| Component | Description |\n| :-- | :-- |\n| `skills` | Plugin skills |\n';
     expect(page(md)).toEqual([]);
+  });
+
+  it('tags a global-config key with its own category', () => {
+    // These are real config keys, but they live in ~/.claude.json and the page
+    // says Claude Code "silently ignores them" in settings.json. Publishing them
+    // as ordinary `settings` would assert what the page denies; dropping them
+    // would lose documented surface. categorize() cannot tell the difference —
+    // the names are indistinguishable, only the reading file differs.
+    const md =
+      '### Global config settings\n\n| Key | Description |\n| :-- | :-- |\n| `diffTool` | Where to show diffs |\n';
+    expect(page(md)).toEqual([
+      {
+        symbol: 'diffTool',
+        type: 'config_key',
+        description: 'Where to show diffs',
+        doc_min_version: null,
+        doc_page: 'settings',
+        category: 'global-config',
+      },
+    ]);
+  });
+
+  it('leaves settings.json keys without a category override', () => {
+    const md = '### Available settings\n\n| Key | Description |\n| :-- | :-- |\n| `advisorModel` | Model for the advisor |\n';
+    expect(page(md)[0]).not.toHaveProperty('category');
   });
 
   it('emits config keys only, never flags or env vars from the same page', () => {

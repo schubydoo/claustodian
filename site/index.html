@@ -534,6 +534,13 @@
           top-level.
         </p>
         <p>
+          Config keys carry a category chip. <code>settings</code> and
+          <code>settings-internal</code> both live in <code>settings.json</code>, the latter marked
+          <code>@internal</code> by Anthropic. <code>global-config</code> is a different file: those
+          keys belong in <code>~/.claude.json</code> and are silently ignored if you put them in
+          <code>settings.json</code>.
+        </p>
+        <p>
           An <span class="unreviewed">unreviewed</span> badge means the symbol was found in an
           official release binary but has not been human-curated yet. It exists — that is what the
           binary proves — but its description may be terse or missing. Treat it as real, not as

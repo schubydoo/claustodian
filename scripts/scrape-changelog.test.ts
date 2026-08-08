@@ -1207,3 +1207,44 @@ describe('assembleSnapshots — per-version descriptions (binary timeline)', () 
     expect(descOf(snaps, '0.2.9')).toEqual({ description: 'Run a fast single-pass review', source: 'docs' });
   });
 });
+
+describe('enrichSymbols — page-declared category', () => {
+  const docs = docsIndex([
+    {
+      symbol: 'diffTool',
+      type: 'config_key',
+      description: 'Where to show diffs',
+      doc_min_version: null,
+      doc_page: 'settings',
+      category: 'global-config',
+    },
+    {
+      symbol: 'advisorModel',
+      type: 'config_key',
+      description: 'Model for the advisor tool',
+      doc_min_version: null,
+      doc_page: 'settings',
+    },
+  ]);
+  const byKey = new Map(
+    enrichSymbols(collectChangelogSymbols([{ version: '2.1.0', bullets: [] }]), docs, '2.1.0').map(
+      (r) => [r.symbol, r]
+    )
+  );
+
+  it('carries a page-declared category through to the published record', () => {
+    // Drives enrichSymbols, not the parser: the override has to survive the merge.
+    // `~/.claude.json` keys are ignored in settings.json, so publishing them as
+    // `settings` would assert what the page explicitly denies.
+    expect(byKey.get('diffTool')).toMatchObject({
+      type: 'config_key',
+      provenance: 'docs',
+      status: 'active',
+      category: 'global-config',
+    });
+  });
+
+  it('still categorizes a settings.json key by name when the page declares nothing', () => {
+    expect(byKey.get('advisorModel')?.category).toBe('settings');
+  });
+});

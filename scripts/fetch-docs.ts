@@ -80,6 +80,13 @@ export interface DocEntry {
   description: string;
   doc_min_version: string | null;
   doc_page: string;
+  /**
+   * Overrides the categorizer for this symbol. Set only where the page itself
+   * distinguishes a surface the default categorizer cannot see — currently the
+   * `~/.claude.json` global-config keys, which are config keys but are ignored
+   * in `settings.json`.
+   */
+  category?: string;
 }
 
 export interface DocsIndex {
@@ -234,28 +241,39 @@ export function splitTableRow(line: string): string[] {
 }
 
 /**
- * Settings-page sections that define `settings.json` keys, and the namespace each
- * table's keys sit under. An ALLOWLIST: a section absent from this map contributes
- * nothing, so a new upstream heading cannot silently start publishing keys.
+ * Settings-page sections that define config keys, with the namespace each table's
+ * bare keys sit under and, where the page distinguishes one, the category. An
+ * ALLOWLIST: a section absent from this map contributes nothing, so a new upstream
+ * heading cannot silently start publishing keys.
  *
  * Excluded on purpose, each on the page's own evidence:
- *  - "Global config settings" — the page says these live in `~/.claude.json` and
- *    that Claude Code "silently ignores them" in `settings.json`. They are real
- *    config keys, so they want their own category rather than being published as
- *    settings.json keys; until that exists, publishing them here would assert
- *    something the page explicitly denies.
  *  - "Permission rule syntax" — its first column holds rules (`Bash`), not keys.
  *  - "Invalid entries in managed settings" — a behaviour-when-invalid table; its
  *    descriptions describe error handling, not what the key does.
  *  - "Plugin settings" — prose and a plugin-component table, no key definitions.
  */
-const SETTINGS_SECTIONS: ReadonlyMap<string, string> = new Map([
-  ['Available settings', ''],
-  ['Worktree settings', ''], // rows are already fully qualified (`worktree.baseRef`)
-  ['Permission settings', 'permissions'],
-  ['Sandbox settings', 'sandbox'],
-  ['Attribution settings', 'attribution'],
-  ['Compute managed settings with a policy helper', 'policyHelper'],
+interface SettingsSection {
+  /** Namespace the table's bare keys sit under; empty when they are top-level. */
+  namespace: string;
+  /**
+   * Overrides the categorizer for this section's keys. Only "Global config
+   * settings" needs it: those keys are real config keys, but they live in
+   * `~/.claude.json` and the page says Claude Code "silently ignores them" in
+   * `settings.json`. Publishing them as ordinary `settings` would assert exactly
+   * what the page denies, and dropping them would lose documented surface — so
+   * they publish under their own category instead.
+   */
+  category?: string;
+}
+
+const SETTINGS_SECTIONS: ReadonlyMap<string, SettingsSection> = new Map([
+  ['Available settings', { namespace: '' }],
+  ['Worktree settings', { namespace: '' }], // rows already fully qualified (`worktree.baseRef`)
+  ['Global config settings', { namespace: '', category: 'global-config' }],
+  ['Permission settings', { namespace: 'permissions' }],
+  ['Sandbox settings', { namespace: 'sandbox' }],
+  ['Attribution settings', { namespace: 'attribution' }],
+  ['Compute managed settings with a policy helper', { namespace: 'policyHelper' }],
 ]);
 
 /**
@@ -330,8 +348,8 @@ function parseSettingsPage(
       descColumn = 1;
       continue;
     }
-    const namespace = SETTINGS_SECTIONS.get(section);
-    if (namespace === undefined) continue;
+    const spec = SETTINGS_SECTIONS.get(section);
+    if (spec === undefined) continue;
     if (!/^\s*\|/.test(line) || /^\s*\|\s*:?-{2,}/.test(line)) continue;
     const cells = splitTableRow(line)
       .slice(1, -1)
@@ -349,11 +367,12 @@ function parseSettingsPage(
     const description = cleanCell(descCell);
     if (description.length < 3) continue;
     entries.push({
-      symbol: resolveSettingsPath(matched[1] as string, namespace, section, known),
+      symbol: resolveSettingsPath(matched[1] as string, spec.namespace, section, known),
       type: 'config_key',
       description,
       doc_min_version: minVersion(descCell) ?? minVersion(keyCell),
       doc_page: page,
+      ...(spec.category ? { category: spec.category } : {}),
     });
   }
   return entries;
