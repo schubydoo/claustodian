@@ -1,6 +1,6 @@
 # Claustodian
 
-> A static, versioned, machine-queryable dataset of the Claude Code surface. It answers: does a symbol — a CLI flag, environment variable, or slash command — exist in a specific Claude Code version, and what did it do at that version? Use it to make agent features version-accurate for a specific user's Claude Code version instead of assuming "latest." All data is derived only from official public Anthropic artifacts (changelog, docs, release binaries).
+> A static, versioned, machine-queryable dataset of the Claude Code surface. It answers: does a symbol — a CLI flag, environment variable, slash command, or settings key — exist in a specific Claude Code version, and what did it do at that version? Use it to make agent features version-accurate for a specific user's Claude Code version instead of assuming "latest." All data is derived only from official public Anthropic artifacts (changelog, docs, release binaries).
 
 The data is static JSON on GitHub Pages under a stable base URL — no API, no auth, no install. Fetch a URL and read it. Each version is a full snapshot of every symbol; each symbol record carries `first_seen`, `removed_in`, `deprecated_in`, `status`, `provenance`, `confidence`, and `description`.
 
@@ -30,7 +30,8 @@ Core files are also served as `.yaml` and `.toml` (swap the extension); JSON is 
 ## Notes
 
 - `status: needs_review` means the symbol provably exists (observed in a release binary) but isn't yet human-curated — treat it as real, not "maybe."
-- `scopes` (optional, `cli_flag` only) is the complete list of subcommands a flag is accepted under, e.g. `["remote-control"]`. Present means the flag is NOT accepted on bare `claude`: `claude --sandbox` fails where `claude remote-control --sandbox` works. Absent means no scope information was recorded — it does NOT mean the flag is top-level.
+- `scopes` (optional, `cli_flag` only) is the complete list of FULL invocation paths a flag is accepted under, e.g. `["remote-control"]` or `["plugin eval"]`. Present means the flag is NOT accepted on bare `claude`, and a multi-word path means it is not accepted on the parent either: `claude --sandbox` and `claude plugin --scaffold` both fail. Absent means no scope information was recorded — it does NOT mean the flag is top-level.
+- `category` on a `config_key` says which file reads it. `settings` and `settings-internal` live in `settings.json` (the latter marked `@internal` upstream); `global-config` keys live in `~/.claude.json` and are SILENTLY IGNORED if written to `settings.json`.
 - `first_seen_estimated: true` (or `confidence: medium`) means `first_seen` is an upper bound, not an exact introduction point.
 - Not every Claude Code version is tracked; check `index.json.versions` and fall back to the nearest tracked version `<= Y`. A 404 means untracked, not "symbol absent."
 - License: code Apache-2.0, data CC-BY-4.0. Source: https://github.com/schubydoo/claustodian
