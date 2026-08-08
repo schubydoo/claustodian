@@ -1370,3 +1370,65 @@ describe('enrichSymbols — page-declared category', () => {
     expect(byKey.get('advisorModel')?.category).toBe('settings');
   });
 });
+
+describe('assembleSnapshots — flag visibility per version', () => {
+  const rec = (over: Partial<SymbolRecord>): SymbolRecord =>
+    ({
+      symbol: '--teleport',
+      type: 'cli_flag',
+      first_seen: '1.5.0',
+      first_seen_estimated: false,
+      removed_in: null,
+      status: 'needs_review',
+      provenance: 'binary',
+      confidence: 'medium',
+      description: '',
+      source_url: null,
+      category: 'cli',
+      ...over,
+    }) as SymbolRecord;
+  const blocks = [
+    { version: '1.5.0', bullets: [] },
+    { version: '2.0.0', bullets: [] },
+    { version: '2.4.0', bullets: [] },
+    { version: '2.6.0', bullets: [] },
+  ];
+
+  it('reports the visibility that version actually had, not the latest one', () => {
+    // --teleport was hidden from `claude --help` for its whole life until 2.1.226
+    // made it public. A single record-level category would tell someone asking
+    // about an old version today's answer.
+    const snaps = assembleSnapshots(
+      [rec({})],
+      blocks,
+      undefined,
+      undefined,
+      new Map([
+        [
+          'cli_flag:--teleport',
+          [
+            { from: '1.5.0', hidden: true },
+            { from: '2.4.0', hidden: false },
+          ],
+        ],
+      ])
+    );
+    const at = (v: string) =>
+      snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === '--teleport')?.category;
+    expect(at('1.5.0')).toBe('cli-internal');
+    expect(at('2.0.0')).toBe('cli-internal');
+    expect(at('2.4.0')).toBe('cli');
+    expect(at('2.6.0')).toBe('cli');
+  });
+
+  it('leaves a flag with no visibility timeline alone', () => {
+    const snaps = assembleSnapshots(
+      [rec({ symbol: '--print' })],
+      blocks,
+      undefined,
+      undefined,
+      new Map()
+    );
+    expect(snaps.at(-1)?.symbols.find((x) => x.symbol === '--print')?.category).toBe('cli');
+  });
+});

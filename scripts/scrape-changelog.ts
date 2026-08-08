@@ -45,6 +45,7 @@ import {
   isCurrentDescriptionEra,
   isPublishableBinaryEnv,
   binaryFlagCategory,
+  type HiddenEra,
   isPublishableBinaryFlag,
   mayRedateFromBinary,
   loadBinaryDescriptions,
@@ -526,7 +527,8 @@ export function assembleSnapshots(
   records: SymbolRecord[],
   blocks: ChangelogBlock[],
   binaryDescriptions?: BinaryDescriptions['descriptions'],
-  binaryScopes?: ReadonlyMap<string, BinaryScopeWindow>
+  binaryScopes?: ReadonlyMap<string, BinaryScopeWindow>,
+  binaryHidden?: ReadonlyMap<string, readonly HiddenEra[]>
 ): VersionSnapshot[] {
   const versionsOldestFirst = blocks
     .map((block) => block.version)
@@ -570,6 +572,22 @@ export function assembleSnapshots(
   const withCategory = (record: SymbolRecord, category: string): SymbolRecord =>
     record.category === category ? record : { ...record, category };
 
+  /**
+   * Resolves a flag's `cli` / `cli-internal` category for THIS version.
+   *
+   * Deliberately not folded into describeAt: that function returns early for
+   * symbols with no description timeline, and visibility is independent of
+   * whether a flag was ever described. Six flags flip between hidden and public
+   * across the archive, so a single record-level value would report today's
+   * visibility for every historical snapshot.
+   */
+  const withFlagVisibility = (record: SymbolRecord, version: string): SymbolRecord => {
+    if (record.type !== 'cli_flag') return record;
+    const eras = binaryHidden?.get(`${record.type}:${record.symbol}`);
+    if (!eras) return record;
+    return withCategory(record, binaryFlagCategory(eras, version, record.category));
+  };
+
   // Resolve the description from the binary timeline: a curated (non-empty)
   // description wins in the current era; a HISTORICAL snapshot takes the text
   // observed in that version's binary (de-anachronized), and a previously-EMPTY
@@ -600,7 +618,12 @@ export function assembleSnapshots(
     version,
     symbols: records
       .filter((record) => liveAt(record, version))
-      .map((record) => withScopes(describeAt(statusAt(record, version), version), version))
+      .map((record) =>
+        withScopes(
+          withFlagVisibility(describeAt(statusAt(record, version), version), version),
+          version
+        )
+      )
       .sort(compareSymbolRecords),
   }));
 }
@@ -811,7 +834,7 @@ export function enrichWithBinary(
           obs.type === 'env_var'
             ? binaryEnvCategory(obs.symbol, baseCategory)
             : obs.type === 'cli_flag'
-              ? binaryFlagCategory(obs, baseCategory)
+              ? binaryFlagCategory(obs.hidden_eras, obs.last_seen, baseCategory)
               : baseCategory,
       })
     );
@@ -868,7 +891,13 @@ export function buildEnrichedSnapshots(
   const frozen = priorFirstSeen
     ? freezeEstimatedFirstSeen(withDeprecations, priorFirstSeen)
     : withDeprecations;
-  return assembleSnapshots(frozen, blocks, binaryDescriptions, binaryScopeMap(binary));
+  return assembleSnapshots(
+    frozen,
+    blocks,
+    binaryDescriptions,
+    binaryScopeMap(binary),
+    binaryHiddenMap(binary)
+  );
 }
 
 /**
@@ -884,6 +913,15 @@ export function buildEnrichedSnapshots(
  * subcommands mid-window, this would apply the later scope from `from` onward,
  * and the fix would be scope eras alongside the description ones.
  */
+/** Per-flag `--help` visibility timelines, keyed `type:symbol`. */
+function binaryHiddenMap(binary?: BinaryObservations): ReadonlyMap<string, readonly HiddenEra[]> {
+  const out = new Map<string, readonly HiddenEra[]>();
+  for (const obs of binary?.symbols ?? []) {
+    if (obs.hidden_eras?.length) out.set(`${obs.type}:${obs.symbol}`, obs.hidden_eras);
+  }
+  return out;
+}
+
 function binaryScopeMap(binary?: BinaryObservations): ReadonlyMap<string, BinaryScopeWindow> {
   const out = new Map<string, BinaryScopeWindow>();
   for (const obs of binary?.symbols ?? []) {

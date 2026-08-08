@@ -6,6 +6,7 @@ import {
   assertBinaryObservations,
   binaryEnvCategory,
   binaryFlagCategory,
+  hiddenAt,
   type BinaryObservations,
   computeBinaryRemoval,
   assertBinaryDescriptions,
@@ -342,19 +343,40 @@ describe('binaryFlagCategory', () => {
     ...extra,
   });
 
+  const HIDDEN = [{ from: '2.1.16', hidden: true }];
+
   it('marks a hidden flag cli-internal', () => {
-    expect(binaryFlagCategory(obs({ hidden: true }), 'cli')).toBe('cli-internal');
+    expect(binaryFlagCategory(HIDDEN, '2.1.226', 'cli')).toBe('cli-internal');
   });
 
   it('leaves a normal flag at the categorizer result', () => {
-    expect(binaryFlagCategory(obs(), 'cli')).toBe('cli');
+    expect(binaryFlagCategory(undefined, '2.1.226', 'cli')).toBe('cli');
+  });
+
+  it('resolves visibility PER VERSION, not from the latest state', () => {
+    // Real transitions: --teleport is hidden through 2.1.220 and public at
+    // 2.1.226; --task-budget flips at 2.1.220. Reporting one value for the whole
+    // history would tell a 2.1.100 consumer today's answer.
+    const eras = [
+      { from: '2.0.31', hidden: true },
+      { from: '2.1.226', hidden: false },
+    ];
+    expect(binaryFlagCategory(eras, '2.1.100', 'cli')).toBe('cli-internal');
+    expect(binaryFlagCategory(eras, '2.1.220', 'cli')).toBe('cli-internal');
+    expect(binaryFlagCategory(eras, '2.1.226', 'cli')).toBe('cli');
+  });
+
+  it('reports not-hidden before the first era', () => {
+    // No observation of hiding that early is not evidence that it was hidden.
+    expect(hiddenAt(HIDDEN, '2.1.15')).toBe(false);
+    expect(hiddenAt(HIDDEN, '2.1.16')).toBe(true);
   });
 
   it('does not change status or existence — hiding is presentation only', () => {
     // `.hideHelp()` says "not for you to type", not "not real": the flag parses
     // and works. Verified against 2.1.226, where every hidden flag is absent
     // from `claude --help` yet accepted on the command line.
-    const hidden = obs({ hidden: true });
+    const hidden = obs({ hidden_eras: HIDDEN });
     expect(isPublishableBinaryFlag(hidden)).toBe(true);
     expect(mayRedateFromBinary(hidden)).toBe(true);
   });

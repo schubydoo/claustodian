@@ -29,6 +29,12 @@ import { readFile } from 'node:fs/promises';
 import { compareVersionsAsc, type ExtractedSymbolType } from './lib.js';
 import { settingsKeyCategory } from './settings-schema.js';
 
+/** A change point in a flag's `--help` visibility. */
+export interface HiddenEra {
+  from: string;
+  hidden: boolean;
+}
+
 /** A symbol's observation window across the archived binaries. */
 export interface BinaryObservation {
   symbol: string;
@@ -57,11 +63,14 @@ export interface BinaryObservation {
    */
   scopes?: readonly string[];
   /**
-   * The flag is registered with commander's `.hideHelp()` as of the most recent
-   * version that observed it — Claude Code's own marker for "real, but not for
-   * you to type". See binaryFlagCategory.
+   * When the flag was registered with commander's `.hideHelp()`, as change
+   * points: each era holds from its `from` version until the next. A TIMELINE
+   * rather than a single flag because visibility moves — `--teleport` was hidden
+   * through 2.1.220 and public at 2.1.226, `--task-budget` the same at 2.1.220 —
+   * and one latest-state value would stamp today's answer on every historical
+   * snapshot. Absent when the flag was never hidden.
    */
-  hidden?: true;
+  hidden_eras?: readonly HiddenEra[];
 }
 
 export interface BinaryObservations {
@@ -283,8 +292,26 @@ export function mayRedateFromBinary(observation: BinaryObservation): boolean {
  * evidence says; hiding is a property of how it is surfaced, and it moves when
  * Anthropic promotes a flag out of hiding.
  */
-export function binaryFlagCategory(observation: BinaryObservation, category: string): string {
-  return observation.hidden === true ? 'cli-internal' : category;
+export function binaryFlagCategory(
+  eras: readonly HiddenEra[] | undefined,
+  version: string,
+  category: string
+): string {
+  return hiddenAt(eras, version) ? 'cli-internal' : category;
+}
+
+/**
+ * Whether the flag was hidden at `version` — the latest era whose `from` is
+ * <= version. False before the first era, which is the honest answer: we have no
+ * observation of it being hidden that early.
+ */
+export function hiddenAt(eras: readonly HiddenEra[] | undefined, version: string): boolean {
+  let state = false;
+  for (const era of eras ?? []) {
+    if (compareVersionsAsc(era.from, version) > 0) break;
+    state = era.hidden;
+  }
+  return state;
 }
 
 /**

@@ -100,7 +100,7 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       versions: string[];
       strongEvidence: boolean;
       scopes: Set<string>;
-      /** Versions that registered the flag as hidden, to read the latest state. */
+      /** Versions that registered the flag as hidden, collapsed into eras below. */
       hiddenIn: Set<string>;
     }
   >();
@@ -133,17 +133,28 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
   const symbols: BinaryObservation[] = [];
   for (const { symbol, type, versions, strongEvidence, scopes, hiddenIn } of seenIn.values()) {
     const sorted = [...versions].sort(compareVersionsAsc);
-    // Hidden-ness is the CURRENT state, read from the most recent version that saw
-    // the flag — not "every version", because Anthropic promotes a flag out of
-    // hiding when it goes public and the record should follow.
-    const hiddenNow = hiddenIn.has(sorted[sorted.length - 1] as string);
+    // Visibility is a TIMELINE, not a current state. Six flags flip between
+    // hidden and public across the archive (--teleport, --task-budget, --cloud,
+    // --interactive, --max-budget-usd, --remote-control), so collapsing to the
+    // latest value would stamp today's answer on every historical snapshot —
+    // the same defect the config_key category and the scopes field each had.
+    // Only change points are emitted, and only when the flag was ever hidden.
+    const hiddenEras: { from: string; hidden: boolean }[] = [];
+    for (const v of sorted) {
+      const isHidden = hiddenIn.has(v);
+      if (hiddenEras[hiddenEras.length - 1]?.hidden !== isHidden) {
+        hiddenEras.push({ from: v, hidden: isHidden });
+      }
+    }
+    // A leading "not hidden" era carries no information — absence says the same.
+    if (hiddenEras[0]?.hidden === false) hiddenEras.shift();
     symbols.push({
       symbol,
       type,
       first_seen: sorted[0] as string,
       last_seen: sorted[sorted.length - 1] as string,
       removed_in: computeBinaryRemoval(versions, observedVersions),
-      ...(hiddenNow ? { hidden: true as const } : {}),
+      ...(hiddenEras.length ? { hidden_eras: hiddenEras } : {}),
       // Scope rides with the caveat it lifts. A symbol with strong evidence
       // somewhere publishes top-level, and narrowing it by a subcommand parser
       // that accepts the same name would be a false claim, not a refinement.
