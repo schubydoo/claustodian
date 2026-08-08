@@ -2446,6 +2446,1450 @@
         "from": "2.1.216",
         "description": "Workshop a document through artifact decisions"
       }
+    ],
+    "config_key:$schema": [
+      {
+        "from": "1.0.65",
+        "description": "JSON Schema reference for Claude Code settings"
+      }
+    ],
+    "config_key:advisorModel": [
+      {
+        "from": "2.1.83",
+        "description": "Advisor model for the server-side advisor tool."
+      }
+    ],
+    "config_key:agent": [
+      {
+        "from": "2.0.59",
+        "description": "Name of an agent (built-in or custom) to use for the main thread. Applies the agent's system prompt, tool restrictions, and model."
+      }
+    ],
+    "config_key:agentPushNotifEnabled": [
+      {
+        "from": "2.1.119",
+        "description": "Allow Claude to push proactive mobile notifications"
+      }
+    ],
+    "config_key:allowAllClaudeAiMcps": [
+      {
+        "from": "2.1.149",
+        "description": "When true (and set in managed settings), claude.ai cloud MCP connectors load alongside managed-mcp.json instead of being suppressed by its exclusive-control lockdown. Default off preserves the lockdown. Read from managed settings only."
+      }
+    ],
+    "config_key:allowManagedHooksOnly": [
+      {
+        "from": "2.0.54",
+        "description": "When true (and set in managed settings), only hooks from managed settings run. User, project, and local hooks are ignored."
+      }
+    ],
+    "config_key:allowManagedMcpServersOnly": [
+      {
+        "from": "2.1.47",
+        "description": "When true (and set in managed settings), allowedMcpServers is only read from managed settings. deniedMcpServers still merges from all sources, so users can deny servers for themselves. Users can still add their own MCP servers, but only the admin-defined allowlist applies."
+      }
+    ],
+    "config_key:allowManagedPermissionRulesOnly": [
+      {
+        "from": "2.1.10",
+        "description": "When true (and set in managed settings), only permission rules (allow/deny/ask) from managed settings are respected. User, project, local, and CLI argument permission rules are ignored."
+      }
+    ],
+    "config_key:allowedHttpHookUrls": [
+      {
+        "from": "2.1.63",
+        "description": "Allowlist of URL patterns that HTTP hooks may target. Supports * as a wildcard (e.g. \"https://hooks.example.com/*\"). When set, HTTP hooks with non-matching URLs are blocked. If undefined, all URLs are allowed. If empty array, no HTTP hooks are allowed. Arrays merge across settings sources (same semantics as allowedMcpServers)."
+      }
+    ],
+    "config_key:allowedMcpServers": [
+      {
+        "from": "2.0.22",
+        "description": "Enterprise allowlist of MCP servers that can be used. Applies to all scopes including enterprise servers from managed-mcp.json. If undefined, all servers are allowed. If empty array, no servers are allowed. Denylist takes precedence - if a server is on both lists, it is denied."
+      }
+    ],
+    "config_key:alwaysThinkingEnabled": [
+      {
+        "from": "2.0.0",
+        "description": "Whether extended thinking is always enabled (default: false)"
+      },
+      {
+        "from": "2.0.70",
+        "description": "When false, thinking is disabled. When absent or true, thinking is enabled automatically for supported models."
+      }
+    ],
+    "config_key:apiKeyHelper": [
+      {
+        "from": "1.0.54",
+        "description": "Path to a script that outputs authentication values"
+      }
+    ],
+    "config_key:attribution": [
+      {
+        "from": "2.0.62",
+        "description": "Attribution text for git commits, including any trailers. Empty string hides attribution."
+      }
+    ],
+    "config_key:attribution.commit": [
+      {
+        "from": "2.0.62",
+        "description": "Attribution text for git commits, including any trailers. Empty string hides attribution."
+      }
+    ],
+    "config_key:attribution.pr": [
+      {
+        "from": "2.0.62",
+        "description": "Attribution text for pull request descriptions. Empty string hides attribution."
+      }
+    ],
+    "config_key:attribution.sessionUrl": [
+      {
+        "from": "2.1.182",
+        "description": "Whether to append the claude.ai session link to commits and PRs created from web or Remote Control sessions (default: true). Set to false to omit the Claude-Session trailer and PR-body link."
+      }
+    ],
+    "config_key:autoCompactEnabled": [
+      {
+        "from": "2.1.119",
+        "description": "Automatically compact conversation when context fills"
+      }
+    ],
+    "config_key:autoCompactWindow": [
+      {
+        "from": "2.1.89",
+        "description": "Auto-compact window size"
+      }
+    ],
+    "config_key:autoDreamEnabled": [
+      {
+        "from": "2.1.81",
+        "description": "Enable background memory consolidation (auto-dream). When set, overrides the server-side default."
+      }
+    ],
+    "config_key:autoMemoryDirectory": [
+      {
+        "from": "2.1.74",
+        "description": "Custom directory path for auto-memory storage. Supports ~/ prefix for home directory expansion. Ignored if set in projectSettings (checked-in .claude/settings.json) for security. When unset, defaults to ~/.claude/projects/<sanitized-cwd>/memory/."
+      }
+    ],
+    "config_key:autoMemoryEnabled": [
+      {
+        "from": "2.1.38",
+        "description": "Enable auto-memory for this project. When false, Claude will not read from or write to the auto-memory directory."
+      }
+    ],
+    "config_key:autoScrollEnabled": [
+      {
+        "from": "2.1.119",
+        "description": "Auto-scroll the conversation view to bottom (fullscreen mode only)"
+      }
+    ],
+    "config_key:autoUpdatesChannel": [
+      {
+        "from": "2.0.66",
+        "description": "Release channel for auto-updates (latest or stable)"
+      }
+    ],
+    "config_key:autoUploadSessions": [
+      {
+        "from": "2.1.119",
+        "description": "Mirror local sessions to claude.ai as view-only (no remote control)"
+      }
+    ],
+    "config_key:availableModels": [
+      {
+        "from": "2.1.40",
+        "description": "Allowlist of models that users can select. Accepts family aliases (\"opus\" allows any opus version), version prefixes (\"opus-4-5\" allows only that version), and full model IDs. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators."
+      }
+    ],
+    "config_key:awaySummaryEnabled": [
+      {
+        "from": "2.1.105",
+        "description": "@internal When false, the session recap (shown when you return after being away for 5+ minutes) is disabled. When absent or true, recap is enabled. Hidden from public SDK types until external launch; mirrors voiceHandsfree pattern above."
+      },
+      {
+        "from": "2.1.116",
+        "description": "@internal When false, the session recap (shown when you return after being away for 5+ minutes) is disabled. When absent or true, recap is enabled. Hidden from public SDK types until external launch."
+      }
+    ],
+    "config_key:awsAuthRefresh": [
+      {
+        "from": "1.0.54",
+        "description": "Path to a script that refreshes AWS authentication"
+      }
+    ],
+    "config_key:awsCredentialExport": [
+      {
+        "from": "1.0.54",
+        "description": "Path to a script that exports AWS credentials"
+      }
+    ],
+    "config_key:blockedMarketplaces": [
+      {
+        "from": "2.0.72",
+        "description": "Enterprise blocklist of marketplace sources. When set in managed settings, these exact sources are blocked from being added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem."
+      },
+      {
+        "from": "2.1.223",
+        "description": "Enterprise blocklist of marketplace sources. When set in managed settings, these sources are blocked from being added as marketplaces. Entries match exactly, except that a github entry may use the owner-wildcard form {\"source\":\"github\",\"repo\":\"owner/*\"} to block every repository under that owner. The check happens BEFORE downloading, so blocked sources never touch the filesystem."
+      }
+    ],
+    "config_key:breakReminder": [
+      {
+        "from": "2.1.149",
+        "description": "Show a friendly nudge after sustained continuous use (default false). Must be true for the reminder to fire."
+      }
+    ],
+    "config_key:breakReminder.breakThresholdMinutes": [
+      {
+        "from": "2.1.149",
+        "description": "Minutes of inactivity that count as a break and reset the timer (default 15)"
+      },
+      {
+        "from": "2.1.203",
+        "description": "Minutes of inactivity that count as a break and reset the timer (default 10)"
+      }
+    ],
+    "config_key:breakReminder.enabled": [
+      {
+        "from": "2.1.149",
+        "description": "Show a friendly nudge after sustained continuous use (default false). Must be true for the reminder to fire."
+      }
+    ],
+    "config_key:breakReminder.intervalMinutes": [
+      {
+        "from": "2.1.149",
+        "description": "Minutes of continuous use before the reminder fires (default 120). Re-fires every interval until you take a break."
+      },
+      {
+        "from": "2.1.203",
+        "description": "Minutes of continuous use before the reminder fires (default 30). Re-fires every interval until you take a break."
+      }
+    ],
+    "config_key:breakReminder.message": [
+      {
+        "from": "2.1.149",
+        "description": "Custom reminder text. Leave unset for a rotating set of friendly nudges."
+      }
+    ],
+    "config_key:channelsEnabled": [
+      {
+        "from": "2.1.84",
+        "description": "Teams/Enterprise opt-in for channel notifications (MCP servers with the claude/channel capability pushing inbound messages). Default off. Set true to allow; users then select servers via --channels."
+      },
+      {
+        "from": "2.1.128",
+        "description": "Managed-org opt-in for channel notifications (MCP servers with the claude/channel capability pushing inbound messages). claude.ai Teams/Enterprise: default off. Console: default on unless managed settings exist. Set true to allow; users then select servers via --channels."
+      }
+    ],
+    "config_key:classifierPermissionsEnabled": [
+      {
+        "from": "2.1.6",
+        "description": "Enable AI-based classification for Bash(prompt:...) permission rules"
+      }
+    ],
+    "config_key:claudeMd": [
+      {
+        "from": "2.1.139",
+        "description": "CLAUDE.md-style instructions injected as organization-managed memory. Only honored from managed/policy settings."
+      }
+    ],
+    "config_key:claudeMdExcludes": [
+      {
+        "from": "2.1.48",
+        "description": "Glob patterns or absolute paths of CLAUDE.md files to exclude from loading. Patterns are matched against absolute file paths using picomatch. Only applies to User, Project, and Local memory types (Managed/policy files cannot be excluded). Examples: \"/home/user/monorepo/CLAUDE.md\", \"**/code/CLAUDE.md\", \"**/some-dir/.claude/rules/**\""
+      }
+    ],
+    "config_key:cleanupPeriodDays": [
+      {
+        "from": "1.0.54",
+        "description": "Number of days to retain chat transcripts (0 to disable cleanup)"
+      },
+      {
+        "from": "2.1.76",
+        "description": "Number of days to retain chat transcripts (default: 30). Setting to 0 disables session persistence entirely: no transcripts are written and existing transcripts are deleted at startup."
+      },
+      {
+        "from": "2.1.89",
+        "description": "Number of days to retain chat transcripts before automatic cleanup (default: 30). Minimum 1. Use a large value for long retention; use --no-session-persistence to disable transcript writes entirely."
+      }
+    ],
+    "config_key:companyAnnouncements": [
+      {
+        "from": "2.0.32",
+        "description": "Company announcements to display at startup (one will be randomly selected if multiple are provided)"
+      }
+    ],
+    "config_key:crossSessionInbound": [
+      {
+        "from": "2.1.224",
+        "description": "Inbound cross-session peer messages (SendMessage from your other sessions): 'accept' delivers them, 'hold' parks them for your review without letting Claude act, 'refuse' opts this session out. An explicit value always wins. Unset (mode parity): a message auto-delivers only when the sending session's permission-mode class matches yours (bypass\\u2194bypass or prompting\\u2194prompting); a mismatched sender's message is held for your approval; a sender that asserts no class is held only while this session bypasses permission prompts."
+      }
+    ],
+    "config_key:daemonColdStart": [
+      {
+        "from": "2.1.120",
+        "description": "When no background daemon is running: 'transient' spawns one for this login session; 'ask' offers to install a persistent service"
+      },
+      {
+        "from": "2.1.121",
+        "description": "When no background service is running: 'transient' spawns one for this login session; 'ask' offers to install it persistently"
+      }
+    ],
+    "config_key:defaultShell": [
+      {
+        "from": "2.1.81",
+        "description": "Default shell for input-box ! commands. Defaults to 'bash' on all platforms (no Windows auto-flip)."
+      }
+    ],
+    "config_key:deniedMcpServers": [
+      {
+        "from": "2.0.22",
+        "description": "Enterprise denylist of MCP servers that are explicitly blocked. If a server is on the denylist, it will be blocked across all scopes including enterprise. Denylist takes precedence over allowlist - if a server is on both lists, it is denied."
+      }
+    ],
+    "config_key:dialogExpiry": [
+      {
+        "from": "2.1.224",
+        "description": "Max time a permission/user dialog forwarded to a remote client stays parked awaiting an answer, and how long a HELD cross-session message awaits approval, before either resolves to its safe no-action default (cancelled / dropped-with-denial). Defaults to 5m to match the long-standing remote-dialog deadline; \"never\" disables the deadline. Local-only permission prompts (no remote client) are unaffected. The CLAUDE_CODE_USER_DIALOG_TIMEOUT_MS env var, when set, overrides this. Read from trusted sources only (never a checked-in repo settings file)."
+      }
+    ],
+    "config_key:disableAgentView": [
+      {
+        "from": "2.1.139",
+        "description": "Disable agent view (`claude agents`, `--bg`, /background, the on-demand daemon). Typically set in managed settings. Equivalent to CLAUDE_CODE_DISABLE_AGENT_VIEW=1."
+      }
+    ],
+    "config_key:disableAllHooks": [
+      {
+        "from": "1.0.68",
+        "description": "Disable all hooks and statusLine execution"
+      }
+    ],
+    "config_key:disableArtifact": [
+      {
+        "from": "2.1.172",
+        "description": "Disable the Artifact tool (also via CLAUDE_CODE_DISABLE_ARTIFACT)."
+      }
+    ],
+    "config_key:disableAutoMode": [
+      {
+        "from": "2.1.74",
+        "description": "Disable auto mode"
+      }
+    ],
+    "config_key:disableBackgroundAgents": [
+      {
+        "from": "2.1.121",
+        "description": "Disable the background-agents fleet (`claude agents`, `--bg`, /background, the on-demand daemon). Typically set in managed settings. Equivalent to CLAUDE_CODE_DISABLE_AGENTS_FLEET=1."
+      }
+    ],
+    "config_key:disableBundledSkills": [
+      {
+        "from": "2.1.169",
+        "description": "Disable the skills and workflows that ship with Claude Code: bundled skills and workflows are removed entirely; built-in slash commands stay typable but are hidden from the model. Plugins, .claude/skills/, and .claude/commands/ are unaffected. Equivalent to CLAUDE_CODE_DISABLE_BUNDLED_SKILLS=1."
+      }
+    ],
+    "config_key:disableRemoteControl": [
+      {
+        "from": "2.1.128",
+        "description": "Disable Remote Control (claude.ai/code, `claude remote-control`, `--remote-control`/`--rc`, auto-start, and the in-session toggle). Typically set in managed settings."
+      }
+    ],
+    "config_key:disableSideloadFlags": [
+      {
+        "from": "2.1.193",
+        "description": "When true (and set in managed settings), rejects the --plugin-dir, --plugin-url, --agents, and non-sdk --mcp-config CLI flags at startup. Closes the CLI-flag bypass of strictKnownMarketplaces. Pair with allowedMcpServers for per-server MCP control; this setting does not gate other MCP entry points (SDK setMcpServers, claude mcp add, .mcp.json). Also blocks surfaces that spawn the CLI with these flags internally (see settings documentation). Only honored from managed settings; ignored in user/project/local settings."
+      }
+    ],
+    "config_key:disableSkillShellExecution": [
+      {
+        "from": "2.1.91",
+        "description": "Disable inline shell execution in skills and custom slash commands from user, project, or plugin sources. Commands are replaced with a placeholder instead of being run."
+      }
+    ],
+    "config_key:disableWorkflows": [
+      {
+        "from": "2.1.152",
+        "description": "@internal Disable the Workflows feature (also via CLAUDE_CODE_DISABLE_WORKFLOWS)."
+      },
+      {
+        "from": "2.1.154",
+        "description": "Disable the Workflows feature (also via CLAUDE_CODE_DISABLE_WORKFLOWS)."
+      }
+    ],
+    "config_key:disabledMcpjsonServers": [
+      {
+        "from": "1.0.54",
+        "description": "List of rejected MCP servers from .mcp.json"
+      }
+    ],
+    "config_key:doneMeansMerged": [
+      {
+        "from": "2.1.124",
+        "description": "@internal When true, Claude keeps working until the PR is ready for you to merge, a cron/Monitor is armed to resume later, or it hands you a self-contained next step."
+      }
+    ],
+    "config_key:editorMode": [
+      {
+        "from": "2.1.119",
+        "description": "Key binding mode for the prompt input"
+      }
+    ],
+    "config_key:effortLevel": [
+      {
+        "from": "2.1.72",
+        "description": "Persisted effort level for supported models. \"max\" is session-scoped and not persisted."
+      },
+      {
+        "from": "2.1.73",
+        "description": "Persisted effort level for supported models."
+      }
+    ],
+    "config_key:emojiCompletionEnabled": [
+      {
+        "from": "2.1.217",
+        "description": "When false, the :emoji: shortcode typeahead (the suggestion popup and the :name: inline replacement) is disabled. When absent or true, it is enabled."
+      }
+    ],
+    "config_key:enableAllProjectMcpServers": [
+      {
+        "from": "1.0.54",
+        "description": "Whether to automatically approve all MCP servers in the project"
+      }
+    ],
+    "config_key:enableArtifact": [
+      {
+        "from": "2.1.196",
+        "description": "Enable or disable the Artifact tool for this user. Unset = default by plan once the feature is available."
+      },
+      {
+        "from": "2.1.198",
+        "description": "Enable or disable the Artifact tool for this user. Unset defaults to enabled once the feature is available."
+      }
+    ],
+    "config_key:enableWorkflows": [
+      {
+        "from": "2.1.153",
+        "description": "Enable or disable the Workflows feature for this user. Unset = default by plan once the feature is available."
+      }
+    ],
+    "config_key:enabledMcpjsonServers": [
+      {
+        "from": "1.0.54",
+        "description": "List of approved MCP servers from .mcp.json"
+      }
+    ],
+    "config_key:enabledPlugins": [
+      {
+        "from": "1.0.81",
+        "description": "Enabled plugins by repository. Keys are repository names, values are arrays of enabled plugin names"
+      },
+      {
+        "from": "1.0.103",
+        "description": "Enabled plugins by repository. Keys are repository names, values are arrays of enabled plugin names. For npm packages, use \"npm:@package/name\": true"
+      },
+      {
+        "from": "2.0.2",
+        "description": "Enabled plugins using plugin-id@marketplace-id format. Example: { \"formatter@anthropic-tools\": true }. Also supports extended format with version constraints."
+      },
+      {
+        "from": "2.0.5",
+        "description": "Enabled plugins by repository. Keys are repository names, values are arrays of enabled plugin names. For npm packages, use \"npm:@package/name\": true"
+      },
+      {
+        "from": "2.0.8",
+        "description": "Enabled plugins using plugin-id@marketplace-id format. Example: { \"formatter@anthropic-tools\": true }. Also supports extended format with version constraints."
+      },
+      {
+        "from": "2.1.133",
+        "description": "Enabled plugins using plugin-id@marketplace-id format. Example: { \"formatter@anthropic-tools\": true }. Also supports extended format with version constraints. Settings precedence is user < project < local < flag < policy, so to disable a plugin that project settings enable, set it to false in .claude/settings.local.json \\u2014 setting false in ~/.claude/settings.json is overridden by the project."
+      }
+    ],
+    "config_key:enforceAvailableModels": [
+      {
+        "from": "2.1.175",
+        "description": "When true and availableModels is a non-empty array, the Default model selection is also constrained: if the default model for the user tier is not in availableModels, Default resolves to the first allowed availableModels entry instead. Has no effect when availableModels is unset or an empty array. Typically set in managed settings by enterprise administrators."
+      }
+    ],
+    "config_key:env": [
+      {
+        "from": "1.0.54",
+        "description": "Environment variables to set for Claude Code sessions"
+      }
+    ],
+    "config_key:extraKnownMarketplaces": [
+      {
+        "from": "2.0.9",
+        "description": "Additional marketplaces to make available for this repository. Typically used in repository .claude/settings.json to ensure team members have required plugin sources."
+      }
+    ],
+    "config_key:fallbackModel": [
+      {
+        "from": "2.1.166",
+        "description": "Fallback model(s) tried in order when the primary model is overloaded or unavailable. Each element accepts a model name or alias; \"default\" expands to the default model. CLI --fallback-model takes precedence."
+      }
+    ],
+    "config_key:fastMode": [
+      {
+        "from": "2.1.36",
+        "description": "When true, fast mode is enabled. When absent or false, fast mode is off."
+      }
+    ],
+    "config_key:fastModePerSessionOptIn": [
+      {
+        "from": "2.1.59",
+        "description": "When true, fast mode does not persist across sessions. Each session starts with fast mode off."
+      }
+    ],
+    "config_key:feedbackDrafts": [
+      {
+        "from": "2.1.212",
+        "description": "Model-drafted feedback (the SendFeedback tool). \"notify\" (default) shows a one-line notice when a draft is queued; \"quiet\" shows only the footer counter; \"off\" disables the tool entirely so drafts are never queued."
+      }
+    ],
+    "config_key:feedbackSurveyRate": [
+      {
+        "from": "2.1.76",
+        "description": "Probability (0–1) that the session quality survey appears when eligible. 0.05 is a reasonable starting point."
+      },
+      {
+        "from": "2.1.113",
+        "description": "Probability (0\\u20131) that the session quality survey appears when eligible. 0.05 is a reasonable starting point."
+      }
+    ],
+    "config_key:feedbackSurveyState": [
+      {
+        "from": "1.0.64",
+        "description": "State tracking for feedback survey timing across sessions"
+      }
+    ],
+    "config_key:fileCheckpointingEnabled": [
+      {
+        "from": "2.1.119",
+        "description": "Snapshot files before edits so /rewind can restore them"
+      }
+    ],
+    "config_key:fileSuggestion": [
+      {
+        "from": "2.0.65",
+        "description": "Custom file suggestion configuration for @ mentions"
+      }
+    ],
+    "config_key:footerLinksRegexes": [
+      {
+        "from": "2.1.176",
+        "description": "Extra clickable footer badges that appear when a regex matches turn output (tool results and assistant responses). Read from user, flag, and managed settings only; ignored in project .claude/settings.json and local .claude/settings.local.json. At most 5 badges render; the oldest is displaced by newer matches and /clear removes them. Use to surface IDs printed by project CLIs as session links."
+      }
+    ],
+    "config_key:forceLoginGatewayUrl": [
+      {
+        "from": "2.1.162",
+        "description": "@internal Cloud gateway URL to pre-fill and auto-connect to during login. Typically set in local managed settings alongside forceLoginMethod: \"gateway\" so users never type the URL. Hidden from public SDK types until Cloud gateway is documented."
+      }
+    ],
+    "config_key:forceLoginMethod": [
+      {
+        "from": "1.0.54",
+        "description": "Force a specific login method: \"claudeai\" for Claude Pro/Max, \"console\" for Console billing"
+      },
+      {
+        "from": "2.1.162",
+        "description": "Force a specific login method: \"claudeai\" for Claude Pro/Max, \"console\" for Console billing, \"gateway\" for the Cloud gateway OIDC device flow"
+      }
+    ],
+    "config_key:forceLoginOrgUUID": [
+      {
+        "from": "1.0.89",
+        "description": "Organization UUID to use for OAuth login"
+      },
+      {
+        "from": "2.1.89",
+        "description": "Organization UUID to require for OAuth login. Accepts a single UUID string or an array of UUIDs (any one is permitted). When set in managed settings, login fails if the authenticated account does not belong to a listed organization."
+      }
+    ],
+    "config_key:forceRemoteSettingsRefresh": [
+      {
+        "from": "2.1.92",
+        "description": "When set in managed settings, the CLI blocks startup until remote managed settings are freshly fetched, and exits if the fetch fails"
+      }
+    ],
+    "config_key:gcpAuthRefresh": [
+      {
+        "from": "2.1.72",
+        "description": "Command to refresh GCP authentication (e.g., gcloud auth application-default login)"
+      }
+    ],
+    "config_key:hooks": [
+      {
+        "from": "1.0.54",
+        "description": "Custom commands to run before/after tool executions"
+      }
+    ],
+    "config_key:httpHookAllowedEnvVars": [
+      {
+        "from": "2.1.63",
+        "description": "Allowlist of environment variable names HTTP hooks may interpolate into headers. When set, each hook's effective allowedEnvVars is the intersection with this list. If undefined, no restriction is applied. Arrays merge across settings sources (same semantics as allowedMcpServers)."
+      }
+    ],
+    "config_key:includeCoAuthoredBy": [
+      {
+        "from": "1.0.54",
+        "description": "Whether to include Claude's co-authored by attribution in commits and PRs (defaults to true)"
+      },
+      {
+        "from": "2.0.62",
+        "description": "Deprecated: Use attribution instead. Whether to include Claude's co-authored by attribution in commits and PRs (defaults to true)"
+      }
+    ],
+    "config_key:includeGitInstructions": [
+      {
+        "from": "2.1.64",
+        "description": "Include built-in commit and PR workflow instructions in Claude's system prompt (default: true)"
+      }
+    ],
+    "config_key:inputNeededNotifEnabled": [
+      {
+        "from": "2.1.119",
+        "description": "Push to mobile when a permission prompt or question is waiting"
+      }
+    ],
+    "config_key:isolatePeerMachines": [
+      {
+        "from": "2.1.124",
+        "description": "Require explicit approval before SendMessage can reach a peer session on another machine via Remote Control"
+      }
+    ],
+    "config_key:language": [
+      {
+        "from": "2.0.77",
+        "description": "Preferred language for Claude responses (e.g., \"japanese\", \"spanish\")"
+      },
+      {
+        "from": "2.1.76",
+        "description": "Preferred language for Claude responses and voice dictation (e.g., \"japanese\", \"spanish\")"
+      }
+    ],
+    "config_key:learnMode": [
+      {
+        "from": "1.0.54",
+        "description": "Enable learn mode for educational responses"
+      }
+    ],
+    "config_key:minimumVersion": [
+      {
+        "from": "2.0.72",
+        "description": "Minimum version to stay on - prevents downgrades when switching to stable channel"
+      }
+    ],
+    "config_key:model": [
+      {
+        "from": "1.0.54",
+        "description": "Override the default model used by Claude Code"
+      }
+    ],
+    "config_key:modelOverrides": [
+      {
+        "from": "2.1.73",
+        "description": "Override mapping from Anthropic model ID (e.g. \"claude-opus-4-6\") to provider-specific model ID (e.g. a Bedrock inference profile ARN). Typically set in managed settings by enterprise administrators."
+      }
+    ],
+    "config_key:otelHeadersHelper": [
+      {
+        "from": "1.0.54",
+        "description": "Path to a script that outputs OpenTelemetry headers"
+      }
+    ],
+    "config_key:outputMode": [
+      {
+        "from": "1.0.63",
+        "description": "Controls the output style for assistant responses"
+      }
+    ],
+    "config_key:outputStyle": [
+      {
+        "from": "1.0.78",
+        "description": "Controls the output style for assistant responses"
+      }
+    ],
+    "config_key:permissions": [
+      {
+        "from": "1.0.54",
+        "description": "Tool usage permissions configuration"
+      }
+    ],
+    "config_key:permissions.additionalDirectories": [
+      {
+        "from": "1.0.54",
+        "description": "Additional directories to include in the permission scope"
+      }
+    ],
+    "config_key:permissions.allow": [
+      {
+        "from": "1.0.54",
+        "description": "List of glob patterns for allowed files/directories"
+      },
+      {
+        "from": "1.0.57",
+        "description": "List of permission rules for allowed operations"
+      }
+    ],
+    "config_key:permissions.ask": [
+      {
+        "from": "1.0.73",
+        "description": "List of permission rules that should always prompt for confirmation"
+      }
+    ],
+    "config_key:permissions.defaultMode": [
+      {
+        "from": "1.0.54",
+        "description": "Default permission mode when Claude Code needs access"
+      },
+      {
+        "from": "2.1.200",
+        "description": "Default permission mode when Claude Code needs access ('manual' is accepted as an alias for 'default')"
+      }
+    ],
+    "config_key:permissions.deny": [
+      {
+        "from": "1.0.54",
+        "description": "List of glob patterns for denied files/directories"
+      },
+      {
+        "from": "1.0.57",
+        "description": "List of permission rules for denied operations"
+      }
+    ],
+    "config_key:permissions.disableAutoMode": [
+      {
+        "from": "2.1.73",
+        "description": "Disable auto mode"
+      }
+    ],
+    "config_key:permissions.disableBypassPermissionsMode": [
+      {
+        "from": "1.0.54",
+        "description": "Disable the ability to bypass permission prompts"
+      }
+    ],
+    "config_key:plansDirectory": [
+      {
+        "from": "2.1.9",
+        "description": "Custom directory for plan files, relative to project root. If not set, defaults to ~/.claude/plans/"
+      }
+    ],
+    "config_key:pluginConfigs": [
+      {
+        "from": "2.0.22",
+        "description": "User configuration values for MCP servers keyed by server name"
+      }
+    ],
+    "config_key:pluginSuggestionMarketplaces": [
+      {
+        "from": "2.1.152",
+        "description": "Marketplace names whose plugins may surface as contextual install suggestions (relevance-based tips), in addition to the official marketplace. Only honored when set in managed settings (policy scope); the key is ignored in user, project, and local settings. A name only takes effect when the marketplace is registered on the machine AND its registered source is also declared in managed settings, either as the extraKnownMarketplaces entry for that name or as an entry of strictKnownMarketplaces. A marketplace registered from a different source under an allowlisted name is ignored."
+      },
+      {
+        "from": "2.1.169",
+        "description": "Marketplace names whose plugins may surface as contextual install suggestions (relevance-based tips). No marketplace-declared suggestions surface without this allowlist; the built-in first-party frontend-design tip is unaffected. Only honored when set in managed settings (policy scope); the key is ignored in user, project, and local settings. A name only takes effect when the marketplace is registered on the machine AND its registered source is also declared in managed settings, either as the extraKnownMarketplaces entry for that name or as an entry of strictKnownMarketplaces. A marketplace registered from a different source under an allowlisted name is ignored. The official marketplace is exempt from the source requirement: allowlisting its name alone suffices, since that name can only register from the official Anthropic source."
+      }
+    ],
+    "config_key:pluginTrustMessage": [
+      {
+        "from": "2.1.64",
+        "description": "Custom message to append to the plugin trust warning shown before installation. Only read from policy settings (managed-settings.json / MDM). Useful for enterprise administrators to add organization-specific context (e.g., \"All plugins from our internal marketplace are vetted and approved.\")."
+      }
+    ],
+    "config_key:policyHelper": [
+      {
+        "from": "2.1.136",
+        "description": "Executable that computes managed settings at startup. Honored only from admin-controlled policy sources."
+      }
+    ],
+    "config_key:policyHelper.path": [
+      {
+        "from": "2.1.136",
+        "description": "Absolute path to the helper executable"
+      }
+    ],
+    "config_key:prUrlTemplate": [
+      {
+        "from": "2.1.119",
+        "description": "URL template for PR links in the footer badge and inline messages. Placeholders: {host} {owner} {repo} {number} {url}. Example: \"https://reviews.example.com/{owner}/{repo}/pull/{number}\""
+      },
+      {
+        "from": "2.1.176",
+        "description": "URL template for PR links in the footer link badges and inline messages. The detected git PR is rendered as the first footer-link badge. Placeholders: {host} {owner} {repo} {number} {url}. Example: \"https://reviews.example.com/{owner}/{repo}/pull/{number}\""
+      }
+    ],
+    "config_key:precomputeCompactionEnabled": [
+      {
+        "from": "2.1.179",
+        "description": "@internal Precompute the compaction summary in the background before it is needed. Only applies when auto-compact is on."
+      },
+      {
+        "from": "2.1.219",
+        "description": "Precompute the compaction summary in the background before it is needed. Only applies when auto-compact is on."
+      }
+    ],
+    "config_key:preferredNotifChannel": [
+      {
+        "from": "2.1.119",
+        "description": "Preferred OS notification channel"
+      }
+    ],
+    "config_key:prefersReducedMotion": [
+      {
+        "from": "2.1.30",
+        "description": "Reduce or disable animations for accessibility (spinner shimmer, flash effects, etc.)"
+      }
+    ],
+    "config_key:proactive": [
+      {
+        "from": "2.1.92",
+        "description": "When true, autonomous background operation is activated automatically at launch (if entitled). When false or null, the user must opt in via the /proactive command or --proactive flag. Existing entitlement gates (GrowthBook flag, ZDR, managed-settings) still apply."
+      }
+    ],
+    "config_key:proactive.autoEnable": [
+      {
+        "from": "2.1.92",
+        "description": "When true, autonomous background operation is activated automatically at launch (if entitled). When false or null, the user must opt in via the /proactive command or --proactive flag. Existing entitlement gates (GrowthBook flag, ZDR, managed-settings) still apply."
+      }
+    ],
+    "config_key:processWrapper": [
+      {
+        "from": "2.1.210",
+        "description": "Corporate launcher argv prefix for the background-agent supervisor, the sessions and workers it hosts, and the other covered background processes listed in the Claude Code corporate-launcher documentation. Equivalent to the CLAUDE_CODE_PROCESS_WRAPPER environment variable, which takes precedence when set. Honored from managed settings, a --settings/SDK-supplied settings file, and user settings, in that precedence order; project and local settings are ignored."
+      }
+    ],
+    "config_key:promptSuggestionEnabled": [
+      {
+        "from": "2.0.71",
+        "description": "When false, prompt suggestions are disabled. When absent or true, prompt suggestions are enabled."
+      }
+    ],
+    "config_key:proxyAuthHelper": [
+      {
+        "from": "2.1.111",
+        "description": "Shell command that outputs a Proxy-Authorization header value (EAP)"
+      }
+    ],
+    "config_key:quietHours": [
+      {
+        "from": "2.1.149",
+        "description": "Show a one-time nudge when you start or keep using the CLI inside your quiet-hours window (default false)."
+      }
+    ],
+    "config_key:quietHours.enabled": [
+      {
+        "from": "2.1.149",
+        "description": "Show a one-time nudge when you start or keep using the CLI inside your quiet-hours window (default false)."
+      }
+    ],
+    "config_key:quietHours.end": [
+      {
+        "from": "2.1.149",
+        "description": "End of the quiet-hours window, 24-hour local time \"HH:MM\". May be earlier than start for an overnight range."
+      }
+    ],
+    "config_key:quietHours.start": [
+      {
+        "from": "2.1.149",
+        "description": "Start of the quiet-hours window, 24-hour local time \"HH:MM\"."
+      }
+    ],
+    "config_key:remote": [
+      {
+        "from": "2.0.47",
+        "description": "Default environment ID to use for remote sessions"
+      },
+      {
+        "from": "2.1.169",
+        "description": "Default environment ID to use for cloud sessions"
+      }
+    ],
+    "config_key:remote.defaultEnvironmentId": [
+      {
+        "from": "2.0.47",
+        "description": "Default environment ID to use for remote sessions"
+      },
+      {
+        "from": "2.1.169",
+        "description": "Default environment ID to use for cloud sessions"
+      }
+    ],
+    "config_key:remoteControlAtStartup": [
+      {
+        "from": "2.1.119",
+        "description": "Start Remote Control bridge automatically each session"
+      }
+    ],
+    "config_key:requiredMaximumVersion": [
+      {
+        "from": "2.1.163",
+        "description": "Maximum Claude Code version allowed to start. If the running version is newer, Claude Code exits at startup with instructions to install an approved version. Only enforced from managed (policy) settings."
+      }
+    ],
+    "config_key:requiredMinimumVersion": [
+      {
+        "from": "2.1.163",
+        "description": "Minimum Claude Code version required to start. If the running version is older, Claude Code exits at startup with instructions to update. Only enforced from managed (policy) settings."
+      }
+    ],
+    "config_key:respectGitignore": [
+      {
+        "from": "2.1.0",
+        "description": "Whether file picker should respect .gitignore files (default: true). Note: .ignore files are always respected."
+      }
+    ],
+    "config_key:respondToBashCommands": [
+      {
+        "from": "2.1.186",
+        "description": "Whether Claude responds after an input-box ! bash command runs. Set to false to add the command output to context without a response. Default: true."
+      }
+    ],
+    "config_key:sandbox": [
+      {
+        "from": "1.0.110",
+        "description": "Network access restrictions"
+      }
+    ],
+    "config_key:sandbox.allowUnsandboxedCommands": [
+      {
+        "from": "2.0.30",
+        "description": "Allow commands to run outside the sandbox via the dangerouslyDisableSandbox parameter. When false, the dangerouslyDisableSandbox parameter is completely ignored and all commands must run sandboxed. Default: true."
+      }
+    ],
+    "config_key:sandbox.autoAllowBashIfSandboxed": [
+      {
+        "from": "2.0.24",
+        "description": "Automatically allow bash commands without prompting when they run in the sandbox. Only applies to commands that will run sandboxed."
+      }
+    ],
+    "config_key:sandbox.bwrapPath": [
+      {
+        "from": "2.1.133",
+        "description": "Linux/WSL only: Absolute path to the bwrap (bubblewrap) binary. Overrides auto-detection via PATH. Only honored from admin-controlled managed settings."
+      }
+    ],
+    "config_key:sandbox.credentials.envVars": [
+      {
+        "from": "2.1.187",
+        "description": "Environment variable name."
+      },
+      {
+        "from": "2.1.191",
+        "description": "Environment variables to protect. `deny` unsets the variable for sandboxed commands."
+      },
+      {
+        "from": "2.1.199",
+        "description": "Environment variables to protect. `deny` unsets the variable for sandboxed commands; `mask` substitutes a sentinel inside the sandbox and injects the real value at the proxy."
+      }
+    ],
+    "config_key:sandbox.credentials.files": [
+      {
+        "from": "2.1.187",
+        "description": "Path to a credential file or directory. Same resolution as sandbox.filesystem.* paths: absolute, ~ expanded, or relative to the settings file root (project root for project settings, ~/.claude for user settings)."
+      },
+      {
+        "from": "2.1.191",
+        "description": "Credential files or directories to protect. `deny` blocks reads inside the sandbox."
+      },
+      {
+        "from": "2.1.221",
+        "description": "Credential files or directories to protect. `deny` blocks reads inside the sandbox; `mask` substitutes a sentinel inside the sandbox (whole-file, or per-`extract` capture) and injects the real value at the proxy. On macOS and Windows `mask` degrades to `deny`."
+      }
+    ],
+    "config_key:sandbox.defaultOn": [
+      {
+        "from": "2.0.11",
+        "description": "Enable sandboxed bash by default"
+      }
+    ],
+    "config_key:sandbox.enableWeakerNestedSandbox": [
+      {
+        "from": "2.0.8",
+        "description": "Enable weaker sandbox mode for unprivileged docker environments where --proc mounting fails. This significantly reduces the strength of the sandbox and should only be used when this risk is acceptable.Default: false (secure)."
+      }
+    ],
+    "config_key:sandbox.enabled": [
+      {
+        "from": "2.0.15",
+        "description": "Enable sandboxed bash"
+      }
+    ],
+    "config_key:sandbox.excludedCommands": [
+      {
+        "from": "2.0.11",
+        "description": "Commands that should never run in the sandbox (e.g., [\"git\", \"docker\"])"
+      }
+    ],
+    "config_key:sandbox.failIfUnavailable": [
+      {
+        "from": "2.1.83",
+        "description": "Exit with an error at startup if sandbox.enabled is true but the sandbox cannot start (missing dependencies, unsupported platform, or platform not in enabledPlatforms). When false (default), a warning is shown and commands run unsandboxed. Intended for managed-settings deployments that require sandboxing as a hard gate."
+      },
+      {
+        "from": "2.1.116",
+        "description": "Exit with an error at startup if sandbox.enabled is true but the sandbox cannot start (missing dependencies or unsupported platform). When false (default), a warning is shown and commands run unsandboxed. Intended for managed-settings deployments that require sandboxing as a hard gate."
+      }
+    ],
+    "config_key:sandbox.filesystem": [
+      {
+        "from": "1.0.110",
+        "description": "Additional directories where writes are allowed (e.g., [\"~/projects\", \"./output\"])"
+      },
+      {
+        "from": "1.0.114",
+        "description": "Read access restrictions"
+      },
+      {
+        "from": "1.0.116",
+        "description": "Filesystem access restrictions - read and write can use different modes"
+      }
+    ],
+    "config_key:sandbox.filesystem.allowManagedReadPathsOnly": [
+      {
+        "from": "2.1.77",
+        "description": "When true (set in managed settings), only allowRead paths from policySettings are used."
+      }
+    ],
+    "config_key:sandbox.filesystem.allowRead": [
+      {
+        "from": "2.1.77",
+        "description": "Paths to re-allow reading within denyRead regions. Takes precedence over denyRead for matching paths."
+      }
+    ],
+    "config_key:sandbox.filesystem.allowWrite": [
+      {
+        "from": "2.1.63",
+        "description": "Additional paths to allow writing within the sandbox. Merged with paths from Edit(...) allow permission rules."
+      }
+    ],
+    "config_key:sandbox.filesystem.allowedWriteDirs": [
+      {
+        "from": "1.0.110",
+        "description": "Additional directories where writes are allowed (e.g., [\"~/projects\", \"./output\"])"
+      }
+    ],
+    "config_key:sandbox.filesystem.denyRead": [
+      {
+        "from": "2.1.63",
+        "description": "Additional paths to deny reading within the sandbox. Merged with paths from Read(...) deny permission rules."
+      }
+    ],
+    "config_key:sandbox.filesystem.denyWrite": [
+      {
+        "from": "2.1.63",
+        "description": "Additional paths to deny writing within the sandbox. Merged with paths from Edit(...) deny permission rules."
+      }
+    ],
+    "config_key:sandbox.filesystem.read": [
+      {
+        "from": "1.0.114",
+        "description": "Read access restrictions"
+      }
+    ],
+    "config_key:sandbox.filesystem.read.denyOnly": [
+      {
+        "from": "1.0.120",
+        "description": "Paths to deny read access to"
+      }
+    ],
+    "config_key:sandbox.filesystem.write": [
+      {
+        "from": "1.0.114",
+        "description": "Write access restrictions"
+      }
+    ],
+    "config_key:sandbox.filesystem.write.allowOnly": [
+      {
+        "from": "1.0.120",
+        "description": "Paths to allow write access to"
+      }
+    ],
+    "config_key:sandbox.filesystem.write.denyWithinAllow": [
+      {
+        "from": "1.0.120",
+        "description": "Paths to deny even within allowed paths (e.g., [\"./.claude\"])"
+      }
+    ],
+    "config_key:sandbox.filesystem.write.includeDefaults": [
+      {
+        "from": "1.0.120",
+        "description": "Include default write paths when using allowOnly mode"
+      }
+    ],
+    "config_key:sandbox.network": [
+      {
+        "from": "1.0.110",
+        "description": "Network access restrictions"
+      }
+    ],
+    "config_key:sandbox.network.allowAllUnixSockets": [
+      {
+        "from": "2.1.63",
+        "description": "If true, allow all Unix sockets (disables blocking on both platforms)."
+      }
+    ],
+    "config_key:sandbox.network.allowMachLookup": [
+      {
+        "from": "2.1.97",
+        "description": "macOS only: Additional XPC/Mach service names to allow looking up. Supports trailing-wildcard prefix matching (e.g., \"com.apple.coresimulator.*\"). Needed for tools that communicate via XPC such as the iOS Simulator or Playwright."
+      }
+    ],
+    "config_key:sandbox.network.allowManagedDomainsOnly": [
+      {
+        "from": "2.1.63",
+        "description": "When true (and set in managed settings), only allowedDomains and WebFetch(domain:...) allow rules from managed settings are respected. User, project, local, and flag settings domains are ignored. Denied domains are still respected from all sources."
+      }
+    ],
+    "config_key:sandbox.network.allowUnixSockets": [
+      {
+        "from": "2.1.63",
+        "description": "macOS only: Unix socket paths to allow. Ignored on Linux (seccomp cannot filter by path)."
+      }
+    ],
+    "config_key:sandbox.network.deniedDomains": [
+      {
+        "from": "2.1.113",
+        "description": "Domains that are always blocked, even if matched by allowedDomains. Supports the same wildcard syntax as allowedDomains. Merged from all settings sources regardless of allowManagedDomainsOnly."
+      }
+    ],
+    "config_key:sandbox.network.tlsTerminate": [
+      {
+        "from": "2.1.140",
+        "description": "[EXPERIMENTAL] Enable in-process TLS termination so the per-request filter can see HTTPS request bodies. Provide a CA cert+key, or omit both to have sandbox-runtime generate an ephemeral one for the session."
+      }
+    ],
+    "config_key:sandbox.ripgrep": [
+      {
+        "from": "2.0.43",
+        "description": "Custom ripgrep configuration for bundled ripgrep support"
+      }
+    ],
+    "config_key:sandbox.socatPath": [
+      {
+        "from": "2.1.133",
+        "description": "Linux/WSL only: Absolute path to the socat binary used for the sandbox network proxy. Overrides auto-detection via PATH. Only honored from admin-controlled managed settings."
+      }
+    ],
+    "config_key:sandbox.unsandboxedCommands": [
+      {
+        "from": "1.0.125",
+        "description": "Commands that should never run in the sandbox (e.g., [\"git\", \"docker\"])"
+      }
+    ],
+    "config_key:showClearContextOnPlanAccept": [
+      {
+        "from": "2.1.81",
+        "description": "When true, the plan-approval dialog offers a \"clear context\" option. Defaults to false."
+      }
+    ],
+    "config_key:showMessageTimestamps": [
+      {
+        "from": "2.1.119",
+        "description": "Stamp each assistant message with its arrival time"
+      },
+      {
+        "from": "2.1.218",
+        "description": "Stamp each message with its arrival time"
+      }
+    ],
+    "config_key:showThinkingSummaries": [
+      {
+        "from": "2.1.64",
+        "description": "Show thinking summaries in the transcript view (ctrl+o). Default: false."
+      },
+      {
+        "from": "2.1.152",
+        "description": "Request API-side thinking summaries and show them in the conversation and in the transcript view (ctrl+o). Set explicitly to override the default for your install."
+      }
+    ],
+    "config_key:showTurnDuration": [
+      {
+        "from": "2.1.119",
+        "description": "Show \"Cooked for Nm Ns\" after each assistant turn"
+      }
+    ],
+    "config_key:skillListingBudgetFraction": [
+      {
+        "from": "2.1.105",
+        "description": "Fraction of the context window (in characters) reserved for the skill listing sent to Claude (default: 0.01 = 1%). When the listing exceeds this, descriptions are shortened to fit. Raise to opt in to higher per-turn context cost."
+      }
+    ],
+    "config_key:skillListingMaxDescChars": [
+      {
+        "from": "2.1.105",
+        "description": "Per-skill description character cap in the skill listing sent to Claude (default: 1536). Descriptions longer than this are truncated. Raise to opt in to higher per-turn context cost."
+      }
+    ],
+    "config_key:skillOverrides": [
+      {
+        "from": "2.1.105",
+        "description": "Per-skill listing overrides keyed by skill name. \"name-only\" lists the skill without its description; \"user-invocable-only\" hides it from the model but keeps /name; \"off\" hides it from both. Absent = on."
+      }
+    ],
+    "config_key:skipDangerousModePermissionPrompt": [
+      {
+        "from": "2.1.40",
+        "description": "Whether the user has accepted the bypass permissions mode dialog"
+      }
+    ],
+    "config_key:skipWebFetchPreflight": [
+      {
+        "from": "1.0.84",
+        "description": "Skip the WebFetch blocklist check for enterprise environments with restrictive security policies"
+      }
+    ],
+    "config_key:skipWorkflowUsageWarning": [
+      {
+        "from": "2.1.153",
+        "description": "@internal Whether the user has accepted the multi-agent workflow usage warning. Until set, auto permission mode prompts before running a workflow."
+      }
+    ],
+    "config_key:skippedMarketplaces": [
+      {
+        "from": "2.0.9",
+        "description": "List of marketplace names the user has chosen not to install when prompted"
+      }
+    ],
+    "config_key:skippedPlugins": [
+      {
+        "from": "2.0.9",
+        "description": "List of plugin IDs (plugin@marketplace format) the user has chosen not to install when prompted"
+      }
+    ],
+    "config_key:spinnerTipsEnabled": [
+      {
+        "from": "1.0.112",
+        "description": "Whether to show tips in the spinner"
+      }
+    ],
+    "config_key:spinnerTipsOverride": [
+      {
+        "from": "2.1.45",
+        "description": "Override spinner tips. tips: array of tip strings. excludeDefault: if true, only show custom tips (default: false)."
+      }
+    ],
+    "config_key:spinnerVerbs": [
+      {
+        "from": "2.1.23",
+        "description": "Customize spinner verbs. mode: \"append\" adds verbs to defaults, \"replace\" uses only your verbs."
+      }
+    ],
+    "config_key:sshConfigs": [
+      {
+        "from": "2.1.47",
+        "description": "Unique identifier for this SSH config. Used to match configs across settings sources."
+      }
+    ],
+    "config_key:statusLine": [
+      {
+        "from": "1.0.64",
+        "description": "Custom status line display configuration"
+      },
+      {
+        "from": "2.1.97",
+        "description": "Re-run the status line command every N seconds in addition to event-driven updates"
+      }
+    ],
+    "config_key:statusLine.hideVimModeIndicator": [
+      {
+        "from": "2.1.120",
+        "description": "Hide the built-in `-- INSERT --` / `-- VISUAL --` indicator below the prompt. Use this when your status line script renders `vim.mode` itself."
+      }
+    ],
+    "config_key:statusLine.refreshInterval": [
+      {
+        "from": "2.1.97",
+        "description": "Re-run the status line command every N seconds in addition to event-driven updates"
+      }
+    ],
+    "config_key:strictKnownMarketplaces": [
+      {
+        "from": "2.0.55",
+        "description": "Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these exact sources can be added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem."
+      }
+    ],
+    "config_key:subagentStatusLine": [
+      {
+        "from": "2.1.105",
+        "description": "Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin"
+      }
+    ],
+    "config_key:switchModelsOnFlag": [
+      {
+        "from": "2.1.160",
+        "description": "When safety filters block a message, automatically switch to a different model to keep chatting. When off, your chat may stop instead."
+      },
+      {
+        "from": "2.1.166",
+        "description": "When safety measures flag a message, automatically switch to a different model to keep chatting. When off, your session will pause instead."
+      },
+      {
+        "from": "2.1.219",
+        "description": "When safeguards flag a message, automatically switch to a different model to keep chatting. When off, your session will pause instead."
+      }
+    ],
+    "config_key:syntaxHighlightingDisabled": [
+      {
+        "from": "2.0.74",
+        "description": "Whether to disable syntax highlighting in diffs"
+      }
+    ],
+    "config_key:teammateMode": [
+      {
+        "from": "2.1.119",
+        "description": "How spawned teammates execute (tmux, in-process, auto)"
+      },
+      {
+        "from": "2.1.186",
+        "description": "How spawned teammates execute (tmux, iterm2, in-process, auto)"
+      }
+    ],
+    "config_key:terminalProgressBarEnabled": [
+      {
+        "from": "2.1.119",
+        "description": "Emit OSC 9;4 progress sequences during long operations"
+      }
+    ],
+    "config_key:terminalTitleFromRename": [
+      {
+        "from": "2.1.26",
+        "description": "When true, terminal tab title is set from /rename and not auto-updated based on the conversation topic"
+      },
+      {
+        "from": "2.1.47",
+        "description": "Whether /rename updates the terminal tab title (defaults to true). Set to false to keep auto-generated topic titles."
+      }
+    ],
+    "config_key:theme": [
+      {
+        "from": "2.1.119",
+        "description": "Color theme for the UI"
+      }
+    ],
+    "config_key:todoFeatureEnabled": [
+      {
+        "from": "2.1.119",
+        "description": "Enable the todo / task tracking panel"
+      }
+    ],
+    "config_key:totalTokensReminder": [
+      {
+        "from": "2.1.176",
+        "description": "@internal Emit a <total_tokens>N tokens left</total_tokens> block in the system prompt and after each tool result. 'infinite' uses the literal value Infinite, 'fixed' uses 5000000, 'countdown' uses the live remaining context-window tokens. Defaults to off. Env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER overrides."
+      },
+      {
+        "from": "2.1.196",
+        "description": "@internal Emit a <total_tokens>N tokens left</total_tokens> block in the system prompt and after each tool result. 'infinite' uses the literal value Infinite, 'fixed' uses 5000000, 'countdown' uses the live remaining context-window tokens, 'padded-countdown' counts down from totalTokensReminderBudget by per-agent cumulative context spend (monotonic across compaction and /clear). Defaults to off. Env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER overrides."
+      }
+    ],
+    "config_key:totalTokensReminderAfterUserTurn": [
+      {
+        "from": "2.1.202",
+        "description": "@internal When true, emit the totalTokensReminder block after each regular user prompt and (for 'padded-countdown') re-anchor the task budget to the full configured value at the start of each user turn. When false, the reminder appears only in the system prompt and after each tool-result batch, and 'padded-countdown' counts down over the whole session. Defaults to off. Env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER_AFTER_USER_TURN overrides; server-controlled via GrowthBook tengu_lapis_anchor_user_turn."
+      }
+    ],
+    "config_key:totalTokensReminderBudget": [
+      {
+        "from": "2.1.196",
+        "description": "@internal Starting budget (tokens) for totalTokensReminder 'padded-countdown' mode. Defaults to 15000000. Server-controlled via GrowthBook; env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER_BUDGET overrides."
+      }
+    ],
+    "config_key:tui": [
+      {
+        "from": "2.1.110",
+        "description": "Terminal UI renderer. \"fullscreen\" uses the flicker-free alt-screen renderer with virtualized scrollback (equivalent to CLAUDE_CODE_NO_FLICKER=1). \"default\" uses the classic main-screen renderer."
+      }
+    ],
+    "config_key:verbose": [
+      {
+        "from": "2.1.119",
+        "description": "Show full tool output instead of truncated summaries"
+      }
+    ],
+    "config_key:viewMode": [
+      {
+        "from": "2.1.97",
+        "description": "Default transcript view mode on startup"
+      }
+    ],
+    "config_key:vimInsertModeRemaps": [
+      {
+        "from": "2.1.208",
+        "description": "Vim INSERT-mode key-sequence remaps, e.g. {\"jj\": \"<Esc>\"}. Each key is exactly two printable characters typed in sequence; \"<Esc>\" (return to NORMAL mode) is the only supported target. Applies when editorMode is \"vim\"."
+      }
+    ],
+    "config_key:voice": [
+      {
+        "from": "2.1.92",
+        "description": "'hold' (default): hold to talk. 'tap': tap to start, tap to stop+submit."
+      }
+    ],
+    "config_key:voice.autoSubmit": [
+      {
+        "from": "2.1.92",
+        "description": "Submit the prompt when hold-to-talk is released (hold mode only)"
+      }
+    ],
+    "config_key:voice.mode": [
+      {
+        "from": "2.1.92",
+        "description": "'hold' (default): hold to talk. 'tap': tap to start, tap to stop+submit."
+      }
+    ],
+    "config_key:wheelScrollAccelerationEnabled": [
+      {
+        "from": "2.1.174",
+        "description": "Ramp mouse-wheel scroll speed during fast scrolls (fullscreen mode only)"
+      }
+    ],
+    "config_key:workflowKeywordTriggerEnabled": [
+      {
+        "from": "2.1.157",
+        "description": "Enable the \"workflow\"/\"workflows\" keyword trigger that opts a prompt into the Workflow tool. Set to false to type the word without triggering a workflow. Default: true."
+      },
+      {
+        "from": "2.1.160",
+        "description": "Enable the \"ultracode\" keyword trigger: including the keyword in a prompt opts that turn into the Workflow tool. Set to false to disable the trigger. Default: true."
+      }
+    ],
+    "config_key:workflowSizeGuideline": [
+      {
+        "from": "2.1.219",
+        "description": "Advisory size guideline for the dynamic workflows Claude writes: \"small\" aims for fewer than 5 agents, \"medium\" (the default) fewer than 15, \"large\" fewer than 50, and \"unrestricted\" sends no guideline. A value here \\u2014 including from managed settings \\u2014 takes precedence over the \"Dynamic workflow size\" choice in /config, and that /config row is hidden while a settings file provides the key. This is a guideline, not an enforced limit."
+      }
+    ],
+    "config_key:worktree": [
+      {
+        "from": "2.1.38",
+        "description": "Directories to symlink from main repository to worktrees to avoid disk bloat. Must be explicitly configured - no directories are symlinked by default. Common examples: \"node_modules\", \".cache\", \".bin\""
+      }
+    ],
+    "config_key:worktree.baseRef": [
+      {
+        "from": "2.1.133",
+        "description": "Which ref new worktrees branch from. 'fresh' (default) branches from origin/<default-branch> for a clean tree. 'head' branches from your current local HEAD so unpushed commits and feature-branch state are present. Applies to --worktree, EnterWorktree, and agent isolation."
+      }
+    ],
+    "config_key:worktree.bgIsolation": [
+      {
+        "from": "2.1.143",
+        "description": "Isolation mode for background sessions in this repo. 'worktree' (default) blocks Edit/Write in the main checkout until EnterWorktree is called. 'none' lets background jobs edit the working copy directly."
+      }
+    ],
+    "config_key:worktree.symlinkDirectories": [
+      {
+        "from": "2.1.38",
+        "description": "Directories to symlink from main repository to worktrees to avoid disk bloat. Must be explicitly configured - no directories are symlinked by default. Common examples: \"node_modules\", \".cache\", \".bin\""
+      }
+    ],
+    "config_key:wslInheritsWindowsSettings": [
+      {
+        "from": "2.1.118",
+        "description": "When set to true in either admin-only Windows source \\u2014 the HKLM SOFTWARE/Policies/ClaudeCode registry key or C:/Program Files/ClaudeCode/managed-settings.json \\u2014 WSL reads managed settings from the full Windows policy chain (HKLM, C:/Program Files/ClaudeCode via DrvFs, HKCU) in addition to /etc/claude-code. Windows sources take priority. The flag is also required in HKCU itself for HKCU policy to apply on WSL (double opt-in: admin enables the chain, user confirms HKCU). On native Windows the flag has no effect."
+      }
     ]
   }
 }
