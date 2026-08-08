@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schubydoo.github.io/claustodian/schema/index.schema.json",
+  "$id": "https://claustodian.dev/schema/index.schema.json",
   "title": "Claustodian Index",
   "description": "The rolled-up list of all Claude Code versions tracked by Claustodian (data/index.json).",
   "type": "object",

@@ -12,7 +12,7 @@
     "provenance",
     "versioning"
   ],
-  "homepage": "https://schubydoo.github.io/claustodian/",
+  "homepage": "https://claustodian.dev/",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/schubydoo/claustodian.git"

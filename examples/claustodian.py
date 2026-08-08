@@ -17,7 +17,7 @@ from __future__ import annotations
 import json
 from urllib.request import urlopen
 
-DEFAULT_BASE = "https://schubydoo.github.io/claustodian/data"
+DEFAULT_BASE = "https://claustodian.dev/data"
 
 
 def compare_semver(a: str, b: str) -> int:
