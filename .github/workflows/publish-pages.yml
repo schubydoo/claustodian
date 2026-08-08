@@ -14,6 +14,7 @@ on:
       - 'schema/**'
       - 'site/**'
       - 'assets/logo/favicon.svg'
+      - 'assets/og/og-image.png'
       - 'llms.txt'
       - '.github/workflows/publish-pages.yml'
   workflow_dispatch:
@@ -60,6 +61,11 @@ jobs:
           fi
           # Favicon referenced by index.html as href="favicon.svg" (site root).
           if [ -f assets/logo/favicon.svg ]; then cp assets/logo/favicon.svg _site/favicon.svg; fi
+          # Social card. index.html points og:image at the ABSOLUTE
+          # https://claustodian.dev/og-image.png, so the file has to land at the
+          # site root under exactly that name. Source page: assets/og/card.html
+          # (not published — only the render is).
+          if [ -f assets/og/og-image.png ]; then cp assets/og/og-image.png _site/og-image.png; fi
           # llms.txt at the site root so agents can fetch <pages-url>/llms.txt.
           if [ -f llms.txt ]; then cp llms.txt _site/llms.txt; fi
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0

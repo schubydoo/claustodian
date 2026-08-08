@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Claustodian — social card source</title>
+    <!--
+      Source for assets/og/og-image.png. NOT published to the site: the deploy
+      copies only the rendered PNG. Regenerate by loading this file at exactly
+      1200x630 and screenshotting the viewport, e.g. with agent-browser:
+
+        agent-browser set viewport 1200 630
+        agent-browser open file://$PWD/assets/og/card.html
+        agent-browser set viewport 1200 630
+        agent-browser screenshot $PWD/assets/og/og-image.png
+
+      (The viewport is set twice on purpose: `open` launches the browser at its
+      default size, so the pre-launch setting does not survive.)
+
+      Everything is inline and self-contained (no webfont, no external CSS) so
+      the render is deterministic in headless Chromium. The palette is the dark
+      half of site/index.html's :root; the mark is assets/logo/logo-mark.svg.
+
+      The three sample rows carry REAL first_seen values from data/latest.json
+      (--safe-mode 2.1.169, CLAUDE_CODE_USE_BEDROCK 0.2.9, /rename 2.0.41). A
+      social card is still a claim about the data — do not invent rows here.
+    -->
+    <style>
+      :root {
+        --bg: #16181d;
+        --fg: #e9ecef;
+        --muted: #9aa0a6;
+        --border: #2c2f36;
+        --card: #1e2127;
+        --accent: #748ffc;
+        --flag: #4dabf7;
+        --env: #69db7c;
+        --cmd: #ffa94d;
+        --sans: 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+      }
+      .card {
+        position: relative;
+        width: 1200px;
+        height: 630px;
+        padding: 64px 72px 56px;
+        display: flex;
+        flex-direction: column;
+        /* Two off-canvas glows in the brand accent keep the flat background from
+           reading as a black rectangle in a crowded timeline. */
+        background:
+          radial-gradient(900px 520px at 88% -12%, rgba(116, 143, 252, 0.18), transparent 62%),
+          radial-gradient(620px 420px at -8% 108%, rgba(116, 143, 252, 0.1), transparent 60%),
+          var(--bg);
+      }
+      /* Hairline in the accent along the top edge — the same device the site
+         header uses to separate brand from content. */
+      .card::before {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto 0;
+        height: 6px;
+        background: linear-gradient(
+          90deg,
+          var(--accent),
+          var(--flag) 45%,
+          var(--env) 78%,
+          var(--cmd)
+        );
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .brand svg {
+        width: 76px;
+        height: 76px;
+        flex: none;
+      }
+      .brand h1 {
+        margin: 0;
+        font-size: 60px;
+        font-weight: 700;
+        letter-spacing: -1.5px;
+      }
+
+      .tagline {
+        margin: 30px 0 0;
+        max-width: 940px;
+        font-size: 34px;
+        line-height: 1.32;
+        font-weight: 500;
+        color: var(--fg);
+      }
+      .tagline em {
+        font-style: normal;
+        color: var(--accent);
+      }
+
+      .rows {
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 13px 22px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--card);
+      }
+      .sym {
+        font-family: var(--mono);
+        font-size: 25px;
+        font-weight: 600;
+      }
+      .badge {
+        font-size: 15px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 3px 10px;
+        border-radius: 6px;
+        color: #16181d;
+      }
+      .badge--flag {
+        background: var(--flag);
+      }
+      .badge--env {
+        background: var(--env);
+      }
+      .badge--cmd {
+        background: var(--cmd);
+      }
+      .seen {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: baseline;
+        gap: 8px;
+        font-family: var(--mono);
+        font-size: 20px;
+        border-radius: 999px;
+        padding: 4px 16px;
+        border: 1px solid rgba(116, 143, 252, 0.4);
+        background: rgba(116, 143, 252, 0.12);
+      }
+      .seen .lbl {
+        font-family: var(--sans);
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.75;
+      }
+
+      .foot {
+        margin-top: 34px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        font-size: 24px;
+        color: var(--muted);
+      }
+      .foot .domain {
+        font-family: var(--mono);
+        font-size: 27px;
+        font-weight: 600;
+        color: var(--accent);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="brand">
+        <svg viewBox="0 0 64 64" role="img" aria-label="Claustodian">
+          <g
+            fill="none"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            transform="translate(5,4.5)"
+          >
+            <path
+              d="M45 18 A18 18 0 1 0 45 46"
+              stroke="var(--accent)"
+              stroke-opacity="0.4"
+              stroke-width="9"
+              transform="translate(-5,-5)"
+            />
+            <path d="M45 18 A18 18 0 1 0 45 46" stroke="var(--accent)" stroke-width="9" />
+            <path d="M29 26 L36 32 L29 38" stroke="var(--accent)" stroke-width="4" />
+          </g>
+        </svg>
+        <h1>Claustodian</h1>
+      </div>
+
+      <p class="tagline">
+        Does a Claude Code flag, environment variable, or command exist in
+        <em>a given version?</em>
+      </p>
+
+      <div class="rows">
+        <div class="row">
+          <span class="sym">--safe-mode</span>
+          <span class="badge badge--flag">cli flag</span>
+          <span class="seen"><span class="lbl">since</span>2.1.169</span>
+        </div>
+        <div class="row">
+          <span class="sym">CLAUDE_CODE_USE_BEDROCK</span>
+          <span class="badge badge--env">env var</span>
+          <span class="seen"><span class="lbl">since</span>0.2.9</span>
+        </div>
+        <div class="row">
+          <span class="sym">/rename</span>
+          <span class="badge badge--cmd">command</span>
+          <span class="seen"><span class="lbl">since</span>2.0.41</span>
+        </div>
+      </div>
+
+      <div class="foot">
+        <span class="domain">claustodian.dev</span>
+        <span>Every version, as static JSON</span>
+      </div>
+    </div>
+  </body>
+</html>
