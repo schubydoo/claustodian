@@ -32,7 +32,7 @@
  * diffing. The backfill and the forward CI wrap this with those concerns.
  */
 import { categorize, SYMBOL_DENYLIST, type ExtractedSymbolType } from './scrape-changelog.js';
-import { extractSettingsKeys, settingsKeyType } from './settings-schema.js';
+import { extractSettingsKeys, settingsKeyCategory } from './settings-schema.js';
 
 /** How a candidate earned inclusion — recorded so the review queue can triage. */
 export type Evidence =
@@ -524,11 +524,10 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
   // is deliberate: a shrunken key set is indistinguishable downstream from ~230
   // keys being deleted upstream. Failing the whole version is the safe answer.
   for (const key of extractSettingsKeys(src)) {
-    const type = settingsKeyType(key);
     symbols.push({
       symbol: key.path,
-      type,
-      category: categorize(key.path, type),
+      type: 'config_key',
+      category: settingsKeyCategory(key),
       evidence: 'settings-schema',
       ...(key.description ? { description: key.description } : {}),
     });

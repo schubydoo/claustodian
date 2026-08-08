@@ -512,8 +512,12 @@ describe('extractBundleSymbols — settings keys', () => {
       evidence: 'settings-schema',
       description: 'Path to an auth script',
     });
-    // An @internal key is plumbing, not a user-facing setting.
-    expect(out.find((s) => s.symbol === 'skipWorkflowUsageWarning')?.type).toBe('internal_config_flag');
+    // An @internal key is plumbing, marked by CATEGORY. Typing off it would make
+    // the record's identity churn every time Anthropic edits a description.
+    expect(out.find((s) => s.symbol === 'skipWorkflowUsageWarning')).toMatchObject({
+      type: 'config_key',
+      category: 'settings-internal',
+    });
   });
 
   it('fails the whole extraction when the schema is present but unwalkable', () => {

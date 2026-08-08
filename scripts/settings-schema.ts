@@ -379,10 +379,25 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
 }
 
 /**
- * The symbol type for a settings key. A key whose own description marks it
- * `@internal` is plumbing Anthropic does not intend users to set, which is
- * exactly what `internal_config_flag` is for in the schema's type enum.
+ * The category for a settings key: `settings`, or `settings-internal` when the
+ * key's own description marks it `@internal` — plumbing Anthropic does not intend
+ * users to set.
+ *
+ * Internal-ness is CATEGORY, never TYPE, and that distinction is load-bearing.
+ * A record's identity across versions is `type:symbol`, so deriving the type from
+ * description text makes the identity churn whenever Anthropic edits a
+ * description — the symbol appears to be removed under the old type and
+ * introduced under the new one on the same release. That is not hypothetical: at
+ * 2.1.154 the `@internal` prefix was dropped from `disableWorkflows`, and typing
+ * off the description published a false removal at exactly that version while
+ * the key sat untouched in the schema. `precomputeCompactionEnabled` (2.1.219)
+ * and `totalTokensReminder` (2.1.202) split the same way.
+ *
+ * Category is descriptive rather than identifying, so the same edit now just
+ * updates the record. `internal_config_flag` stays in the schema's type enum —
+ * it is a published contract — but nothing emits it: no stable signal
+ * distinguishes an internal settings key from a regular one at the type level.
  */
-export function settingsKeyType(key: SettingsKey): 'config_key' | 'internal_config_flag' {
-  return /@internal\b/i.test(key.description ?? '') ? 'internal_config_flag' : 'config_key';
+export function settingsKeyCategory(key: SettingsKey): 'settings' | 'settings-internal' {
+  return /@internal\b/i.test(key.description ?? '') ? 'settings-internal' : 'settings';
 }
