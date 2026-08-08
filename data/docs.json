@@ -3286,7 +3286,7 @@
     {
       "symbol": "ENABLE_PROMPT_CACHING_1H",
       "type": "env_var",
-      "description": "Set to `1` to request a 1-hour prompt cache TTL instead of the default 5 minutes. Intended for API key, Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS users. Subscription users within included usage receive 1-hour TTL automatically. 1-hour cache writes are billed at a higher rate",
+      "description": "Set to `1` to request a 1-hour prompt cache TTL instead of the default 5 minutes. Intended for API key, Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS users. Subscription users within included usage receive 1-hour TTL automatically. Subscription users drawing on usage credits can set it to keep the 1-hour TTL. 1-hour cache writes are billed at a higher rate",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },

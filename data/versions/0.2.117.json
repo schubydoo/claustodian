@@ -601,6 +601,66 @@
       "category": "command"
     },
     {
+      "symbol": "cleanupPeriodDays",
+      "type": "config_key",
+      "first_seen": "0.2.116",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "env",
+      "type": "config_key",
+      "first_seen": "0.2.116",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "permissions",
+      "type": "config_key",
+      "first_seen": "0.2.116",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "permissions.allow",
+      "type": "config_key",
+      "first_seen": "0.2.116",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "permissions.deny",
+      "type": "config_key",
+      "first_seen": "0.2.116",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
       "symbol": "ANTHROPIC_API_KEY",
       "type": "env_var",
       "first_seen": "0.2.54",

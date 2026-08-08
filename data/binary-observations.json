@@ -3235,6 +3235,1791 @@
       "removed_in": null
     },
     {
+      "symbol": "$schema",
+      "type": "config_key",
+      "first_seen": "1.0.65",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "advisorModel",
+      "type": "config_key",
+      "first_seen": "2.1.83",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "agent",
+      "type": "config_key",
+      "first_seen": "2.0.59",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "agentPushNotifEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "allowAllClaudeAiMcps",
+      "type": "config_key",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "allowManagedHooksOnly",
+      "type": "config_key",
+      "first_seen": "2.0.54",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "allowManagedMcpServersOnly",
+      "type": "config_key",
+      "first_seen": "2.1.47",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "allowManagedPermissionRulesOnly",
+      "type": "config_key",
+      "first_seen": "2.1.10",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "allowedChannelPlugins",
+      "type": "config_key",
+      "first_seen": "2.1.84",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "allowedHttpHookUrls",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "allowedMcpServers",
+      "type": "config_key",
+      "first_seen": "2.0.22",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "alwaysThinkingEnabled",
+      "type": "config_key",
+      "first_seen": "2.0.0",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "apiKeyHelper",
+      "type": "config_key",
+      "first_seen": "0.2.123",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "askUserQuestionTimeout",
+      "type": "config_key",
+      "first_seen": "2.1.200",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "attribution",
+      "type": "config_key",
+      "first_seen": "2.0.62",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "attribution.commit",
+      "type": "config_key",
+      "first_seen": "2.0.62",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "attribution.pr",
+      "type": "config_key",
+      "first_seen": "2.0.62",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "attribution.sessionUrl",
+      "type": "config_key",
+      "first_seen": "2.1.182",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoCompactEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoCompactWindow",
+      "type": "config_key",
+      "first_seen": "2.1.89",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoDreamEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.81",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoMemoryDirectory",
+      "type": "config_key",
+      "first_seen": "2.1.74",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoMemoryEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.38",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoScrollEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoUpdatesChannel",
+      "type": "config_key",
+      "first_seen": "2.0.66",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoUploadSessions",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "availableModels",
+      "type": "config_key",
+      "first_seen": "2.1.40",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "awaySummaryEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.105",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "awsAuthRefresh",
+      "type": "config_key",
+      "first_seen": "1.0.53",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "awsCredentialExport",
+      "type": "config_key",
+      "first_seen": "1.0.53",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "blockedMarketplaces",
+      "type": "config_key",
+      "first_seen": "2.0.72",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "breakReminder",
+      "type": "config_key",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "breakReminder.breakThresholdMinutes",
+      "type": "config_key",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "breakReminder.enabled",
+      "type": "config_key",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "breakReminder.intervalMinutes",
+      "type": "config_key",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "breakReminder.message",
+      "type": "config_key",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "channelsEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.84",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "classifierPermissionsEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.6",
+      "last_seen": "2.1.12",
+      "removed_in": "2.1.14"
+    },
+    {
+      "symbol": "claudeMd",
+      "type": "config_key",
+      "first_seen": "2.1.139",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "claudeMdExcludes",
+      "type": "config_key",
+      "first_seen": "2.1.48",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "cleanupPeriodDays",
+      "type": "config_key",
+      "first_seen": "0.2.116",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "companyAnnouncements",
+      "type": "config_key",
+      "first_seen": "2.0.32",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "crossSessionInbound",
+      "type": "config_key",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "daemonColdStart",
+      "type": "config_key",
+      "first_seen": "2.1.120",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "defaultShell",
+      "type": "config_key",
+      "first_seen": "2.1.81",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "deniedMcpServers",
+      "type": "config_key",
+      "first_seen": "2.0.22",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "dialogExpiry",
+      "type": "config_key",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableAgentView",
+      "type": "config_key",
+      "first_seen": "2.1.139",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableAllHooks",
+      "type": "config_key",
+      "first_seen": "1.0.68",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableArtifact",
+      "type": "config_key",
+      "first_seen": "2.1.172",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableAutoMode",
+      "type": "config_key",
+      "first_seen": "2.1.74",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableBackgroundAgents",
+      "type": "config_key",
+      "first_seen": "2.1.121",
+      "last_seen": "2.1.138",
+      "removed_in": "2.1.139"
+    },
+    {
+      "symbol": "disableBundledSkills",
+      "type": "config_key",
+      "first_seen": "2.1.169",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableClaudeAiConnectors",
+      "type": "config_key",
+      "first_seen": "2.1.182",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableRemoteControl",
+      "type": "config_key",
+      "first_seen": "2.1.128",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableSideloadFlags",
+      "type": "config_key",
+      "first_seen": "2.1.193",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableSkillShellExecution",
+      "type": "config_key",
+      "first_seen": "2.1.91",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableWorkflows",
+      "type": "config_key",
+      "first_seen": "2.1.152",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "disabledMcpjsonServers",
+      "type": "config_key",
+      "first_seen": "1.0.4",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "doneMeansMerged",
+      "type": "config_key",
+      "first_seen": "2.1.124",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "editorMode",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "effortLevel",
+      "type": "config_key",
+      "first_seen": "2.1.72",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "emojiCompletionEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.217",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "enableAllProjectMcpServers",
+      "type": "config_key",
+      "first_seen": "1.0.4",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "enableArtifact",
+      "type": "config_key",
+      "first_seen": "2.1.196",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "enableWorkflows",
+      "type": "config_key",
+      "first_seen": "2.1.153",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "enabledMcpjsonServers",
+      "type": "config_key",
+      "first_seen": "1.0.4",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "enabledPlugins",
+      "type": "config_key",
+      "first_seen": "1.0.81",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "enforceAvailableModels",
+      "type": "config_key",
+      "first_seen": "2.1.175",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "env",
+      "type": "config_key",
+      "first_seen": "0.2.116",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "extraKnownMarketplaces",
+      "type": "config_key",
+      "first_seen": "2.0.9",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "fallbackModel",
+      "type": "config_key",
+      "first_seen": "2.1.166",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "fastMode",
+      "type": "config_key",
+      "first_seen": "2.1.36",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "fastModePerSessionOptIn",
+      "type": "config_key",
+      "first_seen": "2.1.59",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "feedbackDrafts",
+      "type": "config_key",
+      "first_seen": "2.1.212",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "feedbackSurveyRate",
+      "type": "config_key",
+      "first_seen": "2.1.76",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "feedbackSurveyState",
+      "type": "config_key",
+      "first_seen": "1.0.64",
+      "last_seen": "1.0.65",
+      "removed_in": "1.0.66"
+    },
+    {
+      "symbol": "feedbackSurveyState.lastShownTime",
+      "type": "config_key",
+      "first_seen": "1.0.64",
+      "last_seen": "1.0.65",
+      "removed_in": "1.0.66"
+    },
+    {
+      "symbol": "fileCheckpointingEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "fileSuggestion",
+      "type": "config_key",
+      "first_seen": "2.0.65",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "fileSuggestion.command",
+      "type": "config_key",
+      "first_seen": "2.0.65",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "fileSuggestion.type",
+      "type": "config_key",
+      "first_seen": "2.0.65",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "footerLinksRegexes",
+      "type": "config_key",
+      "first_seen": "2.1.176",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "forceLoginGatewayUrl",
+      "type": "config_key",
+      "first_seen": "2.1.162",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "forceLoginMethod",
+      "type": "config_key",
+      "first_seen": "1.0.34",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "forceLoginOrgUUID",
+      "type": "config_key",
+      "first_seen": "1.0.89",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "forceRemoteSettingsRefresh",
+      "type": "config_key",
+      "first_seen": "2.1.92",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "gcpAuthRefresh",
+      "type": "config_key",
+      "first_seen": "2.1.72",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "hooks",
+      "type": "config_key",
+      "first_seen": "1.0.20",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "httpHookAllowedEnvVars",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "includeCoAuthoredBy",
+      "type": "config_key",
+      "first_seen": "0.2.122",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "includeGitInstructions",
+      "type": "config_key",
+      "first_seen": "2.1.64",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "inputNeededNotifEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "isolatePeerMachines",
+      "type": "config_key",
+      "first_seen": "2.1.124",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "language",
+      "type": "config_key",
+      "first_seen": "2.0.77",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "learnMode",
+      "type": "config_key",
+      "first_seen": "1.0.34",
+      "last_seen": "1.0.77",
+      "removed_in": "1.0.78"
+    },
+    {
+      "symbol": "minimumVersion",
+      "type": "config_key",
+      "first_seen": "2.0.72",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "model",
+      "type": "config_key",
+      "first_seen": "0.2.125",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "modelOverrides",
+      "type": "config_key",
+      "first_seen": "2.1.73",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "otelHeadersHelper",
+      "type": "config_key",
+      "first_seen": "1.0.53",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "outputMode",
+      "type": "config_key",
+      "first_seen": "1.0.63",
+      "last_seen": "1.0.77",
+      "removed_in": "1.0.78"
+    },
+    {
+      "symbol": "outputStyle",
+      "type": "config_key",
+      "first_seen": "1.0.78",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "parentSettingsBehavior",
+      "type": "config_key",
+      "first_seen": "2.1.133",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "permissions",
+      "type": "config_key",
+      "first_seen": "0.2.116",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "permissions.additionalDirectories",
+      "type": "config_key",
+      "first_seen": "1.0.27",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "permissions.allow",
+      "type": "config_key",
+      "first_seen": "0.2.116",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "permissions.ask",
+      "type": "config_key",
+      "first_seen": "1.0.73",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "permissions.defaultMode",
+      "type": "config_key",
+      "first_seen": "1.0.22",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "permissions.deny",
+      "type": "config_key",
+      "first_seen": "0.2.116",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "permissions.disableAutoMode",
+      "type": "config_key",
+      "first_seen": "2.1.73",
+      "last_seen": "2.1.73",
+      "removed_in": null
+    },
+    {
+      "symbol": "permissions.disableBypassPermissionsMode",
+      "type": "config_key",
+      "first_seen": "1.0.22",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "plansDirectory",
+      "type": "config_key",
+      "first_seen": "2.1.9",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "pluginConfigs",
+      "type": "config_key",
+      "first_seen": "2.0.22",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "pluginSuggestionMarketplaces",
+      "type": "config_key",
+      "first_seen": "2.1.152",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "pluginTrustMessage",
+      "type": "config_key",
+      "first_seen": "2.1.64",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "policyHelper",
+      "type": "config_key",
+      "first_seen": "2.1.136",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "policyHelper.path",
+      "type": "config_key",
+      "first_seen": "2.1.136",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "policyHelper.refreshIntervalMs",
+      "type": "config_key",
+      "first_seen": "2.1.136",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "policyHelper.timeoutMs",
+      "type": "config_key",
+      "first_seen": "2.1.136",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "prUrlTemplate",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "precomputeCompactionEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.179",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "preferredNotifChannel",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "prefersReducedMotion",
+      "type": "config_key",
+      "first_seen": "2.1.30",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "proactive",
+      "type": "config_key",
+      "first_seen": "2.1.92",
+      "last_seen": "2.1.104",
+      "removed_in": "2.1.105"
+    },
+    {
+      "symbol": "proactive.autoEnable",
+      "type": "config_key",
+      "first_seen": "2.1.92",
+      "last_seen": "2.1.104",
+      "removed_in": "2.1.105"
+    },
+    {
+      "symbol": "processWrapper",
+      "type": "config_key",
+      "first_seen": "2.1.210",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "promptSuggestionEnabled",
+      "type": "config_key",
+      "first_seen": "2.0.71",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "proxyAuthHelper",
+      "type": "config_key",
+      "first_seen": "2.1.111",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "quietHours",
+      "type": "config_key",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "quietHours.enabled",
+      "type": "config_key",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "quietHours.end",
+      "type": "config_key",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "quietHours.start",
+      "type": "config_key",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "remote",
+      "type": "config_key",
+      "first_seen": "2.0.47",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "remote.defaultEnvironmentId",
+      "type": "config_key",
+      "first_seen": "2.0.47",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "remoteControlAtStartup",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "requiredMaximumVersion",
+      "type": "config_key",
+      "first_seen": "2.1.163",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "requiredMinimumVersion",
+      "type": "config_key",
+      "first_seen": "2.1.163",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "respectGitignore",
+      "type": "config_key",
+      "first_seen": "2.1.0",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "respondToBashCommands",
+      "type": "config_key",
+      "first_seen": "2.1.186",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox",
+      "type": "config_key",
+      "first_seen": "1.0.110",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.allowAppleEvents",
+      "type": "config_key",
+      "first_seen": "2.1.181",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.allowUnsandboxedCommands",
+      "type": "config_key",
+      "first_seen": "2.0.30",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.autoAllowBashIfSandboxed",
+      "type": "config_key",
+      "first_seen": "2.0.24",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.bwrapPath",
+      "type": "config_key",
+      "first_seen": "2.1.133",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.credentials",
+      "type": "config_key",
+      "first_seen": "2.1.187",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.credentials.allowPlaintextInject",
+      "type": "config_key",
+      "first_seen": "2.1.199",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.credentials.awsPairs",
+      "type": "config_key",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.credentials.envVars",
+      "type": "config_key",
+      "first_seen": "2.1.187",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.credentials.files",
+      "type": "config_key",
+      "first_seen": "2.1.187",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.credentials.sigv4",
+      "type": "config_key",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.defaultOn",
+      "type": "config_key",
+      "first_seen": "2.0.11",
+      "last_seen": "2.0.14",
+      "removed_in": "2.0.15"
+    },
+    {
+      "symbol": "sandbox.enableWeakerNestedSandbox",
+      "type": "config_key",
+      "first_seen": "2.0.8",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.enableWeakerNetworkIsolation",
+      "type": "config_key",
+      "first_seen": "2.1.64",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.enabled",
+      "type": "config_key",
+      "first_seen": "2.0.15",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.excludedCommands",
+      "type": "config_key",
+      "first_seen": "2.0.11",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.failIfUnavailable",
+      "type": "config_key",
+      "first_seen": "2.1.83",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.filesystem",
+      "type": "config_key",
+      "first_seen": "1.0.110",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.filesystem.allowManagedReadPathsOnly",
+      "type": "config_key",
+      "first_seen": "2.1.77",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.filesystem.allowRead",
+      "type": "config_key",
+      "first_seen": "2.1.77",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.filesystem.allowWrite",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.filesystem.allowedWriteDirs",
+      "type": "config_key",
+      "first_seen": "1.0.110",
+      "last_seen": "1.0.113",
+      "removed_in": "1.0.114"
+    },
+    {
+      "symbol": "sandbox.filesystem.denyRead",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.filesystem.denyWrite",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.filesystem.disabled",
+      "type": "config_key",
+      "first_seen": "2.1.216",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.filesystem.read",
+      "type": "config_key",
+      "first_seen": "1.0.114",
+      "last_seen": "2.0.10",
+      "removed_in": "2.0.11"
+    },
+    {
+      "symbol": "sandbox.filesystem.read.allow",
+      "type": "config_key",
+      "first_seen": "1.0.114",
+      "last_seen": "1.0.115",
+      "removed_in": "1.0.116"
+    },
+    {
+      "symbol": "sandbox.filesystem.read.deny",
+      "type": "config_key",
+      "first_seen": "1.0.114",
+      "last_seen": "1.0.115",
+      "removed_in": "1.0.116"
+    },
+    {
+      "symbol": "sandbox.filesystem.read.denyOnly",
+      "type": "config_key",
+      "first_seen": "1.0.120",
+      "last_seen": "2.0.10",
+      "removed_in": "2.0.11"
+    },
+    {
+      "symbol": "sandbox.filesystem.write",
+      "type": "config_key",
+      "first_seen": "1.0.114",
+      "last_seen": "2.0.10",
+      "removed_in": "2.0.11"
+    },
+    {
+      "symbol": "sandbox.filesystem.write.allow",
+      "type": "config_key",
+      "first_seen": "1.0.114",
+      "last_seen": "1.0.115",
+      "removed_in": "1.0.116"
+    },
+    {
+      "symbol": "sandbox.filesystem.write.allowOnly",
+      "type": "config_key",
+      "first_seen": "1.0.120",
+      "last_seen": "2.0.10",
+      "removed_in": "2.0.11"
+    },
+    {
+      "symbol": "sandbox.filesystem.write.deny",
+      "type": "config_key",
+      "first_seen": "1.0.114",
+      "last_seen": "1.0.115",
+      "removed_in": "1.0.116"
+    },
+    {
+      "symbol": "sandbox.filesystem.write.denyWithinAllow",
+      "type": "config_key",
+      "first_seen": "1.0.120",
+      "last_seen": "2.0.10",
+      "removed_in": "2.0.11"
+    },
+    {
+      "symbol": "sandbox.filesystem.write.includeDefaults",
+      "type": "config_key",
+      "first_seen": "1.0.120",
+      "last_seen": "2.0.10",
+      "removed_in": "2.0.11"
+    },
+    {
+      "symbol": "sandbox.ignoreViolations",
+      "type": "config_key",
+      "first_seen": "1.0.122",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network",
+      "type": "config_key",
+      "first_seen": "1.0.110",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.allow",
+      "type": "config_key",
+      "first_seen": "1.0.110",
+      "last_seen": "1.0.119",
+      "removed_in": "1.0.120"
+    },
+    {
+      "symbol": "sandbox.network.allowAllUnixSockets",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.allowLocalBinding",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.allowMachLookup",
+      "type": "config_key",
+      "first_seen": "2.1.97",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.allowManagedDomainsOnly",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.allowUnixSockets",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.allowedDomains",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.deniedDomains",
+      "type": "config_key",
+      "first_seen": "2.1.113",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.deny",
+      "type": "config_key",
+      "first_seen": "1.0.110",
+      "last_seen": "1.0.119",
+      "removed_in": "1.0.120"
+    },
+    {
+      "symbol": "sandbox.network.httpProxyPort",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.socksProxyPort",
+      "type": "config_key",
+      "first_seen": "2.1.63",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.strictAllowlist",
+      "type": "config_key",
+      "first_seen": "2.1.219",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.tlsTerminate",
+      "type": "config_key",
+      "first_seen": "2.1.140",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.tlsTerminate.caCertPath",
+      "type": "config_key",
+      "first_seen": "2.1.140",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.network.tlsTerminate.caKeyPath",
+      "type": "config_key",
+      "first_seen": "2.1.140",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.ripgrep",
+      "type": "config_key",
+      "first_seen": "2.0.43",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.ripgrep.args",
+      "type": "config_key",
+      "first_seen": "2.0.43",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.ripgrep.command",
+      "type": "config_key",
+      "first_seen": "2.0.43",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.socatPath",
+      "type": "config_key",
+      "first_seen": "2.1.133",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sandbox.unsandboxedCommands",
+      "type": "config_key",
+      "first_seen": "1.0.125",
+      "last_seen": "2.0.10",
+      "removed_in": "2.0.11"
+    },
+    {
+      "symbol": "showClearContextOnPlanAccept",
+      "type": "config_key",
+      "first_seen": "2.1.81",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "showMessageTimestamps",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "showThinkingSummaries",
+      "type": "config_key",
+      "first_seen": "2.1.64",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "showTurnDuration",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "skillListingBudgetFraction",
+      "type": "config_key",
+      "first_seen": "2.1.105",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "skillListingMaxDescChars",
+      "type": "config_key",
+      "first_seen": "2.1.105",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "skillOverrides",
+      "type": "config_key",
+      "first_seen": "2.1.105",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "skipDangerousModePermissionPrompt",
+      "type": "config_key",
+      "first_seen": "2.1.40",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "skipWebFetchPreflight",
+      "type": "config_key",
+      "first_seen": "1.0.84",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "skipWorkflowUsageWarning",
+      "type": "config_key",
+      "first_seen": "2.1.153",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "skippedMarketplaces",
+      "type": "config_key",
+      "first_seen": "2.0.9",
+      "last_seen": "2.1.37",
+      "removed_in": "2.1.38"
+    },
+    {
+      "symbol": "skippedPlugins",
+      "type": "config_key",
+      "first_seen": "2.0.9",
+      "last_seen": "2.1.37",
+      "removed_in": "2.1.38"
+    },
+    {
+      "symbol": "spinnerTipsEnabled",
+      "type": "config_key",
+      "first_seen": "1.0.112",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "spinnerTipsOverride",
+      "type": "config_key",
+      "first_seen": "2.1.45",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "spinnerTipsOverride.excludeDefault",
+      "type": "config_key",
+      "first_seen": "2.1.45",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "spinnerTipsOverride.tips",
+      "type": "config_key",
+      "first_seen": "2.1.45",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "spinnerVerbs",
+      "type": "config_key",
+      "first_seen": "2.1.23",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "spinnerVerbs.mode",
+      "type": "config_key",
+      "first_seen": "2.1.23",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "spinnerVerbs.verbs",
+      "type": "config_key",
+      "first_seen": "2.1.23",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "sshConfigs",
+      "type": "config_key",
+      "first_seen": "2.1.47",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "statusLine",
+      "type": "config_key",
+      "first_seen": "1.0.64",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "statusLine.command",
+      "type": "config_key",
+      "first_seen": "1.0.64",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "statusLine.hideVimModeIndicator",
+      "type": "config_key",
+      "first_seen": "2.1.120",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "statusLine.padding",
+      "type": "config_key",
+      "first_seen": "1.0.64",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "statusLine.refreshInterval",
+      "type": "config_key",
+      "first_seen": "2.1.97",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "statusLine.type",
+      "type": "config_key",
+      "first_seen": "1.0.64",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "strictKnownMarketplaces",
+      "type": "config_key",
+      "first_seen": "2.0.55",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "strictPluginOnlyCustomization",
+      "type": "config_key",
+      "first_seen": "2.1.81",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "subagentStatusLine",
+      "type": "config_key",
+      "first_seen": "2.1.105",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "subagentStatusLine.command",
+      "type": "config_key",
+      "first_seen": "2.1.105",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "subagentStatusLine.type",
+      "type": "config_key",
+      "first_seen": "2.1.105",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "switchModelsOnFlag",
+      "type": "config_key",
+      "first_seen": "2.1.160",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "syntaxHighlightingDisabled",
+      "type": "config_key",
+      "first_seen": "2.0.74",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "teammateMode",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "terminalProgressBarEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "terminalTitleFromRename",
+      "type": "config_key",
+      "first_seen": "2.1.26",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "theme",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "todoFeatureEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "totalTokensReminder",
+      "type": "config_key",
+      "first_seen": "2.1.176",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "totalTokensReminderAfterUserTurn",
+      "type": "config_key",
+      "first_seen": "2.1.202",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "totalTokensReminderBudget",
+      "type": "config_key",
+      "first_seen": "2.1.196",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "tui",
+      "type": "config_key",
+      "first_seen": "2.1.110",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "ultracode",
+      "type": "config_key",
+      "first_seen": "2.1.154",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "verbose",
+      "type": "config_key",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "viewMode",
+      "type": "config_key",
+      "first_seen": "2.1.97",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "vimInsertModeRemaps",
+      "type": "config_key",
+      "first_seen": "2.1.208",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "voice",
+      "type": "config_key",
+      "first_seen": "2.1.92",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "voice.autoSubmit",
+      "type": "config_key",
+      "first_seen": "2.1.92",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "voice.enabled",
+      "type": "config_key",
+      "first_seen": "2.1.92",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "voice.mode",
+      "type": "config_key",
+      "first_seen": "2.1.92",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "wheelScrollAccelerationEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.174",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "workflowKeywordTriggerEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.157",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "workflowSizeGuideline",
+      "type": "config_key",
+      "first_seen": "2.1.219",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "worktree",
+      "type": "config_key",
+      "first_seen": "2.1.38",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "worktree.baseRef",
+      "type": "config_key",
+      "first_seen": "2.1.133",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "worktree.bgIsolation",
+      "type": "config_key",
+      "first_seen": "2.1.143",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "worktree.sparsePaths",
+      "type": "config_key",
+      "first_seen": "2.1.76",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "worktree.symlinkDirectories",
+      "type": "config_key",
+      "first_seen": "2.1.38",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
+      "symbol": "wslInheritsWindowsSettings",
+      "type": "config_key",
+      "first_seen": "2.1.118",
+      "last_seen": "2.1.224",
+      "removed_in": null
+    },
+    {
       "symbol": "AGENT_PROXY_AUTH_TOKEN",
       "type": "env_var",
       "first_seen": "2.1.128",
