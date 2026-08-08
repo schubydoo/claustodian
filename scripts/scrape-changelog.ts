@@ -524,6 +524,10 @@ export function assembleSnapshots(
       ? { ...record, status: 'deprecated' }
       : record;
 
+  /** Same record unless the category actually differs — keeps snapshots stable. */
+  const withCategory = (record: SymbolRecord, category: string): SymbolRecord =>
+    record.category === category ? record : { ...record, category };
+
   // Resolve the description from the binary timeline: a curated (non-empty)
   // description wins in the current era; a HISTORICAL snapshot takes the text
   // observed in that version's binary (de-anachronized), and a previously-EMPTY
@@ -533,11 +537,20 @@ export function assembleSnapshots(
     if (!binaryDescriptions) return record;
     const eras = binaryDescriptions[`${record.type}:${record.symbol}`];
     if (!eras || eras.length === 0) return record;
-    if (record.description !== '' && isCurrentDescriptionEra(eras, version)) return record;
+    // A config key's category is per-version for the same reason its description
+    // is: the `@internal` marker lives IN the description and moves. enrichWithBinary
+    // can only pick one value for the record, so without resolving it here every
+    // historical snapshot would carry the tip's category — publishing a key as
+    // ordinary `settings` in the very versions where it was internal.
+    const categorized =
+      record.type === 'config_key'
+        ? withCategory(record, binaryConfigCategory(eras, version))
+        : record;
+    if (categorized.description !== '' && isCurrentDescriptionEra(eras, version)) return categorized;
     const era = descriptionAt(eras, version);
-    return era && era.description !== record.description
-      ? { ...record, description: era.description, description_source: 'binary' }
-      : record;
+    return era && era.description !== categorized.description
+      ? { ...categorized, description: era.description, description_source: 'binary' }
+      : categorized;
   };
 
   return versionsOldestFirst.map((version) => ({

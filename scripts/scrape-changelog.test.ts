@@ -864,6 +864,50 @@ describe('assembleSnapshots — per-version deprecation status', () => {
   const statusAt = (snaps: ReturnType<typeof assembleSnapshots>, v: string, sym: string) =>
     snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === sym)?.status;
 
+  it('resolves a config key category per version as the @internal marker moves', () => {
+    // ONE observation window spanning the edit, which is what the real pipeline
+    // produces: disableWorkflows is present 2.1.152 -> 2.1.224 and lost its
+    // @internal prefix at 2.1.154. enrichWithBinary can only stamp one category
+    // on the record, so without per-version resolution every snapshot would show
+    // the tip's value and the versions where it WAS internal would say otherwise.
+    const snaps = assembleSnapshots(
+      [
+        rec({
+          symbol: 'disableWorkflows',
+          type: 'config_key',
+          first_seen: '1.5.0',
+          category: 'settings',
+          description: 'Disable the Workflows feature',
+          provenance: 'binary',
+        }),
+      ],
+      blocks,
+      {
+        'config_key:disableWorkflows': [
+          { from: '1.5.0', description: '@internal Disable the Workflows feature' },
+          { from: '2.4.0', description: 'Disable the Workflows feature' },
+        ],
+      }
+    );
+    const catAt = (v: string) =>
+      snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === 'disableWorkflows')
+        ?.category;
+    expect(catAt('1.5.0')).toBe('settings-internal');
+    expect(catAt('2.0.0')).toBe('settings-internal');
+    expect(catAt('2.4.0')).toBe('settings');
+    expect(catAt('2.6.0')).toBe('settings');
+  });
+
+  it('leaves a non-config symbol category untouched by the description timeline', () => {
+    const snaps = assembleSnapshots([rec({ category: 'command' })], blocks, {
+      'command:/output-style': [{ from: '1.5.0', description: '@internal looks internal' }],
+    });
+    const cat = snaps
+      .find((s) => s.version === '2.6.0')
+      ?.symbols.find((x) => x.symbol === '/output-style')?.category;
+    expect(cat).toBe('command');
+  });
+
   it('reads active before deprecated_in and deprecated at/after (still present)', () => {
     const snaps = assembleSnapshots([rec({ deprecated_in: '2.0.0' })], blocks);
     expect(statusAt(snaps, '1.5.0', '/output-style')).toBe('active');
