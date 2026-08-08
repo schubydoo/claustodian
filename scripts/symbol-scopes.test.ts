@@ -17,6 +17,14 @@ describe('scopesFor', () => {
     expect(scopesFor('cli_flag', '--config')).toEqual(['gateway', 'plugin']);
   });
 
+  it('scopes the one runner flag the changelog publishes', () => {
+    // `claude self-hosted-runner` is argv-dispatched and hidden from
+    // `claude --help`, so it was not in the sweep. But 2.1.225's changelog names
+    // `--base-dir`, which publishes it through the changelog lane — leaving a
+    // runner-only flag in the dataset with no scope at all.
+    expect(scopesFor('cli_flag', '--base-dir')).toEqual(['self-hosted-runner']);
+  });
+
   it('leaves a flag accepted on bare claude unscoped', () => {
     // `--help` is attributed to plugins-reference in docs.json purely because no
     // earlier page claimed it. Scoping by page would publish "--help only works
