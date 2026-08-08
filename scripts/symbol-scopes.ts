@@ -23,79 +23,106 @@
  * `--config` and `--yes` are each accepted under two or more different
  * subcommands, so a single page also cannot describe them.
  *
- * SOURCE. An exhaustive sweep of `claude <subcommand> --help` at 2.1.202, the
- * same first-party `help` evidence PROMOTED_BINARY_SYMBOLS already uses for
- * descriptions. Every top-level subcommand was enumerated, plus every
- * `claude plugin` sub-subcommand, and anything bare `claude --help` accepts was
- * excluded. The four `remote-control` entries come from the official
- * remote-control docs page instead: `claude remote-control --help` refuses to
- * print its flags unless signed in with an eligible account.
+ * SOURCE. An exhaustive sweep of `claude <path> --help` at 2.1.226, the same
+ * first-party `help` evidence PROMOTED_BINARY_SYMBOLS already uses for
+ * descriptions. Every top-level subcommand was enumerated AND every
+ * sub-subcommand of each (depth two — `plugin eval`, `mcp add`,
+ * `plugin marketplace add`, `auth login`, …), reading the `Options:` block of
+ * each. Anything the bare `claude --help` accepts (65 flags) is excluded, since a
+ * flag valid top-level must stay unscoped: a non-empty list asserts the opposite.
+ *
+ * Five entries the sweep cannot reach are carried over from the 2.1.202 capture.
+ * The four `remote-control` ones come from the official docs page —
+ * `claude remote-control --help` refuses to print its flags unless signed in with
+ * an eligible account — and `--base-dir` from `self-hosted-runner`, which is
+ * argv-dispatched and hidden from `claude --help` so it is never enumerated. The
+ * binary lane reaches that surface instead (scripts/argv-scopes.ts) and its
+ * scopes UNION with this table; where both speak they agree.
  *
  * POINT IN TIME. Like the help-sourced descriptions, this is a capture, not
  * something CI re-derives, and it is applied to every version. Scope changes
  * rarely, but a flag that moved between subcommands would be described by its
  * current home across its whole history. That trade is deliberate: a stale scope
- * is far less misleading than no scope at all, which currently reads as
- * "top-level".
+ * is far less misleading than no scope at all, which reads as "top-level". Note
+ * the binary lane does NOT make this trade — it records when it saw each parser
+ * and bounds its scopes to those versions.
  */
 
-/** Curated `cli_flag` scopes. Keyed by flag; values are sorted and complete. */
+/**
+ * Curated `cli_flag` scopes. Keyed by flag; values are sorted and complete.
+ *
+ * Values are FULL INVOCATION PATHS after `claude` — `plugin eval`, `mcp add`,
+ * not `plugin` or `mcp`. The first capture recorded the top-level subcommand
+ * only, which turned out to be a false claim rather than a coarse one: commander
+ * rejects a sub-subcommand's flag at the parent, so `claude plugin --scaffold`
+ * answers `error: unknown option '--scaffold'` while the dataset said
+ * `['plugin']`. That is the same error `scopes` exists to prevent, one level
+ * down, and it also matches how the binary lane states runner scopes
+ * (`self-hosted-runner orchestrator`), so the field now has one granularity
+ * throughout.
+ *
+ * Re-deriving also fixed INCOMPLETENESS, which coarseness had hidden: `--scope`
+ * is accepted under ten invocations across `mcp` and `plugin`, `--json` under
+ * five including `auth status`, and `--all` under `project purge` — none of
+ * which a single `plugin` entry could express. Twelve flags the first sweep
+ * missed entirely (`--client-secret`, `--callback-port`, `--sso`, …) are here
+ * because sub-subcommand help was never read.
+ */
 export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
-  // `claude remote-control` server mode — from the official docs page.
-  ['--capacity', ['remote-control']],
-  ['--no-sandbox', ['remote-control']],
-  ['--sandbox', ['remote-control']],
-  ['--spawn', ['remote-control']],
-  // Accepted under more than one subcommand — the case a single scope cannot describe.
-  ['--all', ['agents', 'plugin']],
-  ['--config', ['gateway', 'plugin']],
-  ['--dry-run', ['import', 'plugin']],
-  ['--force', ['install', 'plugin']],
-  ['--json', ['agents', 'plugin', 'ultrareview']],
-  ['--yes', ['import', 'plugin']],
-  // `claude agents`
-  ['--cwd', ['agents']],
-  // `claude self-hosted-runner`. Its own `--help` is reachable, but the subcommand
-  // is argv-dispatched and hidden from `claude --help`, so it was not in the sweep.
-  // Included because the changelog PUBLISHES this flag ("Fixed `claude
-  // self-hosted-runner` … when `--base-dir` cannot be created"), which would
-  // otherwise put a runner-only flag in the dataset with no scope at all. The
-  // other ~43 runner flags stay withheld by isPublishableBinaryFlag and are the
-  // subject of a separate binary-lane scope PR.
+  ['--ablation', ['plugin eval']],
+  ['--all', ['agents', 'plugin disable', 'project purge']],
+  ['--allow-tools', ['plugin eval']],
+  ['--author', ['plugin init']],
+  ['--author-email', ['plugin init']],
+  ['--available', ['plugin list']],
   ['--base-dir', ['self-hosted-runner']],
-  // `claude mcp`
-  ['--header', ['mcp']],
-  ['--transport', ['mcp']],
-  // `claude ultrareview`
+  ['--callback-port', ['mcp add']],
+  ['--capacity', ['remote-control']],
+  ['--case', ['plugin eval']],
+  ['--claudeai', ['auth login']],
+  ['--client-id', ['mcp add']],
+  ['--client-secret', ['mcp add', 'mcp add-json']],
+  ['--config', ['gateway', 'plugin install']],
+  ['--console', ['auth login']],
+  ['--cwd', ['agents']],
+  ['--description', ['plugin init']],
+  ['--dry-run', ['import', 'plugin prune', 'plugin tag', 'project purge']],
+  ['--email', ['auth login']],
+  ['--env', ['mcp add']],
+  ['--force', ['install', 'plugin init', 'plugin tag']],
+  ['--header', ['mcp add']],
+  ['--interactive', ['project purge']],
+  ['--json', ['agents', 'auth status', 'plugin eval', 'plugin list', 'ultrareview']],
+  ['--judge-model', ['plugin eval']],
+  ['--keep-data', ['plugin uninstall']],
+  ['--keep-temp', ['plugin eval']],
+  ['--label', ['auto-mode defaults']],
+  ['--max-cost-usd', ['plugin eval']],
+  ['--message', ['plugin tag']],
+  ['--no-browser', ['mcp login']],
+  ['--no-publish', ['plugin eval']],
+  ['--no-sandbox', ['remote-control']],
+  ['--no-scaffold', ['plugin eval']],
+  ['--output-dir', ['plugin eval']],
+  ['--prune', ['plugin uninstall']],
+  ['--publish-report', ['plugin eval']],
+  ['--push', ['plugin tag']],
+  ['--remote', ['plugin tag']],
+  ['--report', ['plugin eval']],
+  ['--runs', ['plugin eval']],
+  ['--sandbox', ['remote-control']],
+  ['--scaffold', ['plugin eval']],
+  ['--scope', ['mcp add', 'mcp add-from-claude-desktop', 'mcp add-json', 'mcp remove', 'plugin disable', 'plugin enable', 'plugin install', 'plugin prune', 'plugin uninstall', 'plugin update']],
+  ['--spawn', ['remote-control']],
+  ['--sso', ['auth login']],
+  ['--strict', ['plugin validate']],
+  ['--tag', ['plugin eval']],
+  ['--text', ['auth status']],
+  ['--threshold', ['plugin eval']],
   ['--timeout', ['ultrareview']],
-  // `claude plugin` and its sub-subcommands
-  ['--ablation', ['plugin']],
-  ['--allow-tools', ['plugin']],
-  ['--author', ['plugin']],
-  ['--author-email', ['plugin']],
-  ['--available', ['plugin']],
-  ['--case', ['plugin']],
-  ['--description', ['plugin']],
-  ['--judge-model', ['plugin']],
-  ['--keep-data', ['plugin']],
-  ['--keep-temp', ['plugin']],
-  ['--max-cost-usd', ['plugin']],
-  ['--message', ['plugin']],
-  ['--no-publish', ['plugin']],
-  ['--no-scaffold', ['plugin']],
-  ['--output-dir', ['plugin']],
-  ['--prune', ['plugin']],
-  ['--publish-report', ['plugin']],
-  ['--push', ['plugin']],
-  ['--remote', ['plugin']],
-  ['--report', ['plugin']],
-  ['--runs', ['plugin']],
-  ['--scaffold', ['plugin']],
-  ['--scope', ['plugin']],
-  ['--strict', ['plugin']],
-  ['--tag', ['plugin']],
-  ['--threshold', ['plugin']],
-  ['--with', ['plugin']],
+  ['--transport', ['mcp add']],
+  ['--with', ['plugin init']],
+  ['--yes', ['auto-mode reset', 'import', 'plugin prune', 'plugin uninstall', 'project purge']],
 ]);
 
 /**

@@ -525,8 +525,11 @@
         </p>
         <p>
           A <span class="scope">under remote-control</span> chip means the flag is only accepted
-          under that subcommand — <code>claude --sandbox</code> fails where
-          <code>claude remote-control --sandbox</code> works. The list is complete, so a flag
+          under that invocation — <code>claude --sandbox</code> fails where
+          <code>claude remote-control --sandbox</code> works. Scopes are full paths, so
+          <span class="scope">under plugin eval</span> means exactly that:
+          <code>claude plugin --scaffold</code> fails too, because the flag belongs to
+          <code>plugin eval</code> and not to <code>plugin</code>. The list is complete, so a flag
           without the chip simply has no scope information recorded; it does not mean the flag is
           top-level.
         </p>
