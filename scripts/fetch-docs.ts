@@ -487,7 +487,7 @@ async function fetchPage(page: string): Promise<{ page: string; markdown: string
  * claim checkable instead of assumed. Missing or unreadable is fatal rather than
  * skipped — running without it would publish guessed key paths.
  */
-async function knownSettingsKeys(path: string): Promise<ReadonlySet<string>> {
+export async function knownSettingsKeys(path: string): Promise<ReadonlySet<string>> {
   const raw = JSON.parse(await readFile(path, 'utf-8')) as {
     symbols?: Array<{ type?: string; symbol?: string }>;
   };

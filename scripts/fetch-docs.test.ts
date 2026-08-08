@@ -1,11 +1,14 @@
 // Copyright 2026 Schuby
 // SPDX-License-Identifier: Apache-2.0
 
-import { readFile, rm } from 'node:fs/promises';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   assertOfficialDocs,
   buildDocsIndex,
+  knownSettingsKeys,
   main,
   officialSourcePages,
   PAGE_BASELINE_MIN_VERSION,
@@ -481,5 +484,48 @@ describe('parseDocPage — settings page', () => {
       '| `--settings` | A flag mentioned in passing |\n' +
       '| `CLAUDE_CODE_SAFE_MODE` | An env var mentioned in passing |\n';
     expect(page(md).map((e) => e.type)).toEqual(['config_key']);
+  });
+});
+
+describe('knownSettingsKeys', () => {
+  let dir: string;
+  beforeEach(async () => {
+    dir = await mkdtemp(join(tmpdir(), 'claustodian-docs-'));
+  });
+  afterEach(async () => {
+    await rm(dir, { recursive: true, force: true });
+  });
+  const write = async (body: unknown) => {
+    const p = join(dir, 'obs.json');
+    await writeFile(p, JSON.stringify(body), 'utf-8');
+    return p;
+  };
+
+  it('reads config_key paths and ignores every other type', async () => {
+    const p = await write({
+      symbols: [
+        { type: 'config_key', symbol: 'permissions.allow' },
+        { type: 'config_key', symbol: 'advisorModel' },
+        { type: 'cli_flag', symbol: '--print' },
+        { type: 'env_var', symbol: 'CLAUDE_CODE_SAFE_MODE' },
+      ],
+    });
+    const keys = await knownSettingsKeys(p);
+    expect([...keys].sort()).toEqual(['advisorModel', 'permissions.allow']);
+  });
+
+  it('throws rather than resolving key paths against an empty schema', async () => {
+    // Silently returning an empty set would make every namespaced settings row
+    // unresolvable, which reads as "the page documents nothing" — a whole lane
+    // quietly going dark.
+    await expect(knownSettingsKeys(await write({ symbols: [] }))).rejects.toThrow(
+      /holds no config_key observations/
+    );
+    await expect(knownSettingsKeys(await write({}))).rejects.toThrow(
+      /holds no config_key observations/
+    );
+    await expect(
+      knownSettingsKeys(await write({ symbols: [{ type: 'cli_flag', symbol: '--print' }] }))
+    ).rejects.toThrow(/holds no config_key observations/);
   });
 });
