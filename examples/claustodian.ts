@@ -16,9 +16,11 @@
 
 export const DEFAULT_BASE = 'https://schubydoo.github.io/claustodian/data';
 
-// All five values the schema's `type` enum allows. Only cli_flag/command/env_var
-// appear in the data today; config_key/internal_config_flag are reserved by the
-// schema, so a forward-compatible consumer should accept them too.
+// All five values the schema's `type` enum allows. cli_flag, command, env_var and
+// config_key are all populated; internal_config_flag is reserved by the schema and
+// deliberately unused — internal-ness is carried by `category`
+// (`settings-internal`), because typing off a description would churn a record's
+// identity every time Anthropic edits the text.
 export type SymbolType = 'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag';
 export type Status = 'active' | 'deprecated' | 'removed' | 'needs_review';
 export type Confidence = 'high' | 'medium' | 'low';
