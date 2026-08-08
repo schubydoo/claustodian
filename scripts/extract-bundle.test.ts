@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { isAccessorEvidenceEnv, isPublishableBinaryEnv } from './binary-lane.js';
 import {
+  extractHiddenFlags,
   extractAccessorEnvVars,
   extractBundleSymbols,
   extractCommands,
@@ -653,5 +654,57 @@ describe('extractBundleSymbols', () => {
     expect(loops).toHaveLength(1);
     expect(loops[0]?.evidence).toBe('command-registry');
     expect(loops[0]?.description).toBe('menu');
+  });
+});
+
+describe('extractHiddenFlags', () => {
+  it('finds an Option chained to .hideHelp()', () => {
+    const src = 'x.addOption(new sd("--agent-id <id>","Teammate agent ID").hideHelp())';
+    expect([...extractHiddenFlags(src)]).toEqual(['--agent-id']);
+  });
+
+  it('ignores an Option with no .hideHelp()', () => {
+    const src = 'x.addOption(new sd("--print","Print response and exit"))';
+    expect(extractHiddenFlags(src).size).toBe(0);
+  });
+
+  it("does not attribute a later option's hideHelp to an earlier one", () => {
+    // The scan may cross further chained calls on the SAME Option but never
+    // another `new X(`, or every public flag preceding a hidden one would be
+    // marked internal.
+    const src =
+      'x.addOption(new sd("--print","Print and exit")),' +
+      'x.addOption(new sd("--agent-id <id>","Teammate agent ID").hideHelp())';
+    expect([...extractHiddenFlags(src)]).toEqual(['--agent-id']);
+  });
+
+  it('still matches across other chained calls on the same Option', () => {
+    const src =
+      'x.addOption(new sd("--workload <tag>","Workload tag").argParser(f).default("x").hideHelp())';
+    expect([...extractHiddenFlags(src)]).toEqual(['--workload']);
+  });
+
+  it('rejects a first argument that is not an option spec', () => {
+    // `new lr("--configure-git: could not restore …")` is an Error message, the
+    // same false positive OPTION_SPEC exists to stop.
+    const src = 'throw new lr("--configure-git: could not restore hook stubs").hideHelp()';
+    expect(extractHiddenFlags(src).size).toBe(0);
+  });
+
+  it('takes every long flag in an alias spec', () => {
+    // One arg placeholder, at the end — the shape OPTION_SPEC accepts.
+    const src = 'x.addOption(new sd("-w, --workload, --work-tag <tag>","Workload tag").hideHelp())';
+    expect([...extractHiddenFlags(src)].sort()).toEqual(['--work-tag', '--workload']);
+  });
+
+  it('marks the flag on the extracted symbol', () => {
+    const src = 'x.addOption(new sd("--agent-id <id>","Teammate agent ID").hideHelp())';
+    const sym = extractBundleSymbols(src).find((s) => s.symbol === '--agent-id');
+    expect(sym?.hidden).toBe(true);
+  });
+
+  it('leaves a public flag unmarked', () => {
+    const src = 'x.addOption(new sd("--print","Print response and exit"))';
+    expect(extractBundleSymbols(src).find((s) => s.symbol === '--print')?.hidden).toBeUndefined();
   });
 });

@@ -80,7 +80,7 @@
     "category": {
       "type": "string",
       "minLength": 1,
-      "description": "Grouping used both for topic (startup, networking, ui, filesystem, auth, ...) and for ownership/source scoping (third-party, cloud-auth, ci-detect, runtime, terminal, ...)."
+      "description": "Grouping used for topic (startup, networking, ui, filesystem, auth, ...), for ownership/source scoping (third-party, cloud-auth, ci-detect, runtime, terminal, ...), and for how a symbol is surfaced: `cli-internal` for a flag hidden from `claude --help`, `settings`/`settings-internal` for keys in settings.json, `global-config` for keys in ~/.claude.json."
     },
     "scopes": {
       "type": "array",

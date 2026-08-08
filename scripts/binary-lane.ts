@@ -29,6 +29,12 @@ import { readFile } from 'node:fs/promises';
 import { compareVersionsAsc, type ExtractedSymbolType } from './lib.js';
 import { settingsKeyCategory } from './settings-schema.js';
 
+/** A change point in a flag's `--help` visibility. */
+export interface HiddenEra {
+  from: string;
+  hidden: boolean;
+}
+
 /** A symbol's observation window across the archived binaries. */
 export interface BinaryObservation {
   symbol: string;
@@ -56,6 +62,15 @@ export interface BinaryObservation {
    * establish a complete scope, which is what keeps the flag withheld.
    */
   scopes?: readonly string[];
+  /**
+   * When the flag was registered with commander's `.hideHelp()`, as change
+   * points: each era holds from its `from` version until the next. A TIMELINE
+   * rather than a single flag because visibility moves — `--teleport` was hidden
+   * through 2.1.220 and public at 2.1.226, `--task-budget` the same at 2.1.220 —
+   * and one latest-state value would stamp today's answer on every historical
+   * snapshot. Absent when the flag was never hidden.
+   */
+  hidden_eras?: readonly HiddenEra[];
 }
 
 export interface BinaryObservations {
@@ -258,6 +273,46 @@ export function isPublishableBinaryFlag(observation: BinaryObservation): boolean
  */
 export function mayRedateFromBinary(observation: BinaryObservation): boolean {
   return observation.switch_case_only !== true;
+}
+
+/**
+ * The published category for a flag: `cli-internal` when the CLI hides it from
+ * `claude --help`, `cli` otherwise.
+ *
+ * `.hideHelp()` is Claude Code's own statement that a flag is real but not
+ * user-facing: it parses and works, yet something else sets it — a spawning
+ * parent (`--managed-settings`, "SDK use only"), the teammate orchestrator
+ * (`--agent-id`, `--team-name`), a deep link, or a deprecated alias kept for
+ * compatibility. Verified against 2.1.226: every hidden flag is absent from
+ * `claude --help` yet accepted on the command line, and no public flag carries
+ * the marker.
+ *
+ * CATEGORY, not type or status — the same call settingsKeyCategory makes for
+ * `@internal` keys. The flag exists and works, so status stays whatever the
+ * evidence says; hiding is a property of how it is surfaced, and it moves when
+ * Anthropic promotes a flag out of hiding.
+ */
+export function binaryFlagCategory(
+  eras: readonly HiddenEra[] | undefined,
+  version: string,
+  category: string
+): string {
+  return hiddenAt(eras, version) ? 'cli-internal' : category;
+}
+
+/**
+ * Whether the flag was hidden at `version` — the latest era whose `from` is
+ * <= version. False before the first era, which is the honest answer: we have no
+ * observation of it being hidden that early, and distillation drops a leading
+ * public era as information-free.
+ */
+export function hiddenAt(eras: readonly HiddenEra[] | undefined, version: string): boolean {
+  let state = false;
+  for (const era of eras ?? []) {
+    if (compareVersionsAsc(era.from, version) > 0) break;
+    state = era.hidden;
+  }
+  return state;
 }
 
 /**
@@ -505,6 +560,217 @@ export const PROMOTED_BINARY_SYMBOLS: ReadonlyMap<string, BinaryPromotion> = new
       description: 'Transport type (stdio, sse, http). Defaults to stdio if not specified.',
       description_source: 'help',
     },
+  ],
+  // Every remaining flag the CLI hides from `claude --help` that carries its own
+  // registered description. Same evidence bar as any other promotion — Anthropic
+  // wrote the text and the CLI accepts the flag — and `category: cli-internal`
+  // already tells a reader not to type it, so `active` cannot be misread as
+  // "user-facing". `--plugin-dir-no-mcp` is excluded: hidden, but no description
+  // to promote.
+  [
+    'cli_flag:--correlation-id',
+    {
+      description:
+        'Opaque id echoed back to the environment orchestrator on the work order (requires --environment).',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--cowork',
+    { description: 'Use cowork_plugins directory', description_source: 'binary' },
+  ],
+  [
+    'cli_flag:--debug-to-stderr',
+    { description: '(deprecated) Enable debug mode (to stderr)', description_source: 'binary' },
+  ],
+  [
+    'cli_flag:--deep-link-cwd-b64',
+    {
+      description: 'Base64url-encoded working directory (deep-link shell-safe launch paths)',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--deep-link-last-fetch',
+    {
+      description: 'FETCH_HEAD mtime in epoch ms, precomputed by the deep link trampoline',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--deep-link-origin',
+    {
+      description: 'Signal that this session was launched from a deep link',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--deep-link-repo',
+    {
+      description: 'Repo slug the deep link ?repo= parameter resolved to the current cwd',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--enable-auth-status',
+    { description: 'Enable auth status messages in SDK mode', description_source: 'binary' },
+  ],
+  [
+    'cli_flag:--interview',
+    { description: 'Alias for --interactive', description_source: 'binary' },
+  ],
+  [
+    'cli_flag:--managed-settings',
+    {
+      description: 'Policy-tier settings JSON from a spawning parent process (SDK use only)',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--max-thinking-tokens',
+    {
+      description:
+        '[DEPRECATED. Use --thinking instead for newer models] Maximum number of thinking tokens (only works with --print)',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--messaging-socket-path',
+    {
+      description:
+        'Cross-session messaging server path: a Unix domain socket on Mac/Linux, a \\\\.\\pipe\\ name on Windows (defaults to an auto-generated path)',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--on-branch',
+    {
+      description:
+        'Work directly on <branch> in the remote session (checkout and push to it). On self-hosted environments this includes pushing to the default branch when it is not protected — use GitHub branch protection to restrict. Mutually exclusive with --ref. Requires --cloud or --environment.',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--parent-session-id',
+    { description: 'Parent session ID for analytics correlation', description_source: 'binary' },
+  ],
+  [
+    'cli_flag:--plan-mode-instructions',
+    {
+      description:
+        'Custom workflow body for plan mode. Replaces the default code-implementation phases in the plan-mode system reminder; the read-only enforcement preamble and ExitPlanMode protocol footer are always kept.',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--plan-mode-required',
+    { description: 'Require plan mode before implementation', description_source: 'binary' },
+  ],
+  [
+    'cli_flag:--pool',
+    { description: 'Deprecated alias for --environment', description_source: 'binary' },
+  ],
+  [
+    'cli_flag:--prefill',
+    {
+      description: 'Pre-fill the prompt input with text without submitting it',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--prefill-b64',
+    {
+      description: 'Base64url-encoded --prefill value (deep-link shell-safe launch paths)',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--reply-on-resume',
+    {
+      description:
+        'When resuming, immediately query if the loaded transcript ends in a user-role message (set by /background mid-turn so the fork continues the in-flight turn).',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--resume-drops-turn',
+    {
+      description:
+        'With --resume-session-at in print mode: declare the prompt uuid of the turn the truncating resume intends to discard; the resume is refused if the discarded range contains anything not attributable to that turn (absorbed queued messages, task notifications, content from other turns). Ignored outside print mode, like --resume-session-at.',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--resume-session-at',
+    {
+      description:
+        "When resuming, only messages up to and including the chain entry with <message.id> — any chain-entry UUID, typically the kept turn's last entry (use with --resume in print mode)",
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--rewind-files',
+    {
+      description:
+        'Restore files to state at the specified user message and exit (requires --resume)',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--sdk-url',
+    {
+      description:
+        'Use remote WebSocket endpoint for SDK I/O streaming (only with -p and stream-json format)',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--session-mirror',
+    {
+      description:
+        'Emit transcript_mirror frames on stdout (SDK-internal; set by ProcessTransport when sessionStore is configured)',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--team-name',
+    { description: 'Team name for teammate coordination', description_source: 'binary' },
+  ],
+  [
+    'cli_flag:--thinking',
+    {
+      description: 'Thinking mode: enabled (equivalent to adaptive), disabled',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--thinking-display',
+    { description: 'How thinking content appears in the response', description_source: 'binary' },
+  ],
+  [
+    'cli_flag:--workload',
+    {
+      description:
+        'Workload tag for billing-header attribution (cc_workload). Process-scoped; set by SDK daemon callers that spawn subprocesses for cron work. (only works with --print)',
+      description_source: 'binary',
+    },
+  ],
+  // Agent-team orchestration flags. Claude Code sets these when it spawns a
+  // teammate session; typing one yourself parses but does nothing useful. They
+  // are commander-registered with these exact descriptions, so the text is the
+  // binary's own — the "do not type this" signal is carried by
+  // `category: cli-internal` (from .hideHelp()), not by prose invented here.
+  //
+  // `--agent-teams` is deliberately absent: it is a feature GATE read as
+  // `process.argv.includes("--agent-teams")` alongside
+  // CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS, not a teammate parameter, and it
+  // carries no description to promote.
+  ['cli_flag:--agent-id', { description: 'Teammate agent ID', description_source: 'binary' }],
+  ['cli_flag:--agent-name', { description: 'Teammate display name', description_source: 'binary' }],
+  ['cli_flag:--agent-color', { description: 'Teammate UI color', description_source: 'binary' }],
+  [
+    'cli_flag:--agent-type',
+    { description: 'Custom agent type for this teammate', description_source: 'binary' },
   ],
   // Four the ORIGINAL sweep missed for the same reason the scope map was wrong:
   // it read only `claude <subcommand> --help`, so `plugin eval` and

@@ -56,6 +56,8 @@ export interface BinaryCacheFile {
      * publish/withhold decision it feeds still lives in binary-lane.ts.
      */
     scopes?: readonly string[];
+    /** Registered with commander's `.hideHelp()` in this version. */
+    hidden?: true;
   }>;
 }
 
@@ -98,10 +100,12 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       versions: string[];
       strongEvidence: boolean;
       scopes: Set<string>;
+      /** Versions that registered the flag as hidden, collapsed into eras below. */
+      hiddenIn: Set<string>;
     }
   >();
   for (const file of files) {
-    for (const { symbol, type, evidence, scopes } of file.symbols) {
+    for (const { symbol, type, evidence, scopes, hidden } of file.symbols) {
       const key = `${type}:${symbol}`;
       // Evidence is per-version and can strengthen over releases (a flag parsed by a
       // switch in one release may be commander-registered in the next). Track whether
@@ -113,6 +117,7 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
         entry.versions.push(file.version);
         entry.strongEvidence ||= strong;
         for (const s of scopes ?? []) entry.scopes.add(s);
+        if (hidden) entry.hiddenIn.add(file.version);
       } else
         seenIn.set(key, {
           symbol,
@@ -120,19 +125,36 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
           versions: [file.version],
           strongEvidence: strong,
           scopes: new Set(scopes ?? []),
+          hiddenIn: new Set(hidden ? [file.version] : []),
         });
     }
   }
 
   const symbols: BinaryObservation[] = [];
-  for (const { symbol, type, versions, strongEvidence, scopes } of seenIn.values()) {
+  for (const { symbol, type, versions, strongEvidence, scopes, hiddenIn } of seenIn.values()) {
     const sorted = [...versions].sort(compareVersionsAsc);
+    // Visibility is a TIMELINE, not a current state. Six flags flip between
+    // hidden and public across the archive (--teleport, --task-budget, --cloud,
+    // --interactive, --max-budget-usd, --remote-control), so collapsing to the
+    // latest value would stamp today's answer on every historical snapshot —
+    // the same defect the config_key category and the scopes field each had.
+    // Only change points are emitted, and only when the flag was ever hidden.
+    const hiddenEras: { from: string; hidden: boolean }[] = [];
+    for (const v of sorted) {
+      const isHidden = hiddenIn.has(v);
+      if (hiddenEras[hiddenEras.length - 1]?.hidden !== isHidden) {
+        hiddenEras.push({ from: v, hidden: isHidden });
+      }
+    }
+    // A leading "not hidden" era carries no information — absence says the same.
+    if (hiddenEras[0]?.hidden === false) hiddenEras.shift();
     symbols.push({
       symbol,
       type,
       first_seen: sorted[0] as string,
       last_seen: sorted[sorted.length - 1] as string,
       removed_in: computeBinaryRemoval(versions, observedVersions),
+      ...(hiddenEras.length ? { hidden_eras: hiddenEras } : {}),
       // Scope rides with the caveat it lifts. A symbol with strong evidence
       // somewhere publishes top-level, and narrowing it by a subcommand parser
       // that accepts the same name would be a false claim, not a refinement.

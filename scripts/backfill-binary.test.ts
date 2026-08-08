@@ -363,3 +363,58 @@ describe('main (arg parsing)', () => {
     await expect(main(['--out'])).rejects.toThrow(/--out requires a path/);
   });
 });
+
+describe('distillObservations — flag visibility eras', () => {
+  const v = (version: string, hidden?: true) => ({
+    version,
+    symbols: [
+      {
+        symbol: '--teleport',
+        type: 'cli_flag' as const,
+        evidence: 'registration',
+        ...(hidden ? { hidden } : {}),
+      },
+    ],
+  });
+
+  it('records a flag hidden for its whole life as one era', () => {
+    expect(
+      distillObservations([v('2.1.16', true), v('2.1.20', true)]).symbols[0]?.hidden_eras
+    ).toEqual([{ from: '2.1.16', hidden: true }]);
+  });
+
+  it('records the version a flag became public', () => {
+    // --teleport was hidden through 2.1.220 and public at 2.1.226. Collapsing to
+    // the latest state would report `cli` for its entire history.
+    const eras = distillObservations([v('2.1.16', true), v('2.1.220', true), v('2.1.226')])
+      .symbols[0]?.hidden_eras;
+    expect(eras).toEqual([
+      { from: '2.1.16', hidden: true },
+      { from: '2.1.226', hidden: false },
+    ]);
+  });
+
+  it('records a flag that was hidden only later', () => {
+    const eras = distillObservations([v('2.1.16'), v('2.1.20', true)]).symbols[0]?.hidden_eras;
+    // The leading public era is dropped — absence already says "not hidden".
+    expect(eras).toEqual([{ from: '2.1.20', hidden: true }]);
+  });
+
+  it('omits the field entirely for a flag never hidden', () => {
+    expect(distillObservations([v('2.1.16'), v('2.1.20')]).symbols[0]?.hidden_eras).toBeUndefined();
+  });
+
+  it('collapses repeats rather than emitting one era per version', () => {
+    const eras = distillObservations([
+      v('2.1.16', true),
+      v('2.1.17', true),
+      v('2.1.18', true),
+      v('2.1.19'),
+      v('2.1.20'),
+    ]).symbols[0]?.hidden_eras;
+    expect(eras).toEqual([
+      { from: '2.1.16', hidden: true },
+      { from: '2.1.19', hidden: false },
+    ]);
+  });
+});

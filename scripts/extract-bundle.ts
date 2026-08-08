@@ -65,6 +65,8 @@ export interface BundleSymbol {
    * data is there if that call is ever revisited.
    */
   declaredType?: string;
+  /** True when the CLI registers this flag with `.hideHelp()` — see extractHiddenFlags. */
+  hidden?: true;
   /**
    * For a flag proved only by a subcommand's `case"--flag":` label: the complete
    * set of invocation paths whose parsers accept it (`self-hosted-runner`,
@@ -132,6 +134,39 @@ const FLAG_SWITCH_CASE = /case\s*(["'`])(--[A-Za-z][A-Za-z0-9-]*)\1\s*:/g;
 
 /** An Option constructor and its first string argument — the candidate spec. */
 const FLAG_CTOR_SPEC = /new [A-Za-z_$][\w$]*\(\s*(["'`])((?:(?!\1)[^\\\n]|\\.)*)\1/g;
+
+/**
+ * An Option the CLI hides from `claude --help` via commander's `.hideHelp()`.
+ *
+ * This is Claude Code's own marker for "real, but not for you to type": the flag
+ * parses and works, yet is withheld from help because something else sets it —
+ * a spawning parent (`--managed-settings`, "SDK use only"), the teammate
+ * orchestrator (`--agent-id`, `--team-name`), a deep link, or a deprecated alias
+ * kept alive for compatibility (`--pool`, `--remote`).
+ *
+ * Structural, which is the point. The alternative was a hand-curated list of
+ * "internal-looking" flags, and there is no way to keep such a list honest as
+ * Anthropic promotes or retires them. `.hideHelp()` moves when they move.
+ *
+ * Matched from the constructor through the chained call, so an `.hideHelp()`
+ * belonging to a LATER option cannot be attributed to this one: the gap may hold
+ * only further chained calls on the same Option, never another `new X(`.
+ */
+const FLAG_CTOR_HIDDEN =
+  /new [A-Za-z_$][\w$]*\(\s*(["'`])((?:(?!\1)[^\\\n]|\\.)*)\1(?:(?!new [A-Za-z_$][\w$]*\().){0,400}?\.hideHelp\(\)/gs;
+
+/** Long flags the bundle registers as hidden from `--help`. */
+export function extractHiddenFlags(src: string): Set<string> {
+  const hidden = new Set<string>();
+  for (const m of src.matchAll(FLAG_CTOR_HIDDEN)) {
+    const spec = m[2] ?? '';
+    if (!OPTION_SPEC.test(spec)) continue;
+    for (const flag of spec.match(FLAG_TOKEN) ?? []) {
+      if (FLAG_GRAMMAR.test(flag)) hidden.add(flag);
+    }
+  }
+  return hidden;
+}
 
 /**
  * A commander option spec IN FULL: one or more `-x` / `--long` tokens (comma- or
@@ -530,6 +565,7 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
   // top-level or already curated, and a flag they proved must not be narrowed by a
   // subcommand parser that happens to accept the same name.
   const switchScopes = extractSwitchCaseScopes(src);
+  const hiddenFlags = extractHiddenFlags(src);
   for (const [symbol, evidence] of flags) {
     const description = flagDescriptions.get(symbol);
     const scopes = evidence === 'argv-switch' ? switchScopes.get(symbol) : undefined;
@@ -540,6 +576,7 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
       evidence,
       ...(description ? { description } : {}),
       ...(scopes ? { scopes } : {}),
+      ...(hiddenFlags.has(symbol) ? { hidden: true as const } : {}),
     });
   }
   const commands = extractCommands(src);
