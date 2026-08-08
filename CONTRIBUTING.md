@@ -38,7 +38,7 @@ A record whose accuracy depends on non-public material will be rejected. This po
 ```bash
 npm ci
 npm run lint
-npx prettier --check .   # CI fails on formatting, including generated-file drift
+npx prettier --check .   # CI fails on formatting; generated data is excluded
 npx tsc --noEmit
 npm test
 npm run validate

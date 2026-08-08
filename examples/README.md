@@ -42,8 +42,8 @@ Base URL: **`https://claustodian.dev/data`**
 | `catalog.json`             | Every symbol **ever** seen, including removed ones, with its full lifecycle    |
 
 Core files are also published as `.yaml` and `.toml` (swap the extension); **JSON is the
-source of truth**, and the newest few per-version files plus the `binary-*` files may be
-JSON-only — prefer `.json`. Published `versions/<X.Y.Z>.json` files are effectively
+source of truth**. `catalog.json` is the exception — it is built after the export step, so
+`catalog.yaml`/`.toml` do not exist. Prefer `.json` throughout. Published `versions/<X.Y.Z>.json` files are effectively
 immutable, so cache them hard by version.
 
 ## The record schema

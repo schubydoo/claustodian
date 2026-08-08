@@ -60,7 +60,7 @@ Stable, predictable URLs under `data/`:
 | `data/binary-descriptions.json` | Per-symbol description timeline                   |
 | `data/schema-version.json`      | Version of this data format                       |
 
-Each file is also published as `.yaml` and `.toml` (generated in CI from the JSON; JSON is the source of truth). Each record follows [`schema/symbol.schema.json`](schema/symbol.schema.json) (JSON Schema draft 2020-12):
+Each file is also published as `.yaml` and `.toml` (generated in CI from the JSON; JSON is the source of truth) — except `catalog.json`, which is JSON-only because it is built after the export step runs. Each record follows [`schema/symbol.schema.json`](schema/symbol.schema.json) (JSON Schema draft 2020-12):
 
 ```json
 {
