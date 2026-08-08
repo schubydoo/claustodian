@@ -541,6 +541,12 @@
           <code>settings.json</code>.
         </p>
         <p>
+          A flag with category <code>cli-internal</code> is hidden from <code>claude --help</code>.
+          It is real and the CLI accepts it, but something else sets it — a spawning parent process,
+          the teammate orchestrator, a deep link — so passing it yourself usually does nothing
+          useful. <code>cli</code> flags are the ones meant for you.
+        </p>
+        <p>
           An <span class="unreviewed">unreviewed</span> badge means the symbol was found in an
           official release binary but has not been human-curated yet. It exists — that is what the
           binary proves — but its description may be terse or missing. Treat it as real, not as

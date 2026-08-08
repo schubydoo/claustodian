@@ -655,11 +655,15 @@ describe('enrichWithBinary', () => {
   });
 
   it('still publishes a binary-only flag that has ordinary evidence', () => {
+    // Deliberately a flag the audit has NOT promoted, so this keeps testing the
+    // needs_review default rather than quietly becoming a promotion test.
     const out = enrichWithBinary(
       [],
-      binary([{ symbol: '--cowork', type: 'cli_flag', first_seen: '2.1.15', last_seen: '2.1.224' }])
+      binary([
+        { symbol: '--hard-fail', type: 'cli_flag', first_seen: '2.1.15', last_seen: '2.1.224' },
+      ])
     );
-    expect(byKey(out).get('cli_flag:--cowork')).toMatchObject({
+    expect(byKey(out).get('cli_flag:--hard-fail')).toMatchObject({
       provenance: 'binary',
       status: 'needs_review',
     });

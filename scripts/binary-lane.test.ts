@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import {
   assertBinaryObservations,
   binaryEnvCategory,
+  binaryFlagCategory,
   type BinaryObservations,
   computeBinaryRemoval,
   assertBinaryDescriptions,
@@ -64,15 +65,15 @@ describe('audited env lists', () => {
 
 describe('audit promotions', () => {
   // Inventory check on the maintainer audit (scratch/needs-review-audit.{md,csv}):
-  // 6 commands with binary-registry descriptions + 65 flags with `claude --help`
+  // 6 commands + 33 hidden (cli-internal) flags with binary-registry descriptions, + 65 flags with `claude --help`
   // descriptions (30 from the original depth-one sweep, 35 from `self-hosted-runner`
   // and its sub-subcommands, 4 more the depth-one sweep had missed). If you
   // promote/demote a symbol, update these counts.
   const entries = [...PROMOTED_BINARY_SYMBOLS.entries()];
 
-  it('holds the 75 audited promotions (6 binary + 69 help)', () => {
-    expect(PROMOTED_BINARY_SYMBOLS.size).toBe(75);
-    expect(entries.filter(([, p]) => p.description_source === 'binary')).toHaveLength(6);
+  it('holds the 108 audited promotions (39 binary + 69 help)', () => {
+    expect(PROMOTED_BINARY_SYMBOLS.size).toBe(108);
+    expect(entries.filter(([, p]) => p.description_source === 'binary')).toHaveLength(39);
     expect(entries.filter(([, p]) => p.description_source === 'help')).toHaveLength(69);
   });
 
@@ -328,5 +329,33 @@ describe('isPublishableBinaryFlag / mayRedateFromBinary', () => {
 
   it('lets an ordinary observation re-date a record', () => {
     expect(mayRedateFromBinary(obs())).toBe(true);
+  });
+});
+
+describe('binaryFlagCategory', () => {
+  const obs = (extra: Partial<BinaryObservation> = {}): BinaryObservation => ({
+    symbol: '--agent-id',
+    type: 'cli_flag',
+    first_seen: '2.1.16',
+    last_seen: '2.1.226',
+    removed_in: null,
+    ...extra,
+  });
+
+  it('marks a hidden flag cli-internal', () => {
+    expect(binaryFlagCategory(obs({ hidden: true }), 'cli')).toBe('cli-internal');
+  });
+
+  it('leaves a normal flag at the categorizer result', () => {
+    expect(binaryFlagCategory(obs(), 'cli')).toBe('cli');
+  });
+
+  it('does not change status or existence — hiding is presentation only', () => {
+    // `.hideHelp()` says "not for you to type", not "not real": the flag parses
+    // and works. Verified against 2.1.226, where every hidden flag is absent
+    // from `claude --help` yet accepted on the command line.
+    const hidden = obs({ hidden: true });
+    expect(isPublishableBinaryFlag(hidden)).toBe(true);
+    expect(mayRedateFromBinary(hidden)).toBe(true);
   });
 });
