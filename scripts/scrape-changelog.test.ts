@@ -288,7 +288,9 @@ describe('isSubprocessFlagBullet', () => {
 
   it('does not flag a genuine Claude Code flag bullet', () => {
     expect(isSubprocessFlagBullet('- Added a `--git-notes` flag for git integration')).toBe(false);
-    expect(isSubprocessFlagBullet('- Added `/plugin list` with `--enabled`/`--disabled` filters')).toBe(false);
+    expect(
+      isSubprocessFlagBullet('- Added `/plugin list` with `--enabled`/`--disabled` filters')
+    ).toBe(false);
   });
 
   it('subprocessFlagExamples returns only the flags inside the "(e.g., …)" clause', () => {
@@ -518,7 +520,14 @@ describe('enrichWithBinary', () => {
 
   it('corrects a shared symbol earlier and clears the estimated flag (confidence high)', () => {
     const out = enrichWithBinary(
-      [record({ symbol: '--print', first_seen: '2.1.0', first_seen_estimated: true, confidence: 'medium' })],
+      [
+        record({
+          symbol: '--print',
+          first_seen: '2.1.0',
+          first_seen_estimated: true,
+          confidence: 'medium',
+        }),
+      ],
       binary([{ symbol: '--print', type: 'cli_flag', first_seen: '0.2.9', last_seen: '2.1.201' }])
     );
     const r = byKey(out).get('cli_flag:--print');
@@ -533,7 +542,12 @@ describe('enrichWithBinary', () => {
     const out = enrichWithBinary(
       [],
       binary([
-        { symbol: 'skipWorkflowUsageWarning', type: 'config_key', first_seen: '2.1.180', last_seen: '2.1.224' },
+        {
+          symbol: 'skipWorkflowUsageWarning',
+          type: 'config_key',
+          first_seen: '2.1.180',
+          last_seen: '2.1.224',
+        },
         { symbol: 'model', type: 'config_key', first_seen: '2.1.180', last_seen: '2.1.224' },
       ]),
       {
@@ -543,7 +557,9 @@ describe('enrichWithBinary', () => {
         'config_key:model': [{ from: '2.1.180', description: 'Override the default model' }],
       }
     );
-    expect(byKey(out).get('config_key:skipWorkflowUsageWarning')?.category).toBe('settings-internal');
+    expect(byKey(out).get('config_key:skipWorkflowUsageWarning')?.category).toBe(
+      'settings-internal'
+    );
     expect(byKey(out).get('config_key:model')?.category).toBe('settings');
   });
 
@@ -558,12 +574,26 @@ describe('enrichWithBinary', () => {
     };
     const early = enrichWithBinary(
       [],
-      binary([{ symbol: 'disableWorkflows', type: 'config_key', first_seen: '2.1.152', last_seen: '2.1.153' }]),
+      binary([
+        {
+          symbol: 'disableWorkflows',
+          type: 'config_key',
+          first_seen: '2.1.152',
+          last_seen: '2.1.153',
+        },
+      ]),
       eras
     );
     const late = enrichWithBinary(
       [],
-      binary([{ symbol: 'disableWorkflows', type: 'config_key', first_seen: '2.1.152', last_seen: '2.1.224' }]),
+      binary([
+        {
+          symbol: 'disableWorkflows',
+          type: 'config_key',
+          first_seen: '2.1.152',
+          last_seen: '2.1.224',
+        },
+      ]),
       eras
     );
     expect(byKey(early).get('config_key:disableWorkflows')?.category).toBe('settings-internal');
@@ -639,7 +669,14 @@ describe('enrichWithBinary', () => {
     // A `self-hosted-runner decode-token` parser accepting --help is no evidence
     // about when the TOP-LEVEL --help appeared.
     const out = enrichWithBinary(
-      [record({ symbol: '--help', first_seen: '2.1.200', first_seen_estimated: true, confidence: 'medium' })],
+      [
+        record({
+          symbol: '--help',
+          first_seen: '2.1.200',
+          first_seen_estimated: true,
+          confidence: 'medium',
+        }),
+      ],
       binary([
         {
           symbol: '--help',
@@ -664,7 +701,14 @@ describe('enrichWithBinary', () => {
 
   it('never sets removed_in from the binary lane', () => {
     const out = enrichWithBinary(
-      [record({ symbol: '--foo', first_seen: '2.0.0', first_seen_estimated: true, confidence: 'medium' })],
+      [
+        record({
+          symbol: '--foo',
+          first_seen: '2.0.0',
+          first_seen_estimated: true,
+          confidence: 'medium',
+        }),
+      ],
       binary([{ symbol: '--foo', type: 'cli_flag', first_seen: '1.0.0', last_seen: '1.5.0' }])
     );
     // last_seen 1.5.0 is well before the record's world, yet removed_in stays null.
@@ -674,7 +718,9 @@ describe('enrichWithBinary', () => {
   it('appends a binary-only flag as provenance:binary / needs_review with a null source', () => {
     const out = enrichWithBinary(
       [],
-      binary([{ symbol: '--mcp-debug', type: 'cli_flag', first_seen: '2.1.83', last_seen: '2.1.201' }])
+      binary([
+        { symbol: '--mcp-debug', type: 'cli_flag', first_seen: '2.1.83', last_seen: '2.1.201' },
+      ])
     );
     expect(byKey(out).get('cli_flag:--mcp-debug')).toEqual({
       symbol: '--mcp-debug',
@@ -705,7 +751,14 @@ describe('enrichWithBinary', () => {
   it('appends a first-party (CLAUDE_-prefixed) binary-only env var', () => {
     const out = enrichWithBinary(
       [],
-      binary([{ symbol: 'CLAUDE_CODE_ENTRYPOINT', type: 'env_var', first_seen: '0.2.89', last_seen: '2.1.201' }])
+      binary([
+        {
+          symbol: 'CLAUDE_CODE_ENTRYPOINT',
+          type: 'env_var',
+          first_seen: '0.2.89',
+          last_seen: '2.1.201',
+        },
+      ])
     );
     expect(byKey(out).get('env_var:CLAUDE_CODE_ENTRYPOINT')).toMatchObject({
       provenance: 'binary',
@@ -718,7 +771,9 @@ describe('enrichWithBinary', () => {
   it('recategorizes a promote-cc env var to claude-code and publishes it', () => {
     const out = enrichWithBinary(
       [],
-      binary([{ symbol: 'ENABLE_PLUGINS', type: 'env_var', first_seen: '2.1.0', last_seen: '2.1.201' }])
+      binary([
+        { symbol: 'ENABLE_PLUGINS', type: 'env_var', first_seen: '2.1.0', last_seen: '2.1.201' },
+      ])
     );
     expect(byKey(out).get('env_var:ENABLE_PLUGINS')).toMatchObject({
       provenance: 'binary',
@@ -741,7 +796,13 @@ describe('enrichWithBinary', () => {
     const out = enrichWithBinary(
       [],
       binary([
-        { symbol: '--gone', type: 'cli_flag', first_seen: '1.0.0', last_seen: '1.0.4', removed_in: '1.0.5' },
+        {
+          symbol: '--gone',
+          type: 'cli_flag',
+          first_seen: '1.0.0',
+          last_seen: '1.0.4',
+          removed_in: '1.0.5',
+        },
       ])
     );
     expect(byKey(out).get('cli_flag:--gone')?.removed_in).toBe('1.0.5');
@@ -757,7 +818,13 @@ describe('enrichWithBinary', () => {
       blocks,
       docsIndex([]),
       binary([
-        { symbol: '--gone', type: 'cli_flag', first_seen: '1.0.0', last_seen: '1.0.4', removed_in: '1.0.5' },
+        {
+          symbol: '--gone',
+          type: 'cli_flag',
+          first_seen: '1.0.0',
+          last_seen: '1.0.4',
+          removed_in: '1.0.5',
+        },
       ])
     );
     const at = (v: string) =>
@@ -769,7 +836,14 @@ describe('enrichWithBinary', () => {
 
   it('does not re-add a symbol another lane already published', () => {
     const out = enrichWithBinary(
-      [record({ symbol: '--print', type: 'cli_flag', first_seen: '1.0.0', provenance: 'changelog' })],
+      [
+        record({
+          symbol: '--print',
+          type: 'cli_flag',
+          first_seen: '1.0.0',
+          provenance: 'changelog',
+        }),
+      ],
       binary([{ symbol: '--print', type: 'cli_flag', first_seen: '1.0.0', last_seen: '2.1.201' }])
     );
     expect(out.filter((r) => r.symbol === '--print')).toHaveLength(1);
@@ -807,7 +881,9 @@ describe('enrichWithBinary', () => {
   it('leaves an un-audited binary-only symbol at needs_review with no description', () => {
     const out = enrichWithBinary(
       [],
-      binary([{ symbol: '--mcp-debug', type: 'cli_flag', first_seen: '2.1.83', last_seen: '2.1.201' }])
+      binary([
+        { symbol: '--mcp-debug', type: 'cli_flag', first_seen: '2.1.83', last_seen: '2.1.201' },
+      ])
     );
     expect(byKey(out).get('cli_flag:--mcp-debug')).toMatchObject({
       status: 'needs_review',
@@ -911,7 +987,9 @@ describe('assembleSnapshots — per-version deprecation status', () => {
       undefined,
       new Map([['cli_flag:--capacity', { from: '1.5.0', scopes: ['self-hosted-runner'] }]])
     );
-    const f = snaps.find((s) => s.version === '2.6.0')?.symbols.find((x) => x.symbol === '--capacity');
+    const f = snaps
+      .find((s) => s.version === '2.6.0')
+      ?.symbols.find((x) => x.symbol === '--capacity');
     expect(f?.scopes).toEqual(['remote-control', 'self-hosted-runner']);
   });
 
@@ -924,7 +1002,9 @@ describe('assembleSnapshots — per-version deprecation status', () => {
         ['cli_flag:--min-idle', { from: '1.5.0', scopes: ['self-hosted-runner orchestrator'] }],
       ])
     );
-    const f = snaps.find((s) => s.version === '2.6.0')?.symbols.find((x) => x.symbol === '--min-idle');
+    const f = snaps
+      .find((s) => s.version === '2.6.0')
+      ?.symbols.find((x) => x.symbol === '--min-idle');
     expect(f?.scopes).toEqual(['self-hosted-runner orchestrator']);
   });
 
@@ -939,7 +1019,9 @@ describe('assembleSnapshots — per-version deprecation status', () => {
         ['cli_flag:--min-idle', { from: '1.5.0', scopes: ['self-hosted-runner orchestrator'] }],
       ])
     );
-    const f = snaps.find((s) => s.version === '2.6.0')?.symbols.find((x) => x.symbol === '--min-idle');
+    const f = snaps
+      .find((s) => s.version === '2.6.0')
+      ?.symbols.find((x) => x.symbol === '--min-idle');
     expect(f?.scopes).not.toContain('self-hosted-runner');
   });
 
@@ -1119,14 +1201,25 @@ describe('freezeEstimatedFirstSeen', () => {
 describe('estimate does not float across a release bump', () => {
   // A docs-only symbol with no min-version and no binary evidence.
   const docs = docsIndex([
-    { symbol: '--undated', type: 'cli_flag', description: 'no min-version', doc_min_version: null, doc_page: 'cli-reference' },
+    {
+      symbol: '--undated',
+      type: 'cli_flag',
+      description: 'no min-version',
+      doc_min_version: null,
+      doc_page: 'cli-reference',
+    },
   ]);
   const firstSeenOf = (snaps: ReturnType<typeof buildEnrichedSnapshots>, v: string) =>
     snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === '--undated')?.first_seen;
 
   it('freezes at the version first recorded instead of creeping to the newest release', () => {
     // Release 1: newest is 2.1.100 → the undated estimate lands at 2.1.100.
-    const run1 = buildEnrichedSnapshots([{ version: '2.1.100', bullets: [] }], docs, undefined, new Map());
+    const run1 = buildEnrichedSnapshots(
+      [{ version: '2.1.100', bullets: [] }],
+      docs,
+      undefined,
+      new Map()
+    );
     expect(firstSeenOf(run1, '2.1.100')).toBe('2.1.100');
 
     // Carry that forward as the committed prior, then a new release ships.
@@ -1134,7 +1227,10 @@ describe('estimate does not float across a release bump', () => {
       run1.at(-1)!.symbols.map((s) => [`${s.type}:${s.symbol}`, s.first_seen] as const)
     );
     const run2 = buildEnrichedSnapshots(
-      [{ version: '2.1.100', bullets: [] }, { version: '2.1.110', bullets: [] }],
+      [
+        { version: '2.1.100', bullets: [] },
+        { version: '2.1.110', bullets: [] },
+      ],
       docs,
       undefined,
       prior
@@ -1179,17 +1275,36 @@ describe('assembleSnapshots — per-version descriptions (binary timeline)', () 
   it('uses the binary description for a historical snapshot, the curated one for the current era', () => {
     const snaps = assembleSnapshots([cmd({})], blocks, timeline);
     // Historical era (before 2.1.100) → binary text, description_source binary.
-    expect(descOf(snaps, '0.2.9')).toEqual({ description: 'Review a pull request', source: 'binary' });
+    expect(descOf(snaps, '0.2.9')).toEqual({
+      description: 'Review a pull request',
+      source: 'binary',
+    });
     // Current era (>= 2.1.100) → keeps the record's curated docs description.
-    expect(descOf(snaps, '2.1.100')).toEqual({ description: 'Run a fast single-pass review', source: 'docs' });
-    expect(descOf(snaps, '2.1.205')).toEqual({ description: 'Run a fast single-pass review', source: 'docs' });
+    expect(descOf(snaps, '2.1.100')).toEqual({
+      description: 'Run a fast single-pass review',
+      source: 'docs',
+    });
+    expect(descOf(snaps, '2.1.205')).toEqual({
+      description: 'Run a fast single-pass review',
+      source: 'docs',
+    });
   });
 
   it('fills a previously-empty description from the binary at every version', () => {
-    const snaps = assembleSnapshots([cmd({ description: '', description_source: undefined })], blocks, timeline);
+    const snaps = assembleSnapshots(
+      [cmd({ description: '', description_source: undefined })],
+      blocks,
+      timeline
+    );
     // No curated text, so the binary description is used in every era (incl. current).
-    expect(descOf(snaps, '0.2.9')).toEqual({ description: 'Review a pull request', source: 'binary' });
-    expect(descOf(snaps, '2.1.205')).toEqual({ description: 'Run a fast single-pass review', source: 'binary' });
+    expect(descOf(snaps, '0.2.9')).toEqual({
+      description: 'Review a pull request',
+      source: 'binary',
+    });
+    expect(descOf(snaps, '2.1.205')).toEqual({
+      description: 'Run a fast single-pass review',
+      source: 'binary',
+    });
   });
 
   it('leaves an empty description untouched when there is no binary timeline for it', () => {
@@ -1204,7 +1319,10 @@ describe('assembleSnapshots — per-version descriptions (binary timeline)', () 
 
   it('is a no-op when no binary descriptions are supplied', () => {
     const snaps = assembleSnapshots([cmd({})], blocks);
-    expect(descOf(snaps, '0.2.9')).toEqual({ description: 'Run a fast single-pass review', source: 'docs' });
+    expect(descOf(snaps, '0.2.9')).toEqual({
+      description: 'Run a fast single-pass review',
+      source: 'docs',
+    });
   });
 });
 

@@ -66,14 +66,20 @@ describe('reextract-binaries readBundleSource', () => {
   it('extracts a checksum-verified compiled bundle', async () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-ok-'));
     await writeCompiled(root, '1.0.0', 'process.env.CLAUDE_CODE_OK;');
-    expect(readBundleSource(root, '1.0.0')).toEqual({ kind: 'ok', src: 'process.env.CLAUDE_CODE_OK;' });
+    expect(readBundleSource(root, '1.0.0')).toEqual({
+      kind: 'ok',
+      src: 'process.env.CLAUDE_CODE_OK;',
+    });
   });
 
   it('refuses a bundle whose hash does not match SHA256SUMS', async () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-bad-'));
     await mkdir(join(root, '1.0.0', 'linux-x64'), { recursive: true });
     await writeFile(join(root, '1.0.0', 'linux-x64', 'claude'), 'process.env.CLAUDE_CODE_PATCHED;');
-    await writeFile(join(root, '1.0.0', 'SHA256SUMS'), `${sha256('a different official build')}  linux-x64/claude\n`);
+    await writeFile(
+      join(root, '1.0.0', 'SHA256SUMS'),
+      `${sha256('a different official build')}  linux-x64/claude\n`
+    );
     expect(readBundleSource(root, '1.0.0')).toEqual({
       kind: 'unverified',
       file: join(root, '1.0.0', 'linux-x64', 'claude'),
@@ -115,7 +121,9 @@ describe('reextract-binaries readBundleSource', () => {
     await mkdir(join(root, '1.0.0'), { recursive: true });
     const tgz = join(root, '1.0.0', 'bundle.tgz');
     execFileSync('tar', ['czf', tgz, '-C', pkg, 'package/other.js']);
-    const hash = createHash('sha256').update(await readFile(tgz)).digest('hex');
+    const hash = createHash('sha256')
+      .update(await readFile(tgz))
+      .digest('hex');
     await writeFile(join(root, '1.0.0', 'SHA256SUMS'), `${hash}  bundle.tgz\n`);
     expect(readBundleSource(root, '1.0.0')).toEqual({ kind: 'missing' });
   });
@@ -167,20 +175,31 @@ describe('reextract-binaries main()', () => {
     // 4.0.0 present but tampered → refused
     await mkdir(join(archive, '4.0.0', 'linux-x64'), { recursive: true });
     await writeFile(join(archive, '4.0.0', 'linux-x64', 'claude'), 'process.env.PATCHED;');
-    await writeFile(join(archive, '4.0.0', 'SHA256SUMS'), `${sha256('official')}  linux-x64/claude\n`);
+    await writeFile(
+      join(archive, '4.0.0', 'SHA256SUMS'),
+      `${sha256('official')}  linux-x64/claude\n`
+    );
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const code = await main(['--archive', archive, '--out', out]);
 
     expect(code).toBe(0);
-    const c1 = JSON.parse(await readFile(join(out, '1.0.0.json'), 'utf-8')) as { symbols: { symbol: string }[] };
-    const c2 = JSON.parse(await readFile(join(out, '2.0.0.json'), 'utf-8')) as { symbols: { symbol: string }[] };
+    const c1 = JSON.parse(await readFile(join(out, '1.0.0.json'), 'utf-8')) as {
+      symbols: { symbol: string }[];
+    };
+    const c2 = JSON.parse(await readFile(join(out, '2.0.0.json'), 'utf-8')) as {
+      symbols: { symbol: string }[];
+    };
     expect(c1.symbols.some((s) => s.symbol === 'CLAUDE_CODE_A')).toBe(true);
     expect(c2.symbols.some((s) => s.symbol === '--foo')).toBe(true);
     expect(existsSync(join(out, '3.0.0.json'))).toBe(false);
     expect(existsSync(join(out, '4.0.0.json'))).toBe(false); // refused, not extracted
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('without a readable binary: 3.0.0'));
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('refused (checksum mismatch or missing SHA256SUMS): 4.0.0'));
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining('without a readable binary: 3.0.0')
+    );
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining('refused (checksum mismatch or missing SHA256SUMS): 4.0.0')
+    );
   });
 
   it('clears every prior cache file backfill would read (non-underscore *.json), keeping _-prefixed', async () => {
@@ -207,7 +226,9 @@ describe('reextract-binaries main()', () => {
     await writeCompiled(archive, '1.0.0', 'process.env.X;');
     await mkdir(out, { recursive: true });
     await writeFile(join(out, 'latest.json'), '{"important":1}'); // e.g. a mistyped --out data
-    await expect(main(['--archive', archive, '--out', out])).rejects.toThrow(/Refusing to regenerate/);
+    await expect(main(['--archive', archive, '--out', out])).rejects.toThrow(
+      /Refusing to regenerate/
+    );
     expect(existsSync(join(out, 'latest.json'))).toBe(true); // untouched
   });
 
@@ -221,13 +242,17 @@ describe('reextract-binaries main()', () => {
     await mkdir(join(archive, '1.0.0'), { recursive: true });
     const tgz = join(archive, '1.0.0', 'bundle.tgz');
     execFileSync('tar', ['czf', tgz, '-C', pkg, 'package/cli.js']);
-    const hash = createHash('sha256').update(await readFile(tgz)).digest('hex');
+    const hash = createHash('sha256')
+      .update(await readFile(tgz))
+      .digest('hex');
     await writeFile(join(archive, '1.0.0', 'SHA256SUMS'), `${hash}  bundle.tgz\n`);
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     await main(['--archive', archive, '--out', out]);
 
-    const c = JSON.parse(await readFile(join(out, '1.0.0.json'), 'utf-8')) as { symbols: { symbol: string }[] };
+    const c = JSON.parse(await readFile(join(out, '1.0.0.json'), 'utf-8')) as {
+      symbols: { symbol: string }[];
+    };
     expect(c.symbols.some((s) => s.symbol === 'CLAUDE_CODE_TGZ')).toBe(true);
   });
 

@@ -56,9 +56,9 @@ export const CONFIRMED_REMOVALS: readonly ConfirmedRemoval[] = [
  * returned untouched. Never changes `status` — a removed symbol simply stops
  * appearing; in the snapshots where it IS present it was genuinely live.
  */
-export function applyChangelogRemovals<T extends { type: string; symbol: string; removed_in: string | null }>(
-  records: readonly T[]
-): T[] {
+export function applyChangelogRemovals<
+  T extends { type: string; symbol: string; removed_in: string | null },
+>(records: readonly T[]): T[] {
   const byKey = new Map(CONFIRMED_REMOVALS.map((r) => [`${r.type}:${r.symbol}`, r]));
   return records.map((record) => {
     const removal = byKey.get(`${record.type}:${record.symbol}`);

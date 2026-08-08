@@ -69,12 +69,18 @@ describe('find-removals main()', () => {
     const dsPath = join(tmpDir, 'latest.json');
     // Only /vim (already confirmed) appears as a retirement.
     await writeFile(clPath, '# Changelog\n\n## 2.1.92\n\n- Removed `/vim` command\n', 'utf-8');
-    await writeFile(dsPath, JSON.stringify({ symbols: [{ type: 'command', symbol: '/vim' }] }), 'utf-8');
+    await writeFile(
+      dsPath,
+      JSON.stringify({ symbols: [{ type: 'command', symbol: '/vim' }] }),
+      'utf-8'
+    );
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     const code = await main(['--changelog', clPath, '--dataset', dsPath]);
     expect(code).toBe(0);
-    expect(logSpy.mock.calls.map((c: unknown[]) => String(c[0])).join('\n')).toContain('up to date');
+    expect(logSpy.mock.calls.map((c: unknown[]) => String(c[0])).join('\n')).toContain(
+      'up to date'
+    );
   });
 
   it('throws on a flag passed without a value (no silent fallback)', async () => {

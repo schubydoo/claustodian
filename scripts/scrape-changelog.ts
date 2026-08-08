@@ -376,7 +376,8 @@ export function isIntroducingBullet(bullet: string): boolean {
  * lane, which never observes them). Deliberately narrow so it can't suppress a
  * genuine "Added a `--foo` flag for git integration"-style bullet.
  */
-const SUBPROCESS_FLAG_BULLET = /\b(?:git|gh|npm|node|docker|ripgrep|rg)\b[^.]*\bflags?\b[^.]*\(e\.g\.,/i;
+const SUBPROCESS_FLAG_BULLET =
+  /\b(?:git|gh|npm|node|docker|ripgrep|rg)\b[^.]*\bflags?\b[^.]*\(e\.g\.,/i;
 
 export function isSubprocessFlagBullet(bullet: string): boolean {
   return SUBPROCESS_FLAG_BULLET.test(bullet);
@@ -586,7 +587,8 @@ export function assembleSnapshots(
       record.type === 'config_key'
         ? withCategory(record, binaryConfigCategory(eras, version))
         : record;
-    if (categorized.description !== '' && isCurrentDescriptionEra(eras, version)) return categorized;
+    if (categorized.description !== '' && isCurrentDescriptionEra(eras, version))
+      return categorized;
     const era = descriptionAt(eras, version);
     return era && era.description !== categorized.description
       ? { ...categorized, description: era.description, description_source: 'binary' }

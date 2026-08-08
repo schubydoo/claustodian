@@ -194,16 +194,19 @@ export function distillDescriptions(files: BinaryCacheFile[]): BinaryDescription
       if (!s.description) continue;
       const key = `${s.type}:${s.symbol}`;
       const arr = seen.get(key) ?? [];
-      arr.push({ version: file.version, description: normalizeDescriptionWhitespace(s.description) });
+      arr.push({
+        version: file.version,
+        description: normalizeDescriptionWhitespace(s.description),
+      });
       seen.set(key, arr);
     }
   }
 
   const descriptions: Record<string, DescriptionEra[]> = {};
   for (const key of [...seen.keys()].sort()) {
-    const observations = [...(seen.get(key) as Array<{ version: string; description: string }>)].sort(
-      (a, b) => compareVersionsAsc(a.version, b.version)
-    );
+    const observations = [
+      ...(seen.get(key) as Array<{ version: string; description: string }>),
+    ].sort((a, b) => compareVersionsAsc(a.version, b.version));
     const eras: DescriptionEra[] = [];
     for (const obs of observations) {
       const last = eras[eras.length - 1];
@@ -224,9 +227,13 @@ export function distillDescriptions(files: BinaryCacheFile[]): BinaryDescription
 
 /** Loads every `<version>.json` cache file from a directory. */
 export async function loadCacheFiles(dir: string): Promise<BinaryCacheFile[]> {
-  const names = (await readdir(dir)).filter((name) => name.endsWith('.json') && !name.startsWith('_'));
+  const names = (await readdir(dir)).filter(
+    (name) => name.endsWith('.json') && !name.startsWith('_')
+  );
   const files = await Promise.all(
-    names.map(async (name) => JSON.parse(await readFile(join(dir, name), 'utf-8')) as BinaryCacheFile)
+    names.map(
+      async (name) => JSON.parse(await readFile(join(dir, name), 'utf-8')) as BinaryCacheFile
+    )
   );
   if (files.length === 0) {
     throw new Error(

@@ -297,51 +297,250 @@ export const PROMOTED_BINARY_SYMBOLS: ReadonlyMap<string, BinaryPromotion> = new
   string,
   BinaryPromotion
 >([
-  ['command:/rate-limit-options', { description: "Show options when rate limit is reached", description_source: 'binary' }],
-  ['command:/pro-trial-expired', { description: "Options shown when the Pro plan Claude Code trial has ended", description_source: 'binary' }],
-  ['command:/update-config', { description: "Change settings: hooks, permissions, environment variables", description_source: 'binary' }],
-  ['command:/design', { description: "Grant or revoke Claude agent access to your Design projects", description_source: 'binary' }],
-  ['command:/design-consent', { description: "Grant Claude agent access to your Design projects", description_source: 'binary' }],
-  ['command:/design-revoke', { description: "Revoke Claude agent access to your Design projects", description_source: 'binary' }],
-  ['cli_flag:--ablation', { description: "Run a no-plugin baseline arm and report the score delta (none | with-without; default: with-without when targeting a plugin by name (installed or skills-dir), none for a path)", description_source: 'help' }],
-  ['cli_flag:--allow-tools', { description: "Operator grant for gated tools (Bash, Write, Edit, WebFetch, mcp__*). Supports Tool(pattern:*) syntax", description_source: 'help' }],
-  ['cli_flag:--allowed-tools', { description: "Comma or space-separated list of tool names to allow (e.g. \"Bash(git *) Edit\")", description_source: 'help' }],
-  ['cli_flag:--brief', { description: "Enable SendUserMessage tool for agent-to-user communication", description_source: 'help' }],
-  ['cli_flag:--callback-port', { description: "Fixed port for OAuth callback (for servers requiring pre-registered redirect URIs)", description_source: 'help' }],
-  ['cli_flag:--case', { description: "Filter cases by name glob", description_source: 'help' }],
-  ['cli_flag:--claudeai', { description: "Use Claude subscription (default)", description_source: 'help' }],
-  ['cli_flag:--config', { description: "Set a userConfig option declared in the plugin's manifest (repeatable). Values are validated against the schema and stored via the same path as the interactive /plugin configure flow.", description_source: 'help' }],
-  ['cli_flag:--cwd', { description: "Show only background sessions started under <path>", description_source: 'help' }],
-  ['cli_flag:--disallowed-tools', { description: "Comma or space-separated list of tool names to deny (e.g. \"Bash(git *) Edit\")", description_source: 'help' }],
-  ['cli_flag:--email', { description: "Pre-populate email address on the login page", description_source: 'help' }],
-  ['cli_flag:--env', { description: "Set environment variables (e.g. -e KEY=value)", description_source: 'help' }],
-  ['cli_flag:--file', { description: "File resources to download at startup. Format: file_id:relative_path (e.g., --file file_abc:doc.txt file_def:img.png)", description_source: 'help' }],
-  ['cli_flag:--header', { description: "Set WebSocket headers (e.g. -H \"X-Api-Key: abc123\" -H \"X-Custom: value\")", description_source: 'help' }],
-  ['cli_flag:--interactive', { description: "Prompt for each item before deleting", description_source: 'help' }],
-  ['cli_flag:--judge-model', { description: "Override LLM-grader model (default: haiku)", description_source: 'help' }],
-  ['cli_flag:--keep-temp', { description: "Preserve scaffold dirs for debugging", description_source: 'help' }],
-  ['cli_flag:--max-cost-usd', { description: "Optional hard cost ceiling; abort and report partial results if hit (exit 2). Overrun is bounded to one agent run — when that run breaches, paid graders (llm/baseline) are skipped while free graders still score it. Runs are already bounded by max_turns and timeout_seconds — only set this when you need a strict budget", description_source: 'help' }],
-  ['cli_flag:--message', { description: "Tag annotation message (use %s for the version)", description_source: 'help' }],
-  ['cli_flag:--no-scaffold', { description: "Explicitly skip scaffold_script", description_source: 'help' }],
-  ['cli_flag:--output-dir', { description: "Directory for aggregate-result.json (default: ./evals/results/<timestamp>/)", description_source: 'help' }],
-  ['cli_flag:--runs', { description: "Override per-case runs (default: case.runs ?? 3)", description_source: 'help' }],
-  ['cli_flag:--scaffold', { description: "Run each case's scaffold_script (runs author-supplied bash as you; off by default — only use on case files you authored)", description_source: 'help' }],
-  ['cli_flag:--sso', { description: "Force SSO login flow", description_source: 'help' }],
-  ['cli_flag:--strict', { description: "Treat warnings as errors (exit 1). Use in CI to fail on unrecognized fields, missing metadata, and other issues that the runtime tolerates.", description_source: 'help' }],
-  ['cli_flag:--tag', { description: "Filter cases by tag (repeatable)", description_source: 'help' }],
-  ['cli_flag:--text', { description: "Output as human-readable text", description_source: 'help' }],
-  ['cli_flag:--threshold', { description: "Exit 1 if any case score is below this threshold (default: 1.0)", description_source: 'help' }],
-  ['cli_flag:--timeout', { description: "Maximum minutes to wait for the review to finish (default: 30)", description_source: 'help' }],
-  ['cli_flag:--transport', { description: "Transport type (stdio, sse, http). Defaults to stdio if not specified.", description_source: 'help' }],
+  [
+    'command:/rate-limit-options',
+    { description: 'Show options when rate limit is reached', description_source: 'binary' },
+  ],
+  [
+    'command:/pro-trial-expired',
+    {
+      description: 'Options shown when the Pro plan Claude Code trial has ended',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'command:/update-config',
+    {
+      description: 'Change settings: hooks, permissions, environment variables',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'command:/design',
+    {
+      description: 'Grant or revoke Claude agent access to your Design projects',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'command:/design-consent',
+    {
+      description: 'Grant Claude agent access to your Design projects',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'command:/design-revoke',
+    {
+      description: 'Revoke Claude agent access to your Design projects',
+      description_source: 'binary',
+    },
+  ],
+  [
+    'cli_flag:--ablation',
+    {
+      description:
+        'Run a no-plugin baseline arm and report the score delta (none | with-without; default: with-without when targeting a plugin by name (installed or skills-dir), none for a path)',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--allow-tools',
+    {
+      description:
+        'Operator grant for gated tools (Bash, Write, Edit, WebFetch, mcp__*). Supports Tool(pattern:*) syntax',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--allowed-tools',
+    {
+      description: 'Comma or space-separated list of tool names to allow (e.g. "Bash(git *) Edit")',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--brief',
+    {
+      description: 'Enable SendUserMessage tool for agent-to-user communication',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--callback-port',
+    {
+      description:
+        'Fixed port for OAuth callback (for servers requiring pre-registered redirect URIs)',
+      description_source: 'help',
+    },
+  ],
+  ['cli_flag:--case', { description: 'Filter cases by name glob', description_source: 'help' }],
+  [
+    'cli_flag:--claudeai',
+    { description: 'Use Claude subscription (default)', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--config',
+    {
+      description:
+        "Set a userConfig option declared in the plugin's manifest (repeatable). Values are validated against the schema and stored via the same path as the interactive /plugin configure flow.",
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--cwd',
+    {
+      description: 'Show only background sessions started under <path>',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--disallowed-tools',
+    {
+      description: 'Comma or space-separated list of tool names to deny (e.g. "Bash(git *) Edit")',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--email',
+    { description: 'Pre-populate email address on the login page', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--env',
+    { description: 'Set environment variables (e.g. -e KEY=value)', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--file',
+    {
+      description:
+        'File resources to download at startup. Format: file_id:relative_path (e.g., --file file_abc:doc.txt file_def:img.png)',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--header',
+    {
+      description: 'Set WebSocket headers (e.g. -H "X-Api-Key: abc123" -H "X-Custom: value")',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--interactive',
+    { description: 'Prompt for each item before deleting', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--judge-model',
+    { description: 'Override LLM-grader model (default: haiku)', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--keep-temp',
+    { description: 'Preserve scaffold dirs for debugging', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--max-cost-usd',
+    {
+      description:
+        'Optional hard cost ceiling; abort and report partial results if hit (exit 2). Overrun is bounded to one agent run — when that run breaches, paid graders (llm/baseline) are skipped while free graders still score it. Runs are already bounded by max_turns and timeout_seconds — only set this when you need a strict budget',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--message',
+    { description: 'Tag annotation message (use %s for the version)', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--no-scaffold',
+    { description: 'Explicitly skip scaffold_script', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--output-dir',
+    {
+      description: 'Directory for aggregate-result.json (default: ./evals/results/<timestamp>/)',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--runs',
+    { description: 'Override per-case runs (default: case.runs ?? 3)', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--scaffold',
+    {
+      description:
+        "Run each case's scaffold_script (runs author-supplied bash as you; off by default — only use on case files you authored)",
+      description_source: 'help',
+    },
+  ],
+  ['cli_flag:--sso', { description: 'Force SSO login flow', description_source: 'help' }],
+  [
+    'cli_flag:--strict',
+    {
+      description:
+        'Treat warnings as errors (exit 1). Use in CI to fail on unrecognized fields, missing metadata, and other issues that the runtime tolerates.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--tag',
+    { description: 'Filter cases by tag (repeatable)', description_source: 'help' },
+  ],
+  ['cli_flag:--text', { description: 'Output as human-readable text', description_source: 'help' }],
+  [
+    'cli_flag:--threshold',
+    {
+      description: 'Exit 1 if any case score is below this threshold (default: 1.0)',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--timeout',
+    {
+      description: 'Maximum minutes to wait for the review to finish (default: 30)',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--transport',
+    {
+      description: 'Transport type (stdio, sse, http). Defaults to stdio if not specified.',
+      description_source: 'help',
+    },
+  ],
   // Four the ORIGINAL sweep missed for the same reason the scope map was wrong:
   // it read only `claude <subcommand> --help`, so `plugin eval` and
   // `auto-mode defaults` were never opened. Same 'help' evidence, just one level
   // deeper. Re-checking every remaining needs_review flag against the full
   // depth-two corpus turned up these and nothing else.
-  ['cli_flag:--label', { description: "Show only rules whose label starts with this prefix (case-insensitive)", description_source: 'help' }],
-  ['cli_flag:--no-publish', { description: "Keep the HTML report local only; skip publishing it to claude.ai", description_source: 'help' }],
-  ['cli_flag:--publish-report', { description: "Also require publishing the report to claude.ai (already the default when your account supports it); explains why if unavailable", description_source: 'help' }],
-  ['cli_flag:--report', { description: "Write the self-contained HTML report (scores, prompts, grader verdicts) to <path> instead of the results dir", description_source: 'help' }],
+  [
+    'cli_flag:--label',
+    {
+      description: 'Show only rules whose label starts with this prefix (case-insensitive)',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--no-publish',
+    {
+      description: 'Keep the HTML report local only; skip publishing it to claude.ai',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--publish-report',
+    {
+      description:
+        'Also require publishing the report to claude.ai (already the default when your account supports it); explains why if unavailable',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--report',
+    {
+      description:
+        'Write the self-contained HTML report (scores, prompts, grader verdicts) to <path> instead of the results dir',
+      description_source: 'help',
+    },
+  ],
   // `claude self-hosted-runner` and its sub-subcommands, captured from
   // `self-hosted-runner --help`, `… orchestrator --help` and `… decode-token --help`
   // at 2.1.226. The subcommand is absent from `claude --help`'s command list, so the
@@ -356,41 +555,269 @@ export const PROMOTED_BINARY_SYMBOLS: ReadonlyMap<string, BinaryPromotion> = new
   //   --pool-secret-file / --drain-wait-bg-tasks-sec  appear only in prose about the
   //     flag they alias, with no entry of their own to quote.
   //   --sigkill-timeout-sec  is accepted by the parser but absent from help entirely.
-  ['cli_flag:--configure-git', { description: "Set global git identity to Claude <noreply@anthropic.com> and enable commit signing via Anthropic's signing service, matching 1P sessions. Writes ~/.gitconfig at runner startup. Without this flag, your image must provide its own git identity.", description_source: 'help' }],
-  ['cli_flag:--confine-repo-settings', { description: "Repo-committed-settings confine guard mode: warn (default) logs a would-refuse diagnostic per violation and still spawns; enforce refuses to spawn the session; off disables the scan. Invalid values fail closed at startup.", description_source: 'help' }],
-  ['cli_flag:--debug-dir', { description: "DEV ONLY — writes each work-order JWT + decoded JSON + hook stderr to <dir>/<jti>.{jwt,json,stderr}. Auto-pruned after 5m.", description_source: 'help' }],
-  ['cli_flag:--debug-token-dir', { description: "DEBUG ONLY — writes live tokens to disk. Do not use in production.", description_source: 'help' }],
-  ['cli_flag:--drain-grace-sec', { description: "Default: 0 — exit immediately after active sessions finish, WITHOUT polling for more (one-shot when --capacity=1). Set a positive value (e.g. 30) to keep the runner warm and re-poll the locked account's queue for that many seconds before exiting. Max: 604800.", description_source: 'help' }],
-  ['cli_flag:--drain-wait-sec', { description: "On SIGTERM/SIGINT, wait up to N seconds for each session's in-flight turn (a foreground tool call) and running background tasks to finish before sending the session process its SIGTERM. Adds N to the advertised shutdown budget. Default: 0 (send SIGTERM immediately). Max: 86400. (--drain-wait-bg-tasks-sec is a deprecated alias for this flag.)", description_source: 'help' }],
-  ['cli_flag:--environment-secret-file', { description: "Path to environment secret file (or set SELF_HOSTED_RUNNER_ENVIRONMENT_SECRET) (--pool-secret-file / SELF_HOSTED_RUNNER_POOL_SECRET are deprecated aliases.)", description_source: 'help' }],
-  ['cli_flag:--exec-path', { description: "Binary to spawn for child sessions. Default: this process's own binary.", description_source: 'help' }],
-  ['cli_flag:--exit-if-unused-min', { description: "Exit the runner if never assigned work for N min (autoscaler scale-down). Default: never. Max: 10080.", description_source: 'help' }],
-  ['cli_flag:--expected-spawn-seconds', { description: "p99 boot time for runners this orchestrator spawns (default: 120). Sent on every Poll as the server-side lease; if the runner doesn't register before then, the session is re-hinted with a fresh jti. HA replicas MUST use the same value.", description_source: 'help' }],
-  ['cli_flag:--git-host-rewrite', { description: "Rewrite https://<f>/... source URLs to https://<t>/... (repeatable). For split-horizon DNS where the runner reaches GHE via a different hostname than the control plane. Applied before --git-ssh-rewrite.", description_source: 'help' }],
-  ['cli_flag:--git-ssh-rewrite', { description: "Rewrite https://<host>/... source URLs to git@<host>:... (repeatable). For SSH-only git hosts.", description_source: 'help' }],
-  ['cli_flag:--hook-concurrency', { description: "Max spawn-runner hooks running in parallel (default: 4). Also caps how many hints are claimed per poll.", description_source: 'help' }],
-  ['cli_flag:--hook-timeout', { description: "SIGTERM the hook after <sec> seconds (default: 60).", description_source: 'help' }],
-  ['cli_flag:--kill-session-after-min', { description: "SIGTERM a session child after N min wall-clock (runaway backstop). If a turn is in flight at the deadline, the kill is deferred until the turn finishes, with a hard cap of 15 min past the deadline (override: SELF_HOSTED_RUNNER_MAX_LIFETIME_GRACE_MS, in ms). Default: never. Max: 10080.", description_source: 'help' }],
-  ['cli_flag:--lock-to-account', { description: "Lock runner to a single account at registration (webhook-driven on-demand spawn). Only that account's sessions are assigned.", description_source: 'help' }],
-  ['cli_flag:--log-file', { description: "Tee runner logs to a file in append mode. Stdout is unchanged.", description_source: 'help' }],
-  ['cli_flag:--log-level', { description: "Log level: info or debug (default: info)", description_source: 'help' }],
-  ['cli_flag:--min-idle', { description: "Keep at least <n> idle slots free (free capacity across runners, not runner count; default: 0, disabled). The server mints standby work_orders (no session binding) for the gap on every Poll.", description_source: 'help' }],
-  ['cli_flag:--no-check-expiry', { description: "Skip the exp/nbf check (signature still verified). For forensics (\"was this token ever issued by us?\").", description_source: 'help' }],
-  ['cli_flag:--no-verify', { description: "Skip signature verification and the JWKS fetch. For offline inspection only — do NOT feed the output to an auth decision.", description_source: 'help' }],
-  ['cli_flag:--post-session-hook-timeout-sec', { description: "SIGTERM budget for the post-session lifecycle hook, on every session end including runner shutdown. Default: 60.", description_source: 'help' }],
-  ['cli_flag:--push-outcome-on-release', { description: "On a runner-initiated non-completed session end (SIGTERM drain, idle-release, failed), push every tracked outcome branch to origin before deleting it, so in-flight commits survive a runner restart. Skipped on server-initiated deassign. On a resumed session (worker epoch > 1), the prep path fetches any previously pushed outcome branch from origin and continues from it, so histories stay linear. CAVEAT: the resume-fetch trusts refs/heads/<outcome-branch> on the source remote — anyone with push access to that ref can place content into the resumed workspace; if your source revision is protected but claude/* refs are not, that collaborator write surface widens on resume. Repos checked out via the checkout lifecycle hook are NOT pushed — use the post-session hook to snapshot those. Adds 30s (total, shared across all pushes) to the advertised shutdown budget.", description_source: 'help' }],
-  ['cli_flag:--release-idle-session-min', { description: "Release a session slot after N min of no user input (turn finished, or parked at a permission prompt, user idle). Runner exits if this drops it to zero active sessions. Default: never. Max: 10080.", description_source: 'help' }],
-  ['cli_flag:--retire-at', { description: "Retire the runner at the given wall-clock time (absolute Unix timestamp, in seconds): release every active session through the ReleaseSession path that --release-idle-session-min uses (the session parks server-side and a fresh runner picks it up on the user's next message), stop taking new work, and exit 0 once the slots are empty. A session still mid-turn at that time is released as soon as its turn ends; background work a finished turn left running gets up to 60s of grace, then the session parks anyway (perpetual monitor tasks don't hold it at all). Use this when the host hard-kills the runner at a known time (e.g. a sandbox lifetime cap): set it far enough before the kill to cover typical turns PLUS the per-session shutdown budget (--session-stop-grace-sec, the push-outcome window, the full --post-session-hook-timeout-sec, the 60s background-work grace, one poll) so sessions park cleanly and the post-session hook isn't truncated by the kill. Default: never.", description_source: 'help' }],
-  ['cli_flag:--scm-connector-ca-file', { description: "Extra CA bundle (PEM) for TLS to the GHES host.", description_source: 'help' }],
-  ['cli_flag:--scm-connector-host', { description: "GHES hostname to forward to (port defaults to 443). Setting this enables the connector.", description_source: 'help' }],
-  ['cli_flag:--scm-connector-host-rewrite', { description: "e2e only — redirect the TCP connect while keeping Host/SNI as --scm-connector-host.", description_source: 'help' }],
-  ['cli_flag:--scm-connector-id', { description: "ghe_configurations.id for this org (REQUIRED with --scm-connector-host).", description_source: 'help' }],
-  ['cli_flag:--scm-connector-provider', { description: "Provider slug (default: ghe).", description_source: 'help' }],
-  ['cli_flag:--session-stop-grace-sec', { description: "How long to wait for the Claude process to exit cleanly after a session ends, before force-killing it. The post-session hook runs after this. Default: 5.", description_source: 'help' }],
-  ['cli_flag:--startup-timeout-min', { description: "Release a session slot if the child has not completed initialization N min after spawn — covers a child hung during --resume hydration or MCP connect, and a session assigned with no pending input. Cleared once the child emits system:init, after which --release-idle-session-min takes over. Default: 15. 0 disables. Max: 10080.", description_source: 'help' }],
-  ['cli_flag:--trust-workspace', { description: "Seed persisted trust for each session's repo paths so repo-level .claude/settings.json permissions.allow and additionalDirectories are honored by the child. Default: true. Set to false for cli#44151's stricter gate: repo-committed grants are dropped with an \"Ignoring N permissions.allow\" stderr diagnostic; configure host-level grants via the host-config dir's settings.json permissions.allow (userSettings source) instead.", description_source: 'help' }],
-  ['cli_flag:--use-anthropic-git-proxy', { description: "Clone via Anthropic's git proxy (uses the session creator's stored GitHub OAuth token, or the org's GitHub App installation token for bot/agent sessions; you don't manage git auth on the runner). Supersedes --git-host-rewrite and --git-ssh-rewrite.", description_source: 'help' }],
-  ['cli_flag:--verify', { description: "(Deprecated — verification is the default. Kept so older wrapper scripts don't break.)", description_source: 'help' }],
+  [
+    'cli_flag:--configure-git',
+    {
+      description:
+        "Set global git identity to Claude <noreply@anthropic.com> and enable commit signing via Anthropic's signing service, matching 1P sessions. Writes ~/.gitconfig at runner startup. Without this flag, your image must provide its own git identity.",
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--confine-repo-settings',
+    {
+      description:
+        'Repo-committed-settings confine guard mode: warn (default) logs a would-refuse diagnostic per violation and still spawns; enforce refuses to spawn the session; off disables the scan. Invalid values fail closed at startup.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--debug-dir',
+    {
+      description:
+        'DEV ONLY — writes each work-order JWT + decoded JSON + hook stderr to <dir>/<jti>.{jwt,json,stderr}. Auto-pruned after 5m.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--debug-token-dir',
+    {
+      description: 'DEBUG ONLY — writes live tokens to disk. Do not use in production.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--drain-grace-sec',
+    {
+      description:
+        "Default: 0 — exit immediately after active sessions finish, WITHOUT polling for more (one-shot when --capacity=1). Set a positive value (e.g. 30) to keep the runner warm and re-poll the locked account's queue for that many seconds before exiting. Max: 604800.",
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--drain-wait-sec',
+    {
+      description:
+        "On SIGTERM/SIGINT, wait up to N seconds for each session's in-flight turn (a foreground tool call) and running background tasks to finish before sending the session process its SIGTERM. Adds N to the advertised shutdown budget. Default: 0 (send SIGTERM immediately). Max: 86400. (--drain-wait-bg-tasks-sec is a deprecated alias for this flag.)",
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--environment-secret-file',
+    {
+      description:
+        'Path to environment secret file (or set SELF_HOSTED_RUNNER_ENVIRONMENT_SECRET) (--pool-secret-file / SELF_HOSTED_RUNNER_POOL_SECRET are deprecated aliases.)',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--exec-path',
+    {
+      description: "Binary to spawn for child sessions. Default: this process's own binary.",
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--exit-if-unused-min',
+    {
+      description:
+        'Exit the runner if never assigned work for N min (autoscaler scale-down). Default: never. Max: 10080.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--expected-spawn-seconds',
+    {
+      description:
+        "p99 boot time for runners this orchestrator spawns (default: 120). Sent on every Poll as the server-side lease; if the runner doesn't register before then, the session is re-hinted with a fresh jti. HA replicas MUST use the same value.",
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--git-host-rewrite',
+    {
+      description:
+        'Rewrite https://<f>/... source URLs to https://<t>/... (repeatable). For split-horizon DNS where the runner reaches GHE via a different hostname than the control plane. Applied before --git-ssh-rewrite.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--git-ssh-rewrite',
+    {
+      description:
+        'Rewrite https://<host>/... source URLs to git@<host>:... (repeatable). For SSH-only git hosts.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--hook-concurrency',
+    {
+      description:
+        'Max spawn-runner hooks running in parallel (default: 4). Also caps how many hints are claimed per poll.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--hook-timeout',
+    {
+      description: 'SIGTERM the hook after <sec> seconds (default: 60).',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--kill-session-after-min',
+    {
+      description:
+        'SIGTERM a session child after N min wall-clock (runaway backstop). If a turn is in flight at the deadline, the kill is deferred until the turn finishes, with a hard cap of 15 min past the deadline (override: SELF_HOSTED_RUNNER_MAX_LIFETIME_GRACE_MS, in ms). Default: never. Max: 10080.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--lock-to-account',
+    {
+      description:
+        "Lock runner to a single account at registration (webhook-driven on-demand spawn). Only that account's sessions are assigned.",
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--log-file',
+    {
+      description: 'Tee runner logs to a file in append mode. Stdout is unchanged.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--log-level',
+    { description: 'Log level: info or debug (default: info)', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--min-idle',
+    {
+      description:
+        'Keep at least <n> idle slots free (free capacity across runners, not runner count; default: 0, disabled). The server mints standby work_orders (no session binding) for the gap on every Poll.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--no-check-expiry',
+    {
+      description:
+        'Skip the exp/nbf check (signature still verified). For forensics ("was this token ever issued by us?").',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--no-verify',
+    {
+      description:
+        'Skip signature verification and the JWKS fetch. For offline inspection only — do NOT feed the output to an auth decision.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--post-session-hook-timeout-sec',
+    {
+      description:
+        'SIGTERM budget for the post-session lifecycle hook, on every session end including runner shutdown. Default: 60.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--push-outcome-on-release',
+    {
+      description:
+        'On a runner-initiated non-completed session end (SIGTERM drain, idle-release, failed), push every tracked outcome branch to origin before deleting it, so in-flight commits survive a runner restart. Skipped on server-initiated deassign. On a resumed session (worker epoch > 1), the prep path fetches any previously pushed outcome branch from origin and continues from it, so histories stay linear. CAVEAT: the resume-fetch trusts refs/heads/<outcome-branch> on the source remote — anyone with push access to that ref can place content into the resumed workspace; if your source revision is protected but claude/* refs are not, that collaborator write surface widens on resume. Repos checked out via the checkout lifecycle hook are NOT pushed — use the post-session hook to snapshot those. Adds 30s (total, shared across all pushes) to the advertised shutdown budget.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--release-idle-session-min',
+    {
+      description:
+        'Release a session slot after N min of no user input (turn finished, or parked at a permission prompt, user idle). Runner exits if this drops it to zero active sessions. Default: never. Max: 10080.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--retire-at',
+    {
+      description:
+        "Retire the runner at the given wall-clock time (absolute Unix timestamp, in seconds): release every active session through the ReleaseSession path that --release-idle-session-min uses (the session parks server-side and a fresh runner picks it up on the user's next message), stop taking new work, and exit 0 once the slots are empty. A session still mid-turn at that time is released as soon as its turn ends; background work a finished turn left running gets up to 60s of grace, then the session parks anyway (perpetual monitor tasks don't hold it at all). Use this when the host hard-kills the runner at a known time (e.g. a sandbox lifetime cap): set it far enough before the kill to cover typical turns PLUS the per-session shutdown budget (--session-stop-grace-sec, the push-outcome window, the full --post-session-hook-timeout-sec, the 60s background-work grace, one poll) so sessions park cleanly and the post-session hook isn't truncated by the kill. Default: never.",
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--scm-connector-ca-file',
+    { description: 'Extra CA bundle (PEM) for TLS to the GHES host.', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--scm-connector-host',
+    {
+      description:
+        'GHES hostname to forward to (port defaults to 443). Setting this enables the connector.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--scm-connector-host-rewrite',
+    {
+      description:
+        'e2e only — redirect the TCP connect while keeping Host/SNI as --scm-connector-host.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--scm-connector-id',
+    {
+      description: 'ghe_configurations.id for this org (REQUIRED with --scm-connector-host).',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--scm-connector-provider',
+    { description: 'Provider slug (default: ghe).', description_source: 'help' },
+  ],
+  [
+    'cli_flag:--session-stop-grace-sec',
+    {
+      description:
+        'How long to wait for the Claude process to exit cleanly after a session ends, before force-killing it. The post-session hook runs after this. Default: 5.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--startup-timeout-min',
+    {
+      description:
+        'Release a session slot if the child has not completed initialization N min after spawn — covers a child hung during --resume hydration or MCP connect, and a session assigned with no pending input. Cleared once the child emits system:init, after which --release-idle-session-min takes over. Default: 15. 0 disables. Max: 10080.',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--trust-workspace',
+    {
+      description:
+        "Seed persisted trust for each session's repo paths so repo-level .claude/settings.json permissions.allow and additionalDirectories are honored by the child. Default: true. Set to false for cli#44151's stricter gate: repo-committed grants are dropped with an \"Ignoring N permissions.allow\" stderr diagnostic; configure host-level grants via the host-config dir's settings.json permissions.allow (userSettings source) instead.",
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--use-anthropic-git-proxy',
+    {
+      description:
+        "Clone via Anthropic's git proxy (uses the session creator's stored GitHub OAuth token, or the org's GitHub App installation token for bot/agent sessions; you don't manage git auth on the runner). Supersedes --git-host-rewrite and --git-ssh-rewrite.",
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--verify',
+    {
+      description:
+        "(Deprecated — verification is the default. Kept so older wrapper scripts don't break.)",
+      description_source: 'help',
+    },
+  ],
 ]);
 
 /** The audit promotion for a binary symbol, if a maintainer confirmed it. */
@@ -435,7 +862,9 @@ export function computeBinaryRemoval(
   if (presentVersions.length === 0) return null;
   const present = new Set(presentVersions);
   const asc = [...observedVersions].sort(compareVersionsAsc);
-  const lastSeen = [...presentVersions].sort(compareVersionsAsc)[presentVersions.length - 1] as string;
+  const lastSeen = [...presentVersions].sort(compareVersionsAsc)[
+    presentVersions.length - 1
+  ] as string;
 
   // Only the reliable era carries a trustworthy absence signal.
   if (compareVersionsAsc(lastSeen, RELIABLE_EXTRACTION_CEILING) >= 0) return null;
@@ -568,10 +997,7 @@ export function descriptionAt(
 }
 
 /** True when `version` falls in the timeline's final (current) era. */
-export function isCurrentDescriptionEra(
-  eras: readonly DescriptionEra[],
-  version: string
-): boolean {
+export function isCurrentDescriptionEra(eras: readonly DescriptionEra[], version: string): boolean {
   const last = eras[eras.length - 1];
   return last !== undefined && compareVersionsAsc(last.from, version) <= 0;
 }

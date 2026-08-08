@@ -24,10 +24,11 @@ leak/source-map mirror, a gist, an unofficial API), not merely a mislabeled stri
 **Good** — a lane bound to an official host; provenance derived from it:
 
 ```ts
-const DOCS_HOST = "code.claude.com";
+const DOCS_HOST = 'code.claude.com';
 async function fetchDocsLane(url: URL) {
-  if (url.hostname !== DOCS_HOST) throw new Error(`refusing non-official docs host: ${url.hostname}`);
-  return { provenance: "docs" as const, symbols: parseDocs(await (await fetch(url)).text()) };
+  if (url.hostname !== DOCS_HOST)
+    throw new Error(`refusing non-official docs host: ${url.hostname}`);
+  return { provenance: 'docs' as const, symbols: parseDocs(await (await fetch(url)).text()) };
 }
 ```
 
@@ -35,13 +36,13 @@ async function fetchDocsLane(url: URL) {
 
 ```ts
 async function fetchFromMirror() {
-  const res = await fetch("https://gist.githubusercontent.com/anon/leaked-claude-symbols.json"); // leak/source-map mirror
-  return { provenance: "docs" as const, symbols: await res.json() };                             // not first-party at all
+  const res = await fetch('https://gist.githubusercontent.com/anon/leaked-claude-symbols.json'); // leak/source-map mirror
+  return { provenance: 'docs' as const, symbols: await res.json() }; // not first-party at all
 }
 ```
 
 **Not a violation:** re-hashing an already-acquired official release binary against its committed
-`SHA256SUMS` and stamping `provenance:"binary"` — see *Binary provenance* below.
+`SHA256SUMS` and stamping `provenance:"binary"` — see _Binary provenance_ below.
 
 ## Generated data is the build's output, not a hand-edited file
 
@@ -51,20 +52,20 @@ Symbol data under `data/` is produced wholesale by `npm run scrape` from officia
 must write `data/` only through the scraper/build pipeline; symbol changes belong in the scraper
 or schema, never in a script that hand-constructs or patches a `data/` file. (Hand-edits to the
 `data/` files themselves are caught by CI regenerate-and-diff — `data/**` is excluded from
-review — so this rule guards the *code path* that would bypass the pipeline.)
+review — so this rule guards the _code path_ that would bypass the pipeline.)
 
 **Good** — data written through the build's snapshot writer:
 
 ```ts
-await writeJson(join(outDir, "latest.json"), toSnapshotFile(latestSnapshot));
+await writeJson(join(outDir, 'latest.json'), toSnapshotFile(latestSnapshot));
 ```
 
 **Bad** — hand-patching generated output, so `data/` no longer matches `npm run scrape`:
 
 ```ts
-const latest = JSON.parse(readFileSync("data/latest.json", "utf8"));
-latest.symbols.push({ symbol: "--new-flag", provenance: "changelog" });
-writeFileSync("data/latest.json", JSON.stringify(latest, null, 2));
+const latest = JSON.parse(readFileSync('data/latest.json', 'utf8'));
+latest.symbols.push({ symbol: '--new-flag', provenance: 'changelog' });
+writeFileSync('data/latest.json', JSON.stringify(latest, null, 2));
 ```
 
 ## CLI entrypoints are tested in-process
@@ -76,25 +77,25 @@ pass argv directly, use a temp dir — NOT by spawning the CLI under test as a s
 v8 coverage credit, and it can hit the network). The repo's `main()` takes argv as a parameter
 (`process.argv` is read only in the `isMain` block), so tests pass argv directly and never
 mutate `process.argv`. This targets running the system under test only — using `child_process`
-for *fixture setup* (e.g. `execFileSync('tar', …)` to build a test tarball) is fine.
+for _fixture setup_ (e.g. `execFileSync('tar', …)` to build a test tarball) is fine.
 
 **Good:**
 
 ```ts
-import { main } from "./my-cli.js";
-it("writes output when run in-process", async () => {
-  const out = await mkdtemp(join(tmpdir(), "cli-"));
-  expect(await main(["--out", out])).toBe(0);
-  expect(existsSync(join(out, "result.json"))).toBe(true);
+import { main } from './my-cli.js';
+it('writes output when run in-process', async () => {
+  const out = await mkdtemp(join(tmpdir(), 'cli-'));
+  expect(await main(['--out', out])).toBe(0);
+  expect(existsSync(join(out, 'result.json'))).toBe(true);
 });
 ```
 
 **Bad:**
 
 ```ts
-import { execFileSync } from "node:child_process";
-it("runs the CLI", () => {
-  execFileSync("npx", ["tsx", "scripts/my-cli.ts", "--out", "./tmp"]); // subprocess SUT → no coverage
+import { execFileSync } from 'node:child_process';
+it('runs the CLI', () => {
+  execFileSync('npx', ['tsx', 'scripts/my-cli.ts', '--out', './tmp']); // subprocess SUT → no coverage
 });
 ```
 
@@ -125,13 +126,13 @@ function isOfficial(file: string, versionDir: string, relPath: string): boolean 
   const want = officialSha(versionDir, relPath); // parsed from <versionDir>/SHA256SUMS
   return want !== undefined && sha256(readFileSync(file)) === want;
 }
-if (!isOfficial(bundle, versionDir, relPath)) return { kind: "unverified", file: bundle };
+if (!isOfficial(bundle, versionDir, relPath)) return { kind: 'unverified', file: bundle };
 ```
 
 **Bad** — re-establishing trust from an external source during a run:
 
 ```ts
-const url = "https://example.com/SHASUMS256.txt"; // not first-party / not official
+const url = 'https://example.com/SHASUMS256.txt'; // not first-party / not official
 const expected = await (await fetch(url)).text();
 assert(sha256OfBundle(bundlePath) === parseExpected(expected));
 ```
