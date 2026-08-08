@@ -26,7 +26,10 @@
       "description": "The current working directory",
       "description_source": "binary",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "agents"
+      ]
     },
     {
       "symbol": "--dangerously-skip-permissions",
@@ -91,7 +94,10 @@
       "description": "Set WebSocket headers (e.g. -H \"X-Api-Key: abc123\" -H \"X-Custom: value\")",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp"
+      ]
     },
     {
       "symbol": "--json",
@@ -104,7 +110,12 @@
       "description": "[Deprecated: Use --output-format json instead] Output JSON in the shape {cost_usd: number, duration_ms: number, duration_api_ms: number, result: string} (only works with --print)",
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "agents",
+        "plugin",
+        "ultrareview"
+      ]
     },
     {
       "symbol": "--max-turns",
@@ -208,7 +219,10 @@
       "description": "Installation scope: `user`, `project`, or `local`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin"
+      ]
     },
     {
       "symbol": "--system-prompt",
@@ -234,7 +248,10 @@
       "description": "Transport type (stdio, sse)",
       "description_source": "binary",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp"
+      ]
     },
     {
       "symbol": "--verbose",

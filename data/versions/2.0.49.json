@@ -104,7 +104,10 @@
       "description": "The current working directory",
       "description_source": "binary",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "agents"
+      ]
     },
     {
       "symbol": "--dangerously-skip-permissions",
@@ -220,7 +223,11 @@
       "description": "Reload all active plugins to apply pending changes without restarting. Reports counts for each reloaded component and flags any load errors. When the reload would change which MCP tools are loaded and invalidate the prompt cache, the command warns and skips unless you pass `--force`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "install",
+        "plugin"
+      ]
     },
     {
       "symbol": "--fork-session",
@@ -246,7 +253,10 @@
       "description": "Set WebSocket headers (e.g. -H \"X-Api-Key: abc123\" -H \"X-Custom: value\")",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp"
+      ]
     },
     {
       "symbol": "--ide",
@@ -312,7 +322,12 @@
       "description": "Output as JSON",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "agents",
+        "plugin",
+        "ultrareview"
+      ]
     },
     {
       "symbol": "--json-schema",
@@ -481,7 +496,10 @@
       "description": "Create a remote session with the given description",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin"
+      ]
     },
     {
       "symbol": "--replay-user-messages",
@@ -534,7 +552,10 @@
       "description": "Installation scope: `user`, `project`, or `local`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin"
+      ]
     },
     {
       "symbol": "--sdk-url",
@@ -652,7 +673,10 @@
       "description": "Timeout in milliseconds",
       "description_source": "binary",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "ultrareview"
+      ]
     },
     {
       "symbol": "--tools",
@@ -678,7 +702,10 @@
       "description": "Transport type (stdio, sse, http). Defaults to stdio if not specified.",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp"
+      ]
     },
     {
       "symbol": "--verbose",
@@ -3686,7 +3713,7 @@
       "symbol": "ENABLE_LSP_TOOL",
       "type": "env_var",
       "first_seen": "2.0.30",
-      "removed_in": "2.0.74",
+      "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -3699,6 +3726,18 @@
       "type": "env_var",
       "first_seen": "2.0.47",
       "removed_in": "2.0.54",
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "ENABLE_SESSION_PERSISTENCE",
+      "type": "env_var",
+      "first_seen": "1.0.98",
+      "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
