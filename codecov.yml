@@ -66,26 +66,82 @@ ignore:
 
 # Per-area coverage breakdown in the dashboard + PR comment. No `statuses` are
 # defined, so components add VISIBILITY only — they do NOT create extra
-# per-component PR status checks. Keep paths in sync as scripts/ grows.
+# per-component PR status checks.
+#
+# Grouped by LANE, matching how the pipeline is actually reasoned about: each
+# lane answers "what exists and when" from a different source, and they fail in
+# different ways. A drop inside binary extraction means the parser lost recall
+# against a new bundle shape; a drop in curated metadata means a hand-maintained
+# table went stale. Those want to be legible apart.
+#
+# Every non-test file under scripts/ belongs to exactly one component. If you add
+# a script, add it here — an unassigned file silently vanishes from the
+# breakdown, which is how 13 of 19 came to be invisible before this was refreshed.
 component_management:
   individual_components:
+    # Lane 1 — the changelog, authoritative for when a symbol appeared.
+    - component_id: changelog_scraper
+      name: changelog lane
+      paths:
+        - scripts/scrape-changelog.ts
+
+    # Lane 2 — the official docs pages, authoritative for what a symbol means.
+    - component_id: docs_lane
+      name: docs lane
+      paths:
+        - scripts/fetch-docs.ts
+
+    # Lane 3a — reading symbols out of a release bundle. The recall-critical
+    # half: every extractor defect this project has shipped lived here.
+    - component_id: binary_extraction
+      name: binary lane (extraction)
+      paths:
+        - scripts/extract-bundle.ts
+        - scripts/settings-schema.ts
+        - scripts/env-registry.ts
+        - scripts/argv-scopes.ts
+
+    # Lane 3b — interpreting that evidence: what may publish, how it is
+    # categorized, how per-version windows are distilled.
+    - component_id: binary_policy
+      name: binary lane (policy)
+      paths:
+        - scripts/binary-lane.ts
+        - scripts/backfill-binary.ts
+
+    # Lane 3c — acquiring the bundles. Network and checksum plumbing, not logic.
+    - component_id: binary_acquisition
+      name: binary lane (acquisition)
+      paths:
+        - scripts/scrape-binary.ts
+        - scripts/reextract-binaries.ts
+
+    # Hand-maintained tables the lanes consult. These rot rather than break, so
+    # their coverage is about the accessors staying honest.
+    - component_id: curated_metadata
+      name: curated metadata
+      paths:
+        - scripts/symbol-scopes.ts
+        - scripts/removals.ts
+
     - component_id: schema_validation
       name: schema & validation
       paths:
         - scripts/validate-schema.ts
-    - component_id: changelog_scraper
-      name: changelog scraper
-      paths:
-        - scripts/scrape-changelog.ts
+
     - component_id: exports
       name: export generation
       paths:
         - scripts/generate-exports.ts
+        - scripts/build-catalog.ts
+
     - component_id: dataset_tools
-      name: dataset tools (diff / coverage)
+      name: dataset tools (diff / coverage / removals)
       paths:
         - scripts/diff-snapshots.ts
         - scripts/check-coverage.ts
+        - scripts/find-removals.ts
+
     - component_id: shared
       name: shared helpers
       paths:

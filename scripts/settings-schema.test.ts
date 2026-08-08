@@ -341,3 +341,16 @@ describe('extractSettingsKeys — a parent object never borrows a child descript
     expect(by.get('sandbox.network.allowedDomains')).toBe('Domains');
   });
 });
+
+describe('extractSettingsKeys — an object whose body never closes', () => {
+  it('gives the parent no description rather than reading past the value', () => {
+    // objectEnd scans `src`, not the value slice, so an unterminated object would
+    // otherwise run to the end of the bundle and hand back whatever `.describe()`
+    // it found there — a description belonging to an unrelated key.
+    // Truncated mid-object: the brace never arrives before end-of-source.
+    const src = 'Q=v.object({apiKeyHelper:v.string(),broken:v.object({a:v.string().describe("Child")';
+    const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
+    expect(by.get('broken')).toBeUndefined();
+    expect(by.get('broken.a')).toBe('Child');
+  });
+});
