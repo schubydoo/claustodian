@@ -236,7 +236,10 @@
       "description": "Set environment variables (e.g. -e KEY=value)",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp add"
+      ]
     },
     {
       "symbol": "--fallback-model",
@@ -265,7 +268,8 @@
       "category": "cli",
       "scopes": [
         "install",
-        "plugin"
+        "plugin init",
+        "plugin tag"
       ]
     },
     {
@@ -294,7 +298,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "mcp"
+        "mcp add"
       ]
     },
     {
@@ -364,7 +368,9 @@
       "category": "cli",
       "scopes": [
         "agents",
-        "plugin",
+        "auth status",
+        "plugin eval",
+        "plugin list",
         "ultrareview"
       ]
     },
@@ -550,7 +556,7 @@
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin tag"
       ]
     },
     {
@@ -619,7 +625,16 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "mcp add",
+        "mcp add-from-claude-desktop",
+        "mcp add-json",
+        "mcp remove",
+        "plugin disable",
+        "plugin enable",
+        "plugin install",
+        "plugin prune",
+        "plugin uninstall",
+        "plugin update"
       ]
     },
     {
@@ -769,7 +784,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "mcp"
+        "mcp add"
       ]
     },
     {
