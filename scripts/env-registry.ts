@@ -159,26 +159,63 @@ function findBuilders(src: string): Map<string, Builder[]> {
 }
 
 /**
- * Variables bound to a typed constructor call, mapped to that type.
+ * Positions at which a variable is assigned a typed constructor call, mapped to
+ * the declared type. Keyed by the index of the assignment TARGET, so a getter can
+ * later ask "was the assignment nearest to me a builder one?".
  *
  * A binding counts only when the NEAREST PRECEDING definition of its callee is a
  * builder AND declares the method used — so `$e.bool()` resolves against the
  * registry builder while `$e.neighborhood()` in the graph library, and any
  * `$e.*` before the builder exists, are rejected.
  */
-function typedBindings(src: string, builders: Map<string, Builder[]>): Map<string, string> {
-  const out = new Map<string, string>();
+function typedBindings(src: string, builders: Map<string, Builder[]>): Map<number, string> {
+  const out = new Map<number, string>();
   for (const m of src.matchAll(builderCallRe([...builders.keys()]))) {
     const [, callee, method] = m as unknown as [string, string, string];
     const defs = builders.get(callee);
     if (!defs) continue;
     const nearest = defs.filter((d) => d.at < m.index).at(-1);
     if (!nearest || !nearest.methods.has(method)) continue;
-    const assign = ASSIGN_BEFORE.exec(src.slice(Math.max(0, m.index - ASSIGN_LOOKBACK), m.index));
+    const from = Math.max(0, m.index - ASSIGN_LOOKBACK);
+    const assign = ASSIGN_BEFORE.exec(src.slice(from, m.index));
     if (!assign) continue;
-    out.set(assign[1] as string, method);
+    out.set(from + (assign.index ?? 0), method);
   }
   return out;
+}
+
+/**
+ * True when `name` is assigned anywhere strictly between `a` and `b`, ignoring an
+ * assignment at `skip` (the binding itself).
+ *
+ * This is the scope test, and it has to be a proximity one. The registry emits
+ * its getter table BEFORE the bindings it closes over — `EMBEDDED_SEARCH_TOOLS`
+ * sits ~11k chars ahead of `olg=$e.bool()` — so "nearest preceding assignment"
+ * is structurally wrong here and finds nothing. What actually distinguishes a
+ * getter's own binding from a same-named binding in another module is whether
+ * anything reassigns the name in between.
+ *
+ * Rejects a match that is part of a longer identifier (`myTag=`) or an equality
+ * test (`tag==`).
+ */
+function hasInterveningAssignment(
+  src: string,
+  name: string,
+  a: number,
+  b: number,
+  skip: number
+): boolean {
+  const from = Math.min(a, b);
+  const to = Math.max(a, b);
+  const needle = `${name}=`;
+  for (let at = src.indexOf(needle, from); at !== -1 && at < to; at = src.indexOf(needle, at + 1)) {
+    if (at === skip) continue;
+    const prev = at > 0 ? (src[at - 1] as string) : '';
+    if (/[\w$]/.test(prev)) continue;
+    if (src[at + name.length + 1] === '=') continue;
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -191,10 +228,31 @@ export function extractRegistryEnvVars(src: string): Map<string, string> {
   const builders = findBuilders(src);
   if (builders.size === 0) return new Map();
   const bindings = typedBindings(src, builders);
+  if (bindings.size === 0) return new Map();
+  // Typed-binding positions grouped by assignment target, for proximity lookup.
+  const byName = new Map<string, number[]>();
+  for (const at of bindings.keys()) {
+    const nameMatch = /^([A-Za-z_$][\w$]*)/.exec(src.slice(at));
+    if (!nameMatch) continue;
+    const n = nameMatch[1] as string;
+    if (!byName.has(n)) byName.set(n, []);
+    byName.get(n)!.push(at);
+  }
   const out = new Map<string, string>();
   for (const m of src.matchAll(REGISTRY_ENTRY)) {
     const [, name, ref] = m as unknown as [string, string, string];
-    const declaredType = bindings.get(ref);
+    // A global name->type map would be wrong: minified assignment targets are
+    // reused across scopes. At 2.1.224, 17 builder-bound names are also assigned
+    // elsewhere (`tag` 106 times), so an unrelated `tag=$e.str()` in another
+    // module would validate any getter referencing a local `tag`. Take the
+    // CLOSEST typed binding and require nothing to reassign the name in between.
+    const candidates = byName.get(ref);
+    if (!candidates || candidates.length === 0) continue;
+    const at = candidates.reduce((best, p) =>
+      Math.abs(p - m.index) < Math.abs(best - m.index) ? p : best
+    );
+    if (hasInterveningAssignment(src, ref, m.index, at, at)) continue;
+    const declaredType = bindings.get(at);
     if (declaredType) out.set(name, declaredType);
   }
   return out;
