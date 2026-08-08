@@ -58,14 +58,35 @@ describe('audited env lists', () => {
 
 describe('audit promotions', () => {
   // Inventory check on the maintainer audit (scratch/needs-review-audit.{md,csv}):
-  // 6 commands with binary-registry descriptions + 30 flags with `claude --help`
-  // descriptions. If you promote/demote a symbol, update these counts.
+  // 6 commands with binary-registry descriptions + 65 flags with `claude --help`
+  // descriptions (30 from the original sweep, 35 from `self-hosted-runner` and its
+  // sub-subcommands). If you promote/demote a symbol, update these counts.
   const entries = [...PROMOTED_BINARY_SYMBOLS.entries()];
 
-  it('holds the 36 audited promotions (6 binary + 30 help)', () => {
-    expect(PROMOTED_BINARY_SYMBOLS.size).toBe(36);
+  it('holds the 71 audited promotions (6 binary + 65 help)', () => {
+    expect(PROMOTED_BINARY_SYMBOLS.size).toBe(71);
     expect(entries.filter(([, p]) => p.description_source === 'binary')).toHaveLength(6);
-    expect(entries.filter(([, p]) => p.description_source === 'help')).toHaveLength(30);
+    expect(entries.filter(([, p]) => p.description_source === 'help')).toHaveLength(65);
+  });
+
+  it('leaves the six unresolvable runner flags unpromoted', () => {
+    // Not an oversight — each fails the evidence bar for a single description.
+    // --api-url/--health-port/--hooks-dir mean different things per invocation and
+    // identity is `type:symbol`; --pool-secret-file/--drain-wait-bg-tasks-sec appear
+    // only in prose about the flag they alias; --sigkill-timeout-sec is accepted by
+    // the parser but absent from help. All six stay needs_review.
+    for (const f of [
+      '--api-url',
+      '--health-port',
+      '--hooks-dir',
+      '--pool-secret-file',
+      '--drain-wait-bg-tasks-sec',
+      '--sigkill-timeout-sec',
+    ]) {
+      expect(PROMOTED_BINARY_SYMBOLS.has(`cli_flag:${f}`), `${f} unexpectedly promoted`).toBe(
+        false
+      );
+    }
   });
 
   it('keys are well-formed type:symbol and every description is non-empty', () => {
