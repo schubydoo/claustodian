@@ -604,6 +604,79 @@
       footer a {
         color: var(--accent);
       }
+      .pager {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin: 1.25rem 0 0;
+      }
+      #pager-top {
+        margin: 0 0 1rem;
+      }
+      .pager[hidden] {
+        display: none;
+      }
+      .pager button {
+        font: inherit;
+        font-size: 0.85rem;
+        padding: 0.35rem 0.9rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--card);
+        color: var(--fg);
+        cursor: pointer;
+      }
+      .pager button:hover:not(:disabled) {
+        border-color: var(--accent);
+      }
+      .pager button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .pager button.page-num {
+        min-width: 2.5rem;
+        padding: 0.35rem 0.5rem;
+        text-align: center;
+      }
+      .pager button.current {
+        background: var(--accent);
+        border-color: var(--accent);
+        /* The ink has to flip with the scheme, because --accent does: it is a
+           DARK blue (#3b5bdb) in light mode and a LIGHT periwinkle (#748ffc) in
+           dark mode. A single fixed colour fails contrast in one of the two —
+           axe caught near-black-on-dark-blue here. */
+        color: #ffffff;
+        font-weight: 700;
+      }
+      @media (prefers-color-scheme: dark) {
+        .pager button.current {
+          color: #16181d;
+        }
+      }
+      .pager .gap {
+        color: var(--muted);
+        padding: 0 0.1rem;
+      }
+      .pager .goto {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-left: 0.5rem;
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+      .pager .goto input {
+        font: inherit;
+        font-size: 0.85rem;
+        width: 4.5rem;
+        padding: 0.3rem 0.4rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+        color: var(--fg);
+      }
       .status {
         padding: 1rem 0;
         color: var(--muted);
@@ -809,6 +882,15 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             <option value="newest">Since — newest first</option>
           </select>
         </div>
+        <div>
+          <label for="per-page">Per page</label>
+          <select id="per-page" aria-label="Results per page">
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+            <option value="all">All</option>
+          </select>
+        </div>
         <div class="group-toggle">
           <label for="group">
             <input type="checkbox" id="group" />
@@ -818,7 +900,13 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       </div>
 
       <p id="meta" aria-live="polite"></p>
+      <!-- Two pagers, above and below the list: paging from the bottom otherwise
+           scrolls you to the top and leaves the Next button off-screen, so
+           advancing several pages means scrolling down every time. Contents are
+           built by renderPager(). -->
+      <nav class="pager" id="pager-top" aria-label="Result pages" hidden></nav>
       <ul id="results"></ul>
+      <nav class="pager" id="pager-bottom" aria-label="Result pages, bottom" hidden></nav>
       <p id="status" class="status">Loading dataset…</p>
 
       <footer>
@@ -883,11 +971,19 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       const $categoryWrap = document.getElementById('category-wrap');
       const $group = document.getElementById('group');
       const $allVersions = document.getElementById('all-versions');
+      const $perPage = document.getElementById('per-page');
+      const $pagerTop = document.getElementById('pager-top');
+      const $pagerBottom = document.getElementById('pager-bottom');
       const $results = document.getElementById('results');
       const $meta = document.getElementById('meta');
       const $status = document.getElementById('status');
 
       let snapshot = null; // { claudeCodeVersion, symbols: [...] }
+      // 1-based page of the result list. Reset by rerender() whenever the RESULT
+      // SET changes (query, filters, sort, version, page size) — but deliberately
+      // NOT by render() itself, so collapsing a group or opening a description
+      // history leaves you where you were.
+      let page = 1;
       // `${type}:${symbol}` -> [{from, description}] eras (data/binary-descriptions.json).
       // Best-effort: absent (older deploy, fetch failure) just hides the history UI.
       let descTimelines = {};
@@ -1169,7 +1265,21 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           const dir = sort === 'oldest' ? 1 : -1;
           matches.sort((a, b) => dir * cmpVersions(a.first_seen, b.first_seen) || bySymbol(a, b));
         }
-        if ($group.checked) {
+        const grouped = $group.checked;
+        // A collapsed group renders no cards, so its rows must not consume page
+        // slots either — otherwise collapsing everything leaves a page of nothing.
+        // Its HEADER is still drawn below (from `matches`, not the page slice), or
+        // there would be no control left to expand it again.
+        const pageable = grouped ? matches.filter((s) => !collapsedTypes.has(s.type)) : matches;
+        const size = $perPage.value === 'all' ? Infinity : Number($perPage.value);
+        const pageCount = Math.max(1, Math.ceil(pageable.length / size));
+        // Clamp rather than reset: collapsing a group shrinks the list without
+        // going through rerender(), and page may now be past the end.
+        page = Math.min(Math.max(1, page), pageCount);
+        const start = size === Infinity ? 0 : (page - 1) * size;
+        const slice = size === Infinity ? pageable : pageable.slice(start, start + size);
+
+        if (grouped) {
           // Group by type: sections in a fixed type order, with the chosen sort
           // applied within each (matches is already sorted, and bucketing preserves
           // that order). Any unlisted type is appended so nothing is ever dropped.
@@ -1177,6 +1287,7 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             ['cli_flag', 'CLI flags'],
             ['command', 'Commands'],
             ['env_var', 'Env vars'],
+            ['config_key', 'Config keys'],
           ];
           const known = new Set(TYPE_GROUPS.map(([t]) => t));
           const extra = [...new Set(matches.map((s) => s.type))]
@@ -1185,20 +1296,129 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             .map((t) => [t, t]);
           const nodes = [];
           for (const [t, label] of [...TYPE_GROUPS, ...extra]) {
-            const group = matches.filter((s) => s.type === t);
-            if (!group.length) continue;
-            nodes.push(groupHeader(t, label, group.length));
-            if (!collapsedTypes.has(t)) {
-              for (const s of group) nodes.push(resultCard(s));
-            }
+            // Header count is the total across ALL pages, not this page's share —
+            // "CLI flags · 12" under a 240-flag filter would be a lie.
+            const total = matches.filter((s) => s.type === t).length;
+            if (!total) continue;
+            const onPage = slice.filter((s) => s.type === t);
+            nodes.push(groupHeader(t, label, total));
+            for (const s of onPage) nodes.push(resultCard(s));
           }
           $results.replaceChildren(...nodes);
         } else {
-          $results.replaceChildren(...matches.map(resultCard));
+          $results.replaceChildren(...slice.map(resultCard));
         }
-        $meta.textContent = useCatalog
+
+        const scope = useCatalog
           ? `${matches.length} of ${catalog.length} symbols across all versions`
           : `${matches.length} of ${snapshot.symbols.length} symbols as of ${snapshot.claudeCodeVersion}`;
+        // Say which slice is on screen, else "50 results" reads as "only 50 exist".
+        $meta.textContent =
+          pageCount > 1 ? `${scope} — showing ${start + 1}\u2013${start + slice.length}` : scope;
+        renderPager($pagerTop, pageCount);
+        renderPager($pagerBottom, pageCount);
+      }
+
+      /**
+       * Which page numbers to show: always the first and last, plus a window
+       * around the current one, with '…' standing in for each run that is
+       * skipped. 29 pages become "1 … 24 25 26 27 28 29" rather than 29 buttons.
+       */
+      function pageWindow(current, total) {
+        const SPAN = 2;
+        const wanted = new Set([1, total]);
+        for (let i = current - SPAN; i <= current + SPAN; i++) {
+          if (i >= 1 && i <= total) wanted.add(i);
+        }
+        const out = [];
+        let prev = 0;
+        for (const n of [...wanted].sort((a, b) => a - b)) {
+          if (prev && n - prev > 1) out.push('gap');
+          out.push(n);
+          prev = n;
+        }
+        return out;
+      }
+
+      function renderPager(nav, pageCount) {
+        nav.hidden = pageCount <= 1;
+        if (nav.hidden) {
+          nav.replaceChildren();
+          return;
+        }
+        const nodes = [];
+        const step = (label, target, disabled) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.innerHTML = label;
+          b.disabled = disabled;
+          b.addEventListener('click', () => goToPage(target));
+          return b;
+        };
+        nodes.push(step('&larr; Prev', page - 1, page <= 1));
+        for (const n of pageWindow(page, pageCount)) {
+          if (n === 'gap') {
+            const gap = document.createElement('span');
+            gap.className = 'gap';
+            gap.textContent = '…';
+            nodes.push(gap);
+            continue;
+          }
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'page-num' + (n === page ? ' current' : '');
+          b.textContent = String(n);
+          // Screen readers otherwise announce a bare number with no context.
+          b.setAttribute('aria-label', `Page ${n} of ${pageCount}`);
+          if (n === page) b.setAttribute('aria-current', 'page');
+          b.addEventListener('click', () => goToPage(n));
+          nodes.push(b);
+        }
+        nodes.push(step('Next &rarr;', page + 1, page >= pageCount));
+        // A direct jump. The windowed buttons only reach a few pages either side,
+        // so getting from 1 to 26 is still several clicks without this.
+        if (pageCount > 5) {
+          const wrap = document.createElement('span');
+          wrap.className = 'goto';
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.min = '1';
+          input.max = String(pageCount);
+          input.value = String(page);
+          input.setAttribute('aria-label', `Go to page (1 to ${pageCount})`);
+          const jump = () => {
+            const n = Number(input.value);
+            // Ignore junk rather than jumping to NaN, and clamp out-of-range.
+            if (!Number.isFinite(n) || n < 1) return;
+            goToPage(Math.min(Math.round(n), pageCount));
+          };
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              jump();
+            }
+          });
+          input.addEventListener('change', jump);
+          wrap.append('Go to', input);
+          nodes.push(wrap);
+        }
+        nav.replaceChildren(...nodes);
+      }
+
+      // Re-render AND return to page 1: for anything that changes which symbols
+      // match. Staying on page 7 of a fresh 2-page result set is disorienting.
+      function rerender() {
+        page = 1;
+        render();
+      }
+
+      function goToPage(n) {
+        page = n;
+        render();
+        // Scroll to the TOP pager rather than the list, so the controls you just
+        // used are still under the cursor. Instant, not smooth: smooth-scrolling
+        // a long list is slow to settle and ignores prefers-reduced-motion.
+        $pagerTop.scrollIntoView({ block: 'start' });
       }
 
       async function loadVersion(v) {
@@ -1207,7 +1427,8 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           snapshot = await getJSON(`${DATA}/versions/${v}.json`);
           $status.textContent = '';
           refreshCategoryControl();
-          render();
+          // A different version is a different result set — back to page 1.
+          rerender();
         } catch (e) {
           $status.textContent = `Could not load ${v} (${e.message}).`;
         }
@@ -1229,14 +1450,16 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           );
           $version.value = index.latest;
           $version.addEventListener('change', () => loadVersion($version.value));
-          $sort.addEventListener('change', render);
+          // Every control below changes the RESULT SET, so each resets to page 1.
+          $sort.addEventListener('change', rerender);
           $type.addEventListener('change', () => {
             refreshCategoryControl();
-            render();
+            rerender();
           });
-          $category.addEventListener('change', render);
-          $group.addEventListener('change', render);
-          $q.addEventListener('input', render);
+          $category.addEventListener('change', rerender);
+          $group.addEventListener('change', rerender);
+          $q.addEventListener('input', rerender);
+          $perPage.addEventListener('change', rerender);
           $allVersions.addEventListener('change', async () => {
             // Lazy-load the catalog the first time; on failure, revert the toggle.
             if ($allVersions.checked && !catalog) {
@@ -1253,7 +1476,7 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             // The version picker doesn't apply to a cross-version search.
             $version.disabled = $allVersions.checked;
             refreshCategoryControl();
-            render();
+            rerender();
           });
           await loadVersion(index.latest);
         } catch (e) {
