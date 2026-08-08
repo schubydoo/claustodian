@@ -81,6 +81,16 @@
       "type": "string",
       "minLength": 1,
       "description": "Grouping used both for topic (startup, networking, ui, filesystem, auth, ...) and for ownership/source scoping (third-party, cloud-auth, ci-detect, runtime, terminal, ...)."
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Subcommands this flag is accepted under, e.g. [\"remote-control\"] or [\"agents\",\"plugin\"]. COMPLETE when present, so a non-empty list also means the flag is NOT accepted on bare `claude`. Absent means no scope information \u2014 not \"top-level\". Only cli_flag records carry it."
     }
   },
   "required": [
@@ -98,13 +108,17 @@
   "additionalProperties": false,
   "if": {
     "properties": {
-      "first_seen_estimated": { "const": true }
+      "first_seen_estimated": {
+        "const": true
+      }
     },
     "required": ["first_seen_estimated"]
   },
   "then": {
     "properties": {
-      "confidence": { "enum": ["medium", "low"] }
+      "confidence": {
+        "enum": ["medium", "low"]
+      }
     }
   }
 }

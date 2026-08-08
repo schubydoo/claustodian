@@ -864,6 +864,31 @@ describe('assembleSnapshots — per-version deprecation status', () => {
   const statusAt = (snaps: ReturnType<typeof assembleSnapshots>, v: string, sym: string) =>
     snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === sym)?.status;
 
+  it('attaches curated scopes to a subcommand-only flag in every snapshot', () => {
+    const snaps = assembleSnapshots(
+      [rec({ symbol: '--sandbox', type: 'cli_flag', first_seen: '1.5.0', category: 'cli' })],
+      blocks
+    );
+    for (const v of ['1.5.0', '2.6.0']) {
+      const f = snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === '--sandbox');
+      expect(f?.scopes).toEqual(['remote-control']);
+    }
+  });
+
+  it('leaves a top-level flag and a non-flag symbol unscoped', () => {
+    const snaps = assembleSnapshots(
+      [
+        rec({ symbol: '--help', type: 'cli_flag', first_seen: '1.5.0', category: 'cli' }),
+        rec({ symbol: '/plugin', type: 'command', first_seen: '1.5.0', category: 'command' }),
+      ],
+      blocks
+    );
+    const at = (sym: string) =>
+      snaps.find((s) => s.version === '2.6.0')?.symbols.find((x) => x.symbol === sym);
+    expect(at('--help')?.scopes).toBeUndefined();
+    expect(at('/plugin')?.scopes).toBeUndefined();
+  });
+
   it('resolves a config key category per version as the @internal marker moves', () => {
     // ONE observation window spanning the edit, which is what the real pipeline
     // produces: disableWorkflows is present 2.1.152 -> 2.1.224 and lost its

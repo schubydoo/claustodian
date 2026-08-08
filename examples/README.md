@@ -58,6 +58,7 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
   "removed_in": null,            // version it vanished, or null if still present
   "deprecated_in": "2.1.73",     // OPTIONAL: version it was marked deprecated
   "status": "active",            // "active" | "deprecated" | "removed" | "needs_review"
+  "scopes": ["remote-control"],  // optional; subcommands the flag is accepted under
   "provenance": "changelog",     // "changelog" | "docs" | "binary" — which lane proved existence
   "confidence": "high",          // "high" | "medium" | "low"
   "first_seen_estimated": true,  // OPTIONAL: first_seen is an UPPER BOUND, not exact
@@ -106,5 +107,9 @@ last era whose `from <= Y`. Env vars generally have no timeline yet.
   `versions/<X>.json` means untracked, not "symbol absent." Fall back to the nearest
   tracked version `<= Y`.
 - **`needs_review` ≠ nonexistent.** Surface it; don't filter it out.
+- **`scopes` means "not on bare `claude`".** A flag with `"scopes": ["remote-control"]` is
+  rejected by `claude --sandbox` and accepted by `claude remote-control --sandbox`. The list is
+  complete, so check membership rather than assuming one scope. **Absence is not "top-level"** —
+  it means no scope information was recorded, which is true of most of the dataset.
 - **Compare versions as semver**, never as strings.
 - **Verify `schemaVersion`** is the `1.x` you built against before trusting field names.

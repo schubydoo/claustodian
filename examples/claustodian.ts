@@ -37,6 +37,12 @@ export interface ClaudeSymbol {
   description_source?: 'docs' | 'changelog' | 'binary' | 'help';
   source_url: string | null;
   category: string;
+  /**
+   * Subcommands this flag is accepted under, e.g. ["remote-control"]. COMPLETE
+   * when present, so a non-empty list also means the flag is NOT accepted on
+   * bare `claude`. Absent means no scope information — not "top-level".
+   */
+  scopes?: string[];
 }
 
 export interface Snapshot {

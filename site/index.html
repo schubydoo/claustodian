@@ -231,6 +231,17 @@
       .t-internal_config_flag {
         background: var(--config);
       }
+      /* A flag that only works under a subcommand. Muted like .cat — this is
+         classification, not a warning. */
+      .scope {
+        font-size: 0.72rem;
+        color: var(--cmd);
+        border: 1px solid color-mix(in srgb, var(--cmd) 40%, transparent);
+        border-radius: 999px;
+        padding: 0.1rem 0.45rem;
+        cursor: help;
+        white-space: nowrap;
+      }
       .cat {
         font-size: 0.72rem;
         color: var(--muted);
@@ -513,6 +524,13 @@
           docs where available.
         </p>
         <p>
+          A <span class="scope">under remote-control</span> chip means the flag is only accepted
+          under that subcommand — <code>claude --sandbox</code> fails where
+          <code>claude remote-control --sandbox</code> works. The list is complete, so a flag
+          without the chip simply has no scope information recorded; it does not mean the flag is
+          top-level.
+        </p>
+        <p>
           An <span class="unreviewed">unreviewed</span> badge means the symbol was found in an
           official release binary but has not been human-curated yet. It exists — that is what the
           binary proves — but its description may be terse or missing. Treat it as real, not as
@@ -599,6 +617,17 @@
         cat.className = 'cat';
         cat.textContent = sym.category;
         row.appendChild(cat);
+
+        // A scoped flag is NOT accepted on bare `claude`, which the flat symbol
+        // list otherwise implies. `claude --sandbox` fails; `claude
+        // remote-control --sandbox` works.
+        if (Array.isArray(sym.scopes) && sym.scopes.length) {
+          const scope = document.createElement('span');
+          scope.className = 'scope';
+          scope.title = `Only accepted under: ${sym.scopes.map((s) => `claude ${s}`).join(', ')}. Not accepted on bare \`claude\`.`;
+          scope.textContent = `under ${sym.scopes.join(' / ')}`;
+          row.appendChild(scope);
+        }
 
         const life = document.createElement('span');
         life.className = 'lifecycle';

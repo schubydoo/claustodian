@@ -52,6 +52,7 @@ import {
 import { assertOfficialDocs, DOCS_BASE, type DocsIndex } from './fetch-docs.js';
 import { applyChangelogDeprecations, applyChangelogRemovals } from './removals.js';
 import { compareVersionsAsc, type ExtractedSymbolType, isMain, loadChangelog } from './lib.js';
+import { scopesFor } from './symbol-scopes.js';
 
 // Re-exported from lib for existing importers (tests, extract-bundle, etc.).
 export { compareVersionsAsc, type ExtractedSymbolType };
@@ -90,6 +91,12 @@ export interface SymbolRecord {
   description_source?: 'docs' | 'changelog' | 'binary' | 'help';
   source_url: string | null;
   category: string;
+  /**
+   * Subcommands this flag is accepted under. Complete when present, so a
+   * non-empty list also means the flag is NOT accepted on bare `claude`. Absent
+   * means no scope information. See scripts/symbol-scopes.ts.
+   */
+  scopes?: readonly string[];
 }
 
 export interface VersionSnapshot {
@@ -524,6 +531,17 @@ export function assembleSnapshots(
       ? { ...record, status: 'deprecated' }
       : record;
 
+  /**
+   * Attaches curated scopes. Applied here rather than in finalizeRecord because
+   * every published record passes through this map regardless of which lane
+   * constructed it, and scope is a property of the symbol rather than of the lane
+   * that happened to find it.
+   */
+  const withScopes = (record: SymbolRecord): SymbolRecord => {
+    const scopes = scopesFor(record.type, record.symbol);
+    return scopes ? { ...record, scopes } : record;
+  };
+
   /** Same record unless the category actually differs — keeps snapshots stable. */
   const withCategory = (record: SymbolRecord, category: string): SymbolRecord =>
     record.category === category ? record : { ...record, category };
@@ -557,7 +575,7 @@ export function assembleSnapshots(
     version,
     symbols: records
       .filter((record) => liveAt(record, version))
-      .map((record) => describeAt(statusAt(record, version), version))
+      .map((record) => withScopes(describeAt(statusAt(record, version), version)))
       .sort(compareSymbolRecords),
   }));
 }
