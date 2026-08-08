@@ -45,6 +45,7 @@ import {
   isCurrentDescriptionEra,
   isPublishableBinaryEnv,
   isPublishableBinaryFlag,
+  mayRedateFromBinary,
   loadBinaryDescriptions,
   loadBinaryObservations,
   promotionFor,
@@ -512,7 +513,8 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
 export function assembleSnapshots(
   records: SymbolRecord[],
   blocks: ChangelogBlock[],
-  binaryDescriptions?: BinaryDescriptions['descriptions']
+  binaryDescriptions?: BinaryDescriptions['descriptions'],
+  binaryScopes?: ReadonlyMap<string, readonly string[]>
 ): VersionSnapshot[] {
   const versionsOldestFirst = blocks
     .map((block) => block.version)
@@ -538,7 +540,11 @@ export function assembleSnapshots(
    * that happened to find it.
    */
   const withScopes = (record: SymbolRecord): SymbolRecord => {
-    const scopes = scopesFor(record.type, record.symbol);
+    const scopes = scopesFor(
+      record.type,
+      record.symbol,
+      binaryScopes?.get(`${record.type}:${record.symbol}`)
+    );
     return scopes ? { ...record, scopes } : record;
   };
 
@@ -699,9 +705,10 @@ export function enrichSymbols(
  *    description, confidence "medium"), carrying the observation's conservative
  *    `removed_in` (null unless it cleanly disappeared pre-cliff). Env vars are
  *    gated to first-party ones (isPublishableBinaryEnv); flags proved only by a
- *    subcommand's argv switch are withheld as unscopeable (isPublishableBinaryFlag),
- *    and the rest are first-party by the extractor's registration/registry
- *    evidence. A symbol
+ *    subcommand's argv switch publish with their `scopes` when containment
+ *    established the owning invocation and are withheld otherwise
+ *    (isPublishableBinaryFlag), and the rest are first-party by the extractor's
+ *    registration/registry evidence. A symbol
  *    a maintainer has audited (PROMOTED_BINARY_SYMBOLS) is instead published
  *    active/high with a first-party description (still provenance:"binary").
  *
@@ -723,7 +730,11 @@ export function enrichWithBinary(
     }
     // A switch-case-only observation is subcommand-scoped, so it says nothing about
     // when the top-level flag of the same name appeared — it must not re-date it.
-    if (!isPublishableBinaryFlag(obs)) {
+    // This stays gated on the scope caveat itself, NOT on publishability: a scoped
+    // flag publishes now, but `--capacity` is still one record spanning both
+    // `remote-control` (older, from docs) and `self-hosted-runner` (2.1.224), and
+    // the runner's sighting is the wrong answer to "when did --capacity appear?".
+    if (!mayRedateFromBinary(obs)) {
       return record;
     }
     // Binary saw the symbol earlier than any other lane — earliest evidence wins.
@@ -751,8 +762,9 @@ export function enrichWithBinary(
       continue;
     }
     if (!isPublishableBinaryFlag(obs)) {
-      // Claude Code's own flag, but only ever proved by a subcommand's argv switch —
-      // unpublishable in a flat namespace. Recorded in binary-observations.json.
+      // Claude Code's own flag, proved only by a subcommand's argv switch AND with
+      // no scope established for it — publishing it into a flat namespace would
+      // claim it works on bare `claude`. Recorded in binary-observations.json.
       continue;
     }
     // A maintainer-audited symbol graduates from the needs_review default to
@@ -828,7 +840,20 @@ export function buildEnrichedSnapshots(
   const frozen = priorFirstSeen
     ? freezeEstimatedFirstSeen(withDeprecations, priorFirstSeen)
     : withDeprecations;
-  return assembleSnapshots(frozen, blocks, binaryDescriptions);
+  return assembleSnapshots(frozen, blocks, binaryDescriptions, binaryScopeMap(binary));
+}
+
+/**
+ * Binary-proved scopes keyed `type:symbol`, for assembleSnapshots to union with
+ * the curated table. Only observations that actually carry scopes appear, so a
+ * run without the binary lane behaves exactly as before.
+ */
+function binaryScopeMap(binary?: BinaryObservations): ReadonlyMap<string, readonly string[]> {
+  const out = new Map<string, readonly string[]>();
+  for (const obs of binary?.symbols ?? []) {
+    if (obs.scopes?.length) out.set(`${obs.type}:${obs.symbol}`, obs.scopes);
+  }
+  return out;
 }
 
 /**

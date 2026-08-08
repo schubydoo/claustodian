@@ -49,6 +49,13 @@ export interface BinaryCacheFile {
     category?: string;
     evidence?: string;
     description?: string;
+    /**
+     * Distilled, unlike the cache-only fields above. Scope is evidence the bundle
+     * itself carries (the parser module's `Usage: claude <path>` banner), not an
+     * interpretation layered on top, so it belongs in the observation file — the
+     * publish/withhold decision it feeds still lives in binary-lane.ts.
+     */
+    scopes?: readonly string[];
   }>;
 }
 
@@ -85,10 +92,16 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
   // Collect every version each symbol was seen in, then derive the window.
   const seenIn = new Map<
     string,
-    { symbol: string; type: ExtractedSymbolType; versions: string[]; strongEvidence: boolean }
+    {
+      symbol: string;
+      type: ExtractedSymbolType;
+      versions: string[];
+      strongEvidence: boolean;
+      scopes: Set<string>;
+    }
   >();
   for (const file of files) {
-    for (const { symbol, type, evidence } of file.symbols) {
+    for (const { symbol, type, evidence, scopes } of file.symbols) {
       const key = `${type}:${symbol}`;
       // Evidence is per-version and can strengthen over releases (a flag parsed by a
       // switch in one release may be commander-registered in the next). Track whether
@@ -99,12 +112,20 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       if (entry) {
         entry.versions.push(file.version);
         entry.strongEvidence ||= strong;
-      } else seenIn.set(key, { symbol, type, versions: [file.version], strongEvidence: strong });
+        for (const s of scopes ?? []) entry.scopes.add(s);
+      } else
+        seenIn.set(key, {
+          symbol,
+          type,
+          versions: [file.version],
+          strongEvidence: strong,
+          scopes: new Set(scopes ?? []),
+        });
     }
   }
 
   const symbols: BinaryObservation[] = [];
-  for (const { symbol, type, versions, strongEvidence } of seenIn.values()) {
+  for (const { symbol, type, versions, strongEvidence, scopes } of seenIn.values()) {
     const sorted = [...versions].sort(compareVersionsAsc);
     symbols.push({
       symbol,
@@ -112,7 +133,15 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       first_seen: sorted[0] as string,
       last_seen: sorted[sorted.length - 1] as string,
       removed_in: computeBinaryRemoval(versions, observedVersions),
-      ...(strongEvidence ? {} : { switch_case_only: true as const }),
+      // Scope rides with the caveat it lifts. A symbol with strong evidence
+      // somewhere publishes top-level, and narrowing it by a subcommand parser
+      // that accepts the same name would be a false claim, not a refinement.
+      ...(strongEvidence
+        ? {}
+        : {
+            switch_case_only: true as const,
+            ...(scopes.size ? { scopes: [...scopes].sort() } : {}),
+          }),
     });
   }
 

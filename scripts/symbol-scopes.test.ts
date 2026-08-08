@@ -68,3 +68,42 @@ describe('SYMBOL_SCOPES table', () => {
     for (const flag of SYMBOL_SCOPES.keys()) expect(flag).toMatch(/^--[a-z][a-z0-9-]+$/);
   });
 });
+
+describe('scopesFor with binary-proved scopes', () => {
+  it('unions curated and binary scopes rather than letting one win', () => {
+    // The `claude --help` sweep could not reach `self-hosted-runner` (hidden from
+    // help), so it recorded `--capacity` as remote-control's alone. The binary
+    // lane sees the runner's parser but never a commander registration. Neither
+    // source is complete by itself; the union is.
+    expect(scopesFor('cli_flag', '--capacity', ['self-hosted-runner'])).toEqual([
+      'remote-control',
+      'self-hosted-runner',
+    ]);
+  });
+
+  it('agrees with itself when both sources say the same thing', () => {
+    expect(scopesFor('cli_flag', '--base-dir', ['self-hosted-runner'])).toEqual([
+      'self-hosted-runner',
+    ]);
+  });
+
+  it('returns binary scopes for a flag the curated table never saw', () => {
+    expect(scopesFor('cli_flag', '--min-idle', ['self-hosted-runner orchestrator'])).toEqual([
+      'self-hosted-runner orchestrator',
+    ]);
+  });
+
+  it('falls back to the curated table when binary scopes are absent or empty', () => {
+    expect(scopesFor('cli_flag', '--sandbox', [])).toEqual(['remote-control']);
+    expect(scopesFor('cli_flag', '--sandbox', undefined)).toEqual(['remote-control']);
+  });
+
+  it('still scopes nothing but flags, whatever the binary reports', () => {
+    expect(scopesFor('command', '/plugin', ['self-hosted-runner'])).toBeUndefined();
+    expect(scopesFor('env_var', 'CLAUDE_CODE_X', ['self-hosted-runner'])).toBeUndefined();
+  });
+
+  it('leaves an unscoped flag unscoped when the binary proves nothing', () => {
+    expect(scopesFor('cli_flag', '--help', undefined)).toBeUndefined();
+  });
+});

@@ -31,6 +31,7 @@
  * This is extraction only — no acquisition (download/unpack) and no cross-version
  * diffing. The backfill and the forward CI wrap this with those concerns.
  */
+import { extractSwitchCaseScopes } from './argv-scopes.js';
 import { isAccessorEvidenceEnv } from './binary-lane.js';
 import { extractRegistryEnvVars } from './env-registry.js';
 import { categorize, SYMBOL_DENYLIST, type ExtractedSymbolType } from './scrape-changelog.js';
@@ -64,6 +65,13 @@ export interface BundleSymbol {
    * data is there if that call is ever revisited.
    */
   declaredType?: string;
+  /**
+   * For a flag proved only by a subcommand's `case"--flag":` label: the complete
+   * set of invocation paths whose parsers accept it (`self-hosted-runner`,
+   * `self-hosted-runner orchestrator`, …). Absent when containment could not
+   * establish a complete scope — see scripts/argv-scopes.ts.
+   */
+  scopes?: readonly string[];
 }
 
 /** How far back to look for a flag's own-evidence marker. */
@@ -515,14 +523,20 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
   }
   const flags = extractFlags(src);
   const flagDescriptions = extractFlagDescriptions(src, new Set(flags.keys()));
+  // Scope only attaches to `argv-switch` evidence. The stronger paths are already
+  // top-level or already curated, and a flag they proved must not be narrowed by a
+  // subcommand parser that happens to accept the same name.
+  const switchScopes = extractSwitchCaseScopes(src);
   for (const [symbol, evidence] of flags) {
     const description = flagDescriptions.get(symbol);
+    const scopes = evidence === 'argv-switch' ? switchScopes.get(symbol) : undefined;
     symbols.push({
       symbol,
       type: 'cli_flag',
       category: categorize(symbol, 'cli_flag'),
       evidence,
       ...(description ? { description } : {}),
+      ...(scopes ? { scopes } : {}),
     });
   }
   const commands = extractCommands(src);
