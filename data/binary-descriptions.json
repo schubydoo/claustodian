@@ -2577,6 +2577,62 @@
         "description": "Enable auto-memory for this project. When false, Claude will not read from or write to the auto-memory directory."
       }
     ],
+    "config_key:autoMode": [
+      {
+        "from": "2.1.108",
+        "description": "Rules for the auto mode classifier allow section"
+      },
+      {
+        "from": "2.1.118",
+        "description": "Rules for the auto mode classifier allow section. Include the literal string \"$defaults\" to inherit the built-in rules at that position."
+      }
+    ],
+    "config_key:autoMode.allow": [
+      {
+        "from": "2.1.108",
+        "description": "Rules for the auto mode classifier allow section"
+      },
+      {
+        "from": "2.1.118",
+        "description": "Rules for the auto mode classifier allow section. Include the literal string \"$defaults\" to inherit the built-in rules at that position."
+      }
+    ],
+    "config_key:autoMode.classifyAllShell": [
+      {
+        "from": "2.1.193",
+        "description": "When true, every Bash/PowerShell allow rule is suspended while auto mode is active so all shell commands are routed through the classifier (higher safety, more classifier calls). Default: false."
+      }
+    ],
+    "config_key:autoMode.environment": [
+      {
+        "from": "2.1.108",
+        "description": "Entries for the auto mode classifier environment section"
+      },
+      {
+        "from": "2.1.118",
+        "description": "Entries for the auto mode classifier environment section. Include the literal string \"$defaults\" to inherit the built-in entries at that position."
+      }
+    ],
+    "config_key:autoMode.hard_deny": [
+      {
+        "from": "2.1.136",
+        "description": "Rules for the auto mode classifier HARD BLOCK section \\u2014 security boundaries that user intent does NOT clear. Include the literal string \"$defaults\" to inherit the built-in rules at that position."
+      }
+    ],
+    "config_key:autoMode.soft_deny": [
+      {
+        "from": "2.1.108",
+        "description": "Rules for the auto mode classifier deny section"
+      },
+      {
+        "from": "2.1.118",
+        "description": "Rules for the auto mode classifier deny section. Include the literal string \"$defaults\" to inherit the built-in rules at that position."
+      },
+      {
+        "from": "2.1.136",
+        "description": "Rules for the auto mode classifier SOFT BLOCK section \\u2014 destructive/irreversible actions that user intent can clear. Include the literal string \"$defaults\" to inherit the built-in rules at that position."
+      }
+    ],
     "config_key:autoScrollEnabled": [
       {
         "from": "2.1.119",
@@ -2621,6 +2677,12 @@
       {
         "from": "1.0.54",
         "description": "Path to a script that exports AWS credentials"
+      }
+    ],
+    "config_key:axScreenReader": [
+      {
+        "from": "2.1.181",
+        "description": "Render screen-reader friendly output (flat text, no decorative borders or animations). Overridden by the CLAUDE_AX_SCREEN_READER env var and the --ax-screen-reader CLI flag."
       }
     ],
     "config_key:blockedMarketplaces": [
@@ -2741,6 +2803,12 @@
         "description": "Default shell for input-box ! commands. Defaults to 'bash' on all platforms (no Windows auto-flip)."
       }
     ],
+    "config_key:defaultView": [
+      {
+        "from": "2.1.108",
+        "description": "Default transcript view: chat (SendUserMessage checkpoints only) or transcript (full)"
+      }
+    ],
     "config_key:deniedMcpServers": [
       {
         "from": "2.0.22",
@@ -2787,6 +2855,12 @@
       {
         "from": "2.1.169",
         "description": "Disable the skills and workflows that ship with Claude Code: bundled skills and workflows are removed entirely; built-in slash commands stay typable but are hidden from the model. Plugins, .claude/skills/, and .claude/commands/ are unaffected. Equivalent to CLAUDE_CODE_DISABLE_BUNDLED_SKILLS=1."
+      }
+    ],
+    "config_key:disableDeepLinkRegistration": [
+      {
+        "from": "2.1.108",
+        "description": "Prevent claude-cli:// protocol handler registration with the OS"
       }
     ],
     "config_key:disableRemoteControl": [
@@ -3629,6 +3703,12 @@
         "description": "Per-skill listing overrides keyed by skill name. \"name-only\" lists the skill without its description; \"user-invocable-only\" hides it from the model but keeps /name; \"off\" hides it from both. Absent = on."
       }
     ],
+    "config_key:skipAutoPermissionPrompt": [
+      {
+        "from": "2.1.108",
+        "description": "Whether the user has accepted the auto mode opt-in dialog"
+      }
+    ],
     "config_key:skipDangerousModePermissionPrompt": [
       {
         "from": "2.1.40",
@@ -3803,6 +3883,12 @@
         "description": "Terminal UI renderer. \"fullscreen\" uses the flicker-free alt-screen renderer with virtualized scrollback (equivalent to CLAUDE_CODE_NO_FLICKER=1). \"default\" uses the classic main-screen renderer."
       }
     ],
+    "config_key:useAutoModeDuringPlan": [
+      {
+        "from": "2.1.108",
+        "description": "Whether plan mode uses auto mode semantics when auto mode is available (default: true)"
+      }
+    ],
     "config_key:verbose": [
       {
         "from": "2.1.119",
@@ -3837,6 +3923,12 @@
       {
         "from": "2.1.92",
         "description": "'hold' (default): hold to talk. 'tap': tap to start, tap to stop+submit."
+      }
+    ],
+    "config_key:voiceEnabled": [
+      {
+        "from": "2.1.108",
+        "description": "Enable voice mode (hold-to-talk dictation)"
       }
     ],
     "config_key:wheelScrollAccelerationEnabled": [
