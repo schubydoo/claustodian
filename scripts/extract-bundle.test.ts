@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
+import { isPublishableBinaryEnv } from './binary-lane.js';
 import {
   extractAccessorEnvVars,
   extractBundleSymbols,
@@ -141,9 +142,36 @@ describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
     expect(env.get('ANTHROPIC_BAR')).toBe('claude-code');
   });
 
+  it('captures an audited first-party var that skips the CLAUDE_/ANTHROPIC_ convention', () => {
+    // PROMOTE_CC_ENV is a human audit saying these ARE Claude Code's own. Gating
+    // on the prefix alone dropped them here, so when the inline `process.env`
+    // read went away the symbol vanished from extraction and the lane recorded a
+    // removal — EMBEDDED_SEARCH_TOOLS, ENABLE_LSP_TOOL and
+    // ENABLE_SESSION_PERSISTENCE all carried removed_in while sitting in the tip
+    // binary as `NAME:()=>ref`.
+    const env = extractAccessorEnvVars('{EMBEDDED_SEARCH_TOOLS:()=>a,ENABLE_LSP_TOOL:()=>b}');
+    expect(env.has('EMBEDDED_SEARCH_TOOLS')).toBe(true);
+    expect(env.has('ENABLE_LSP_TOOL')).toBe(true);
+  });
+
+  it('captures an audited needs-review var too', () => {
+    expect(extractAccessorEnvVars('{CLAUBBIT:()=>1}').has('CLAUBBIT')).toBe(true);
+  });
+
+  it('uses the SAME predicate as the publish overlay, so the gates cannot drift', () => {
+    // Anything admitted here must be publishable, and anything audited as
+    // first-party must be visible here. A name on neither list and without the
+    // prefix stays out.
+    const admitted = [...extractAccessorEnvVars('{EMBEDDED_SEARCH_TOOLS:()=>a,NUMBER_FORMAT_RANGES:()=>b}').entries()];
+    for (const [name, category] of admitted) expect(isPublishableBinaryEnv(name, category)).toBe(true);
+    expect(admitted.map(([n]) => n)).toEqual(['EMBEDDED_SEARCH_TOOLS']);
+  });
+
   it('gates out non-first-party getters (constants + provider vars)', () => {
     // the real accessor map also holds ALL-CAPS constants and provider vars;
     // the claude-code gate must exclude every one of them.
+    // None of these are on an audited list, so widening the gate must not admit
+    // them: the map is ~43% non-env constants.
     const env = extractAccessorEnvVars('{NEVER:()=>0,BROWSER_TOOLS:()=>t,NODE_OPTIONS:()=>o,AWS_REGION:()=>r}');
     expect(env.size).toBe(0);
   });
