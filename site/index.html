@@ -449,6 +449,151 @@
         color: var(--accent);
         font-weight: 600;
       }
+      /* Usage block. Sits above the controls, collapsed by default, so the code
+         does not push search below the fold. CSS-only tabs: three radios in one
+         group, each panel shown by a sibling selector on its checked radio. No
+         JS, so the snippets stay readable if the script or the fetch fails. */
+      .usage {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--card);
+        margin-bottom: 1.25rem;
+      }
+      .usage > summary {
+        cursor: pointer;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .usage > summary::-webkit-details-marker {
+        display: none;
+      }
+      /* Own marker, so the chevron direction is under our control in every
+         browser rather than depending on the UA's default triangle. */
+      .usage > summary::before {
+        content: '▸';
+        color: var(--accent);
+        font-size: 0.85em;
+      }
+      .usage[open] > summary::before {
+        content: '▾';
+      }
+      .usage > summary:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -2px;
+        border-radius: 10px;
+      }
+      .usage-body {
+        padding: 0 0.9rem 0.9rem;
+      }
+      .usage-body > p {
+        margin: 0 0 0.9rem;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+      .usage input[type='radio'] {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .tabs {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        margin-bottom: -1px;
+      }
+      .tabs label {
+        cursor: pointer;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 0.4rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 8px 8px 0 0;
+        background: transparent;
+        color: var(--muted);
+      }
+      .usage pre {
+        margin: 0;
+        padding: 0.9rem 1rem;
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        border-radius: 0 8px 8px 8px;
+        background: var(--bg);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.82rem;
+        line-height: 1.55;
+      }
+      /* Hand-marked syntax tokens. A highlighter library would be a CDN
+         dependency and a build step for three static snippets that never
+         change at runtime. Both palettes are checked against axe for contrast. */
+      .t-c {
+        color: #6a737d;
+        font-style: italic;
+      }
+      .t-s {
+        color: #0a7d33;
+      }
+      .t-k {
+        color: #b31d54;
+      }
+      .t-f {
+        color: #6f42c1;
+      }
+      @media (prefers-color-scheme: dark) {
+        .t-c {
+          color: #8b949e;
+        }
+        .t-s {
+          color: #7ee787;
+        }
+        .t-k {
+          color: #ff9ec4;
+        }
+        .t-f {
+          color: #a5b8ff;
+        }
+      }
+      .panel {
+        display: none;
+      }
+      /* Without this the links fall back to the UA's default blue — outside
+         `footer`, so `footer a` never reached them. axe flagged all four as a
+         serious contrast failure against the dark background. */
+      .usage a {
+        color: var(--accent);
+      }
+      .usage-more {
+        margin: 0.9rem 0 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+      /* Keyboard focus lands on the radio, which is visually hidden — so mirror
+         the ring onto its label or the tab strip is unusable without a mouse.
+         Must be `~ .tabs label[for=…]`, not `+ label`: the radios are three
+         consecutive siblings and the labels live inside a LATER .tabs element,
+         so an adjacent-sibling selector matches nothing at all. */
+      #tab-sh:focus-visible ~ .tabs label[for='tab-sh'],
+      #tab-py:focus-visible ~ .tabs label[for='tab-py'],
+      #tab-ts:focus-visible ~ .tabs label[for='tab-ts'] {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      #tab-sh:checked ~ .tabs label[for='tab-sh'],
+      #tab-py:checked ~ .tabs label[for='tab-py'],
+      #tab-ts:checked ~ .tabs label[for='tab-ts'] {
+        background: var(--bg);
+        border-bottom-color: var(--bg);
+        color: var(--fg);
+      }
+      #tab-sh:checked ~ #panel-sh,
+      #tab-py:checked ~ #panel-py,
+      #tab-ts:checked ~ #panel-ts {
+        display: block;
+      }
       footer {
         margin-top: 2.5rem;
         padding-top: 1rem;
@@ -569,6 +714,60 @@
           version, search the surface.
         </p>
       </header>
+
+      <!-- Collapsed by default: the page's job is search, and an always-open code
+           block would push the controls below the fold. <details> gives the
+           disclosure for free — keyboard-operable, and open by default if the
+           browser has no JS or CSS. -->
+      <details class="usage">
+        <summary>Use it from your own code — curl, Python, TypeScript</summary>
+        <div class="usage-body">
+          <p>
+            Static JSON at stable URLs — no API, no key, no install. A version snapshot lists only
+            the symbols available at that version, so presence <em>is</em> the answer.
+          </p>
+          <input type="radio" name="usage-tab" id="tab-sh" checked />
+          <input type="radio" name="usage-tab" id="tab-py" />
+          <input type="radio" name="usage-tab" id="tab-ts" />
+          <div class="tabs">
+            <label for="tab-sh">curl + jq</label>
+            <label for="tab-py">Python</label>
+            <label for="tab-ts">TypeScript</label>
+          </div>
+          <pre
+            class="panel"
+            id="panel-sh"
+          ><span class="t-c"># Does --safe-mode exist in 2.1.169?  (exit 0 = yes)</span>
+<span class="t-f">curl</span> -fsSL https://claustodian.dev/data/versions/2.1.169.json \
+  | <span class="t-f">jq</span> -e <span class="t-s">'.symbols[] | select(.symbol == "--safe-mode")'</span> &gt;/dev/null \
+  <span class="t-k">&amp;&amp;</span> <span class="t-f">echo</span> available <span class="t-k">||</span> <span class="t-f">echo</span> <span class="t-s">"not available"</span></pre>
+          <pre class="panel" id="panel-py"><span class="t-c"># stdlib only</span>
+<span class="t-k">import</span> json, urllib.request
+
+url = <span class="t-s">"https://claustodian.dev/data/versions/2.1.169.json"</span>
+<span class="t-k">with</span> urllib.request.<span class="t-f">urlopen</span>(url) <span class="t-k">as</span> r:
+    snap = json.<span class="t-f">load</span>(r)
+
+<span class="t-f">print</span>(<span class="t-f">any</span>(s[<span class="t-s">"symbol"</span>] == <span class="t-s">"--safe-mode"</span> <span class="t-k">for</span> s <span class="t-k">in</span> snap[<span class="t-s">"symbols"</span>]))</pre>
+          <pre class="panel" id="panel-ts"><span class="t-c">// zero dependencies, Node 18+</span>
+<span class="t-k">const</span> url = <span class="t-s">'https://claustodian.dev/data/versions/2.1.169.json'</span>;
+<span class="t-k">const</span> snap = <span class="t-k">await</span> <span class="t-f">fetch</span>(url).<span class="t-f">then</span>((r) =&gt; r.<span class="t-f">json</span>());
+
+console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>((s) =&gt; s.symbol === <span class="t-s">'--safe-mode'</span>));</pre>
+          <p class="usage-more">
+            Fuller clients, all runnable and dependency-light:
+            <a href="https://github.com/schubydoo/claustodian/blob/main/examples/quickstart.sh"
+              >quickstart.sh</a
+            >,
+            <a href="https://github.com/schubydoo/claustodian/blob/main/examples/claustodian.py"
+              >claustodian.py</a
+            >,
+            <a href="https://github.com/schubydoo/claustodian/blob/main/examples/claustodian.ts"
+              >claustodian.ts</a
+            >. Building on top of this with an agent? Point it at <a href="llms.txt">llms.txt</a>.
+          </p>
+        </div>
+      </details>
 
       <div class="controls">
         <div id="search">
