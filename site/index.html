@@ -449,6 +449,151 @@
         color: var(--accent);
         font-weight: 600;
       }
+      /* Usage block. Sits above the controls, collapsed by default, so the code
+         does not push search below the fold. CSS-only tabs: three radios in one
+         group, each panel shown by a sibling selector on its checked radio. No
+         JS, so the snippets stay readable if the script or the fetch fails. */
+      .usage {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--card);
+        margin-bottom: 1.25rem;
+      }
+      .usage > summary {
+        cursor: pointer;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .usage > summary::-webkit-details-marker {
+        display: none;
+      }
+      /* Own marker, so the chevron direction is under our control in every
+         browser rather than depending on the UA's default triangle. */
+      .usage > summary::before {
+        content: '▸';
+        color: var(--accent);
+        font-size: 0.85em;
+      }
+      .usage[open] > summary::before {
+        content: '▾';
+      }
+      .usage > summary:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -2px;
+        border-radius: 10px;
+      }
+      .usage-body {
+        padding: 0 0.9rem 0.9rem;
+      }
+      .usage-body > p {
+        margin: 0 0 0.9rem;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+      .usage input[type='radio'] {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .tabs {
+        display: flex;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+        margin-bottom: -1px;
+      }
+      .tabs label {
+        cursor: pointer;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 0.4rem 0.85rem;
+        border: 1px solid var(--border);
+        border-radius: 8px 8px 0 0;
+        background: transparent;
+        color: var(--muted);
+      }
+      .usage pre {
+        margin: 0;
+        padding: 0.9rem 1rem;
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        border-radius: 0 8px 8px 8px;
+        background: var(--bg);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.82rem;
+        line-height: 1.55;
+      }
+      /* Hand-marked syntax tokens. A highlighter library would be a CDN
+         dependency and a build step for three static snippets that never
+         change at runtime. Both palettes are checked against axe for contrast. */
+      .t-c {
+        color: #6a737d;
+        font-style: italic;
+      }
+      .t-s {
+        color: #0a7d33;
+      }
+      .t-k {
+        color: #b31d54;
+      }
+      .t-f {
+        color: #6f42c1;
+      }
+      @media (prefers-color-scheme: dark) {
+        .t-c {
+          color: #8b949e;
+        }
+        .t-s {
+          color: #7ee787;
+        }
+        .t-k {
+          color: #ff9ec4;
+        }
+        .t-f {
+          color: #a5b8ff;
+        }
+      }
+      .panel {
+        display: none;
+      }
+      /* Without this the links fall back to the UA's default blue — outside
+         `footer`, so `footer a` never reached them. axe flagged all four as a
+         serious contrast failure against the dark background. */
+      .usage a {
+        color: var(--accent);
+      }
+      .usage-more {
+        margin: 0.9rem 0 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+      /* Keyboard focus lands on the radio, which is visually hidden — so mirror
+         the ring onto its label or the tab strip is unusable without a mouse.
+         Must be `~ .tabs label[for=…]`, not `+ label`: the radios are three
+         consecutive siblings and the labels live inside a LATER .tabs element,
+         so an adjacent-sibling selector matches nothing at all. */
+      #tab-sh:focus-visible ~ .tabs label[for='tab-sh'],
+      #tab-py:focus-visible ~ .tabs label[for='tab-py'],
+      #tab-ts:focus-visible ~ .tabs label[for='tab-ts'] {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      #tab-sh:checked ~ .tabs label[for='tab-sh'],
+      #tab-py:checked ~ .tabs label[for='tab-py'],
+      #tab-ts:checked ~ .tabs label[for='tab-ts'] {
+        background: var(--bg);
+        border-bottom-color: var(--bg);
+        color: var(--fg);
+      }
+      #tab-sh:checked ~ #panel-sh,
+      #tab-py:checked ~ #panel-py,
+      #tab-ts:checked ~ #panel-ts {
+        display: block;
+      }
       footer {
         margin-top: 2.5rem;
         padding-top: 1rem;
@@ -458,6 +603,79 @@
       }
       footer a {
         color: var(--accent);
+      }
+      .pager {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin: 1.25rem 0 0;
+      }
+      #pager-top {
+        margin: 0 0 1rem;
+      }
+      .pager[hidden] {
+        display: none;
+      }
+      .pager button {
+        font: inherit;
+        font-size: 0.85rem;
+        padding: 0.35rem 0.9rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--card);
+        color: var(--fg);
+        cursor: pointer;
+      }
+      .pager button:hover:not(:disabled) {
+        border-color: var(--accent);
+      }
+      .pager button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .pager button.page-num {
+        min-width: 2.5rem;
+        padding: 0.35rem 0.5rem;
+        text-align: center;
+      }
+      .pager button.current {
+        background: var(--accent);
+        border-color: var(--accent);
+        /* The ink has to flip with the scheme, because --accent does: it is a
+           DARK blue (#3b5bdb) in light mode and a LIGHT periwinkle (#748ffc) in
+           dark mode. A single fixed colour fails contrast in one of the two —
+           axe caught near-black-on-dark-blue here. */
+        color: #ffffff;
+        font-weight: 700;
+      }
+      @media (prefers-color-scheme: dark) {
+        .pager button.current {
+          color: #16181d;
+        }
+      }
+      .pager .gap {
+        color: var(--muted);
+        padding: 0 0.1rem;
+      }
+      .pager .goto {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-left: 0.5rem;
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+      .pager .goto input {
+        font: inherit;
+        font-size: 0.85rem;
+        width: 4.5rem;
+        padding: 0.3rem 0.4rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+        color: var(--fg);
       }
       .status {
         padding: 1rem 0;
@@ -570,6 +788,60 @@
         </p>
       </header>
 
+      <!-- Collapsed by default: the page's job is search, and an always-open code
+           block would push the controls below the fold. <details> gives the
+           disclosure for free — keyboard-operable, and open by default if the
+           browser has no JS or CSS. -->
+      <details class="usage">
+        <summary>Use it from your own code — curl, Python, TypeScript</summary>
+        <div class="usage-body">
+          <p>
+            Static JSON at stable URLs — no API, no key, no install. A version snapshot lists only
+            the symbols available at that version, so presence <em>is</em> the answer.
+          </p>
+          <input type="radio" name="usage-tab" id="tab-sh" checked />
+          <input type="radio" name="usage-tab" id="tab-py" />
+          <input type="radio" name="usage-tab" id="tab-ts" />
+          <div class="tabs">
+            <label for="tab-sh">curl + jq</label>
+            <label for="tab-py">Python</label>
+            <label for="tab-ts">TypeScript</label>
+          </div>
+          <pre
+            class="panel"
+            id="panel-sh"
+          ><span class="t-c"># Does --safe-mode exist in 2.1.169?  (exit 0 = yes)</span>
+<span class="t-f">curl</span> -fsSL https://claustodian.dev/data/versions/2.1.169.json \
+  | <span class="t-f">jq</span> -e <span class="t-s">'.symbols[] | select(.symbol == "--safe-mode")'</span> &gt;/dev/null \
+  <span class="t-k">&amp;&amp;</span> <span class="t-f">echo</span> available <span class="t-k">||</span> <span class="t-f">echo</span> <span class="t-s">"not available"</span></pre>
+          <pre class="panel" id="panel-py"><span class="t-c"># stdlib only</span>
+<span class="t-k">import</span> json, urllib.request
+
+url = <span class="t-s">"https://claustodian.dev/data/versions/2.1.169.json"</span>
+<span class="t-k">with</span> urllib.request.<span class="t-f">urlopen</span>(url) <span class="t-k">as</span> r:
+    snap = json.<span class="t-f">load</span>(r)
+
+<span class="t-f">print</span>(<span class="t-f">any</span>(s[<span class="t-s">"symbol"</span>] == <span class="t-s">"--safe-mode"</span> <span class="t-k">for</span> s <span class="t-k">in</span> snap[<span class="t-s">"symbols"</span>]))</pre>
+          <pre class="panel" id="panel-ts"><span class="t-c">// zero dependencies, Node 18+</span>
+<span class="t-k">const</span> url = <span class="t-s">'https://claustodian.dev/data/versions/2.1.169.json'</span>;
+<span class="t-k">const</span> snap = <span class="t-k">await</span> <span class="t-f">fetch</span>(url).<span class="t-f">then</span>((r) =&gt; r.<span class="t-f">json</span>());
+
+console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>((s) =&gt; s.symbol === <span class="t-s">'--safe-mode'</span>));</pre>
+          <p class="usage-more">
+            Fuller clients, all runnable and dependency-light:
+            <a href="https://github.com/schubydoo/claustodian/blob/main/examples/quickstart.sh"
+              >quickstart.sh</a
+            >,
+            <a href="https://github.com/schubydoo/claustodian/blob/main/examples/claustodian.py"
+              >claustodian.py</a
+            >,
+            <a href="https://github.com/schubydoo/claustodian/blob/main/examples/claustodian.ts"
+              >claustodian.ts</a
+            >. Building on top of this with an agent? Point it at <a href="llms.txt">llms.txt</a>.
+          </p>
+        </div>
+      </details>
+
       <div class="controls">
         <div id="search">
           <label for="q">Search symbols</label>
@@ -610,6 +882,15 @@
             <option value="newest">Since — newest first</option>
           </select>
         </div>
+        <div>
+          <label for="per-page">Per page</label>
+          <select id="per-page" aria-label="Results per page">
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+            <option value="all">All</option>
+          </select>
+        </div>
         <div class="group-toggle">
           <label for="group">
             <input type="checkbox" id="group" />
@@ -619,7 +900,13 @@
       </div>
 
       <p id="meta" aria-live="polite"></p>
+      <!-- Two pagers, above and below the list: paging from the bottom otherwise
+           scrolls you to the top and leaves the Next button off-screen, so
+           advancing several pages means scrolling down every time. Contents are
+           built by renderPager(). -->
+      <nav class="pager" id="pager-top" aria-label="Result pages" hidden></nav>
       <ul id="results"></ul>
+      <nav class="pager" id="pager-bottom" aria-label="Result pages, bottom" hidden></nav>
       <p id="status" class="status">Loading dataset…</p>
 
       <footer>
@@ -684,11 +971,19 @@
       const $categoryWrap = document.getElementById('category-wrap');
       const $group = document.getElementById('group');
       const $allVersions = document.getElementById('all-versions');
+      const $perPage = document.getElementById('per-page');
+      const $pagerTop = document.getElementById('pager-top');
+      const $pagerBottom = document.getElementById('pager-bottom');
       const $results = document.getElementById('results');
       const $meta = document.getElementById('meta');
       const $status = document.getElementById('status');
 
       let snapshot = null; // { claudeCodeVersion, symbols: [...] }
+      // 1-based page of the result list. Reset by rerender() whenever the RESULT
+      // SET changes (query, filters, sort, version, page size) — but deliberately
+      // NOT by render() itself, so collapsing a group or opening a description
+      // history leaves you where you were.
+      let page = 1;
       // `${type}:${symbol}` -> [{from, description}] eras (data/binary-descriptions.json).
       // Best-effort: absent (older deploy, fetch failure) just hides the history UI.
       let descTimelines = {};
@@ -970,7 +1265,21 @@
           const dir = sort === 'oldest' ? 1 : -1;
           matches.sort((a, b) => dir * cmpVersions(a.first_seen, b.first_seen) || bySymbol(a, b));
         }
-        if ($group.checked) {
+        const grouped = $group.checked;
+        // A collapsed group renders no cards, so its rows must not consume page
+        // slots either — otherwise collapsing everything leaves a page of nothing.
+        // Its HEADER is still drawn below (from `matches`, not the page slice), or
+        // there would be no control left to expand it again.
+        const pageable = grouped ? matches.filter((s) => !collapsedTypes.has(s.type)) : matches;
+        const size = $perPage.value === 'all' ? Infinity : Number($perPage.value);
+        const pageCount = Math.max(1, Math.ceil(pageable.length / size));
+        // Clamp rather than reset: collapsing a group shrinks the list without
+        // going through rerender(), and page may now be past the end.
+        page = Math.min(Math.max(1, page), pageCount);
+        const start = size === Infinity ? 0 : (page - 1) * size;
+        const slice = size === Infinity ? pageable : pageable.slice(start, start + size);
+
+        if (grouped) {
           // Group by type: sections in a fixed type order, with the chosen sort
           // applied within each (matches is already sorted, and bucketing preserves
           // that order). Any unlisted type is appended so nothing is ever dropped.
@@ -978,6 +1287,7 @@
             ['cli_flag', 'CLI flags'],
             ['command', 'Commands'],
             ['env_var', 'Env vars'],
+            ['config_key', 'Config keys'],
           ];
           const known = new Set(TYPE_GROUPS.map(([t]) => t));
           const extra = [...new Set(matches.map((s) => s.type))]
@@ -986,20 +1296,129 @@
             .map((t) => [t, t]);
           const nodes = [];
           for (const [t, label] of [...TYPE_GROUPS, ...extra]) {
-            const group = matches.filter((s) => s.type === t);
-            if (!group.length) continue;
-            nodes.push(groupHeader(t, label, group.length));
-            if (!collapsedTypes.has(t)) {
-              for (const s of group) nodes.push(resultCard(s));
-            }
+            // Header count is the total across ALL pages, not this page's share —
+            // "CLI flags · 12" under a 240-flag filter would be a lie.
+            const total = matches.filter((s) => s.type === t).length;
+            if (!total) continue;
+            const onPage = slice.filter((s) => s.type === t);
+            nodes.push(groupHeader(t, label, total));
+            for (const s of onPage) nodes.push(resultCard(s));
           }
           $results.replaceChildren(...nodes);
         } else {
-          $results.replaceChildren(...matches.map(resultCard));
+          $results.replaceChildren(...slice.map(resultCard));
         }
-        $meta.textContent = useCatalog
+
+        const scope = useCatalog
           ? `${matches.length} of ${catalog.length} symbols across all versions`
           : `${matches.length} of ${snapshot.symbols.length} symbols as of ${snapshot.claudeCodeVersion}`;
+        // Say which slice is on screen, else "50 results" reads as "only 50 exist".
+        $meta.textContent =
+          pageCount > 1 ? `${scope} — showing ${start + 1}\u2013${start + slice.length}` : scope;
+        renderPager($pagerTop, pageCount);
+        renderPager($pagerBottom, pageCount);
+      }
+
+      /**
+       * Which page numbers to show: always the first and last, plus a window
+       * around the current one, with '…' standing in for each run that is
+       * skipped. 29 pages become "1 … 24 25 26 27 28 29" rather than 29 buttons.
+       */
+      function pageWindow(current, total) {
+        const SPAN = 2;
+        const wanted = new Set([1, total]);
+        for (let i = current - SPAN; i <= current + SPAN; i++) {
+          if (i >= 1 && i <= total) wanted.add(i);
+        }
+        const out = [];
+        let prev = 0;
+        for (const n of [...wanted].sort((a, b) => a - b)) {
+          if (prev && n - prev > 1) out.push('gap');
+          out.push(n);
+          prev = n;
+        }
+        return out;
+      }
+
+      function renderPager(nav, pageCount) {
+        nav.hidden = pageCount <= 1;
+        if (nav.hidden) {
+          nav.replaceChildren();
+          return;
+        }
+        const nodes = [];
+        const step = (label, target, disabled) => {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.innerHTML = label;
+          b.disabled = disabled;
+          b.addEventListener('click', () => goToPage(target));
+          return b;
+        };
+        nodes.push(step('&larr; Prev', page - 1, page <= 1));
+        for (const n of pageWindow(page, pageCount)) {
+          if (n === 'gap') {
+            const gap = document.createElement('span');
+            gap.className = 'gap';
+            gap.textContent = '…';
+            nodes.push(gap);
+            continue;
+          }
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'page-num' + (n === page ? ' current' : '');
+          b.textContent = String(n);
+          // Screen readers otherwise announce a bare number with no context.
+          b.setAttribute('aria-label', `Page ${n} of ${pageCount}`);
+          if (n === page) b.setAttribute('aria-current', 'page');
+          b.addEventListener('click', () => goToPage(n));
+          nodes.push(b);
+        }
+        nodes.push(step('Next &rarr;', page + 1, page >= pageCount));
+        // A direct jump. The windowed buttons only reach a few pages either side,
+        // so getting from 1 to 26 is still several clicks without this.
+        if (pageCount > 5) {
+          const wrap = document.createElement('span');
+          wrap.className = 'goto';
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.min = '1';
+          input.max = String(pageCount);
+          input.value = String(page);
+          input.setAttribute('aria-label', `Go to page (1 to ${pageCount})`);
+          const jump = () => {
+            const n = Number(input.value);
+            // Ignore junk rather than jumping to NaN, and clamp out-of-range.
+            if (!Number.isFinite(n) || n < 1) return;
+            goToPage(Math.min(Math.round(n), pageCount));
+          };
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              jump();
+            }
+          });
+          input.addEventListener('change', jump);
+          wrap.append('Go to', input);
+          nodes.push(wrap);
+        }
+        nav.replaceChildren(...nodes);
+      }
+
+      // Re-render AND return to page 1: for anything that changes which symbols
+      // match. Staying on page 7 of a fresh 2-page result set is disorienting.
+      function rerender() {
+        page = 1;
+        render();
+      }
+
+      function goToPage(n) {
+        page = n;
+        render();
+        // Scroll to the TOP pager rather than the list, so the controls you just
+        // used are still under the cursor. Instant, not smooth: smooth-scrolling
+        // a long list is slow to settle and ignores prefers-reduced-motion.
+        $pagerTop.scrollIntoView({ block: 'start' });
       }
 
       async function loadVersion(v) {
@@ -1008,7 +1427,8 @@
           snapshot = await getJSON(`${DATA}/versions/${v}.json`);
           $status.textContent = '';
           refreshCategoryControl();
-          render();
+          // A different version is a different result set — back to page 1.
+          rerender();
         } catch (e) {
           $status.textContent = `Could not load ${v} (${e.message}).`;
         }
@@ -1030,14 +1450,16 @@
           );
           $version.value = index.latest;
           $version.addEventListener('change', () => loadVersion($version.value));
-          $sort.addEventListener('change', render);
+          // Every control below changes the RESULT SET, so each resets to page 1.
+          $sort.addEventListener('change', rerender);
           $type.addEventListener('change', () => {
             refreshCategoryControl();
-            render();
+            rerender();
           });
-          $category.addEventListener('change', render);
-          $group.addEventListener('change', render);
-          $q.addEventListener('input', render);
+          $category.addEventListener('change', rerender);
+          $group.addEventListener('change', rerender);
+          $q.addEventListener('input', rerender);
+          $perPage.addEventListener('change', rerender);
           $allVersions.addEventListener('change', async () => {
             // Lazy-load the catalog the first time; on failure, revert the toggle.
             if ($allVersions.checked && !catalog) {
@@ -1054,7 +1476,7 @@
             // The version picker doesn't apply to a cross-version search.
             $version.disabled = $allVersions.checked;
             refreshCategoryControl();
-            render();
+            rerender();
           });
           await loadVersion(index.latest);
         } catch (e) {
