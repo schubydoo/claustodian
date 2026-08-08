@@ -26,7 +26,7 @@
       "description": "Enable the server-side advisor tool for this session with a model alias, `opus` or `sonnet`, or a full model ID. Takes precedence over the `advisorModel` setting for the session. Claude Code doesn't offer Fable 5 as the advisor: `claude --advisor fable` exits with an error",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--agent",
@@ -46,39 +46,39 @@
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Teammate UI color",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--agent-id",
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Teammate agent ID",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--agent-name",
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Teammate display name",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--agent-teams",
@@ -97,13 +97,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Custom agent type for this teammate",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--agents",
@@ -186,7 +186,7 @@
       "description": "Load additional system prompt text from a file and append to the default prompt",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--auth-token",
@@ -299,7 +299,7 @@
       "description": "(Research preview) MCP servers whose channel notifications Claude should listen for in this session. Space-separated list of `plugin:<name>@<marketplace>` entries. Requires Anthropic authentication through claude.ai or a Console API key",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--chrome",
@@ -397,13 +397,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.15",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Use cowork_plugins directory",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--cwd",
@@ -432,7 +432,7 @@
       "description": "Enable channels that are not on the approved allowlist, for local development. Accepts `plugin:<name>@<marketplace>` and `server:<name>` entries. Prompts for confirmation",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--dangerously-skip-permissions",
@@ -478,52 +478,52 @@
       "type": "cli_flag",
       "first_seen": "1.0.63",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Enable debug mode (to stderr)",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--deep-link-last-fetch",
       "type": "cli_flag",
       "first_seen": "2.1.81",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "FETCH_HEAD mtime in epoch ms, precomputed by the deep link trampoline",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--deep-link-origin",
       "type": "cli_flag",
       "first_seen": "2.1.76",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Signal that this session was launched from a deep link",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--deep-link-repo",
       "type": "cli_flag",
       "first_seen": "2.1.81",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Repo slug the deep link ?repo= parameter resolved to the current cwd",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--delete",
@@ -597,13 +597,13 @@
       "type": "cli_flag",
       "first_seen": "2.0.30",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Enable auth status messages in SDK mode",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--enable-auto-mode",
@@ -616,7 +616,7 @@
       "description": "Opt in to auto mode",
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--env",
@@ -834,7 +834,7 @@
       "description": "Run Setup hooks with the `init` matcher before the session (print mode only)",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--init-only",
@@ -847,7 +847,7 @@
       "description": "Run Setup and `SessionStart` hooks, then exit without starting a conversation",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--input-format",
@@ -922,7 +922,7 @@
       "description": "Run Setup hooks with the `maintenance` matcher before the session (print mode only)",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--max-budget-usd",
@@ -955,13 +955,13 @@
       "type": "cli_flag",
       "first_seen": "2.0.2",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "[DEPRECATED. Use --thinking instead for newer models] Maximum number of thinking tokens (only works with --print)",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--max-turns",
@@ -974,7 +974,7 @@
       "description": "Limit the number of agentic turns (print mode only). Exits with an error when the limit is reached. No limit by default. With `--input-format stream-json`, a message sent while Claude is working stays queued and runs as its own turn, with its own limit, when the limit ends the current one. Before v2.1.205, Claude Code discarded that message",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--mcp-config",
@@ -1088,13 +1088,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Parent session ID for analytics correlation",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--permission-mode",
@@ -1120,20 +1120,20 @@
       "description": "Specify an MCP tool to handle permission prompts in non-interactive mode. Claude Code waits for that tool's MCP server to connect before running the first turn, up to the `MCP_TIMEOUT` startup timeout, 30 seconds by default. Before v2.1.206, a slow-starting server could make the run exit with an error that the MCP tool was not found. <br /><br />The prompt tool can't approve an MCP tool marked as requiring user interaction: Claude Code converts an `allow` result for one to a deny. This restriction requires Claude Code v2.1.199 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--plan-mode-required",
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Require plan mode before implementation",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--plugin-dir",
@@ -1166,13 +1166,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.69",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Pre-fill the prompt input with text without submitting it",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--print",
@@ -1198,7 +1198,7 @@
       "description": "Start an interactive session with Remote Control enabled so you can also control it from claude.ai or the Claude app. Optionally pass a name for the session",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--remote",
@@ -1211,7 +1211,7 @@
       "description": "Create a remote session with the given description",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli",
+      "category": "cli-internal",
       "scopes": [
         "plugin tag"
       ]
@@ -1227,7 +1227,7 @@
       "description": "Start an interactive session with Remote Control enabled so you can also control it from claude.ai or the Claude app. Optionally pass a name for the session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--remote-control-session-name-prefix",
@@ -1275,26 +1275,26 @@
       "type": "cli_flag",
       "first_seen": "1.0.125",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "When resuming, only messages up to and including the assistant message with <message.id> (use with --resume in print mode)",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--rewind-files",
       "type": "cli_flag",
       "first_seen": "2.0.63",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Restore files to state at the specified user message and exit (requires --resume)",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--sandbox",
@@ -1342,13 +1342,13 @@
       "type": "cli_flag",
       "first_seen": "1.0.124",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Use remote WebSocket endpoint for SDK I/O streaming (only with -p and stream-json format)",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--server-option",
@@ -1484,7 +1484,7 @@
       "description": "Load system prompt from a file, replacing the default prompt",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--task-budget",
@@ -1496,7 +1496,7 @@
       "confidence": "medium",
       "description": "API-side task budget in tokens (output_config.task_budget)",
       "source_url": null,
-      "category": "cli",
+      "category": "cli-internal",
       "description_source": "binary"
     },
     {
@@ -1504,13 +1504,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Team name for swarm coordination",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--teammate-mode",
@@ -1523,7 +1523,7 @@
       "description": "How to spawn teammates: \"tmux\", \"in-process\", or \"auto\"",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--teleport",
@@ -1536,7 +1536,7 @@
       "description": "Resume a web session in your local terminal",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--text",
@@ -1559,13 +1559,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.47",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Thinking mode: enabled (equivalent to adaptive), disabled",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--timeout",
@@ -1668,13 +1668,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.71",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Workload tag for billing-header attribution (cc_workload). Process-scoped; set by SDK daemon callers that spawn subprocesses for cron work. (only works with --print)",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--workspace",
