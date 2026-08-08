@@ -6,7 +6,7 @@
 # static JSON at stable URLs. Run:  bash examples/quickstart.sh
 set -euo pipefail
 
-BASE="${CLAUSTODIAN_BASE:-https://schubydoo.github.io/claustodian/data}"
+BASE="${CLAUSTODIAN_BASE:-https://claustodian.dev/data}"
 
 echo "== tracked versions + latest =="
 curl -fsSL "$BASE/index.json" | jq '{latest, tracked: (.versions | length)}'

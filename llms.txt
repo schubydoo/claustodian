@@ -11,13 +11,13 @@ Three rules cover almost all use: (1) a symbol is available in version Y when `f
 - [Agent guide](https://github.com/schubydoo/claustodian/blob/main/examples/README.md): the full how-to — endpoints, record schema, the three rules, trust tiers, and gotchas. Read this first.
 - [Symbol JSON Schema](https://github.com/schubydoo/claustodian/blob/main/schema/symbol.schema.json): the authoritative record shape (draft 2020-12).
 
-## Data endpoints (base: https://schubydoo.github.io/claustodian/data)
+## Data endpoints (base: https://claustodian.dev/data)
 
-- [index.json](https://schubydoo.github.io/claustodian/data/index.json): `{ schemaVersion, latest, versions[] }` — every tracked version, newest-first.
-- [latest.json](https://schubydoo.github.io/claustodian/data/latest.json): full symbol snapshot for the newest tracked version.
-- versions/<X.Y.Z>.json: full symbol snapshot as of that exact version, e.g. https://schubydoo.github.io/claustodian/data/versions/2.1.169.json — the ground truth for availability in that version.
-- [binary-descriptions.json](https://schubydoo.github.io/claustodian/data/binary-descriptions.json): per-symbol description timeline (change-point eras keyed by `type:symbol`); take the last era whose `from <= Y` for the text at version Y.
-- [schema-version.json](https://schubydoo.github.io/claustodian/data/schema-version.json): the data format version; a bump signals a format change.
+- [index.json](https://claustodian.dev/data/index.json): `{ schemaVersion, latest, versions[] }` — every tracked version, newest-first.
+- [latest.json](https://claustodian.dev/data/latest.json): full symbol snapshot for the newest tracked version.
+- versions/<X.Y.Z>.json: full symbol snapshot as of that exact version, e.g. https://claustodian.dev/data/versions/2.1.169.json — the ground truth for availability in that version.
+- [binary-descriptions.json](https://claustodian.dev/data/binary-descriptions.json): per-symbol description timeline (change-point eras keyed by `type:symbol`); take the last era whose `from <= Y` for the text at version Y.
+- [schema-version.json](https://claustodian.dev/data/schema-version.json): the data format version; a bump signals a format change.
 
 Core files are also served as `.yaml` and `.toml` (swap the extension); JSON is the source of truth.
 
@@ -33,5 +33,6 @@ Core files are also served as `.yaml` and `.toml` (swap the extension); JSON is 
 - `scopes` (optional, `cli_flag` only) is the complete list of FULL invocation paths a flag is accepted under, e.g. `["remote-control"]` or `["plugin eval"]`. Present means the flag is NOT accepted on bare `claude`, and a multi-word path means it is not accepted on the parent either: `claude --sandbox` and `claude plugin --scaffold` both fail. Absent means no scope information was recorded — it does NOT mean the flag is top-level.
 - `category` on a `config_key` says which file reads it. `settings` and `settings-internal` live in `settings.json` (the latter marked `@internal` upstream); `global-config` keys live in `~/.claude.json` and are SILENTLY IGNORED if written to `settings.json`.
 - `first_seen_estimated: true` (or `confidence: medium`) means `first_seen` is an upper bound, not an exact introduction point.
+- The base URL moved to https://claustodian.dev. The old https://schubydoo.github.io/claustodian base 301-redirects there with the path preserved, so any client that follows redirects keeps working; a bare `curl` without `-L` returns the redirect page instead of JSON.
 - Not every Claude Code version is tracked; check `index.json.versions` and fall back to the nearest tracked version `<= Y`. A 404 means untracked, not "symbol absent."
 - License: code Apache-2.0, data CC-BY-4.0. Source: https://github.com/schubydoo/claustodian
