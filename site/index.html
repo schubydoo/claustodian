@@ -572,8 +572,13 @@
         font-size: 0.88rem;
       }
       /* Keyboard focus lands on the radio, which is visually hidden — so mirror
-         the ring onto its label or the tab strip is unusable without a mouse. */
-      .usage input[type='radio']:focus-visible + label {
+         the ring onto its label or the tab strip is unusable without a mouse.
+         Must be `~ .tabs label[for=…]`, not `+ label`: the radios are three
+         consecutive siblings and the labels live inside a LATER .tabs element,
+         so an adjacent-sibling selector matches nothing at all. */
+      #tab-sh:focus-visible ~ .tabs label[for='tab-sh'],
+      #tab-py:focus-visible ~ .tabs label[for='tab-py'],
+      #tab-ts:focus-visible ~ .tabs label[for='tab-ts'] {
         outline: 2px solid var(--accent);
         outline-offset: 2px;
       }
