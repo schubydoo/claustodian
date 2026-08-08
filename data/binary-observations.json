@@ -3534,6 +3534,48 @@
       "removed_in": null
     },
     {
+      "symbol": "autoMode",
+      "type": "config_key",
+      "first_seen": "2.1.108",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoMode.allow",
+      "type": "config_key",
+      "first_seen": "2.1.108",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoMode.classifyAllShell",
+      "type": "config_key",
+      "first_seen": "2.1.193",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoMode.environment",
+      "type": "config_key",
+      "first_seen": "2.1.108",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoMode.hard_deny",
+      "type": "config_key",
+      "first_seen": "2.1.136",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
+      "symbol": "autoMode.soft_deny",
+      "type": "config_key",
+      "first_seen": "2.1.108",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
       "symbol": "autoScrollEnabled",
       "type": "config_key",
       "first_seen": "2.1.119",
@@ -3579,6 +3621,13 @@
       "symbol": "awsCredentialExport",
       "type": "config_key",
       "first_seen": "1.0.53",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
+      "symbol": "axScreenReader",
+      "type": "config_key",
+      "first_seen": "2.1.181",
       "last_seen": "2.1.226",
       "removed_in": null
     },
@@ -3688,6 +3737,13 @@
       "removed_in": null
     },
     {
+      "symbol": "defaultView",
+      "type": "config_key",
+      "first_seen": "2.1.108",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
       "symbol": "deniedMcpServers",
       "type": "config_key",
       "first_seen": "2.0.22",
@@ -3747,6 +3803,13 @@
       "symbol": "disableClaudeAiConnectors",
       "type": "config_key",
       "first_seen": "2.1.182",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableDeepLinkRegistration",
+      "type": "config_key",
+      "first_seen": "2.1.108",
       "last_seen": "2.1.226",
       "removed_in": null
     },
@@ -4794,6 +4857,13 @@
       "removed_in": null
     },
     {
+      "symbol": "skipAutoPermissionPrompt",
+      "type": "config_key",
+      "first_seen": "2.1.108",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
       "symbol": "skipDangerousModePermissionPrompt",
       "type": "config_key",
       "first_seen": "2.1.40",
@@ -5046,6 +5116,13 @@
       "removed_in": null
     },
     {
+      "symbol": "useAutoModeDuringPlan",
+      "type": "config_key",
+      "first_seen": "2.1.108",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
       "symbol": "verbose",
       "type": "config_key",
       "first_seen": "2.1.119",
@@ -5091,6 +5168,13 @@
       "symbol": "voice.mode",
       "type": "config_key",
       "first_seen": "2.1.92",
+      "last_seen": "2.1.226",
+      "removed_in": null
+    },
+    {
+      "symbol": "voiceEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.108",
       "last_seen": "2.1.226",
       "removed_in": null
     },
