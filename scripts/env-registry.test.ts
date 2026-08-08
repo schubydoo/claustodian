@@ -105,6 +105,15 @@ describe('extractRegistryEnvVars', () => {
     expect(extractRegistryEnvVars(src).get('LATER_KEY')).toBe('bool');
   });
 
+  it('sees a whitespace-spaced reassignment, as the binding parser would', () => {
+    // The binding parser accepts `tag = $e.bool()`, so the intervening check must
+    // accept `tag = somethingElse()`. A literal `tag=` search would miss it and
+    // hand the getter an unrelated module's typed binding.
+    const src =
+      `${BUILDER}Y={SPACED:()=>tag};tag = somethingElse();` + 'z;'.repeat(50) + 'tag=$e.bool();';
+    expect(extractRegistryEnvVars(src).has('SPACED')).toBe(false);
+  });
+
   it('does not count a longer identifier or an equality test as a reassignment', () => {
     // `myTag=` and `tag==` both contain `tag=` but neither rebinds it.
     const src =

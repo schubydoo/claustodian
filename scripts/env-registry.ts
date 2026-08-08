@@ -207,13 +207,16 @@ function hasInterveningAssignment(
 ): boolean {
   const from = Math.min(a, b);
   const to = Math.max(a, b);
-  const needle = `${name}=`;
-  for (let at = src.indexOf(needle, from); at !== -1 && at < to; at = src.indexOf(needle, at + 1)) {
-    if (at === skip) continue;
-    const prev = at > 0 ? (src[at - 1] as string) : '';
-    if (/[\w$]/.test(prev)) continue;
-    if (src[at + name.length + 1] === '=') continue;
-    return true;
+  // Whitespace-tolerant, to stay symmetric with ASSIGN_BEFORE. A literal
+  // `${name}=` search would miss `tag = somethingElse()` while the binding parser
+  // happily accepts `tag = $e.bool()` — and an asymmetry between the two means a
+  // reassignment the parser CAN see is one this check cannot. Bundles in the
+  // registry era are minified so the spaced form does not occur today, but the
+  // two must agree on what an assignment looks like.
+  // `(?!=)` excludes `==`; the lookbehind excludes a longer identifier (`myTag=`).
+  const re = new RegExp(`(?<![\\w$])${escapeRegExp(name)}\\s*=(?!=)`, 'g');
+  for (const m of src.slice(from, to).matchAll(re)) {
+    if (from + m.index !== skip) return true;
   }
   return false;
 }
