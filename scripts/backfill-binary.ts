@@ -56,6 +56,8 @@ export interface BinaryCacheFile {
      * publish/withhold decision it feeds still lives in binary-lane.ts.
      */
     scopes?: readonly string[];
+    /** Registered with commander's `.hideHelp()` in this version. */
+    hidden?: true;
   }>;
 }
 
@@ -98,10 +100,12 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       versions: string[];
       strongEvidence: boolean;
       scopes: Set<string>;
+      /** Versions that registered the flag as hidden, to read the latest state. */
+      hiddenIn: Set<string>;
     }
   >();
   for (const file of files) {
-    for (const { symbol, type, evidence, scopes } of file.symbols) {
+    for (const { symbol, type, evidence, scopes, hidden } of file.symbols) {
       const key = `${type}:${symbol}`;
       // Evidence is per-version and can strengthen over releases (a flag parsed by a
       // switch in one release may be commander-registered in the next). Track whether
@@ -113,6 +117,7 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
         entry.versions.push(file.version);
         entry.strongEvidence ||= strong;
         for (const s of scopes ?? []) entry.scopes.add(s);
+        if (hidden) entry.hiddenIn.add(file.version);
       } else
         seenIn.set(key, {
           symbol,
@@ -120,19 +125,25 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
           versions: [file.version],
           strongEvidence: strong,
           scopes: new Set(scopes ?? []),
+          hiddenIn: new Set(hidden ? [file.version] : []),
         });
     }
   }
 
   const symbols: BinaryObservation[] = [];
-  for (const { symbol, type, versions, strongEvidence, scopes } of seenIn.values()) {
+  for (const { symbol, type, versions, strongEvidence, scopes, hiddenIn } of seenIn.values()) {
     const sorted = [...versions].sort(compareVersionsAsc);
+    // Hidden-ness is the CURRENT state, read from the most recent version that saw
+    // the flag — not "every version", because Anthropic promotes a flag out of
+    // hiding when it goes public and the record should follow.
+    const hiddenNow = hiddenIn.has(sorted[sorted.length - 1] as string);
     symbols.push({
       symbol,
       type,
       first_seen: sorted[0] as string,
       last_seen: sorted[sorted.length - 1] as string,
       removed_in: computeBinaryRemoval(versions, observedVersions),
+      ...(hiddenNow ? { hidden: true as const } : {}),
       // Scope rides with the caveat it lifts. A symbol with strong evidence
       // somewhere publishes top-level, and narrowing it by a subcommand parser
       // that accepts the same name would be a false claim, not a refinement.

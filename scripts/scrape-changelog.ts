@@ -44,6 +44,7 @@ import {
   descriptionAt,
   isCurrentDescriptionEra,
   isPublishableBinaryEnv,
+  binaryFlagCategory,
   isPublishableBinaryFlag,
   mayRedateFromBinary,
   loadBinaryDescriptions,
@@ -807,7 +808,11 @@ export function enrichWithBinary(
         description_source: promo ? promo.description_source : undefined,
         source_url: null,
         category:
-          obs.type === 'env_var' ? binaryEnvCategory(obs.symbol, baseCategory) : baseCategory,
+          obs.type === 'env_var'
+            ? binaryEnvCategory(obs.symbol, baseCategory)
+            : obs.type === 'cli_flag'
+              ? binaryFlagCategory(obs, baseCategory)
+              : baseCategory,
       })
     );
   }

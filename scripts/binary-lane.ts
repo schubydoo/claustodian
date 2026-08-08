@@ -56,6 +56,12 @@ export interface BinaryObservation {
    * establish a complete scope, which is what keeps the flag withheld.
    */
   scopes?: readonly string[];
+  /**
+   * The flag is registered with commander's `.hideHelp()` as of the most recent
+   * version that observed it — Claude Code's own marker for "real, but not for
+   * you to type". See binaryFlagCategory.
+   */
+  hidden?: true;
 }
 
 export interface BinaryObservations {
@@ -258,6 +264,27 @@ export function isPublishableBinaryFlag(observation: BinaryObservation): boolean
  */
 export function mayRedateFromBinary(observation: BinaryObservation): boolean {
   return observation.switch_case_only !== true;
+}
+
+/**
+ * The published category for a flag: `cli-internal` when the CLI hides it from
+ * `claude --help`, `cli` otherwise.
+ *
+ * `.hideHelp()` is Claude Code's own statement that a flag is real but not
+ * user-facing: it parses and works, yet something else sets it — a spawning
+ * parent (`--managed-settings`, "SDK use only"), the teammate orchestrator
+ * (`--agent-id`, `--team-name`), a deep link, or a deprecated alias kept for
+ * compatibility. Verified against 2.1.226: every hidden flag is absent from
+ * `claude --help` yet accepted on the command line, and no public flag carries
+ * the marker.
+ *
+ * CATEGORY, not type or status — the same call settingsKeyCategory makes for
+ * `@internal` keys. The flag exists and works, so status stays whatever the
+ * evidence says; hiding is a property of how it is surfaced, and it moves when
+ * Anthropic promotes a flag out of hiding.
+ */
+export function binaryFlagCategory(observation: BinaryObservation, category: string): string {
+  return observation.hidden === true ? 'cli-internal' : category;
 }
 
 /**
@@ -505,6 +532,23 @@ export const PROMOTED_BINARY_SYMBOLS: ReadonlyMap<string, BinaryPromotion> = new
       description: 'Transport type (stdio, sse, http). Defaults to stdio if not specified.',
       description_source: 'help',
     },
+  ],
+  // Agent-team orchestration flags. Claude Code sets these when it spawns a
+  // teammate session; typing one yourself parses but does nothing useful. They
+  // are commander-registered with these exact descriptions, so the text is the
+  // binary's own — the "do not type this" signal is carried by
+  // `category: cli-internal` (from .hideHelp()), not by prose invented here.
+  //
+  // `--agent-teams` is deliberately absent: it is a feature GATE read as
+  // `process.argv.includes("--agent-teams")` alongside
+  // CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS, not a teammate parameter, and it
+  // carries no description to promote.
+  ['cli_flag:--agent-id', { description: 'Teammate agent ID', description_source: 'binary' }],
+  ['cli_flag:--agent-name', { description: 'Teammate display name', description_source: 'binary' }],
+  ['cli_flag:--agent-color', { description: 'Teammate UI color', description_source: 'binary' }],
+  [
+    'cli_flag:--agent-type',
+    { description: 'Custom agent type for this teammate', description_source: 'binary' },
   ],
   // Four the ORIGINAL sweep missed for the same reason the scope map was wrong:
   // it read only `claude <subcommand> --help`, so `plugin eval` and
