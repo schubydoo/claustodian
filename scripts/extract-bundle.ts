@@ -31,7 +31,7 @@
  * This is extraction only — no acquisition (download/unpack) and no cross-version
  * diffing. The backfill and the forward CI wrap this with those concerns.
  */
-import { isPublishableBinaryEnv } from './binary-lane.js';
+import { isAccessorEvidenceEnv } from './binary-lane.js';
 import { categorize, SYMBOL_DENYLIST, type ExtractedSymbolType } from './scrape-changelog.js';
 import { extractSettingsKeys, settingsKeyCategory } from './settings-schema.js';
 
@@ -249,18 +249,17 @@ export function extractEnvVars(src: string): Map<string, string> {
  * `NUMBER_FORMAT_RANGES`, …), and the getter body (a minified ref) does not
  * itself prove a `process.env` read.
  *
- * The signal is `isPublishableBinaryEnv`, the SAME predicate the publish overlay
- * uses: a `claude-code`-categorized name, or one on the audited PROMOTE_CC_ENV /
- * NEEDS_REVIEW_ENV lists. Previously this gate accepted only the `claude-code`
- * prefix, so a var a maintainer had already audited as first-party was still
- * dropped here if it lacked the `CLAUDE_`/`ANTHROPIC_` convention — and when its
- * inline `process.env` read disappeared, the symbol vanished from the extraction
- * and the lane recorded a REMOVAL. That is how EMBEDDED_SEARCH_TOOLS,
- * ENABLE_LSP_TOOL and ENABLE_SESSION_PERSISTENCE came to carry removed_in while
- * sitting in the tip binary as `NAME:()=>ref`.
+ * The signal is `isAccessorEvidenceEnv`: the CLAUDE_/ANTHROPIC_ convention, or a
+ * name on PROMOTE_CC_ENV, whose audit states it is one of Claude Code's own
+ * feature toggles that merely skips the convention. Previously only the prefix
+ * counted, so an already-audited var was dropped here — and when its inline
+ * `process.env` read disappeared the symbol vanished from extraction and the lane
+ * recorded a REMOVAL. That is how EMBEDDED_SEARCH_TOOLS, ENABLE_LSP_TOOL and
+ * ENABLE_SESSION_PERSISTENCE came to carry removed_in while sitting in the tip
+ * binary as `NAME:()=>ref`.
  *
- * Sharing the predicate also means the two gates cannot drift: nothing can be
- * extractable-but-unpublishable, or audited-as-first-party yet invisible here.
+ * Deliberately NOT the publication predicate, which is wider. See
+ * isAccessorEvidenceEnv for why NEEDS_REVIEW_ENV cannot serve as evidence here.
  */
 export function extractAccessorEnvVars(src: string): Map<string, string> {
   const out = new Map<string, string>(); // symbol -> category
@@ -268,7 +267,7 @@ export function extractAccessorEnvVars(src: string): Map<string, string> {
     const name = m[1];
     if (!name || SYMBOL_DENYLIST.has(name)) continue;
     const category = categorize(name, 'env_var');
-    if (!isPublishableBinaryEnv(name, category)) continue;
+    if (!isAccessorEvidenceEnv(name, category)) continue;
     out.set(name, category);
   }
   return out;
