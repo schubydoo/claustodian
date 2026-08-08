@@ -398,3 +398,88 @@ describe('assertOfficialDocs', () => {
     ).toThrow(/non-official doc_page/);
   });
 });
+
+describe('parseDocPage — settings page', () => {
+  const known = new Set([
+    'advisorModel',
+    'permissions.allow',
+    'sandbox.filesystem.allowWrite',
+    'skipDangerousModePermissionPrompt',
+    'policyHelper.path',
+    'worktree.baseRef',
+  ]);
+  const page = (body: string) => parseDocPage('settings', body, known);
+
+  it('reads a flat key from the definitional table', () => {
+    const md = '### Available settings\n\n| Key | Description |\n| :-- | :-- |\n| `advisorModel` | Model for the advisor tool |\n';
+    expect(page(md)).toEqual([
+      {
+        symbol: 'advisorModel',
+        type: 'config_key',
+        description: 'Model for the advisor tool',
+        doc_min_version: null,
+        doc_page: 'settings',
+      },
+    ]);
+  });
+
+  it('qualifies a bare key with its section namespace', () => {
+    const md = '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `allow` | Rules to allow tool use |\n';
+    expect(page(md)[0]?.symbol).toBe('permissions.allow');
+  });
+
+  it('keeps a sub-namespace rooted at the section, not treated as already qualified', () => {
+    // Sandbox rows use sub-namespaces. Testing "contains a dot" instead of
+    // "already rooted here" strands 23 keys as bare `filesystem.*`.
+    const md = '### Sandbox settings\n\n| Keys | Description |\n| :-- | :-- |\n| `filesystem.allowWrite` | Extra writable paths |\n';
+    expect(page(md)[0]?.symbol).toBe('sandbox.filesystem.allowWrite');
+  });
+
+  it('falls back to the top-level path for a topic-grouped row', () => {
+    // The page groups by topic, not JSON nesting: this key sits under "Permission
+    // settings" while the schema has it flat. Prefixing blindly would publish
+    // `permissions.skipDangerousModePermissionPrompt`, which does not exist.
+    const md = '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `skipDangerousModePermissionPrompt` | Skip the confirmation prompt |\n';
+    expect(page(md)[0]?.symbol).toBe('skipDangerousModePermissionPrompt');
+  });
+
+  it('throws when a namespaced row matches no real path', () => {
+    const md = '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `inventedKey` | Something new |\n';
+    expect(() => page(md)).toThrow(/matches neither/);
+  });
+
+  it('refuses to resolve a namespaced section with no schema supplied', () => {
+    const md = '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `allow` | Rules |\n';
+    expect(() => parseDocPage('settings', md)).toThrow(/Refusing to guess a key path/);
+  });
+
+  it('reads the description column from the header, not by position', () => {
+    // The policy-helper table is `| Key | Type | Description |`; taking column 1
+    // published "string" as the description.
+    const md =
+      '### Compute managed settings with a policy helper\n\n| Key | Type | Description |\n| :-- | :-- | :-- |\n' +
+      '| `path` | string | Absolute path to the helper executable |\n';
+    expect(page(md)[0]).toMatchObject({
+      symbol: 'policyHelper.path',
+      description: 'Absolute path to the helper executable',
+    });
+  });
+
+  it('ignores sections that do not define settings keys', () => {
+    // "Global config settings" live in ~/.claude.json and the page says they are
+    // silently ignored in settings.json; "Permission rule syntax" lists rules.
+    const md =
+      '### Global config settings\n\n| Key | Description |\n| :-- | :-- |\n| `diffTool` | Where to show diffs |\n' +
+      '### Permission rule syntax\n\n| Rule | Effect |\n| :-- | :-- |\n| `Bash` | Matches all Bash commands |\n';
+    expect(page(md)).toEqual([]);
+  });
+
+  it('emits config keys only, never flags or env vars from the same page', () => {
+    const md =
+      '### Available settings\n\n| Key | Description |\n| :-- | :-- |\n' +
+      '| `advisorModel` | Model for the advisor tool |\n' +
+      '| `--settings` | A flag mentioned in passing |\n' +
+      '| `CLAUDE_CODE_SAFE_MODE` | An env var mentioned in passing |\n';
+    expect(page(md).map((e) => e.type)).toEqual(['config_key']);
+  });
+});

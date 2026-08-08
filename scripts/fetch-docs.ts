@@ -16,7 +16,7 @@
  * Fetch is kept separate from parsing so the parser is unit-testable against
  * fixture markdown with no network.
  */
-import { writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { isMain } from './lib.js';
 
 export const DOCS_BASE = 'https://code.claude.com/docs/en/';
@@ -34,9 +34,10 @@ export const DOC_PAGES = [
   'channels-reference',
   'glossary',
   'remote-control',
+  'settings',
 ] as const;
 
-export type DocSymbolType = 'cli_flag' | 'command' | 'env_var';
+export type DocSymbolType = 'cli_flag' | 'command' | 'env_var' | 'config_key';
 
 /**
  * Per-page baseline `min-version` for pages that state a feature-level
@@ -232,7 +233,138 @@ export function splitTableRow(line: string): string[] {
   return cells;
 }
 
-export function parseDocPage(page: string, markdown: string): DocEntry[] {
+/**
+ * Settings-page sections that define `settings.json` keys, and the namespace each
+ * table's keys sit under. An ALLOWLIST: a section absent from this map contributes
+ * nothing, so a new upstream heading cannot silently start publishing keys.
+ *
+ * Excluded on purpose, each on the page's own evidence:
+ *  - "Global config settings" — the page says these live in `~/.claude.json` and
+ *    that Claude Code "silently ignores them" in `settings.json`. They are real
+ *    config keys, so they want their own category rather than being published as
+ *    settings.json keys; until that exists, publishing them here would assert
+ *    something the page explicitly denies.
+ *  - "Permission rule syntax" — its first column holds rules (`Bash`), not keys.
+ *  - "Invalid entries in managed settings" — a behaviour-when-invalid table; its
+ *    descriptions describe error handling, not what the key does.
+ *  - "Plugin settings" — prose and a plugin-component table, no key definitions.
+ */
+const SETTINGS_SECTIONS: ReadonlyMap<string, string> = new Map([
+  ['Available settings', ''],
+  ['Worktree settings', ''], // rows are already fully qualified (`worktree.baseRef`)
+  ['Permission settings', 'permissions'],
+  ['Sandbox settings', 'sandbox'],
+  ['Attribution settings', 'attribution'],
+  ['Compute managed settings with a policy helper', 'policyHelper'],
+]);
+
+/**
+ * A settings row's first cell: exactly one backticked key and nothing else, every
+ * dot-segment starting lowercase or `$` — `advisorModel`,
+ * `sandbox.filesystem.allowWrite`, `$schema`.
+ *
+ * That leading-lowercase rule is what keeps an env var out. These tables mention
+ * `CLAUDE_CODE_SAFE_MODE` and friends in passing, and a shape-agnostic pattern
+ * publishes them as config keys — the same name would then exist under two types.
+ * Flags are excluded by the same rule, since they lead with a dash.
+ */
+const SETTINGS_KEY_CELL = /^`((?:[$a-z][A-Za-z0-9_$]*)(?:\.[$a-z][A-Za-z0-9_$]*)*)`$/;
+
+/**
+ * The real schema path for a settings row.
+ *
+ * The page's tables group by TOPIC, not by JSON nesting, so a namespaced section
+ * can still list a top-level key: `skipDangerousModePermissionPrompt` sits under
+ * "Permission settings" while the schema has it flat, next to
+ * `showThinkingSummaries`. Prefixing blindly would publish a path that does not
+ * exist, which is the whole failure this resolution exists to avoid — so the
+ * binary-derived schema decides, and the page only supplies the description.
+ *
+ * Note the prefix test is "already rooted at this namespace", NOT "contains a
+ * dot": Sandbox rows use sub-namespaces (`filesystem.allowWrite`) that are still
+ * `sandbox.`-rooted, and treating a dot as already-qualified strands them.
+ */
+function resolveSettingsPath(
+  raw: string,
+  namespace: string,
+  section: string,
+  known: ReadonlySet<string> | undefined
+): string {
+  if (!namespace || raw === namespace || raw.startsWith(`${namespace}.`)) return raw;
+  if (!known) {
+    throw new Error(
+      `settings docs: section "${section}" needs the settings schema to resolve ` +
+        `"${raw}", but no known-key set was supplied. Refusing to guess a key path.`
+    );
+  }
+  const qualified = `${namespace}.${raw}`;
+  if (known.has(qualified)) return qualified;
+  if (known.has(raw)) return raw;
+  throw new Error(
+    `settings docs: "${raw}" under "${section}" matches neither "${qualified}" nor ` +
+      `a top-level key. The page's grouping changed; refusing to publish a guessed path.`
+  );
+}
+
+/**
+ * Config keys from the settings page. Deliberately the ONLY thing read from it:
+ * the page also discusses env vars, but `env-vars.md` is their authoritative page
+ * and is already scraped, so re-reading them here could only add duplicates or
+ * phantoms.
+ */
+function parseSettingsPage(
+  page: string,
+  markdown: string,
+  known: ReadonlySet<string> | undefined
+): DocEntry[] {
+  const entries: DocEntry[] = [];
+  let section = '';
+  // Which column holds the description. Not always the second: the policy-helper
+  // table is `| Key | Type | Description |`, and assuming column 1 published
+  // "string" as `policyHelper.path`'s description. Read each table's own header.
+  let descColumn = 1;
+  for (const line of markdown.split('\n')) {
+    const heading = /^#{2,4}\s+(.*)$/.exec(line);
+    if (heading) {
+      section = (heading[1] as string).trim();
+      descColumn = 1;
+      continue;
+    }
+    const namespace = SETTINGS_SECTIONS.get(section);
+    if (namespace === undefined) continue;
+    if (!/^\s*\|/.test(line) || /^\s*\|\s*:?-{2,}/.test(line)) continue;
+    const cells = splitTableRow(line)
+      .slice(1, -1)
+      .map((c) => c.trim());
+    if (cells.length < 2) continue;
+    const headerAt = cells.findIndex((c) => /^description$/i.test(c));
+    if (headerAt > 0) {
+      descColumn = headerAt;
+      continue; // this row IS the header
+    }
+    const keyCell = cells[0] as string;
+    const descCell = (cells[descColumn] ?? cells[1]) as string;
+    const matched = SETTINGS_KEY_CELL.exec(keyCell);
+    if (!matched) continue;
+    const description = cleanCell(descCell);
+    if (description.length < 3) continue;
+    entries.push({
+      symbol: resolveSettingsPath(matched[1] as string, namespace, section, known),
+      type: 'config_key',
+      description,
+      doc_min_version: minVersion(descCell) ?? minVersion(keyCell),
+      doc_page: page,
+    });
+  }
+  return entries;
+}
+
+export function parseDocPage(
+  page: string,
+  markdown: string,
+  knownConfigKeys?: ReadonlySet<string>
+): DocEntry[] {
+  if (page === 'settings') return parseSettingsPage(page, markdown, knownConfigKeys);
   const entries: DocEntry[] = [];
   for (const line of markdown.split('\n')) {
     if (!/^\s*\|/.test(line) || /^\s*\|\s*:?-{2,}/.test(line)) continue;
@@ -262,7 +394,10 @@ export function parseDocPage(page: string, markdown: string): DocEntry[] {
 }
 
 /** Merge per-page entries, first definition wins, sorted by type then symbol. */
-export function buildDocsIndex(pages: Array<{ page: string; markdown: string }>): DocsIndex {
+export function buildDocsIndex(
+  pages: Array<{ page: string; markdown: string }>,
+  knownConfigKeys?: ReadonlySet<string>
+): DocsIndex {
   const seen = new Map<string, DocEntry>();
   for (const { page, markdown } of pages) {
     // A baselined page is SUPPLEMENTAL: it documents subcommand-scoped flags, so a
@@ -273,7 +408,7 @@ export function buildDocsIndex(pages: Array<{ page: string; markdown: string }>)
     // the page baseline when they carry no cell-level marker.
     const baseline = PAGE_BASELINE_MIN_VERSION[page as (typeof DOC_PAGES)[number]];
     const supplemental = baseline !== undefined;
-    for (const entry of parseDocPage(page, markdown)) {
+    for (const entry of parseDocPage(page, markdown, knownConfigKeys)) {
       const key = `${entry.type}:${entry.symbol}`;
       const existing = seen.get(key);
       if (!existing) {
@@ -341,10 +476,39 @@ async function fetchPage(page: string): Promise<{ page: string; markdown: string
   return { page, markdown: await response.text() };
 }
 
+/**
+ * The settings-key paths the binary lane has ever observed, from the committed
+ * `data/binary-observations.json`. This is the authority for what a settings
+ * PATH is; the docs page is the authority for what it MEANS.
+ *
+ * A cross-lane read, and a deliberate one: the alternative is a hand-maintained
+ * list of the page's topic-grouped rows, which would rot silently the next time
+ * Anthropic regroups a table. Reading the committed artifact makes the namespace
+ * claim checkable instead of assumed. Missing or unreadable is fatal rather than
+ * skipped — running without it would publish guessed key paths.
+ */
+async function knownSettingsKeys(path: string): Promise<ReadonlySet<string>> {
+  const raw = JSON.parse(await readFile(path, 'utf-8')) as {
+    symbols?: Array<{ type?: string; symbol?: string }>;
+  };
+  const keys = new Set<string>();
+  for (const observation of raw.symbols ?? []) {
+    if (observation.type === 'config_key' && observation.symbol) keys.add(observation.symbol);
+  }
+  if (keys.size === 0) {
+    throw new Error(
+      `${path} holds no config_key observations; refusing to resolve settings-page ` +
+        `key paths against an empty schema.`
+    );
+  }
+  return keys;
+}
+
 export async function main(argv: string[]): Promise<void> {
   const outPath = argv[0] ?? 'data/docs.json';
+  const known = await knownSettingsKeys(argv[1] ?? 'data/binary-observations.json');
   const pages = await Promise.all(DOC_PAGES.map(fetchPage));
-  const index = buildDocsIndex(pages);
+  const index = buildDocsIndex(pages, known);
   await writeFile(outPath, `${JSON.stringify(index, null, 2)}\n`, 'utf-8');
   const withMin = index.symbols.filter((s) => s.doc_min_version).length;
   console.log(
