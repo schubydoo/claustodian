@@ -32,6 +32,7 @@
  * diffing. The backfill and the forward CI wrap this with those concerns.
  */
 import { isAccessorEvidenceEnv } from './binary-lane.js';
+import { extractRegistryEnvVars } from './env-registry.js';
 import { categorize, SYMBOL_DENYLIST, type ExtractedSymbolType } from './scrape-changelog.js';
 import { extractSettingsKeys, settingsKeyCategory } from './settings-schema.js';
 
@@ -42,6 +43,7 @@ export type Evidence =
   | 'argv-switch'
   | 'process-env'
   | 'accessor-map'
+  | 'env-registry'
   | 'command-registry'
   | 'skill-registry'
   | 'settings-schema';
@@ -54,6 +56,14 @@ export interface BundleSymbol {
   evidence: Evidence;
   /** Commands (registry object) and flags (commander `.option` spec) carry a description. */
   description?: string;
+  /**
+   * The env registry's own type for the value (str | bool | int | triBool | enum).
+   * Recorded in the cache as observed evidence; deliberately NOT distilled or
+   * published — a field that exists only for env vars and only from 2.1.160
+   * would be a confusing shape in the 1.x contract. Capturing it now means the
+   * data is there if that call is ever revisited.
+   */
+  declaredType?: string;
 }
 
 /** How far back to look for a flag's own-evidence marker. */
@@ -482,10 +492,25 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
   for (const [symbol, category] of envReads) {
     symbols.push({ symbol, type: 'env_var', category, evidence: 'process-env' });
   }
-  // Accessor-map getters fill in first-party env vars CC never reads inline. A
-  // direct `process.env.X` read is the stronger signal, so it wins when both exist.
-  for (const [symbol, category] of extractAccessorEnvVars(src)) {
+  // The typed registry (>= 2.1.160) is the only path that PROVES env-var-ness
+  // structurally rather than inferring it from the name, so it outranks the
+  // accessor-map guess. A direct `process.env.X` read still wins: it proves both
+  // that the var exists and that this code reads it.
+  const registry = extractRegistryEnvVars(src);
+  for (const [symbol, declaredType] of registry) {
     if (envReads.has(symbol)) continue;
+    symbols.push({
+      symbol,
+      type: 'env_var',
+      category: categorize(symbol, 'env_var'),
+      evidence: 'env-registry',
+      declaredType,
+    });
+  }
+  // Accessor-map getters fill in first-party env vars CC never reads inline, for
+  // the eras and entries the registry does not cover.
+  for (const [symbol, category] of extractAccessorEnvVars(src)) {
+    if (envReads.has(symbol) || registry.has(symbol)) continue;
     symbols.push({ symbol, type: 'env_var', category, evidence: 'accessor-map' });
   }
   const flags = extractFlags(src);
