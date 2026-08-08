@@ -11,8 +11,8 @@ specific user's Claude Code version.
 
 Claustodian answers one question:
 
-> Does a Claude Code **symbol** — a CLI flag, environment variable, or slash command —
-> exist in a specific **version**, and what did it do at that version?
+> Does a Claude Code **symbol** — a CLI flag, environment variable, slash command, or
+> settings key — exist in a specific **version**, and what did it do at that version?
 
 The data is static JSON on GitHub Pages (also YAML/TOML). There's nothing to install:
 fetch a URL and read it. Three tiny reference clients live next to this file:
@@ -53,12 +53,12 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
 ```json
 {
   "symbol": "--output-format",
-  "type": "cli_flag",            // schema enum: cli_flag | command | env_var | config_key | internal_config_flag (only the first three are populated today)
+  "type": "cli_flag",            // schema enum: cli_flag | command | env_var | config_key | internal_config_flag (all but the last are populated)
   "first_seen": "1.0.19",        // earliest version OBSERVED (semver string)
   "removed_in": null,            // version it vanished, or null if still present
   "deprecated_in": "2.1.73",     // OPTIONAL: version it was marked deprecated
   "status": "active",            // "active" | "deprecated" | "removed" | "needs_review"
-  "scopes": ["remote-control"],  // optional; subcommands the flag is accepted under
+  "scopes": ["remote-control"],  // optional; FULL invocation paths, e.g. "plugin eval"
   "provenance": "changelog",     // "changelog" | "docs" | "binary" — which lane proved existence
   "confidence": "high",          // "high" | "medium" | "low"
   "first_seen_estimated": true,  // OPTIONAL: first_seen is an UPPER BOUND, not exact

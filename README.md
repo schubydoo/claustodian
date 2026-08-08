@@ -98,12 +98,11 @@ Three lanes feed the dataset today:
 
 - **changelog lane** — schema + validator, the changelog scraper, and Pages publishing.
 - **docs lane** — official docs descriptions and anchored `first_seen` from `min-version` annotations.
-- **binary lane** — undocumented-symbol coverage from release binaries (flags, env vars, built-in commands), plus `first_seen` corrections and conservative cliff-aware removal detection. Binary finds ship as `status: needs_review`.
+- **binary lane** — undocumented-symbol coverage from release binaries (flags, env vars, built-in commands, and `settings.json` keys read out of the embedded schema), plus `first_seen` corrections and conservative cliff-aware removal detection. Binary finds ship as `status: needs_review` until a first-party description confirms them.
 
 ### Roadmap / backlog
 
 - **Extract skill- and plugin-provided commands** (e.g. `/schedule`, `/loop`) — currently missed because the binary lane only reads the built-in command registry. Evaluate parsing skill/plugin command manifests in a future release.
-- Add a **`scope` field** so subcommand-scoped symbols can be published. The extractor now reads flags out of hand-rolled argv parsers (`case"--flag":`), but every one it finds belongs to a subcommand — at 2.1.224 all 44 are under `claude self-hosted-runner` or deeper, and none is valid on bare `claude`. In a flat namespace those records would assert that `claude --verify` works, so they are recorded in `data/binary-observations.json` and withheld from the published files. They publish as soon as the schema can say which command owns them.
 - Teach the extractor **commander built-ins** (`--help`, `--version`).
 - Fix the **~2.1.160 extraction-recall regression** to tighten late-era per-version accuracy.
 - Detect explicit **changelog removals** so `removed_in` can be set on confirmed (changelog/docs) symbols, not just binary-only ones.
