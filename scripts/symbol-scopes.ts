@@ -55,6 +55,14 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--yes', ['import', 'plugin']],
   // `claude agents`
   ['--cwd', ['agents']],
+  // `claude self-hosted-runner`. Its own `--help` is reachable, but the subcommand
+  // is argv-dispatched and hidden from `claude --help`, so it was not in the sweep.
+  // Included because the changelog PUBLISHES this flag ("Fixed `claude
+  // self-hosted-runner` … when `--base-dir` cannot be created"), which would
+  // otherwise put a runner-only flag in the dataset with no scope at all. The
+  // other ~43 runner flags stay withheld by isPublishableBinaryFlag and are the
+  // subject of a separate binary-lane scope PR.
+  ['--base-dir', ['self-hosted-runner']],
   // `claude mcp`
   ['--header', ['mcp']],
   ['--transport', ['mcp']],
