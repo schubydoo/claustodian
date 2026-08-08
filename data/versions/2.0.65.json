@@ -91,7 +91,7 @@
       "description": "Load additional system prompt text from a file and append to the default prompt",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--betas",
@@ -166,13 +166,13 @@
       "type": "cli_flag",
       "first_seen": "1.0.63",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Enable debug mode (to stderr)",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--delete",
@@ -217,13 +217,13 @@
       "type": "cli_flag",
       "first_seen": "2.0.30",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Enable auth status messages in SDK mode",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--env",
@@ -405,13 +405,13 @@
       "type": "cli_flag",
       "first_seen": "2.0.2",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Maximum number of thinking tokens. (only works with --print)",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--max-turns",
@@ -424,7 +424,7 @@
       "description": "Limit the number of agentic turns (print mode only). Exits with an error when the limit is reached. No limit by default. With `--input-format stream-json`, a message sent while Claude is working stays queued and runs as its own turn, with its own limit, when the limit ends the current one. Before v2.1.205, Claude Code discarded that message",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--mcp-config",
@@ -515,7 +515,7 @@
       "description": "Specify an MCP tool to handle permission prompts in non-interactive mode. Claude Code waits for that tool's MCP server to connect before running the first turn, up to the `MCP_TIMEOUT` startup timeout, 30 seconds by default. Before v2.1.206, a slow-starting server could make the run exit with an error that the MCP tool was not found. <br /><br />The prompt tool can't approve an MCP tool marked as requiring user interaction: Claude Code converts an `allow` result for one to a deny. This restriction requires Claude Code v2.1.199 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--plugin-dir",
@@ -554,7 +554,7 @@
       "description": "Create a remote session with the given description",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli",
+      "category": "cli-internal",
       "scopes": [
         "plugin tag"
       ]
@@ -591,26 +591,26 @@
       "type": "cli_flag",
       "first_seen": "1.0.125",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "When resuming, only messages up to and including the assistant message with <message.id> (use with --resume in print mode)",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--rewind-files",
       "type": "cli_flag",
       "first_seen": "2.0.63",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Restore files to state at the specified user message and exit (requires --resume)",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--scope",
@@ -642,13 +642,13 @@
       "type": "cli_flag",
       "first_seen": "1.0.124",
       "removed_in": null,
-      "status": "needs_review",
+      "status": "active",
       "provenance": "binary",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Use remote WebSocket endpoint for SDK I/O streaming (only with -p and stream-json format)",
+      "description_source": "binary",
       "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--session-id",
@@ -727,7 +727,7 @@
       "description": "Load system prompt from a file, replacing the default prompt",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--teleport",
@@ -740,7 +740,7 @@
       "description": "Resume a web session in your local terminal",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli-internal"
     },
     {
       "symbol": "--timeout",

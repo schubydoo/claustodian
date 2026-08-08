@@ -502,7 +502,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.83",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.83",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--agent",
@@ -516,21 +522,39 @@
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.16",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--agent-id",
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.16",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--agent-name",
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.16",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--agent-teams",
@@ -544,7 +568,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.16",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--agents",
@@ -599,21 +629,43 @@
       "type": "cli_flag",
       "first_seen": "2.1.205",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.205",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--append-system-prompt",
       "type": "cli_flag",
       "first_seen": "0.2.117",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "0.2.117",
+          "hidden": true
+        },
+        {
+          "from": "1.0.49",
+          "hidden": false
+        }
+      ]
     },
     {
       "symbol": "--append-system-prompt-file",
       "type": "cli_flag",
       "first_seen": "2.0.33",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.0.33",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--auth-token",
@@ -733,7 +785,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.80",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.80",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--chrome",
@@ -768,7 +826,17 @@
       "type": "cli_flag",
       "first_seen": "2.1.166",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.166",
+          "hidden": true
+        },
+        {
+          "from": "2.1.224",
+          "hidden": false
+        }
+      ]
     },
     {
       "symbol": "--config",
@@ -818,14 +886,26 @@
       "type": "cli_flag",
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.224",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--cowork",
       "type": "cli_flag",
       "first_seen": "2.1.15",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.15",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--cwd",
@@ -839,7 +919,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.80",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.80",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--dangerously-skip-permissions",
@@ -878,7 +964,13 @@
       "type": "cli_flag",
       "first_seen": "1.0.63",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "1.0.63",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--debug-token-dir",
@@ -896,28 +988,52 @@
       "type": "cli_flag",
       "first_seen": "2.1.113",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.113",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--deep-link-last-fetch",
       "type": "cli_flag",
       "first_seen": "2.1.81",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.81",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--deep-link-origin",
       "type": "cli_flag",
       "first_seen": "2.1.76",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.76",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--deep-link-repo",
       "type": "cli_flag",
       "first_seen": "2.1.81",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.81",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--delete",
@@ -1020,14 +1136,26 @@
       "type": "cli_flag",
       "first_seen": "2.0.30",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.0.30",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--enable-auto-mode",
       "type": "cli_flag",
       "first_seen": "2.1.71",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.71",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--enabled",
@@ -1302,14 +1430,26 @@
       "type": "cli_flag",
       "first_seen": "2.1.9",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.9",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--init-only",
       "type": "cli_flag",
       "first_seen": "2.1.10",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.10",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--input-format",
@@ -1323,14 +1463,30 @@
       "type": "cli_flag",
       "first_seen": "2.1.124",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.198",
+          "hidden": true
+        },
+        {
+          "from": "2.1.224",
+          "hidden": false
+        }
+      ]
     },
     {
       "symbol": "--interview",
       "type": "cli_flag",
       "first_seen": "2.1.198",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.198",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--json",
@@ -1424,21 +1580,43 @@
       "type": "cli_flag",
       "first_seen": "2.1.10",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.10",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--managed-settings",
       "type": "cli_flag",
       "first_seen": "2.1.118",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.118",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--max-budget-usd",
       "type": "cli_flag",
       "first_seen": "2.0.30",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.0.30",
+          "hidden": true
+        },
+        {
+          "from": "2.0.65",
+          "hidden": false
+        }
+      ]
     },
     {
       "symbol": "--max-cost-usd",
@@ -1459,14 +1637,26 @@
       "type": "cli_flag",
       "first_seen": "2.0.2",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.0.2",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--max-turns",
       "type": "cli_flag",
       "first_seen": "0.2.46",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "0.2.46",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--mcp-config",
@@ -1494,7 +1684,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.224",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--min-idle",
@@ -1590,7 +1786,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.224",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--output-dir",
@@ -1611,42 +1813,82 @@
       "type": "cli_flag",
       "first_seen": "2.0.43",
       "last_seen": "2.0.44",
-      "removed_in": "2.0.45"
+      "removed_in": "2.0.45",
+      "hidden_eras": [
+        {
+          "from": "2.0.43",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--parent-session-id",
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.16",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--permission-mode",
       "type": "cli_flag",
       "first_seen": "1.0.14",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "1.0.14",
+          "hidden": true
+        },
+        {
+          "from": "1.0.52",
+          "hidden": false
+        }
+      ]
     },
     {
       "symbol": "--permission-prompt-tool",
       "type": "cli_flag",
       "first_seen": "0.2.83",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "0.2.83",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--plan-mode-instructions",
       "type": "cli_flag",
       "first_seen": "2.1.118",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.118",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--plan-mode-required",
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.16",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--plugin-dir",
@@ -1660,7 +1902,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.172",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.172",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--plugin-url",
@@ -1674,7 +1922,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.172",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.224",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--pool-secret-file",
@@ -1711,14 +1965,26 @@
       "type": "cli_flag",
       "first_seen": "2.1.69",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.69",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--prefill-b64",
       "type": "cli_flag",
       "first_seen": "2.1.113",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.113",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--print",
@@ -1771,14 +2037,26 @@
       "type": "cli_flag",
       "first_seen": "2.1.73",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.73",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--ref",
       "type": "cli_flag",
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.224",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--release-idle-session-min",
@@ -1796,14 +2074,30 @@
       "type": "cli_flag",
       "first_seen": "1.0.68",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "1.0.68",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--remote-control",
       "type": "cli_flag",
       "first_seen": "2.1.73",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.73",
+          "hidden": true
+        },
+        {
+          "from": "2.1.133",
+          "hidden": false
+        }
+      ]
     },
     {
       "symbol": "--remote-control-session-name-prefix",
@@ -1831,7 +2125,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.153",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.153",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--report",
@@ -1852,14 +2152,26 @@
       "type": "cli_flag",
       "first_seen": "2.1.223",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.223",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--resume-session-at",
       "type": "cli_flag",
       "first_seen": "1.0.125",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "1.0.125",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--retire-at",
@@ -1877,7 +2189,13 @@
       "type": "cli_flag",
       "first_seen": "2.0.63",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.0.63",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--routine",
@@ -1974,7 +2292,13 @@
       "type": "cli_flag",
       "first_seen": "1.0.124",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "1.0.124",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--server-option",
@@ -1995,7 +2319,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.97",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.97",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--session-stop-grace-sec",
@@ -2084,14 +2414,30 @@
       "type": "cli_flag",
       "first_seen": "0.2.106",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "0.2.117",
+          "hidden": true
+        },
+        {
+          "from": "2.0.14",
+          "hidden": false
+        }
+      ]
     },
     {
       "symbol": "--system-prompt-file",
       "type": "cli_flag",
       "first_seen": "1.0.55",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "1.0.55",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--tag",
@@ -2105,28 +2451,60 @@
       "type": "cli_flag",
       "first_seen": "2.1.84",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.84",
+          "hidden": true
+        },
+        {
+          "from": "2.1.207",
+          "hidden": false
+        }
+      ]
     },
     {
       "symbol": "--team-name",
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.16",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--teammate-mode",
       "type": "cli_flag",
       "first_seen": "2.1.16",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.16",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--teleport",
       "type": "cli_flag",
       "first_seen": "1.0.68",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "1.0.68",
+          "hidden": true
+        },
+        {
+          "from": "2.1.224",
+          "hidden": false
+        }
+      ]
     },
     {
       "symbol": "--text",
@@ -2140,14 +2518,26 @@
       "type": "cli_flag",
       "first_seen": "2.1.47",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.47",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--thinking-display",
       "type": "cli_flag",
       "first_seen": "2.1.94",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.94",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--threshold",
@@ -2250,7 +2640,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.71",
       "last_seen": "2.1.226",
-      "removed_in": null
+      "removed_in": null,
+      "hidden_eras": [
+        {
+          "from": "2.1.71",
+          "hidden": true
+        }
+      ]
     },
     {
       "symbol": "--workspace",
