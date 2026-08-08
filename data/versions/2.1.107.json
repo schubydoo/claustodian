@@ -4106,7 +4106,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Default environment ID to use for remote sessions",
+      "description": "Remote session configuration",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -4145,7 +4145,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Network access restrictions",
+      "description": "Sandbox configuration for network and filesystem restrictions",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -4848,10 +4848,10 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Voice dictation settings: `enabled` turns dictation on, `mode` selects `\"hold\"` or `\"tap\"`, and `autoSubmit` sends the prompt on key release in hold mode. Written automatically when you run `/voice`. Requires a Claude.ai account",
-      "description_source": "docs",
+      "description": "@internal Voice handsfree settings; behavior gated at read sites by feature(VOICE_HANDSFREE). Hidden from public SDK types until external launch; see TODO on voiceEnabled above.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
-      "category": "settings"
+      "category": "settings-internal"
     },
     {
       "symbol": "voice.autoSubmit",
@@ -4899,7 +4899,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Directories to symlink from main repository to worktrees to avoid disk bloat. Must be explicitly configured - no directories are symlinked by default. Common examples: \"node_modules\", \".cache\", \".bin\"",
+      "description": "Git worktree configuration for --worktree flag.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
