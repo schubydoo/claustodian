@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
+import { isAccessorEvidenceEnv, isPublishableBinaryEnv } from './binary-lane.js';
 import {
   extractAccessorEnvVars,
   extractBundleSymbols,
@@ -141,9 +142,47 @@ describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
     expect(env.get('ANTHROPIC_BAR')).toBe('claude-code');
   });
 
+  it('captures an audited first-party var that skips the CLAUDE_/ANTHROPIC_ convention', () => {
+    // PROMOTE_CC_ENV is a human audit saying these ARE Claude Code's own. Gating
+    // on the prefix alone dropped them here, so when the inline `process.env`
+    // read went away the symbol vanished from extraction and the lane recorded a
+    // removal — EMBEDDED_SEARCH_TOOLS, ENABLE_LSP_TOOL and
+    // ENABLE_SESSION_PERSISTENCE all carried removed_in while sitting in the tip
+    // binary as `NAME:()=>ref`.
+    const env = extractAccessorEnvVars('{EMBEDDED_SEARCH_TOOLS:()=>a,ENABLE_LSP_TOOL:()=>b}');
+    expect(env.has('EMBEDDED_SEARCH_TOOLS')).toBe(true);
+    expect(env.has('ENABLE_LSP_TOOL')).toBe(true);
+  });
+
+  it('does NOT admit an ownership-unresolved name on getter shape alone', () => {
+    // NEEDS_REVIEW_ENV is "some of these lean external" — it cannot be the
+    // evidence that a same-named getter key is an env var rather than one of the
+    // constants that make up ~43% of the map. These still publish when the direct
+    // `process.env.X` path proves them, which is the signal the audit was over.
+    const env = extractAccessorEnvVars('{CLAUBBIT:()=>1,LOCAL_BRIDGE:()=>2,BAT_THEME:()=>3}');
+    expect(env.size).toBe(0);
+  });
+
+  it('admits a strict subset of what the publish overlay would allow', () => {
+    // The accessor gate answers "is this an env var at all"; publication answers
+    // "is this env var CC's own". The first must never be the looser of the two.
+    const admitted = [
+      ...extractAccessorEnvVars(
+        '{EMBEDDED_SEARCH_TOOLS:()=>a,NUMBER_FORMAT_RANGES:()=>b,CLAUBBIT:()=>c}'
+      ).entries(),
+    ];
+    for (const [name, category] of admitted) expect(isPublishableBinaryEnv(name, category)).toBe(true);
+    expect(admitted.map(([n]) => n)).toEqual(['EMBEDDED_SEARCH_TOOLS']);
+    // ...and the wider predicate genuinely is wider, or this test proves nothing.
+    expect(isPublishableBinaryEnv('CLAUBBIT', 'other')).toBe(true);
+    expect(isAccessorEvidenceEnv('CLAUBBIT', 'other')).toBe(false);
+  });
+
   it('gates out non-first-party getters (constants + provider vars)', () => {
     // the real accessor map also holds ALL-CAPS constants and provider vars;
     // the claude-code gate must exclude every one of them.
+    // None of these are on an audited list, so widening the gate must not admit
+    // them: the map is ~43% non-env constants.
     const env = extractAccessorEnvVars('{NEVER:()=>0,BROWSER_TOOLS:()=>t,NODE_OPTIONS:()=>o,AWS_REGION:()=>r}');
     expect(env.size).toBe(0);
   });

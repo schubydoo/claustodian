@@ -184,6 +184,33 @@ export function isPublishableBinaryEnv(symbol: string, category: string): boolea
 }
 
 /**
+ * True when an accessor-map getter key may be treated as an env var at all.
+ *
+ * NARROWER than isPublishableBinaryEnv, and the difference is the point. The two
+ * predicates answer different questions:
+ *
+ *   publication  — given this IS an env var, is it Claude Code's own?
+ *   accessor gate — is this ALL-CAPS getter key an env var in the first place?
+ *
+ * The getter shape (`NAME:()=>ref`) does not prove a `process.env` read; ~43% of
+ * raw matches are ordinary constants (`NEVER`, `BROWSER_TOOLS`,
+ * `NUMBER_FORMAT_RANGES`). So admission needs positive evidence that the NAME is
+ * an env var, and only two things supply it: the CLAUDE_/ANTHROPIC_ convention,
+ * or PROMOTE_CC_ENV, whose audit states these are Claude Code's own feature
+ * toggles that merely skip the convention.
+ *
+ * NEEDS_REVIEW_ENV is deliberately excluded. That list is "ownership unresolved,
+ * some lean external on a closer look" (BAT_THEME is bat's, INK_SCREEN_READER is
+ * ink's, TELEPORT_* is Teleport's) — it cannot serve as the evidence that a
+ * same-named getter key is an env var rather than a constant. Those names still
+ * publish when the direct `process.env.X` path proves them, which is the stronger
+ * signal and the one the audit was performed over.
+ */
+export function isAccessorEvidenceEnv(symbol: string, category: string): boolean {
+  return category === 'claude-code' || PROMOTE_CC_ENV.has(symbol);
+}
+
+/**
  * True when a binary-observed flag may be published. The gate is scope, not
  * ownership: a `case"--flag":` label proves the flag is Claude Code's own, but it
  * only ever appears in a hand-rolled parser for a SUBCOMMAND — at 2.1.224 all 44
