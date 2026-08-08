@@ -122,6 +122,21 @@ describe('extractRegistryEnvVars', () => {
     expect(extractRegistryEnvVars(src).has('SPACED')).toBe(false);
   });
 
+  it('does not mistake an arrow-function parameter for a reassignment', () => {
+    // `tag=>x` is a single-parameter arrow, ubiquitous in minified source. Reading
+    // it as an assignment reports a rebinding that never happened and throws away
+    // a valid registry entry.
+    const src = `${BUILDER}Y={ARROWED:()=>tag};f(tag=>tag+1);` + 'z;'.repeat(50) + 'tag=$e.bool();';
+    expect(extractRegistryEnvVars(src).get('ARROWED')).toBe('bool');
+  });
+
+  it('still counts an assignment of a negated value as a reassignment', () => {
+    // `tag=!x` IS an assignment. Excluding `!` alongside `=` and `>` would make
+    // the guard blind to a real rebinding.
+    const src = `${BUILDER}Y={NEGATED:()=>tag};tag=!x;` + 'z;'.repeat(50) + 'tag=$e.bool();';
+    expect(extractRegistryEnvVars(src).has('NEGATED')).toBe(false);
+  });
+
   it('does not count a longer identifier or an equality test as a reassignment', () => {
     // `myTag=` and `tag==` both contain `tag=` but neither rebinds it.
     const src =

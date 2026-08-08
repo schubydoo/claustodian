@@ -231,8 +231,13 @@ function hasInterveningAssignment(
   // reassignment the parser CAN see is one this check cannot. Bundles in the
   // registry era are minified so the spaced form does not occur today, but the
   // two must agree on what an assignment looks like.
-  // `(?!=)` excludes `==`; the lookbehind excludes a longer identifier (`myTag=`).
-  const re = new RegExp(`(?<![\\w$])${escapeRegExp(name)}\\s*=(?!=)`, 'g');
+  // The negative set excludes `==` and, importantly, `=>`: in minified source a
+  // single-parameter arrow is written `tag=>…`, so treating it as an assignment
+  // would report a reassignment that never happened and DISCARD a valid registry
+  // entry. `!` is deliberately NOT excluded — `tag=!x` is a real assignment, and
+  // ignoring it would let the guard miss an actual rebinding. The lookbehind
+  // excludes a longer identifier (`myTag=`).
+  const re = new RegExp(`(?<![\\w$])${escapeRegExp(name)}\\s*=(?![=>])`, 'g');
   for (const m of src.slice(from, to).matchAll(re)) {
     if (from + m.index !== skip) return true;
   }
