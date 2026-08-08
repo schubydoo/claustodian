@@ -310,6 +310,53 @@ function factoryBodyStart(
  * sub-schema factory, or a root that yields nothing. Callers must let that
  * propagate and fail the version.
  */
+/** A `shape:()=>({` member — either a gated settings fragment or zod's own. */
+const SHAPE_FACTORY = /shape\s*:\s*\(\)\s*=>\s*\(\{/g;
+
+/**
+ * `buildGate` and `shape` as members of the SAME object literal — the structural
+ * proof that a `shape()` factory is a settings fragment rather than zod's
+ * internals. Only simple members may sit between them, which keeps this a
+ * containment claim about one object rather than a proximity guess.
+ */
+const GATED_FRAGMENT = /buildGate\s*:\s*\(\)\s*=>\s*[^;{}]{0,80}?,\s*shape\s*:\s*\(\)\s*=>\s*\(\{/g;
+
+/**
+ * zod's ZodObject builds its own `shape:()=>({...this._def.shape(), …})` inside
+ * `.extend()` / `.merge()`. Those are library plumbing, not Claude Code settings,
+ * and they are told apart by what the body opens with, not by where they sit.
+ */
+const ZOD_INTERNAL_SHAPE = /^\s*\.\.\.\s*this\._def/;
+
+/**
+ * Every gated settings fragment's object body, as an offset just inside its `({`.
+ *
+ * Throws on a `shape()` factory that is neither gated nor zod's own. That is the
+ * module's standing posture — a fragment shape we do not recognise means keys are
+ * going missing, and reporting success while silently dropping them is the exact
+ * failure this file exists to prevent.
+ */
+function gatedFragments(src: string): { bodyStart: number }[] {
+  const gated = new Set<number>();
+  for (const m of src.matchAll(GATED_FRAGMENT)) gated.add(m.index + m[0].length);
+
+  const out: { bodyStart: number }[] = [];
+  for (const m of src.matchAll(SHAPE_FACTORY)) {
+    const bodyStart = m.index + m[0].length;
+    if (gated.has(bodyStart)) {
+      out.push({ bodyStart });
+      continue;
+    }
+    if (ZOD_INTERNAL_SHAPE.test(src.slice(bodyStart, bodyStart + 40))) continue;
+    throw new SettingsSchemaError(
+      `settings schema: a shape() factory at ${bodyStart} is neither gated by buildGate ` +
+        `nor one of zod's own. The fragment registry likely changed shape; refusing to ` +
+        `emit a key set that may be missing its keys.`
+    );
+  }
+  return out;
+}
+
 export function extractSettingsKeys(src: string): SettingsKey[] {
   const anchorMatch = ANCHOR_RE.exec(src);
   if (!anchorMatch) return []; // no settings schema in this era — legitimately empty
@@ -364,6 +411,31 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
     }
   };
   walk(root, '', 0);
+
+  // Feature-gated fragments contribute top-level keys the root walk cannot reach:
+  // they live in a separate registry (`{autoMode:{buildGate:()=>!0,shape:()=>({…})}}`)
+  // that the schema merges in at build time, so nothing in the root object points
+  // at them. At 2.1.226 that hid `autoMode`, `useAutoModeDuringPlan`,
+  // `disableDeepLinkRegistration`, `voiceEnabled`, `axScreenReader` and
+  // `defaultView` — five of which settings.md documents, which is how the gap
+  // surfaced.
+  const rootCount = keys.length;
+  for (const { bodyStart } of gatedFragments(src)) walk(bodyStart, '', 1, 'gated-fragment');
+
+  // A bundle can embed the same module graph twice — 2.1.113 carries two copies of
+  // the fragment registry, so every gated key was collected twice. A duplicate from
+  // a repeated region is not new information. Deduping only the fragment tail keeps
+  // the root walk's output byte-identical, and a root declaration wins over a
+  // fragment of the same name because the root is the authoritative shape.
+  const seen = new Set(keys.slice(0, rootCount).map((k) => k.path));
+  const deduped = keys.slice(0, rootCount);
+  for (const key of keys.slice(rootCount)) {
+    if (seen.has(key.path)) continue;
+    seen.add(key.path);
+    deduped.push(key);
+  }
+  keys.length = 0;
+  keys.push(...deduped);
 
   // Invariant guard, not a reachable path today: schemaRootStart only accepts a
   // root after scanLevel proves it declares the anchor key, so a located root
