@@ -241,16 +241,12 @@ export function splitTableRow(line: string): string[] {
 }
 
 /**
- * Settings-page sections that define `settings.json` keys, and the namespace each
- * table's keys sit under. An ALLOWLIST: a section absent from this map contributes
- * nothing, so a new upstream heading cannot silently start publishing keys.
+ * Settings-page sections that define config keys, with the namespace each table's
+ * bare keys sit under and, where the page distinguishes one, the category. An
+ * ALLOWLIST: a section absent from this map contributes nothing, so a new upstream
+ * heading cannot silently start publishing keys.
  *
  * Excluded on purpose, each on the page's own evidence:
- *  - "Global config settings" — the page says these live in `~/.claude.json` and
- *    that Claude Code "silently ignores them" in `settings.json`. They are real
- *    config keys, so they want their own category rather than being published as
- *    settings.json keys; until that exists, publishing them here would assert
- *    something the page explicitly denies.
  *  - "Permission rule syntax" — its first column holds rules (`Bash`), not keys.
  *  - "Invalid entries in managed settings" — a behaviour-when-invalid table; its
  *    descriptions describe error handling, not what the key does.
