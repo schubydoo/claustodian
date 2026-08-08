@@ -43,8 +43,15 @@ Base URL: **`https://claustodian.dev/data`**
 
 Core files are also published as `.yaml` and `.toml` (swap the extension); **JSON is the
 source of truth**. `catalog.json` is the exception — it is built after the export step, so
-`catalog.yaml`/`.toml` do not exist. Prefer `.json` throughout. Published `versions/<X.Y.Z>.json` files are effectively
-immutable, so cache them hard by version.
+`catalog.yaml`/`.toml` do not exist. Prefer `.json` throughout.
+
+**Snapshots are not immutable — do not pin them indefinitely.** A published
+`versions/<X.Y.Z>.json` is regenerated whenever the pipeline learns something new, including
+for long-past releases: `1.0.0.json` has been rewritten 30 times, most recently today. Records
+gain descriptions and categories, `first_seen` gets sharpened, `needs_review` flips to
+`active` — and symbols are _added_ when a lane first finds evidence for them, so **absence
+from an old snapshot is provisional, not proof**. The site serves `cache-control: max-age=600`
+with an ETag; revalidate rather than caching by version forever.
 
 ## The record schema
 
