@@ -15,7 +15,7 @@ keep these files in sync when you change a rule.
 
 Both contexts are produced by GitHub Actions (`integration_id: 15368`):
 
-- **`validate`** — the job in `validate-pr.yml` (lint, typecheck, tests+coverage, schema + dataset validation).
+- **`validate`** — the job in `validate-pr.yml` (lint, formatting, typecheck, tests+coverage, schema + dataset validation).
 - **`security required checks passed`** — the aggregator job in `security.yml` (CodeQL, gitleaks, zizmor, dependency-review).
 
 The `code_scanning` rule additionally requires a current **CodeQL** analysis

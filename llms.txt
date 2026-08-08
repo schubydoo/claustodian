@@ -17,6 +17,7 @@ Three rules cover almost all use: (1) a symbol is available in version Y when `f
 - [latest.json](https://claustodian.dev/data/latest.json): full symbol snapshot for the newest tracked version.
 - versions/<X.Y.Z>.json: full symbol snapshot as of that exact version, e.g. https://claustodian.dev/data/versions/2.1.169.json — the ground truth for availability in that version.
 - [binary-descriptions.json](https://claustodian.dev/data/binary-descriptions.json): per-symbol description timeline (change-point eras keyed by `type:symbol`); take the last era whose `from <= Y` for the text at version Y.
+- [catalog.json](https://claustodian.dev/data/catalog.json): every symbol EVER seen with its full lifecycle, including removed ones. Per-version snapshots only carry what was live at that version, so this is the only file that can answer "did X ever exist?".
 - [schema-version.json](https://claustodian.dev/data/schema-version.json): the data format version; a bump signals a format change.
 
 Core files are also served as `.yaml` and `.toml` (swap the extension); JSON is the source of truth.
