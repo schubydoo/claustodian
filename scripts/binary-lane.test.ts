@@ -65,15 +65,15 @@ describe('audited env lists', () => {
 
 describe('audit promotions', () => {
   // Inventory check on the maintainer audit (scratch/needs-review-audit.{md,csv}):
-  // 6 commands + 4 agent-team flags with binary-registry descriptions, + 65 flags with `claude --help`
+  // 6 commands + 33 hidden (cli-internal) flags with binary-registry descriptions, + 65 flags with `claude --help`
   // descriptions (30 from the original depth-one sweep, 35 from `self-hosted-runner`
   // and its sub-subcommands, 4 more the depth-one sweep had missed). If you
   // promote/demote a symbol, update these counts.
   const entries = [...PROMOTED_BINARY_SYMBOLS.entries()];
 
-  it('holds the 79 audited promotions (10 binary + 69 help)', () => {
-    expect(PROMOTED_BINARY_SYMBOLS.size).toBe(79);
-    expect(entries.filter(([, p]) => p.description_source === 'binary')).toHaveLength(10);
+  it('holds the 108 audited promotions (39 binary + 69 help)', () => {
+    expect(PROMOTED_BINARY_SYMBOLS.size).toBe(108);
+    expect(entries.filter(([, p]) => p.description_source === 'binary')).toHaveLength(39);
     expect(entries.filter(([, p]) => p.description_source === 'help')).toHaveLength(69);
   });
 
