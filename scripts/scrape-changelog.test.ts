@@ -599,24 +599,26 @@ describe('enrichWithBinary', () => {
   });
 
   it('publishes a switch-case-only flag once containment established its scope', () => {
-    // The other half of the rule above. `--min-idle` is still only ever a
-    // `case"--min-idle":` label, but the parser module's own
-    // `Usage: claude self-hosted-runner orchestrator` banner says whose it is, so
-    // it publishes WITH that scope instead of being dropped.
+    // The other half of the rule above. `--sigkill-timeout-sec` is still only ever
+    // a `case"--sigkill-timeout-sec":` label, but the parser module's own
+    // `Usage: claude self-hosted-runner` banner says whose it is, so it publishes
+    // WITH that scope instead of being dropped.
     const out = enrichWithBinary(
       [],
       binary([
         {
-          symbol: '--min-idle',
+          symbol: '--sigkill-timeout-sec',
           type: 'cli_flag',
           first_seen: '2.1.224',
           last_seen: '2.1.226',
           switch_case_only: true,
-          scopes: ['self-hosted-runner orchestrator'],
+          scopes: ['self-hosted-runner'],
         },
       ])
     );
-    expect(byKey(out).get('cli_flag:--min-idle')).toMatchObject({
+    // Deliberately a flag the audit did NOT promote, so this covers the scope gate
+    // alone and does not quietly become a test of PROMOTED_BINARY_SYMBOLS.
+    expect(byKey(out).get('cli_flag:--sigkill-timeout-sec')).toMatchObject({
       provenance: 'binary',
       status: 'needs_review',
     });
