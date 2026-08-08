@@ -459,6 +459,39 @@
       footer a {
         color: var(--accent);
       }
+      .pager {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        margin: 1.25rem 0 0;
+      }
+      .pager[hidden] {
+        display: none;
+      }
+      .pager button {
+        font: inherit;
+        font-size: 0.85rem;
+        padding: 0.35rem 0.9rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--card);
+        color: var(--fg);
+        cursor: pointer;
+      }
+      .pager button:hover:not(:disabled) {
+        border-color: var(--accent);
+      }
+      .pager button:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      .pager .page-of {
+        font-size: 0.85rem;
+        color: var(--muted);
+        min-width: 9ch;
+        text-align: center;
+      }
       .status {
         padding: 1rem 0;
         color: var(--muted);
@@ -610,6 +643,15 @@
             <option value="newest">Since — newest first</option>
           </select>
         </div>
+        <div>
+          <label for="per-page">Per page</label>
+          <select id="per-page" aria-label="Results per page">
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="250">250</option>
+            <option value="all">All</option>
+          </select>
+        </div>
         <div class="group-toggle">
           <label for="group">
             <input type="checkbox" id="group" />
@@ -620,6 +662,11 @@
 
       <p id="meta" aria-live="polite"></p>
       <ul id="results"></ul>
+      <nav class="pager" id="pager" aria-label="Result pages" hidden>
+        <button type="button" id="prev-page">&larr; Prev</button>
+        <span class="page-of" id="page-of"></span>
+        <button type="button" id="next-page">Next &rarr;</button>
+      </nav>
       <p id="status" class="status">Loading dataset…</p>
 
       <footer>
@@ -684,11 +731,21 @@
       const $categoryWrap = document.getElementById('category-wrap');
       const $group = document.getElementById('group');
       const $allVersions = document.getElementById('all-versions');
+      const $perPage = document.getElementById('per-page');
+      const $pager = document.getElementById('pager');
+      const $prevPage = document.getElementById('prev-page');
+      const $nextPage = document.getElementById('next-page');
+      const $pageOf = document.getElementById('page-of');
       const $results = document.getElementById('results');
       const $meta = document.getElementById('meta');
       const $status = document.getElementById('status');
 
       let snapshot = null; // { claudeCodeVersion, symbols: [...] }
+      // 1-based page of the result list. Reset by rerender() whenever the RESULT
+      // SET changes (query, filters, sort, version, page size) — but deliberately
+      // NOT by render() itself, so collapsing a group or opening a description
+      // history leaves you where you were.
+      let page = 1;
       // `${type}:${symbol}` -> [{from, description}] eras (data/binary-descriptions.json).
       // Best-effort: absent (older deploy, fetch failure) just hides the history UI.
       let descTimelines = {};
@@ -970,7 +1027,21 @@
           const dir = sort === 'oldest' ? 1 : -1;
           matches.sort((a, b) => dir * cmpVersions(a.first_seen, b.first_seen) || bySymbol(a, b));
         }
-        if ($group.checked) {
+        const grouped = $group.checked;
+        // A collapsed group renders no cards, so its rows must not consume page
+        // slots either — otherwise collapsing everything leaves a page of nothing.
+        // Its HEADER is still drawn below (from `matches`, not the page slice), or
+        // there would be no control left to expand it again.
+        const pageable = grouped ? matches.filter((s) => !collapsedTypes.has(s.type)) : matches;
+        const size = $perPage.value === 'all' ? Infinity : Number($perPage.value);
+        const pageCount = Math.max(1, Math.ceil(pageable.length / size));
+        // Clamp rather than reset: collapsing a group shrinks the list without
+        // going through rerender(), and page may now be past the end.
+        page = Math.min(Math.max(1, page), pageCount);
+        const start = size === Infinity ? 0 : (page - 1) * size;
+        const slice = size === Infinity ? pageable : pageable.slice(start, start + size);
+
+        if (grouped) {
           // Group by type: sections in a fixed type order, with the chosen sort
           // applied within each (matches is already sorted, and bucketing preserves
           // that order). Any unlisted type is appended so nothing is ever dropped.
@@ -986,20 +1057,43 @@
             .map((t) => [t, t]);
           const nodes = [];
           for (const [t, label] of [...TYPE_GROUPS, ...extra]) {
-            const group = matches.filter((s) => s.type === t);
-            if (!group.length) continue;
-            nodes.push(groupHeader(t, label, group.length));
-            if (!collapsedTypes.has(t)) {
-              for (const s of group) nodes.push(resultCard(s));
-            }
+            // Header count is the total across ALL pages, not this page's share —
+            // "CLI flags · 12" under a 240-flag filter would be a lie.
+            const total = matches.filter((s) => s.type === t).length;
+            if (!total) continue;
+            const onPage = slice.filter((s) => s.type === t);
+            nodes.push(groupHeader(t, label, total));
+            for (const s of onPage) nodes.push(resultCard(s));
           }
           $results.replaceChildren(...nodes);
         } else {
-          $results.replaceChildren(...matches.map(resultCard));
+          $results.replaceChildren(...slice.map(resultCard));
         }
-        $meta.textContent = useCatalog
+
+        const scope = useCatalog
           ? `${matches.length} of ${catalog.length} symbols across all versions`
           : `${matches.length} of ${snapshot.symbols.length} symbols as of ${snapshot.claudeCodeVersion}`;
+        // Say which slice is on screen, else "50 results" reads as "only 50 exist".
+        $meta.textContent =
+          pageCount > 1 ? `${scope} — showing ${start + 1}\u2013${start + slice.length}` : scope;
+        $pager.hidden = pageCount <= 1;
+        $pageOf.textContent = `Page ${page} of ${pageCount}`;
+        $prevPage.disabled = page <= 1;
+        $nextPage.disabled = page >= pageCount;
+      }
+
+      // Re-render AND return to page 1: for anything that changes which symbols
+      // match. Staying on page 7 of a fresh 2-page result set is disorienting.
+      function rerender() {
+        page = 1;
+        render();
+      }
+
+      function goToPage(n) {
+        page = n;
+        render();
+        // Land at the top of the list, not wherever the old page left the scroll.
+        $results.scrollIntoView({ block: 'start', behavior: 'smooth' });
       }
 
       async function loadVersion(v) {
@@ -1008,7 +1102,8 @@
           snapshot = await getJSON(`${DATA}/versions/${v}.json`);
           $status.textContent = '';
           refreshCategoryControl();
-          render();
+          // A different version is a different result set — back to page 1.
+          rerender();
         } catch (e) {
           $status.textContent = `Could not load ${v} (${e.message}).`;
         }
@@ -1030,14 +1125,18 @@
           );
           $version.value = index.latest;
           $version.addEventListener('change', () => loadVersion($version.value));
-          $sort.addEventListener('change', render);
+          // Every control below changes the RESULT SET, so each resets to page 1.
+          $sort.addEventListener('change', rerender);
           $type.addEventListener('change', () => {
             refreshCategoryControl();
-            render();
+            rerender();
           });
-          $category.addEventListener('change', render);
-          $group.addEventListener('change', render);
-          $q.addEventListener('input', render);
+          $category.addEventListener('change', rerender);
+          $group.addEventListener('change', rerender);
+          $q.addEventListener('input', rerender);
+          $perPage.addEventListener('change', rerender);
+          $prevPage.addEventListener('click', () => goToPage(page - 1));
+          $nextPage.addEventListener('click', () => goToPage(page + 1));
           $allVersions.addEventListener('change', async () => {
             // Lazy-load the catalog the first time; on failure, revert the toggle.
             if ($allVersions.checked && !catalog) {
@@ -1054,7 +1153,7 @@
             // The version picker doesn't apply to a cross-version search.
             $version.disabled = $allVersions.checked;
             refreshCategoryControl();
-            render();
+            rerender();
           });
           await loadVersion(index.latest);
         } catch (e) {
