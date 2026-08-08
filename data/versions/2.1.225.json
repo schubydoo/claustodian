@@ -15,7 +15,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -148,7 +148,8 @@
       "category": "cli",
       "scopes": [
         "agents",
-        "plugin"
+        "plugin disable",
+        "project purge"
       ]
     },
     {
@@ -177,7 +178,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -206,6 +207,23 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--api-url",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner decode-token",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--append-subagent-system-prompt",
@@ -272,7 +290,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin init"
       ]
     },
     {
@@ -288,7 +306,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin init"
       ]
     },
     {
@@ -317,7 +335,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin list"
       ]
     },
     {
@@ -425,7 +443,10 @@
       "description": "Fixed port for OAuth callback (for servers requiring pre-registered redirect URIs)",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp add"
+      ]
     },
     {
       "symbol": "--capacity",
@@ -440,7 +461,8 @@
       "source_url": "https://code.claude.com/docs/en/remote-control.md",
       "category": "cli",
       "scopes": [
-        "remote-control"
+        "remote-control",
+        "self-hosted-runner"
       ]
     },
     {
@@ -456,7 +478,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -496,7 +518,10 @@
       "description": "Use Claude subscription (default)",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "auth login"
+      ]
     },
     {
       "symbol": "--client-id",
@@ -509,7 +534,10 @@
       "description": "Added pre-configured OAuth client credentials for MCP servers that don't support Dynamic Client Registration (e.g., Slack). Use `--client-id` and `--client-secret` with `claude mcp add`.",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp add"
+      ]
     },
     {
       "symbol": "--client-secret",
@@ -522,7 +550,11 @@
       "description": "Added pre-configured OAuth client credentials for MCP servers that don't support Dynamic Client Registration (e.g., Slack). Use `--client-id` and `--client-secret` with `claude mcp add`.",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp add",
+        "mcp add-json"
+      ]
     },
     {
       "symbol": "--cloud",
@@ -564,7 +596,37 @@
       "category": "cli",
       "scopes": [
         "gateway",
-        "plugin"
+        "plugin install"
+      ]
+    },
+    {
+      "symbol": "--configure-git",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--confine-repo-settings",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
       ]
     },
     {
@@ -591,7 +653,10 @@
       "description": "Added `--console` flag to `claude auth login` for Anthropic Console (API billing) authentication",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "auth login"
+      ]
     },
     {
       "symbol": "--continue",
@@ -688,6 +753,21 @@
       "category": "cli"
     },
     {
+      "symbol": "--debug-dir",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
       "symbol": "--debug-file",
       "type": "cli_flag",
       "first_seen": "2.1.20",
@@ -712,6 +792,21 @@
       "source_url": null,
       "category": "cli",
       "description_source": "binary"
+    },
+    {
+      "symbol": "--debug-token-dir",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--deep-link-cwd-b64",
@@ -790,7 +885,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin init"
       ]
     },
     {
@@ -833,6 +928,51 @@
       "category": "cli"
     },
     {
+      "symbol": "--drain-grace-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--drain-wait-bg-tasks-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--drain-wait-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--dry-run",
       "type": "cli_flag",
       "first_seen": "2.1.118",
@@ -846,7 +986,9 @@
       "category": "cli",
       "scopes": [
         "import",
-        "plugin"
+        "plugin prune",
+        "plugin tag",
+        "project purge"
       ]
     },
     {
@@ -873,7 +1015,10 @@
       "description": "Pre-populate email address on the login page",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "auth login"
+      ]
     },
     {
       "symbol": "--enable-auth-status",
@@ -925,7 +1070,10 @@
       "description": "Set environment variables (e.g. -e KEY=value)",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp add"
+      ]
     },
     {
       "symbol": "--environment",
@@ -939,6 +1087,22 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--environment-secret-file",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--exclude-dynamic-system-prompt-sections",
@@ -966,6 +1130,51 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--exec-path",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--exit-if-unused-min",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--expected-spawn-seconds",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--fallback-model",
@@ -1034,7 +1243,8 @@
       "category": "cli",
       "scopes": [
         "install",
-        "plugin"
+        "plugin init",
+        "plugin tag"
       ]
     },
     {
@@ -1077,6 +1287,36 @@
       "category": "cli"
     },
     {
+      "symbol": "--git-host-rewrite",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--git-ssh-rewrite",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--handle-uri",
       "type": "cli_flag",
       "first_seen": "2.1.83",
@@ -1113,7 +1353,23 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "mcp"
+        "mcp add"
+      ]
+    },
+    {
+      "symbol": "--health-port",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
       ]
     },
     {
@@ -1129,6 +1385,52 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--hook-concurrency",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--hook-timeout",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--hooks-dir",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--host",
@@ -1272,7 +1574,10 @@
       "description": "Prompt for each item before deleting",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "project purge"
+      ]
     },
     {
       "symbol": "--interview",
@@ -1301,7 +1606,9 @@
       "category": "cli",
       "scopes": [
         "agents",
-        "plugin",
+        "auth status",
+        "plugin eval",
+        "plugin list",
         "ultrareview"
       ]
     },
@@ -1331,7 +1638,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1347,7 +1654,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin uninstall"
       ]
     },
     {
@@ -1363,7 +1670,22 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
+      ]
+    },
+    {
+      "symbol": "--kill-session-after-min",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
       ]
     },
     {
@@ -1377,7 +1699,56 @@
       "description": "Show only rules whose label starts with this prefix (case-insensitive)",
       "source_url": null,
       "category": "cli",
-      "description_source": "binary"
+      "description_source": "binary",
+      "scopes": [
+        "auto-mode defaults"
+      ]
+    },
+    {
+      "symbol": "--lock-to-account",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--log-file",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--log-level",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--magic-file",
@@ -1444,7 +1815,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1525,7 +1896,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin tag"
       ]
     },
     {
@@ -1540,6 +1911,21 @@
       "source_url": null,
       "category": "cli",
       "description_source": "binary"
+    },
+    {
+      "symbol": "--min-idle",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--model",
@@ -1578,7 +1964,25 @@
       "description": "Added `claude mcp login <name>` and `claude mcp logout <name>` to authenticate MCP servers from the CLI without opening the interactive `/mcp` menu, with `--no-browser` stdin redirect support for completing over SSH",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp login"
+      ]
+    },
+    {
+      "symbol": "--no-check-expiry",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner decode-token"
+      ]
     },
     {
       "symbol": "--no-chrome",
@@ -1606,7 +2010,7 @@
       "category": "cli",
       "description_source": "binary",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1650,7 +2054,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1665,6 +2069,21 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--no-verify",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner decode-token"
+      ]
     },
     {
       "symbol": "--on-branch",
@@ -1692,7 +2111,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1825,6 +2244,22 @@
       "description_source": "binary"
     },
     {
+      "symbol": "--pool-secret-file",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
       "symbol": "--port",
       "type": "cli_flag",
       "first_seen": "2.1.64",
@@ -1836,6 +2271,21 @@
       "source_url": null,
       "category": "cli",
       "description_source": "binary"
+    },
+    {
+      "symbol": "--post-session-hook-timeout-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--prefill",
@@ -1902,7 +2352,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin uninstall"
       ]
     },
     {
@@ -1918,7 +2368,7 @@
       "category": "cli",
       "description_source": "binary",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1934,7 +2384,22 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin tag"
+      ]
+    },
+    {
+      "symbol": "--push-outcome-on-release",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
       ]
     },
     {
@@ -1964,6 +2429,21 @@
       "category": "cli"
     },
     {
+      "symbol": "--release-idle-session-min",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--remote",
       "type": "cli_flag",
       "first_seen": "1.0.68",
@@ -1976,7 +2456,7 @@
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin tag"
       ]
     },
     {
@@ -2058,7 +2538,7 @@
       "category": "cli",
       "description_source": "binary",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -2101,6 +2581,21 @@
       "description_source": "binary"
     },
     {
+      "symbol": "--retire-at",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--rewind-files",
       "type": "cli_flag",
       "first_seen": "2.0.63",
@@ -2138,7 +2633,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -2183,7 +2678,82 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
+      ]
+    },
+    {
+      "symbol": "--scm-connector-ca-file",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--scm-connector-host",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--scm-connector-host-rewrite",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--scm-connector-id",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--scm-connector-provider",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner orchestrator"
       ]
     },
     {
@@ -2199,7 +2769,16 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "mcp add",
+        "mcp add-from-claude-desktop",
+        "mcp add-json",
+        "mcp remove",
+        "plugin disable",
+        "plugin enable",
+        "plugin install",
+        "plugin prune",
+        "plugin uninstall",
+        "plugin update"
       ]
     },
     {
@@ -2254,6 +2833,21 @@
       "description_source": "binary"
     },
     {
+      "symbol": "--session-stop-grace-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--setting-sources",
       "type": "cli_flag",
       "first_seen": "1.0.125",
@@ -2279,6 +2873,21 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--sigkill-timeout-sec",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--skip-dts",
@@ -2332,7 +2941,25 @@
       "description": "Force SSO login flow",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "auth login"
+      ]
+    },
+    {
+      "symbol": "--startup-timeout-min",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--strict",
@@ -2347,7 +2974,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin validate"
       ]
     },
     {
@@ -2402,7 +3029,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -2468,7 +3095,10 @@
       "description": "Output as human-readable text",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "auth status"
+      ]
     },
     {
       "symbol": "--thinking",
@@ -2509,7 +3139,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -2567,7 +3197,22 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "mcp"
+        "mcp add"
+      ]
+    },
+    {
+      "symbol": "--trust-workspace",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
       ]
     },
     {
@@ -2597,6 +3242,21 @@
       "category": "cli"
     },
     {
+      "symbol": "--use-anthropic-git-proxy",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--verbose",
       "type": "cli_flag",
       "first_seen": "0.2.9",
@@ -2608,6 +3268,21 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--verify",
+      "type": "cli_flag",
+      "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner decode-token"
+      ]
     },
     {
       "symbol": "--version",
@@ -2648,7 +3323,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin init"
       ]
     },
     {
@@ -2716,8 +3391,11 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
+        "auto-mode reset",
         "import",
-        "plugin"
+        "plugin prune",
+        "plugin uninstall",
+        "project purge"
       ]
     },
     {

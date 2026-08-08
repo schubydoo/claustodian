@@ -15,7 +15,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -148,7 +148,8 @@
       "category": "cli",
       "scopes": [
         "agents",
-        "plugin"
+        "plugin disable",
+        "project purge"
       ]
     },
     {
@@ -177,7 +178,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -272,7 +273,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin init"
       ]
     },
     {
@@ -288,7 +289,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin init"
       ]
     },
     {
@@ -304,7 +305,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin list"
       ]
     },
     {
@@ -396,7 +397,10 @@
       "description": "Fixed port for OAuth callback (for servers requiring pre-registered redirect URIs)",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp add"
+      ]
     },
     {
       "symbol": "--capacity",
@@ -427,7 +431,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -467,7 +471,10 @@
       "description": "Use Claude subscription (default)",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "auth login"
+      ]
     },
     {
       "symbol": "--client-id",
@@ -480,7 +487,10 @@
       "description": "Added pre-configured OAuth client credentials for MCP servers that don't support Dynamic Client Registration (e.g., Slack). Use `--client-id` and `--client-secret` with `claude mcp add`.",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp add"
+      ]
     },
     {
       "symbol": "--client-secret",
@@ -493,7 +503,11 @@
       "description": "Added pre-configured OAuth client credentials for MCP servers that don't support Dynamic Client Registration (e.g., Slack). Use `--client-id` and `--client-secret` with `claude mcp add`.",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp add",
+        "mcp add-json"
+      ]
     },
     {
       "symbol": "--cloud",
@@ -535,7 +549,7 @@
       "category": "cli",
       "scopes": [
         "gateway",
-        "plugin"
+        "plugin install"
       ]
     },
     {
@@ -549,7 +563,10 @@
       "description": "Added `--console` flag to `claude auth login` for Anthropic Console (API billing) authentication",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "auth login"
+      ]
     },
     {
       "symbol": "--continue",
@@ -735,7 +752,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin init"
       ]
     },
     {
@@ -791,7 +808,9 @@
       "category": "cli",
       "scopes": [
         "import",
-        "plugin"
+        "plugin prune",
+        "plugin tag",
+        "project purge"
       ]
     },
     {
@@ -818,7 +837,10 @@
       "description": "Pre-populate email address on the login page",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "auth login"
+      ]
     },
     {
       "symbol": "--enable-auth-status",
@@ -870,7 +892,10 @@
       "description": "Set environment variables (e.g. -e KEY=value)",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp add"
+      ]
     },
     {
       "symbol": "--exclude-dynamic-system-prompt-sections",
@@ -939,7 +964,8 @@
       "category": "cli",
       "scopes": [
         "install",
-        "plugin"
+        "plugin init",
+        "plugin tag"
       ]
     },
     {
@@ -1018,7 +1044,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "mcp"
+        "mcp add"
       ]
     },
     {
@@ -1164,7 +1190,10 @@
       "description": "Prompt for each item before deleting",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "project purge"
+      ]
     },
     {
       "symbol": "--interview",
@@ -1193,7 +1222,9 @@
       "category": "cli",
       "scopes": [
         "agents",
-        "plugin",
+        "auth status",
+        "plugin eval",
+        "plugin list",
         "ultrareview"
       ]
     },
@@ -1223,7 +1254,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1239,7 +1270,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin uninstall"
       ]
     },
     {
@@ -1255,7 +1286,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1269,7 +1300,10 @@
       "description": "Show only rules whose label starts with this prefix (case-insensitive)",
       "source_url": null,
       "category": "cli",
-      "description_source": "binary"
+      "description_source": "binary",
+      "scopes": [
+        "auto-mode defaults"
+      ]
     },
     {
       "symbol": "--maintenance",
@@ -1323,7 +1357,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1404,7 +1438,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin tag"
       ]
     },
     {
@@ -1444,7 +1478,10 @@
       "description": "Added `claude mcp login <name>` and `claude mcp logout <name>` to authenticate MCP servers from the CLI without opening the interactive `/mcp` menu, with `--no-browser` stdin redirect support for completing over SSH",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "mcp login"
+      ]
     },
     {
       "symbol": "--no-chrome",
@@ -1500,7 +1537,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1529,7 +1566,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1738,7 +1775,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin uninstall"
       ]
     },
     {
@@ -1754,7 +1791,7 @@
       "category": "cli",
       "description_source": "binary",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1770,7 +1807,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin tag"
       ]
     },
     {
@@ -1799,7 +1836,7 @@
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin tag"
       ]
     },
     {
@@ -1881,7 +1918,7 @@
       "category": "cli",
       "description_source": "binary",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1948,7 +1985,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -1993,7 +2030,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -2009,7 +2046,16 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "mcp add",
+        "mcp add-from-claude-desktop",
+        "mcp add-json",
+        "mcp remove",
+        "plugin disable",
+        "plugin enable",
+        "plugin install",
+        "plugin prune",
+        "plugin uninstall",
+        "plugin update"
       ]
     },
     {
@@ -2142,7 +2188,10 @@
       "description": "Force SSO login flow",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "auth login"
+      ]
     },
     {
       "symbol": "--strict",
@@ -2157,7 +2206,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin validate"
       ]
     },
     {
@@ -2212,7 +2261,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -2278,7 +2327,10 @@
       "description": "Output as human-readable text",
       "description_source": "help",
       "source_url": null,
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "auth status"
+      ]
     },
     {
       "symbol": "--thinking",
@@ -2319,7 +2371,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin eval"
       ]
     },
     {
@@ -2377,7 +2429,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
-        "mcp"
+        "mcp add"
       ]
     },
     {
@@ -2445,7 +2497,7 @@
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
-        "plugin"
+        "plugin init"
       ]
     },
     {
@@ -2513,8 +2565,11 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
+        "auto-mode reset",
         "import",
-        "plugin"
+        "plugin prune",
+        "plugin uninstall",
+        "project purge"
       ]
     },
     {

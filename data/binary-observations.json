@@ -587,7 +587,12 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner decode-token",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--append-subagent-system-prompt",
@@ -672,7 +677,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--betas",
@@ -708,7 +716,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--case",
@@ -772,7 +783,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--confine-repo-settings",
@@ -780,7 +794,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--console",
@@ -844,7 +861,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--debug-file",
@@ -866,7 +886,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--deep-link-cwd-b64",
@@ -937,7 +960,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--drain-wait-bg-tasks-sec",
@@ -945,7 +971,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--drain-wait-sec",
@@ -953,7 +982,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--dry-run",
@@ -1024,7 +1056,11 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--exclude-dynamic-system-prompt-sections",
@@ -1039,7 +1075,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--exit-if-unused-min",
@@ -1047,7 +1086,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--expected-spawn-seconds",
@@ -1055,7 +1097,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--fallback-model",
@@ -1105,7 +1150,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--git-ssh-rewrite",
@@ -1113,7 +1161,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--global",
@@ -1149,7 +1200,11 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--help",
@@ -1165,7 +1220,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--hook-timeout",
@@ -1173,7 +1231,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--hooks-dir",
@@ -1181,7 +1242,11 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--host",
@@ -1308,7 +1373,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--label",
@@ -1323,7 +1391,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--log-file",
@@ -1331,7 +1402,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--log-level",
@@ -1339,7 +1413,11 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--maintenance",
@@ -1424,7 +1502,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--model",
@@ -1453,7 +1534,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner decode-token"
+      ]
     },
     {
       "symbol": "--no-chrome",
@@ -1496,7 +1580,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner decode-token"
+      ]
     },
     {
       "symbol": "--on-branch",
@@ -1595,7 +1682,11 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--port",
@@ -1610,7 +1701,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--prefill",
@@ -1667,7 +1761,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--rc",
@@ -1689,7 +1786,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--remote",
@@ -1767,7 +1867,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--rewind-files",
@@ -1810,7 +1913,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--scm-connector-host",
@@ -1818,7 +1924,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--scm-connector-host-rewrite",
@@ -1826,7 +1935,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--scm-connector-id",
@@ -1834,7 +1946,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--scm-connector-provider",
@@ -1842,7 +1957,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--scope",
@@ -1885,7 +2003,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--setting-sources",
@@ -1907,7 +2028,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--skip-dts",
@@ -1936,7 +2060,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--strict",
@@ -2063,7 +2190,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--unix",
@@ -2078,7 +2208,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--verbose",
@@ -2093,7 +2226,10 @@
       "first_seen": "2.1.224",
       "last_seen": "2.1.226",
       "removed_in": null,
-      "switch_case_only": true
+      "switch_case_only": true,
+      "scopes": [
+        "self-hosted-runner decode-token"
+      ]
     },
     {
       "symbol": "--watch",
