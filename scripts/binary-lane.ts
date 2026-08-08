@@ -333,6 +333,15 @@ export const PROMOTED_BINARY_SYMBOLS: ReadonlyMap<string, BinaryPromotion> = new
   ['cli_flag:--threshold', { description: "Exit 1 if any case score is below this threshold (default: 1.0)", description_source: 'help' }],
   ['cli_flag:--timeout', { description: "Maximum minutes to wait for the review to finish (default: 30)", description_source: 'help' }],
   ['cli_flag:--transport', { description: "Transport type (stdio, sse, http). Defaults to stdio if not specified.", description_source: 'help' }],
+  // Four the ORIGINAL sweep missed for the same reason the scope map was wrong:
+  // it read only `claude <subcommand> --help`, so `plugin eval` and
+  // `auto-mode defaults` were never opened. Same 'help' evidence, just one level
+  // deeper. Re-checking every remaining needs_review flag against the full
+  // depth-two corpus turned up these and nothing else.
+  ['cli_flag:--label', { description: "Show only rules whose label starts with this prefix (case-insensitive)", description_source: 'help' }],
+  ['cli_flag:--no-publish', { description: "Keep the HTML report local only; skip publishing it to claude.ai", description_source: 'help' }],
+  ['cli_flag:--publish-report', { description: "Also require publishing the report to claude.ai (already the default when your account supports it); explains why if unavailable", description_source: 'help' }],
+  ['cli_flag:--report', { description: "Write the self-contained HTML report (scores, prompts, grader verdicts) to <path> instead of the results dir", description_source: 'help' }],
   // `claude self-hosted-runner` and its sub-subcommands, captured from
   // `self-hosted-runner --help`, `… orchestrator --help` and `… decode-token --help`
   // at 2.1.226. The subcommand is absent from `claude --help`'s command list, so the
