@@ -5704,6 +5704,20 @@
       "category": "settings"
     },
     {
+      "symbol": "autoConnectIde",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Default**: `false`. Automatically connect to a running IDE when Claude Code starts from an external terminal. Appears in `/config` as **Auto-connect to IDE (external terminal)** when running outside a VS Code or JetBrains terminal. The `CLAUDE_CODE_AUTO_CONNECT_IDE` environment variable overrides this when set",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
+    },
+    {
       "symbol": "autoDreamEnabled",
       "type": "config_key",
       "first_seen": "2.1.81",
@@ -5715,6 +5729,20 @@
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
+    },
+    {
+      "symbol": "autoInstallIdeExtension",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Default**: `true`. Automatically install the Claude Code IDE extension when running from a VS Code terminal. Appears in `/config` as **Auto-install IDE extension** when running inside a VS Code or JetBrains terminal. You can also set the `CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL` environment variable to `1`",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
     },
     {
       "symbol": "autoMemoryDirectory",
@@ -6160,6 +6188,20 @@
       "category": "settings"
     },
     {
+      "symbol": "diffTool",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Default**: `auto`. Where to display file diffs when an IDE is connected: `auto` opens diffs in the IDE's diff viewer, `terminal` keeps them in the terminal. Appears in `/config` as **Diff tool** only when Claude Code is connected to a VS Code or JetBrains IDE",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
+    },
+    {
       "symbol": "disableAgentView",
       "type": "config_key",
       "first_seen": "2.1.139",
@@ -6485,6 +6527,20 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
+    },
+    {
+      "symbol": "externalEditorContext",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Default**: `false`. Prepend Claude's previous response as `#`-commented context when you open the external editor with `Ctrl+G`. Appears in `/config` as **Show last response in external editor**",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
     },
     {
       "symbol": "extraKnownMarketplaces",
@@ -6860,6 +6916,20 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
+    },
+    {
+      "symbol": "permissionExplainerEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Default**: `true`. Show a model-generated explanation of the command when you press `Ctrl+E` on a Bash or PowerShell permission prompt. Set to `false` to turn the shortcut off",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
     },
     {
       "symbol": "permissions",
@@ -8249,6 +8319,20 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
+    },
+    {
+      "symbol": "teammateDefaultModel",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Default model for agent team teammates when the spawn prompt doesn't specify one. Set to a model alias such as `\"sonnet\"`, or `null` to inherit the lead's current `/model` selection. Appears in `/config` as **Default teammate model**",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
     },
     {
       "symbol": "teammateMode",
