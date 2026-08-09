@@ -128,6 +128,7 @@ nothing in this repository would tell you they exist:
 | Response header rule, phase `…_transform` | `Link: rel=canonical` + `rel=describedby` on `/`                           |
 | Response header rule, same ruleset        | `Content-Type: application/linkset+json` on `/.well-known/api-catalog`     |
 | Worker `claustodian-site`, route `/`      | `Accept: text/markdown` on the root returns `llms.txt` (`worker/index.js`) |
+| Same Worker, route `/mcp`                 | MCP server over the dataset, revision 2026-07-28 (`worker/mcp.js`)         |
 
 Two traps, both survived once already:
 
@@ -150,6 +151,21 @@ Two traps, both survived once already:
   deployment reads as broken. Test the root with a bare URL, and send a no-cache
   request header if you need freshness. Measured 20/20 bare against 0/20 with a
   query string, then 8/8 alternating pairs in one run.
+
+### The MCP endpoint
+
+`worker/mcp.js` serves MCP revision **2026-07-28** at `/mcp`. That revision is not
+the `initialize` handshake most examples show — it has no sessions and no GET
+stream, every request carries its version in `_meta` and mirrors it into headers,
+and the server rejects a request whose headers and body disagree. Write against
+the spec, not against an older example.
+
+**The free plan's 10 ms CPU budget decides which tools can exist.** Measured parse
+costs: `index.json` 0.03 ms, a version snapshot 1.4 ms, `binary-descriptions.json`
+2.3 ms, and **`catalog.json` 10.5 ms** — the whole budget on its own. So no tool
+answers "did this symbol ever exist", which is the only question needing the
+catalog. Per-version tools are cheap because a snapshot holds exactly what was
+live at that version, so presence is availability.
 
 ### Deploying the Worker
 

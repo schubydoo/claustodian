@@ -17,7 +17,10 @@
  * llms.txt subrequest below cannot re-enter this Worker.
  */
 
+import { handleMcp } from './mcp.js';
+
 const MARKDOWN_SOURCE = '/llms.txt';
+const MCP_PATH = '/mcp';
 
 /**
  * True when the client explicitly asked for Markdown.
@@ -71,6 +74,13 @@ export default {
    * @returns {Promise<Response>}
    */
   async fetch(request) {
+    // The MCP endpoint is its own protocol and shares nothing with content
+    // negotiation beyond the Worker. It is routed separately too, so this only
+    // matters for defence in depth if the routes are ever widened.
+    if (new URL(request.url).pathname === MCP_PATH) {
+      return handleMcp(request);
+    }
+
     const isRead = request.method === 'GET' || request.method === 'HEAD';
     if (!isRead || !prefersMarkdown(request.headers.get('Accept'))) {
       return withVaryAccept(await fetch(request));

@@ -26,6 +26,13 @@
       "pattern": "claustodian.dev/",
       "zone_name": "claustodian.dev",
     },
+    {
+      // The MCP endpoint. Exact path, same reasoning as the root: an MCP client
+      // POSTs to /mcp with no query string, so the query-string limit above
+      // does not bite here.
+      "pattern": "claustodian.dev/mcp",
+      "zone_name": "claustodian.dev",
+    },
   ],
   // No public workers.dev entry point; the route is the only way in.
   "workers_dev": false,
