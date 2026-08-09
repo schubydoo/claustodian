@@ -1,0 +1,120 @@
+# Deploy the Cloudflare Worker that fronts the site root (worker/index.js).
+#
+# The Worker is NOT part of the Pages deploy. Pages serves the origin; this
+# Worker sits in front of the root path and answers `Accept: text/markdown`.
+# Before this workflow existed it was deployed by hand, so the repo copy and the
+# live script could drift with nothing to detect it.
+#
+# Requires two repo secrets:
+#   CLOUDFLARE_API_TOKEN   - scoped to Workers Scripts:Edit + Workers Routes:Edit
+#   CLOUDFLARE_ACCOUNT_ID  - the account the Worker lives in
+# See docs/runbooks/publishing.md for how to mint the token.
+name: Deploy Worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'worker/**'
+      - '.github/workflows/deploy-worker.yml'
+  pull_request:
+    paths:
+      - 'worker/**'
+      - '.github/workflows/deploy-worker.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-worker
+  cancel-in-progress: false
+
+jobs:
+  # Runs on pull requests, including from forks, and needs no credentials.
+  # `--dry-run` bundles the Worker and validates wrangler.jsonc without
+  # uploading anything, so a syntax error is caught before it reaches main.
+  dry-run:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+      - name: Bundle without deploying
+        working-directory: worker
+        run: npx --yes wrangler@4 deploy --dry-run --outdir "$RUNNER_TEMP/worker-build"
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: cloudflare/wrangler-action@ebbaa1584979971c8614a24965b4405ff95890e0 # v4.0.0
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+
+      # A green deploy is not evidence the Worker answers correctly — that is the
+      # same silent-success failure the Pages artifact had. Assert the behaviour
+      # against the live domain.
+      #
+      # NOTE THE BARE URLs. A Cloudflare route is matched against the whole URL
+      # including the query string, so the usual ?cb= cache-buster would bypass
+      # the Worker entirely and fail this check on a perfectly good deploy.
+      # Freshness comes from the no-cache request header instead.
+      - name: Verify the deployed Worker negotiates
+        run: |
+          set -euo pipefail
+          negotiated=""
+          for attempt in 1 2 3 4 5 6; do
+            markdown_type=$(curl -sS -D - -o /dev/null \
+              -H 'Accept: text/markdown' -H 'Cache-Control: no-cache' \
+              https://claustodian.dev/ | tr -d '\r' \
+              | awk 'tolower($1) == "content-type:" { print tolower($2) }')
+            if [ "${markdown_type#text/markdown}" != "$markdown_type" ]; then
+              negotiated="yes"
+              break
+            fi
+            echo "attempt $attempt: got '${markdown_type:-none}', waiting for propagation"
+            sleep 20
+          done
+          if [ -z "$negotiated" ]; then
+            echo "::error::Accept: text/markdown did not return Markdown after 6 attempts"
+            exit 1
+          fi
+          echo "Markdown negotiation OK"
+
+          # The load-bearing negative: a browser must still get the site. If this
+          # ever flips, every human visitor is served a text file.
+          html_type=$(curl -sS -D - -o /dev/null \
+            -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+            -H 'Cache-Control: no-cache' \
+            https://claustodian.dev/ | tr -d '\r' \
+            | awk 'tolower($1) == "content-type:" { print tolower($2) }')
+          case "$html_type" in
+            text/html*) echo "Browser still gets HTML OK" ;;
+            *)
+              echo "::error::A browser Accept header returned '$html_type', expected text/html"
+              exit 1
+              ;;
+          esac
+
+          # The dataset must never be behind the Worker. Checked as a real
+          # request rather than trusted from the route pattern.
+          data_status=$(curl -sS -o /dev/null -w '%{http_code}' \
+            -H 'Accept: text/markdown' https://claustodian.dev/data/index.json)
+          data_type=$(curl -sS -D - -o /dev/null \
+            -H 'Accept: text/markdown' https://claustodian.dev/data/index.json \
+            | tr -d '\r' | awk 'tolower($1) == "content-type:" { print tolower($2) }')
+          if [ "$data_status" != "200" ] || [ "${data_type#application/json}" = "$data_type" ]; then
+            echo "::error::/data/index.json returned $data_status $data_type — the Worker is intercepting the dataset"
+            exit 1
+          fi
+          echo "Dataset untouched OK"
