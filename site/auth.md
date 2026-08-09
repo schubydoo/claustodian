@@ -1,14 +1,18 @@
-# Authentication
+# auth.md
 
-**There is none, and none is planned.** Every endpoint on
+You are an agent. This service supports **no registration and no
+authentication**: call it directly.
+
+There is no discover step, no register step, no claim ceremony, no assertion to
+exchange and no access token to carry. Every endpoint on
 <https://claustodian.dev> is public, anonymous and unmetered. No API key, no
-token, no OAuth flow, no sign-up, no `Authorization` header. If a client is
-holding a credential for this host, it is holding it for nothing.
+OAuth flow, no sign-up, no `Authorization` header. If you are holding a
+credential for this host, it is for nothing.
 
-This page exists because "no authentication" is worth stating explicitly. An
-agent that cannot tell the difference between _open_ and _not yet configured_
-will otherwise go looking for a key, or refuse to call a perfectly public
-endpoint.
+This file exists because the absence has to be stated. "No authentication
+required" and "authentication not configured yet" look identical from outside,
+and an agent that cannot tell them apart either hunts for a key that does not
+exist or declines to call a perfectly open endpoint.
 
 ## What that means in practice
 
