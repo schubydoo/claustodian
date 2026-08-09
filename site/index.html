@@ -1708,12 +1708,19 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             const btn = e.target.closest('.scenario');
             if (!btn) return;
             const wantAll = Boolean(btn.dataset.all);
+            // Set the query BEFORE toggling, and let the toggle's own handler do the
+            // render. That handler is async — it lazily fetches the catalog — so
+            // rendering here as well raced it: the first render ran against the
+            // current snapshot, which does not contain a removed symbol, flashing
+            // "0 of 1407" until the catalog arrived. Now the only render happens
+            // after the load, and the toggle's "Loading…" status covers the wait.
+            $q.value = btn.dataset.q;
             if ($allVersions.checked !== wantAll) {
               $allVersions.checked = wantAll;
               $allVersions.dispatchEvent(new Event('change', { bubbles: true }));
+            } else {
+              rerender();
             }
-            $q.value = btn.dataset.q;
-            rerender();
             $q.scrollIntoView({ block: 'center' });
             $q.focus();
           });
