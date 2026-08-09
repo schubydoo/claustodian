@@ -92,8 +92,18 @@ export default {
       return handleMcp(request);
     }
 
+    const accept = request.headers.get('Accept');
     const isRead = request.method === 'GET' || request.method === 'HEAD';
-    if (!isRead || !prefersMarkdown(request.headers.get('Accept'))) {
+    const wantsMarkdown = isRead && prefersMarkdown(accept);
+
+    // Logged because a third-party readiness scanner reports that negotiation
+    // fails, while every request made by hand succeeds. Observability confirms
+    // the Worker runs for its requests, so whatever Accept it actually sends is
+    // the missing fact — and it is not visible from outside. Header value only:
+    // no path, no IP, nothing identifying.
+    console.log(JSON.stringify({ negotiation: wantsMarkdown ? 'markdown' : 'html', accept }));
+
+    if (!wantsMarkdown) {
       return withVaryAccept(await fetch(request));
     }
 
