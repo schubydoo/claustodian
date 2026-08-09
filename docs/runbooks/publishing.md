@@ -149,7 +149,10 @@ Two traps, both survived once already:
   `https://claustodian.dev/?cb=1`. There is no pattern that fixes this: Cloudflare
   rejects a `?` inside a route pattern with API error 10022. The only full-coverage
   option is `claustodian.dev/*` plus a pathname guard in the Worker, which routes
-  every data file through it — deliberately not done.
+  every data file through it — deliberately not done, and cheap to skip: the site
+  uses no query parameters anywhere, so a query on `/` only ever arrives from
+  outside (a sharer's tracking tags, a crawler, a cache-busting probe) and those
+  all want the HTML anyway.
 
   This one is a trap for verification, not just for config. The habit of appending
   `?cb=$RANDOM` to defeat caches **silently disables the Worker**, so a working
