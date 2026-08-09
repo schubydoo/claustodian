@@ -1,0 +1,57 @@
+# Claustodian — a static, versioned dataset of the Claude Code surface.
+# https://claustodian.dev
+#
+# Crawling is welcome, including by AI systems. That is the point of the project:
+# the data exists so tools and agents can answer "does symbol X exist in version Y"
+# without scraping a changelog. llms.txt below is written for exactly that use.
+#
+# This file also overrides the placeholder robots.txt the CDN serves by default,
+# which was 24 lines of content-signal commentary and zero actual directives —
+# ambiguous in precisely the direction this project does not want.
+
+User-agent: *
+Allow: /
+
+# Named explicitly rather than relying on the wildcard, so the permission is a
+# statement rather than an omission. Tokens verified against each vendor's own
+# documentation on 2026-08-09.
+
+# Anthropic — support.claude.com "Does Anthropic crawl data from the web"
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+# OpenAI — developers.openai.com/api/docs/bots
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Google's AI training / grounding control token (not a crawler in its own right)
+User-agent: Google-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# /review/ is a maintainer triage view and carries <meta name="robots" content="noindex">.
+# It is deliberately NOT disallowed here: a crawler has to fetch the page to see the
+# noindex, and a Disallow would leave it eligible for a URL-only index entry instead.
+
+Sitemap: https://claustodian.dev/sitemap.xml
+
+# Structured entry point for AI agents: endpoints, the record schema, and the
+# three rules that cover almost all use.
+# https://claustodian.dev/llms.txt
