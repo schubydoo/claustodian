@@ -16,6 +16,25 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-08-09
+
+### Added
+
+- **An MCP endpoint at <https://claustodian.dev/mcp>.** The same records, queryable
+  over Model Context Protocol instead of by fetching and filtering a snapshot
+  yourself: `list_versions`, `get_symbol` (does this flag / command / settings key /
+  env var exist at version X, with its full record) and `search_symbols`. Speaks MCP
+  revision `2026-07-28` — the per-request-metadata one, with no `initialize`
+  handshake and no sessions. **No new data and no schema change**: every answer comes
+  from the published `data/` files, and the JSON endpoints remain the source of
+  truth. There is deliberately no "did this ever exist" tool, because that question
+  needs `catalog.json`, whose parse alone exceeds the endpoint's CPU budget — use
+  `catalog.json` directly for it. (#176)
+- **A discovery catalogue at <https://claustodian.dev/.well-known/api-catalog>.** An
+  RFC 9727 linkset pointing at the existing data endpoints, `llms.txt` and the record
+  schema, so an agent can find them from a fixed path without knowing about
+  `llms.txt` first. Adds no data of its own. (#171)
+
 ## 2026-08-08
 
 ### Added

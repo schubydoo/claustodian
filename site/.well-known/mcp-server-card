@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/v1/server-card.schema.json",
+  "name": "dev.claustodian/claustodian",
+  "version": "1.0.0",
+  "title": "Claustodian",
+  "description": "Version-accurate lookups over the Claude Code surface. Answers whether a CLI flag, slash command, settings key or environment variable existed in a specific Claude Code version, and what it did at that version. Every record derives from an official public Anthropic artifact: the changelog, the docs, or a release binary.",
+  "websiteUrl": "https://claustodian.dev",
+  "repository": {
+    "url": "https://github.com/schubydoo/claustodian"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://claustodian.dev/mcp",
+      "supportedProtocolVersions": ["2026-07-28"]
+    }
+  ]
+}
