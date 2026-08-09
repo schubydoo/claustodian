@@ -15,7 +15,8 @@ settings need repo admin.
 2. `npm run generate-exports` — YAML/TOML siblings for every `data/**/*.json`
 3. `npm run build-catalog` — `data/catalog.json`
 4. Assembles `_site/`: `data/`, `site/index.html`, `site/review/`, `favicon.svg`,
-   `og-image.png`, `llms.txt`, `robots.txt`, `sitemap.xml`, `.well-known/`
+   `og-image.png`, `llms.txt`, `robots.txt`, `sitemap.xml`, `auth.md`,
+   `.well-known/`
 5. Deploys via `actions/deploy-pages` using OIDC — no stored credential
 
 > **`.well-known/` needs `include-hidden-files: 'true'` on the upload step.**
@@ -120,8 +121,9 @@ consumer-facing example.
 
 ## Cloudflare sits in front, and it is not in this repo
 
-Pages is the origin; Cloudflare proxies it. Four things are configured there and
-nothing in this repository would tell you they exist. **Anything under
+Pages is the origin; Cloudflare proxies it. Everything in the table below is
+configured there, and nothing in this repository would tell you it exists — the
+table IS the inventory, so add a row when you add config. **Anything under
 `.well-known/` needs a media-type rule**: those files are extensionless by
 specification, and Pages serves an extensionless file as
 `application/octet-stream`, so adding one to `site/.well-known/` is only half the
@@ -135,6 +137,8 @@ job.
 | Worker `claustodian-site`, route `/*`     | `Accept: text/markdown` on the root returns `llms.txt` (`worker/index.js`) |
 | Same Worker, path `/mcp`                  | MCP server over the dataset, revision 2026-07-28 (`worker/mcp.js`)         |
 | Route `/data/*` with **no Worker**        | Exclusion — keeps the dataset off the Worker path entirely                 |
+| DNS `_mcp._agents` SVCB                   | DNS-AID service record for the MCP endpoint                                |
+| DNS `_index._agents` TXT                  | DNS-AID index: `agents=claustodian:mcp`                                    |
 
 The server card is published at **two** paths from one source file, because the
 drafts disagree: SEP-2127 says `/.well-known/mcp-server-card`, SEP-1649 says
@@ -145,7 +149,7 @@ step, so it cannot drift, and its `.json` extension means it needs no media-type
 rule. It is deliberately **not** aliased to `/.well-known/mcp.json` — that is
 SEP-1960, an endpoint manifest with auth config, a different document.
 
-Five traps, every one of which has already cost a debugging session here:
+Six traps, every one of which has already cost a debugging session here:
 
 - **A response header must live in the `http_response_headers_transform` phase.**
   `http_request_late_transform` is the _request_ phase — a `Link` rule placed there
@@ -182,6 +186,13 @@ Five traps, every one of which has already cost a debugging session here:
 - **`wrangler deploy` adds routes but never prunes them.** After switching to the
   wildcard, the zone held all three of `/`, `/mcp` and `/*` while the config
   declared one. Read back `GET /zones/{id}/workers/routes` after any route change.
+
+- **A new DNS record looks missing for up to 30 minutes.** This zone's SOA
+  minimum is 1800, so a resolver that was asked for a name _before_ it existed
+  keeps serving the cached negative answer for that long. Both DNS-AID records
+  above returned NOERROR-with-no-answer immediately after creation and resolved
+  correctly when queried authoritatively. Do not "fix" a record that is already
+  right; check the authoritative answer first.
 
 ### The MCP endpoint
 
