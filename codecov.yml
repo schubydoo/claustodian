@@ -61,6 +61,7 @@ comment:
 # coverage (the vitest lcov already excludes tests; this is belt-and-suspenders).
 ignore:
   - 'scripts/**/*.test.ts'
+  - 'worker/**/*.test.js'
   - 'data/**'
   - 'site/**'
 
@@ -74,9 +75,15 @@ ignore:
 # against a new bundle shape; a drop in curated metadata means a hand-maintained
 # table went stale. Those want to be legible apart.
 #
-# Every non-test file under scripts/ belongs to exactly one component. If you add
-# a script, add it here — an unassigned file silently vanishes from the
-# breakdown, which is how 13 of 19 came to be invisible before this was refreshed.
+# Every non-test file under scripts/ and worker/ belongs to exactly one
+# component. If you add one, add it here — an unassigned file silently vanishes
+# from the breakdown, which is how 13 of 19 came to be invisible before this was
+# refreshed.
+#
+# A component only reports if vitest MEASURES the file: `coverage.include` in
+# vitest.config.ts is the gate, and a component pointing at unmeasured paths
+# shows nothing rather than showing zero. worker/ was added to that include at
+# the same time as the components below.
 component_management:
   individual_components:
     # Lane 1 — the changelog, authoritative for when a symbol appeared.
@@ -146,3 +153,17 @@ component_management:
       name: shared helpers
       paths:
         - scripts/lib.ts
+
+    # The edge, not the pipeline. These run on Cloudflare in front of the
+    # published site rather than building the dataset, and they fail in a way no
+    # other component does: a defect here is visible to every visitor
+    # immediately, with no regeneration or deploy of data involved.
+    - component_id: worker_negotiation
+      name: worker (content negotiation)
+      paths:
+        - worker/index.js
+
+    - component_id: worker_mcp
+      name: worker (MCP server)
+      paths:
+        - worker/mcp.js

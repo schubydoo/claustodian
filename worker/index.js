@@ -61,10 +61,21 @@ export function prefersMarkdown(acceptHeader) {
 function withVaryAccept(response) {
   const varied = new Response(response.body, response);
   const existing = varied.headers.get('Vary');
-  varied.headers.set(
-    'Vary',
-    existing && !/\baccept\b/i.test(existing) ? `${existing}, Accept` : 'Accept'
-  );
+
+  // `Vary: *` already means "varies on everything"; narrowing it would be a lie.
+  if (existing && existing.trim() === '*') return varied;
+
+  // Compare parsed field names, never a substring. A regex word match treats
+  // `Accept-Encoding` as containing `Accept` — there is a word boundary at the
+  // hyphen — so it would conclude Accept was already listed and overwrite the
+  // whole header, dropping the origin's encoding variance.
+  const fields = (existing ?? '')
+    .split(',')
+    .map((f) => f.trim())
+    .filter(Boolean);
+
+  if (!fields.some((f) => f.toLowerCase() === 'accept')) fields.push('Accept');
+  varied.headers.set('Vary', fields.join(', '));
   return varied;
 }
 
