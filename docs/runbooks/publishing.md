@@ -132,8 +132,9 @@ job.
 | Response header rule, phase `…_transform` | `Link: rel=canonical` + `rel=describedby` on `/`                           |
 | Response header rule, same ruleset        | `Content-Type: application/linkset+json` on `/.well-known/api-catalog`     |
 | Response header rule, same ruleset        | `Content-Type: application/json` on `/.well-known/mcp-server-card`         |
-| Worker `claustodian-site`, route `/`      | `Accept: text/markdown` on the root returns `llms.txt` (`worker/index.js`) |
-| Same Worker, route `/mcp`                 | MCP server over the dataset, revision 2026-07-28 (`worker/mcp.js`)         |
+| Worker `claustodian-site`, route `/*`     | `Accept: text/markdown` on the root returns `llms.txt` (`worker/index.js`) |
+| Same Worker, path `/mcp`                  | MCP server over the dataset, revision 2026-07-28 (`worker/mcp.js`)         |
+| Route `/data/*` with **no Worker**        | Exclusion — keeps the dataset off the Worker path entirely                 |
 
 The server card is published at **two** paths from one source file, because the
 drafts disagree: SEP-2127 says `/.well-known/mcp-server-card`, SEP-1649 says
@@ -144,7 +145,7 @@ step, so it cannot drift, and its `.json` extension means it needs no media-type
 rule. It is deliberately **not** aliased to `/.well-known/mcp.json` — that is
 SEP-1960, an endpoint manifest with auth config, a different document.
 
-Two traps, both survived once already:
+Five traps, every one of which has already cost a debugging session here:
 
 - **A response header must live in the `http_response_headers_transform` phase.**
   `http_request_late_transform` is the _request_ phase — a `Link` rule placed there
@@ -153,21 +154,34 @@ Two traps, both survived once already:
 - **Rule changes take up to a couple of minutes to reach every edge machine.** The
   first verifying `curl` after a change can legitimately come back wrong. Sample
   ~20 times before concluding anything; a 6-of-8 result is propagation, not a bug.
-- **A Worker route is matched against the whole URL, query string included.** The
-  route `claustodian.dev/` therefore covers `https://claustodian.dev/` and **not**
-  `https://claustodian.dev/?cb=1`. There is no pattern that fixes this: Cloudflare
-  rejects a `?` inside a route pattern with API error 10022. The only full-coverage
-  option is `claustodian.dev/*` plus a pathname guard in the Worker, which routes
-  every data file through it — deliberately not done, and cheap to skip: the site
-  uses no query parameters anywhere, so a query on `/` only ever arrives from
-  outside (a sharer's tracking tags, a crawler, a cache-busting probe) and those
-  all want the HTML anyway.
+- **Use a wildcard route, never an exact path.** A route is matched against the
+  whole URL, query string included, so `claustodian.dev/` covered the bare root
+  and **not** `/?cb=1` — measured 20/20 against 0/20. No pattern fixes that;
+  Cloudflare rejects a `?` inside a pattern with API error 10022. Worse, an exact
+  route also missed a readiness scanner's probe entirely: the request never
+  invoked the Worker and no hand-made variant reproduced it. `claustodian.dev/*`
+  fixed both at once.
 
-  This one is a trap for verification, not just for config. The habit of appending
-  `?cb=$RANDOM` to defeat caches **silently disables the Worker**, so a working
-  deployment reads as broken. Test the root with a bare URL, and send a no-cache
-  request header if you need freshness. Measured 20/20 bare against 0/20 with a
-  query string, then 8/8 alternating pairs in one run.
+  While the exact route was live this was a **verification** trap as much as a
+  config one: appending `?cb=$RANDOM` to defeat a cache silently bypassed the
+  Worker, so a healthy deploy read as broken. Bare URLs plus a no-cache request
+  header remain the right way to test the root.
+
+- **Excluding a path needs a route with no Worker, and the `script` field
+  omitted.** `claustodian.dev/data/*` exists with no Worker assigned, which is
+  what keeps the dataset off the Worker path now that the route is a wildcard —
+  more specific routes win. Sending `script: ""` is rejected with API error
+  10019; the field has to be absent entirely.
+
+  This route **cannot be expressed in `wrangler.jsonc`**, which only assigns
+  routes to the script it deploys. Delete it and ~800 data files silently move
+  behind the Worker, with nothing in the repo to say so. Verified after
+  creating it: three `/data` requests produced zero Worker invocations while a
+  `/` request in the same window produced one.
+
+- **`wrangler deploy` adds routes but never prunes them.** After switching to the
+  wildcard, the zone held all three of `/`, `/mcp` and `/*` while the config
+  declared one. Read back `GET /zones/{id}/workers/routes` after any route change.
 
 ### The MCP endpoint
 

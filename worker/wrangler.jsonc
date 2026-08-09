@@ -25,9 +25,21 @@
   // rather than a claimed root cause. The reference implementation routes `/*`
   // and passes that scanner; this makes the two structurally identical.
   //
-  // The cost is real and bounded: one Worker invocation per data-file request,
-  // returning immediately. Watch the 100k/day free-tier request budget, which is
-  // now shared with dataset traffic rather than just the homepage.
+  // The dataset does NOT actually pay that cost, because of a second route that
+  // cannot be expressed in this file: `claustodian.dev/data/*` exists in
+  // Cloudflare with NO Worker assigned, which excludes it. More specific routes
+  // win over wildcards, so /data bypasses the Worker entirely while /* still
+  // catches /, /?anything and /mcp. Proven, not assumed: three /data requests
+  // produced zero invocations in the observability log while a / request in the
+  // same window produced one.
+  //
+  // Wrangler only assigns routes to the script it deploys, so an exclusion route
+  // has no representation here. It is documented in
+  // docs/runbooks/publishing.md. Deleting it silently puts ~800 data files back
+  // behind the Worker, and nothing in this repo would tell you.
+  //
+  // The pathname guard in index.js stays regardless: it is what keeps /data
+  // untouched if the exclusion route is ever removed.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "claustodian-site",
   "main": "index.js",
