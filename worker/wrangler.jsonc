@@ -1,0 +1,23 @@
+{
+  // Cloudflare Worker fronting the site root. See index.js for what it does and
+  // docs/runbooks/publishing.md for how it is deployed.
+  //
+  // The route is the root path ONLY, not claustodian.dev/*. Everything under
+  // /data is served straight from Pages, so a Worker fault cannot take the
+  // dataset offline — the blast radius is one HTML page.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "claustodian-site",
+  "main": "index.js",
+  "compatibility_date": "2026-08-09",
+  "routes": [
+    {
+      "pattern": "claustodian.dev/",
+      "zone_name": "claustodian.dev",
+    },
+  ],
+  // No public workers.dev entry point; the route is the only way in.
+  "workers_dev": false,
+  "observability": {
+    "enabled": true,
+  },
+}

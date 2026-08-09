@@ -15,8 +15,16 @@ settings need repo admin.
 2. `npm run generate-exports` — YAML/TOML siblings for every `data/**/*.json`
 3. `npm run build-catalog` — `data/catalog.json`
 4. Assembles `_site/`: `data/`, `site/index.html`, `site/review/`, `favicon.svg`,
-   `og-image.png`, `llms.txt`
+   `og-image.png`, `llms.txt`, `robots.txt`, `sitemap.xml`, `.well-known/`
 5. Deploys via `actions/deploy-pages` using OIDC — no stored credential
+
+> **`.well-known/` needs `include-hidden-files: 'true'` on the upload step.**
+> `actions/upload-pages-artifact` tars `_site` with `--exclude=.[^/]*` otherwise,
+> which drops every dot-entry — the copy lands in `_site`, never reaches the
+> artifact, and the deploy still reports success. This, not Jekyll, is why "Pages
+> cannot serve `.well-known`" is common advice; a `.nojekyll` file fixes nothing
+> here because this deploy never runs Jekyll. A guard in the assemble step fails
+> the build if any dot-entry other than `.well-known` would be published.
 
 Generated exports and the catalog are gitignored; they exist only in the built site.
 
@@ -105,11 +113,40 @@ consumer-facing example.
 | Site looks stale but the run succeeded          | `x-cache`/`age` — you are reading a warm edge, not the origin.     |
 | `catalog.yaml` 404s                             | Expected. It is built after the export step. Not a bug.            |
 | A data file 404s that should exist              | Confirm it is inside `data/` and that the assemble step copies it. |
-| `www` does not resolve                          | No `www` CNAME record exists; the apex is the only hostname.       |
+| `www` does not resolve                          | `www` is a proxied CNAME to `schubydoo.github.io`; origin 301s it. |
+| Root serves plain text to a browser             | The Worker below mis-read `Accept`. Disable the route to revert.   |
+
+---
+
+## Cloudflare sits in front, and it is not in this repo
+
+Pages is the origin; Cloudflare proxies it. Three things are configured there and
+nothing in this repository would tell you they exist:
+
+| Where                                     | What                                                                       |
+| ----------------------------------------- | -------------------------------------------------------------------------- |
+| Response header rule, phase `…_transform` | `Link: rel=canonical` + `rel=describedby` on `/`                           |
+| Response header rule, same ruleset        | `Content-Type: application/linkset+json` on `/.well-known/api-catalog`     |
+| Worker `claustodian-site`, route `/`      | `Accept: text/markdown` on the root returns `llms.txt` (`worker/index.js`) |
+
+Two traps, both survived once already:
+
+- **A response header must live in the `http_response_headers_transform` phase.**
+  `http_request_late_transform` is the _request_ phase — a `Link` rule placed there
+  is attached to the request Cloudflare makes to GitHub, which ignores it, and no
+  visitor ever sees the header. Both rules look identical in the dashboard.
+- **Rule changes take up to a couple of minutes to reach every edge machine.** The
+  first verifying `curl` after a change can legitimately come back wrong. Sample
+  ~20 times before concluding anything; a 6-of-8 result is propagation, not a bug.
+
+The Worker is deployed manually — there is no CI step and no API token in the repo.
+Its source is `worker/index.js` and its config `worker/wrangler.jsonc`; edit the
+source, then deploy with `npx wrangler deploy` from `worker/` or via the dashboard.
+**The two can drift**, and nothing detects it: treat the repo copy as the source of
+truth and re-deploy after any edit.
 
 ## Still open
 
-- `www.claustodian.dev` has no DNS record. The apex is the only hostname.
-
-Domain verification **is** enabled (`protected_domain_state: verified`), which guards
-against takeover if Pages is ever disabled.
+- The Worker has no CI deploy. Adding one needs a scoped API token in repo secrets.
+- Domain verification **is** enabled (`protected_domain_state: verified`), which
+  guards against takeover if Pages is ever disabled.

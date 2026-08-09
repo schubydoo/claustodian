@@ -20,5 +20,18 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   {
     files: ['**/*.ts'],
+  },
+  {
+    // The Cloudflare Worker is plain JS running on workerd, not Node, so its
+    // globals have to be declared or no-undef flags the whole runtime.
+    files: ['worker/**/*.js'],
+    languageOptions: {
+      globals: {
+        fetch: 'readonly',
+        Request: 'readonly',
+        Response: 'readonly',
+        URL: 'readonly',
+      },
+    },
   }
 );
