@@ -21,8 +21,11 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'text-summary', 'lcov'],
       reportsDirectory: 'coverage',
-      include: ['scripts/**/*.ts'],
-      exclude: ['scripts/**/*.test.ts'],
+      // worker/ is included so the Cloudflare Worker is measured like everything
+      // else. Without it the codecov component for the Worker would report no
+      // data at all, which reads as "nothing to see" rather than "not measured".
+      include: ['scripts/**/*.ts', 'worker/**/*.js'],
+      exclude: ['scripts/**/*.test.ts', 'worker/**/*.test.js'],
       // Enforced floor (the source of truth codecov.yml's project status mirrors).
       // Set below current (~92/80/82/93) with headroom to catch regressions.
       thresholds: {

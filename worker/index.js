@@ -17,7 +17,10 @@
  * llms.txt subrequest below cannot re-enter this Worker.
  */
 
+import { handleMcp } from './mcp.js';
+
 const MARKDOWN_SOURCE = '/llms.txt';
+const MCP_PATH = '/mcp';
 
 /**
  * True when the client explicitly asked for Markdown.
@@ -58,10 +61,21 @@ export function prefersMarkdown(acceptHeader) {
 function withVaryAccept(response) {
   const varied = new Response(response.body, response);
   const existing = varied.headers.get('Vary');
-  varied.headers.set(
-    'Vary',
-    existing && !/\baccept\b/i.test(existing) ? `${existing}, Accept` : 'Accept'
-  );
+
+  // `Vary: *` already means "varies on everything"; narrowing it would be a lie.
+  if (existing && existing.trim() === '*') return varied;
+
+  // Compare parsed field names, never a substring. A regex word match treats
+  // `Accept-Encoding` as containing `Accept` — there is a word boundary at the
+  // hyphen — so it would conclude Accept was already listed and overwrite the
+  // whole header, dropping the origin's encoding variance.
+  const fields = (existing ?? '')
+    .split(',')
+    .map((f) => f.trim())
+    .filter(Boolean);
+
+  if (!fields.some((f) => f.toLowerCase() === 'accept')) fields.push('Accept');
+  varied.headers.set('Vary', fields.join(', '));
   return varied;
 }
 
@@ -71,6 +85,13 @@ export default {
    * @returns {Promise<Response>}
    */
   async fetch(request) {
+    // The MCP endpoint is its own protocol and shares nothing with content
+    // negotiation beyond the Worker. It is routed separately too, so this only
+    // matters for defence in depth if the routes are ever widened.
+    if (new URL(request.url).pathname === MCP_PATH) {
+      return handleMcp(request);
+    }
+
     const isRead = request.method === 'GET' || request.method === 'HEAD';
     if (!isRead || !prefersMarkdown(request.headers.get('Accept'))) {
       return withVaryAccept(await fetch(request));

@@ -27,9 +27,12 @@ export default tseslint.config(
     files: ['worker/**/*.js'],
     languageOptions: {
       globals: {
+        atob: 'readonly',
         fetch: 'readonly',
+        Headers: 'readonly',
         Request: 'readonly',
         Response: 'readonly',
+        TextDecoder: 'readonly',
         URL: 'readonly',
       },
     },
