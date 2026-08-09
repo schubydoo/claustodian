@@ -191,6 +191,38 @@ describe('fetch handler', () => {
     expect(res.headers.get('Content-Type')).toContain('text/html');
   });
 
+  // The route is claustodian.dev/*, so the dataset now passes through this
+  // Worker. It must come back exactly as the origin sent it — no Vary rewrite,
+  // no negotiation — or widening the route changes what consumers read.
+  it('hands back a data file untouched, even when Markdown is requested', async () => {
+    const calls = [];
+    globalThis.fetch = vi.fn(async (input) => {
+      calls.push(input instanceof Request ? input.url : String(input));
+      return new Response('{"latest":"2.1.226"}', {
+        status: 200,
+        headers: { 'Content-Type': 'application/json', 'X-Origin-Header': 'kept' },
+      });
+    });
+    const res = await worker.fetch(
+      new Request('https://claustodian.dev/data/index.json', {
+        headers: { Accept: 'text/markdown' },
+      })
+    );
+    expect(res.headers.get('Content-Type')).toBe('application/json');
+    expect(res.headers.get('X-Origin-Header')).toBe('kept');
+    expect(res.headers.get('Vary')).toBeNull();
+    expect(await res.text()).toBe('{"latest":"2.1.226"}');
+    expect(calls).toHaveLength(1);
+  });
+
+  it('does not negotiate on a non-root HTML page either', async () => {
+    stubOrigin();
+    const res = await worker.fetch(
+      new Request('https://claustodian.dev/review/', { headers: { Accept: 'text/markdown' } })
+    );
+    expect(res.headers.get('Content-Type')).toContain('text/html');
+  });
+
   it('routes /mcp to the MCP handler instead of negotiating', async () => {
     stubOrigin();
     const res = await worker.fetch(
