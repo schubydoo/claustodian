@@ -76,6 +76,8 @@ jobs:
           # which carries no directives.
           if [ -f site/robots.txt ]; then cp site/robots.txt _site/robots.txt; fi
           if [ -f site/sitemap.xml ]; then cp site/sitemap.xml _site/sitemap.xml; fi
+          # auth.md is probed at the site ROOT, not under .well-known/.
+          if [ -f site/auth.md ]; then cp site/auth.md _site/auth.md; fi
           # /.well-known/ is a fixed-path discovery directory (RFC 8615), so it only
           # works at the site ROOT. Copying it is NOT sufficient on its own — see
           # include-hidden-files on the upload step below.
