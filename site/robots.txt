@@ -3,55 +3,34 @@
 #
 # Crawling is welcome, including by AI systems. That is the point of the project:
 # the data exists so tools and agents can answer "does symbol X exist in version Y"
-# without scraping a changelog. llms.txt below is written for exactly that use.
+# without scraping a changelog. See /llms.txt for a structured entry point —
+# endpoints, the record schema, and the three rules that cover almost all use.
 #
-# This file also overrides the placeholder robots.txt the CDN serves by default,
-# which was 24 lines of content-signal commentary and zero actual directives —
-# ambiguous in precisely the direction this project does not want.
+# Explicitly welcomed, and covered by the single group below: Anthropic's ClaudeBot,
+# Claude-User and Claude-SearchBot; OpenAI's GPTBot, OAI-SearchBot and ChatGPT-User;
+# Google-Extended; PerplexityBot; CCBot.
+#
+# They are named in this COMMENT rather than in their own User-agent groups on
+# purpose. Per RFC 9309 and Google's robots.txt spec, "user agent specific groups
+# and global groups (*) are not combined" — a named group makes that crawler ignore
+# the wildcard group entirely. Naming them as groups would therefore have hidden the
+# Content-Signal line below from precisely the crawlers it is meant for, while adding
+# nothing: the wildcard already allows everything.
+#
+# If a bot ever does need its own group, the Content-Signal line must be repeated
+# inside it.
 
 User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=yes
 Allow: /
 
-# Named explicitly rather than relying on the wildcard, so the permission is a
-# statement rather than an omission. Tokens verified against each vendor's own
-# documentation on 2026-08-09.
-
-# Anthropic — support.claude.com "Does Anthropic crawl data from the web"
-User-agent: ClaudeBot
-Allow: /
-
-User-agent: Claude-User
-Allow: /
-
-User-agent: Claude-SearchBot
-Allow: /
-
-# OpenAI — developers.openai.com/api/docs/bots
-User-agent: GPTBot
-Allow: /
-
-User-agent: OAI-SearchBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-# Google's AI training / grounding control token (not a crawler in its own right)
-User-agent: Google-Extended
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-User-agent: CCBot
-Allow: /
+# Content-Signal grants all three uses. That matches the licence rather than merely
+# being permissive: the data is CC-BY-4.0, which already allows commercial use and
+# model training provided Claustodian is credited. Omitting a signal would mean
+# "neither granted nor restricted", which is the ambiguity this replaces.
 
 # /review/ is a maintainer triage view and carries <meta name="robots" content="noindex">.
-# It is deliberately NOT disallowed here: a crawler has to fetch the page to see the
+# It is deliberately NOT disallowed: a crawler has to fetch the page to see the
 # noindex, and a Disallow would leave it eligible for a URL-only index entry instead.
 
 Sitemap: https://claustodian.dev/sitemap.xml
-
-# Structured entry point for AI agents: endpoints, the record schema, and the
-# three rules that cover almost all use.
-# https://claustodian.dev/llms.txt
