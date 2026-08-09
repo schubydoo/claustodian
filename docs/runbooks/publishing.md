@@ -151,11 +151,45 @@ Two traps, both survived once already:
   request header if you need freshness. Measured 20/20 bare against 0/20 with a
   query string, then 8/8 alternating pairs in one run.
 
-The Worker is deployed manually — there is no CI step and no API token in the repo.
-Its source is `worker/index.js` and its config `worker/wrangler.jsonc`; edit the
-source, then deploy with `npx wrangler deploy` from `worker/` or via the dashboard.
-**The two can drift**, and nothing detects it: treat the repo copy as the source of
-truth and re-deploy after any edit.
+### Deploying the Worker
+
+`.github/workflows/deploy-worker.yml` deploys it on every push to `main` touching
+`worker/**`. Pull requests get a `--dry-run` that bundles the Worker without
+credentials, so a fork PR is safe and a syntax error never reaches `main`.
+
+The deploy job does not trust a green `wrangler deploy`. It asserts three things
+against the live domain afterwards: Markdown is negotiated, a browser `Accept`
+still gets HTML, and `/data/index.json` is still plain JSON — the last one proving
+the Worker is not sitting in front of the dataset.
+
+**Those checks use bare URLs on purpose.** A `?cb=` cache-buster bypasses the route
+(see the trap above) and would fail the check on a perfectly good deploy.
+
+Two secrets are required, and the workflow fails without them:
+
+| Secret                  | Value                                    |
+| ----------------------- | ---------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | scoped token, permissions below          |
+| `CLOUDFLARE_ACCOUNT_ID` | the account ID the Worker is deployed to |
+
+Mint the token at **My Profile → API Tokens → Create Token → Create Custom Token**
+with the narrowest scope that works:
+
+- **Account → Workers Scripts → Edit** — upload the script
+- **Zone → Workers Routes → Edit**, zone `claustodian.dev` — manage the route
+
+Do not use the "Edit Cloudflare Workers" template: it also grants KV, R2 and
+Durable Objects, none of which this Worker uses. Then:
+
+```bash
+gh secret set CLOUDFLARE_API_TOKEN --repo schubydoo/claustodian
+gh secret set CLOUDFLARE_ACCOUNT_ID --repo schubydoo/claustodian
+```
+
+Manual deploys still work — `npx wrangler deploy` from `worker/` — but a dashboard
+edit will be silently overwritten by the next push to `main` that touches
+`worker/**`. The repo is the source of truth; nothing continuously detects drift
+between pushes.
 
 ## Still open
 
