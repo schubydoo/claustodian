@@ -1,0 +1,46 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://claustodian.dev/.well-known/api-catalog",
+      "item": [
+        {
+          "href": "https://claustodian.dev/data/index.json",
+          "type": "application/json",
+          "title": "Version index: every tracked Claude Code version, newest first"
+        },
+        {
+          "href": "https://claustodian.dev/data/latest.json",
+          "type": "application/json",
+          "title": "Full symbol snapshot for the newest tracked version"
+        },
+        {
+          "href": "https://claustodian.dev/data/catalog.json",
+          "type": "application/json",
+          "title": "Every symbol ever seen, with its full lifecycle including removals"
+        },
+        {
+          "href": "https://claustodian.dev/data/schema-version.json",
+          "type": "application/json",
+          "title": "Data format version; a bump signals a format change"
+        }
+      ]
+    },
+    {
+      "anchor": "https://claustodian.dev/data/",
+      "service-doc": [
+        {
+          "href": "https://claustodian.dev/llms.txt",
+          "type": "text/markdown",
+          "title": "Agent guide: endpoints, record shape, and the three availability rules"
+        }
+      ],
+      "service-desc": [
+        {
+          "href": "https://raw.githubusercontent.com/schubydoo/claustodian/main/schema/symbol.schema.json",
+          "type": "application/schema+json",
+          "title": "Symbol record contract (JSON Schema draft 2020-12)"
+        }
+      ]
+    }
+  ]
+}
