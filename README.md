@@ -117,6 +117,14 @@ npm run validate  # validate all data/ files against the schema
 npm run scrape -- --all   # (re)generate the full dataset from the changelog
 ```
 
+- [Architecture](docs/ARCHITECTURE.md) — the three lanes, the script map, and the
+  invariants an extractor change has to hold.
+- [Regenerating the dataset](docs/runbooks/regenerating-the-dataset.md) — the lane
+  order and why it is not the obvious one, plus the reconciliation that has to happen
+  first.
+- [Publishing](docs/runbooks/publishing.md) — how the site deploys, and the
+  custom-domain trap.
+
 ## License
 
 Dual-licensed:
