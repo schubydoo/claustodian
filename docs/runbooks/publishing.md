@@ -135,6 +135,15 @@ job.
 | Worker `claustodian-site`, route `/`      | `Accept: text/markdown` on the root returns `llms.txt` (`worker/index.js`) |
 | Same Worker, route `/mcp`                 | MCP server over the dataset, revision 2026-07-28 (`worker/mcp.js`)         |
 
+The server card is published at **two** paths from one source file, because the
+drafts disagree: SEP-2127 says `/.well-known/mcp-server-card`, SEP-1649 says
+`/.well-known/mcp/server-card.json`, and neither is merged. Clients and scanners
+in the wild probe the SEP-1649 path, so publishing only the newer one is correct
+in theory and undiscoverable in practice. The alias is a `cp` in the assemble
+step, so it cannot drift, and its `.json` extension means it needs no media-type
+rule. It is deliberately **not** aliased to `/.well-known/mcp.json` — that is
+SEP-1960, an endpoint manifest with auth config, a different document.
+
 Two traps, both survived once already:
 
 - **A response header must live in the `http_response_headers_transform` phase.**
@@ -149,7 +158,10 @@ Two traps, both survived once already:
   `https://claustodian.dev/?cb=1`. There is no pattern that fixes this: Cloudflare
   rejects a `?` inside a route pattern with API error 10022. The only full-coverage
   option is `claustodian.dev/*` plus a pathname guard in the Worker, which routes
-  every data file through it — deliberately not done.
+  every data file through it — deliberately not done, and cheap to skip: the site
+  uses no query parameters anywhere, so a query on `/` only ever arrives from
+  outside (a sharer's tracking tags, a crawler, a cache-busting probe) and those
+  all want the HTML anyway.
 
   This one is a trap for verification, not just for config. The habit of appending
   `?cb=$RANDOM` to defeat caches **silently disables the Worker**, so a working

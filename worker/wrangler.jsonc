@@ -12,10 +12,18 @@
   // (API error 10022), so there is no pattern that means "root with any query".
   // Verified 8/8 alternating requests: bare root negotiates, ?cb=… does not.
   //
-  // Accepted deliberately. Covering it means routing claustodian.dev/* and
-  // guarding on pathname inside the Worker, which puts all ~800 data files
-  // behind it. The dataset staying up matters more than negotiating a homepage
-  // URL that carries tracking parameters, and the uncovered case degrades to
+  // Accepted deliberately, and it costs less than it sounds: nothing here ever
+  // produces such a URL. The site uses no query parameters at all — no
+  // URLSearchParams, no location.search, no pushState in site/index.html or
+  // site/review/index.html; search and pagination are in-memory, so no link the
+  // site emits carries a query. A query string on / only arrives from outside:
+  // a sharer's tracking parameters, a crawler, or a cache-busting probe. Each of
+  // those gets HTML, which is the right default anyway.
+  //
+  // Covering it means routing claustodian.dev/* and guarding on pathname inside
+  // the Worker, which puts all ~800 data files behind it. Keeping the dataset
+  // out of the Worker's blast radius is worth more than negotiating a request
+  // shape nothing in this repo generates, and the uncovered case degrades to
   // HTML rather than erroring.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "claustodian-site",
