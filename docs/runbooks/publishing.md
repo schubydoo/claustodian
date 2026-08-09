@@ -120,13 +120,18 @@ consumer-facing example.
 
 ## Cloudflare sits in front, and it is not in this repo
 
-Pages is the origin; Cloudflare proxies it. Three things are configured there and
-nothing in this repository would tell you they exist:
+Pages is the origin; Cloudflare proxies it. Four things are configured there and
+nothing in this repository would tell you they exist. **Anything under
+`.well-known/` needs a media-type rule**: those files are extensionless by
+specification, and Pages serves an extensionless file as
+`application/octet-stream`, so adding one to `site/.well-known/` is only half the
+job.
 
 | Where                                     | What                                                                       |
 | ----------------------------------------- | -------------------------------------------------------------------------- |
 | Response header rule, phase `…_transform` | `Link: rel=canonical` + `rel=describedby` on `/`                           |
 | Response header rule, same ruleset        | `Content-Type: application/linkset+json` on `/.well-known/api-catalog`     |
+| Response header rule, same ruleset        | `Content-Type: application/json` on `/.well-known/mcp-server-card`         |
 | Worker `claustodian-site`, route `/`      | `Accept: text/markdown` on the root returns `llms.txt` (`worker/index.js`) |
 | Same Worker, route `/mcp`                 | MCP server over the dataset, revision 2026-07-28 (`worker/mcp.js`)         |
 
