@@ -20,6 +20,15 @@ SITE="${SITE:-https://claustodian.dev}"
 REPO="${REPO:-schubydoo/claustodian}"
 status=0
 
+# A check that silently skips when a tool is missing is worse than no check: it
+# prints OK and proves nothing. Fail closed instead.
+for tool in curl jq; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    echo "FAIL: $tool is required and not on PATH. Refusing to report a result."
+    exit 1
+  fi
+done
+
 hr() { printf '%s\n' '--------------------------------------------------'; }
 
 # Is the site actually serving? This, not the API's status field, is the real
@@ -34,9 +43,13 @@ if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
   if [ -z "$pages" ]; then
     echo "SKIP: Pages API returned nothing (no admin access?)"
   else
-    build_status="$(printf '%s' "$pages" | jq -r '.status // "null"')"
-    cname="$(printf '%s' "$pages" | jq -r '.cname // "none"')"
-    verified="$(printf '%s' "$pages" | jq -r '.protected_domain_state // "none"')"
+    if ! build_status="$(printf '%s' "$pages" | jq -er '.status // "null"' 2>/dev/null)"; then
+      echo "  FAIL: could not parse the Pages API response."
+      status=1
+      build_status=''
+    fi
+    cname="$(printf '%s' "$pages" | jq -r '.cname // "none"' 2>/dev/null)"
+    verified="$(printf '%s' "$pages" | jq -r '.protected_domain_state // "none"' 2>/dev/null)"
     echo "  cname:            $cname"
     echo "  status:           $build_status"
     echo "  domain verified:  $verified"
@@ -90,10 +103,18 @@ echo "Freshness — does the site serve the repo's newest version?"
 hr
 repo_latest="$(find data/versions -maxdepth 1 -name '*.json' -exec basename {} .json \; 2>/dev/null |
   sort -t. -k1,1n -k2,2n -k3,3n | tail -1)"
-site_latest="$(curl -sSL "$SITE/data/index.json" 2>/dev/null | jq -r '.latest // empty')"
+site_latest="$(curl -sSL "$SITE/data/index.json" 2>/dev/null | jq -r '.latest // empty' 2>/dev/null)"
 echo "  repo: ${repo_latest:-unknown}"
 echo "  site: ${site_latest:-unreachable}"
-if [ -n "$repo_latest" ] && [ -n "$site_latest" ] && [ "$repo_latest" != "$site_latest" ]; then
+# Empty on either side means the comparison did not happen. Skipping it silently
+# would let the script print OK while proving nothing about freshness.
+if [ -z "$repo_latest" ]; then
+  echo "  FAIL: no snapshots under data/versions — cannot determine the repo's newest version."
+  status=1
+elif [ -z "$site_latest" ]; then
+  echo "  FAIL: could not read .latest from $SITE/data/index.json (unreachable or unparseable)."
+  status=1
+elif [ "$repo_latest" != "$site_latest" ]; then
   echo "  FAIL: mismatch — the deploy is behind, or did not run."
   status=1
 fi
