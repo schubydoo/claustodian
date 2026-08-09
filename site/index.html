@@ -594,6 +594,102 @@
       #tab-ts:checked ~ #panel-ts {
         display: block;
       }
+      .hero-sub {
+        margin: 0 0 1.5rem;
+        color: var(--muted);
+      }
+      .hero-sub strong {
+        color: var(--fg);
+        font-weight: 600;
+      }
+      .why {
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        border-radius: 10px;
+        background: var(--card);
+        padding: 0.9rem;
+        margin-bottom: 1.25rem;
+      }
+      .why-head {
+        margin: 0 0 0.6rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+      .scenario {
+        display: block;
+        width: 100%;
+        text-align: left;
+        font: inherit;
+        font-size: 0.85rem;
+        color: var(--fg);
+        background: transparent;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.35rem;
+        cursor: pointer;
+      }
+      .scenario:hover {
+        border-color: var(--accent);
+      }
+      .scenario .try {
+        margin-left: 0.4rem;
+        font-size: 0.78rem;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .why-stats {
+        margin: 0.6rem 0 0;
+        font-size: 0.82rem;
+        color: var(--muted);
+      }
+      /* `code` sets only font-family globally, so anywhere it sits inside muted text
+         it inherits --muted at small mono size and reads as low-contrast noise. The
+         footer legend was the worst case. Give it its own ink. */
+      .why code,
+      footer code,
+      .legend code {
+        color: var(--fg);
+        background: color-mix(in srgb, var(--accent) 12%, transparent);
+        padding: 0.08em 0.32em;
+        border-radius: 4px;
+      }
+      .legend {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: 0.55rem 0.9rem;
+        align-items: start;
+        margin: 0 0 1rem;
+      }
+      .legend dt {
+        white-space: nowrap;
+      }
+      .legend dd {
+        margin: 0;
+      }
+      .legend dd b {
+        color: var(--fg);
+      }
+      @media (max-width: 560px) {
+        .legend {
+          grid-template-columns: 1fr;
+          gap: 0.15rem 0;
+        }
+        .legend dd {
+          margin: 0 0 0.6rem;
+        }
+      }
+      .legend-more summary {
+        cursor: pointer;
+        font-size: 0.82rem;
+        color: var(--accent);
+      }
+      .legend-more p {
+        margin: 0.5rem 0 0;
+      }
       footer {
         margin-top: 2.5rem;
         padding-top: 1rem;
@@ -782,11 +878,36 @@
           </svg>
           <h1>Claustodian</h1>
         </div>
-        <p>
-          Does a Claude Code flag, environment variable, or command exist in a given version? Pick a
-          version, search the surface.
+        <p class="hero-sub">
+          <strong>Ship features that match the user's Claude Code version.</strong> Pick a version,
+          search the surface.
         </p>
       </header>
+
+      <!-- Deliberately NOT a <details>. With the usage block already collapsed, a
+           second drawer leaves the whole top of the page inert and asks a first-time
+           visitor to click before seeing anything. These are three short rows and
+           they answer "why should I care?", which nothing else on the page does.
+           Each drives the real search, so the claim demonstrates itself against live
+           data instead of asking to be believed. -->
+      <section class="why">
+        <p class="why-head">Three ways version drift bites &mdash; click to see the answer</p>
+        <button class="scenario" type="button" data-q="--safe-mode">
+          Your tool passes <code>--safe-mode</code>. The user is on 2.1.150 — the flag did not exist
+          until 2.1.169, so the CLI exits with an error you never wrote.
+          <span class="try">Look it up &rarr;</span>
+        </button>
+        <button class="scenario" type="button" data-q="/vim" data-all="1">
+          Your README tells users to run <code>/vim</code>. It was removed at 2.1.92.
+          <span class="try">Look it up &rarr;</span>
+        </button>
+        <button class="scenario" type="button" data-q="--sandbox">
+          You add <code>--sandbox</code> from the docs. It only works under
+          <code>claude remote-control</code> — bare <code>claude --sandbox</code> fails.
+          <span class="try">Look it up &rarr;</span>
+        </button>
+        <p class="why-stats" id="why-stats"></p>
+      </section>
 
       <!-- Collapsed by default: the page's job is search, and an always-open code
            block would push the controls below the fold. <details> gives the
@@ -910,45 +1031,71 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       <p id="status" class="status">Loading dataset…</p>
 
       <footer>
-        <p>
-          <span class="seen seen--confirmed"><span class="lbl">since</span>X</span> is the earliest
-          version Claustodian observed a symbol; it's available in any version Y where
-          <code>first_seen &le; Y</code> and it hasn't been removed. A dashed
-          <span class="seen seen--est"><span class="lbl">since</span>&le;X</span> chip marks an
-          <em>estimated</em> <code>first_seen</code> — an upper bound from an incidental mention or
-          a doc with no stated introduction version, so the true version may be earlier (the binary
-          lane will pin it). Solid chips are confirmed. Descriptions come from Anthropic's official
-          docs where available.
-        </p>
-        <p>
-          A <span class="scope">under remote-control</span> chip means the flag is only accepted
-          under that invocation — <code>claude --sandbox</code> fails where
-          <code>claude remote-control --sandbox</code> works. Scopes are full paths, so
-          <span class="scope">under plugin eval</span> means exactly that:
-          <code>claude plugin --scaffold</code> fails too, because the flag belongs to
-          <code>plugin eval</code> and not to <code>plugin</code>. The list is complete, so a flag
-          without the chip simply has no scope information recorded; it does not mean the flag is
-          top-level.
-        </p>
-        <p>
-          Config keys carry a category chip. <code>settings</code> and
-          <code>settings-internal</code> both live in <code>settings.json</code>, the latter marked
-          <code>@internal</code> by Anthropic. <code>global-config</code> is a different file: those
-          keys belong in <code>~/.claude.json</code> and are silently ignored if you put them in
-          <code>settings.json</code>.
-        </p>
-        <p>
-          A flag with category <code>cli-internal</code> is hidden from <code>claude --help</code>.
-          It is real and the CLI accepts it, but something else sets it — a spawning parent process,
-          the teammate orchestrator, a deep link — so passing it yourself usually does nothing
-          useful. <code>cli</code> flags are the ones meant for you.
-        </p>
-        <p>
-          An <span class="unreviewed">unreviewed</span> badge means the symbol was found in an
-          official release binary but has not been human-curated yet. It exists — that is what the
-          binary proves — but its description may be terse or missing. Treat it as real, not as
-          "maybe."
-        </p>
+        <!-- Keyed on the chip itself so a reader scans for the badge they just saw
+             instead of parsing six paragraphs. Each entry leads with the thing people
+             get WRONG about that chip — those four corrections are the reason this
+             legend exists and must survive any future edit. -->
+        <dl class="legend">
+          <dt>
+            <span class="seen seen--confirmed"><span class="lbl">since</span>X</span>
+          </dt>
+          <dd>
+            The earliest version we observed the symbol. It is available in any later version until
+            it is removed.
+          </dd>
+
+          <dt>
+            <span class="seen seen--est"><span class="lbl">since</span>&le;X</span>
+          </dt>
+          <dd>
+            Dashed means estimated, and it is an <b>upper</b> bound — the true version may be
+            <b>earlier</b>, not later.
+          </dd>
+
+          <dt><span class="scope">under remote-control</span></dt>
+          <dd>
+            Only accepted under that exact invocation. <b>No chip does not mean top-level</b> — it
+            means no scope was recorded.
+          </dd>
+
+          <dt><span class="unreviewed">unreviewed</span></dt>
+          <dd>
+            Found in an official release binary but not yet human-curated. <b>It exists</b>; the
+            description may be thin.
+          </dd>
+
+          <dt><code>settings</code></dt>
+          <dd>
+            A <code>settings.json</code> key. <code>settings-internal</code> is the same file,
+            marked <code>@internal</code> upstream.
+          </dd>
+
+          <dt><code>global-config</code></dt>
+          <dd>
+            Belongs in <code>~/.claude.json</code>. <b>Silently ignored</b> if you put it in
+            <code>settings.json</code>.
+          </dd>
+
+          <dt><code>cli-internal</code></dt>
+          <dd>
+            Hidden from <code>claude --help</code>. Real and accepted, but something else sets it,
+            so passing it yourself usually does nothing. <code>cli</code> flags are the ones meant
+            for you.
+          </dd>
+        </dl>
+
+        <details class="legend-more">
+          <summary>More detail</summary>
+          <p>
+            An estimated <code>first_seen</code> comes from an incidental changelog mention or a
+            docs page with no stated introduction version; the binary lane pins it later. Scopes are
+            full invocation paths, so <span class="scope">under plugin eval</span> means
+            <code>claude plugin --scaffold</code> fails too — the flag belongs to
+            <code>plugin eval</code>, not to <code>plugin</code>. Descriptions come from Anthropic's
+            official docs where available.
+          </p>
+        </details>
+
         <p>
           Raw data: <a href="data/latest.json">latest.json</a> ·
           <a href="data/index.json">index.json</a> — fetch any
@@ -974,6 +1121,8 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       const $perPage = document.getElementById('per-page');
       const $pagerTop = document.getElementById('pager-top');
       const $pagerBottom = document.getElementById('pager-bottom');
+      const $why = document.querySelector('.why');
+      const $whyStats = document.getElementById('why-stats');
       const $results = document.getElementById('results');
       const $meta = document.getElementById('meta');
       const $status = document.getElementById('status');
@@ -1449,6 +1598,12 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             ...index.versions.map((v) => optionEl(v, v === index.latest ? `${v} (latest)` : v))
           );
           $version.value = index.latest;
+          // Read from the index we already fetched: hardcoding these would go stale
+          // and a second request would be wasteful.
+          if ($whyStats) {
+            const oldest = index.versions[index.versions.length - 1];
+            $whyStats.textContent = `${index.versions.length} tracked versions, ${oldest} to ${index.latest}.`;
+          }
           $version.addEventListener('change', () => loadVersion($version.value));
           // Every control below changes the RESULT SET, so each resets to page 1.
           $sort.addEventListener('change', rerender);
@@ -1460,6 +1615,24 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           $group.addEventListener('change', rerender);
           $q.addEventListener('input', rerender);
           $perPage.addEventListener('change', rerender);
+          // Each scenario SETS the all-versions toggle to what it needs rather than
+          // only turning it on. /vim was removed, so it exists only in the catalog;
+          // the others must search the selected snapshot. Leaving the toggle on from
+          // a previous click sends them to the catalog, where a scope chip renders
+          // differently — the scenario then appears to contradict its own text.
+          $why?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.scenario');
+            if (!btn) return;
+            const wantAll = Boolean(btn.dataset.all);
+            if ($allVersions.checked !== wantAll) {
+              $allVersions.checked = wantAll;
+              $allVersions.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            $q.value = btn.dataset.q;
+            rerender();
+            $q.scrollIntoView({ block: 'center' });
+            $q.focus();
+          });
           $allVersions.addEventListener('change', async () => {
             // Lazy-load the catalog the first time; on failure, revert the toggle.
             if ($allVersions.checked && !catalog) {
