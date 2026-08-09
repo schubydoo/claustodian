@@ -1,0 +1,81 @@
+name: Dataset correction
+description: A symbol is wrong, missing, or mis-dated
+title: '[data] '
+labels: ['data']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for improving the dataset. The fields below are the evidence a fix
+        needs — every record has to trace to something Anthropic published, so a
+        report without a source cannot be acted on.
+
+        Not a data problem? Use the [blank issue](https://github.com/schubydoo/claustodian/issues/new)
+        instead.
+  - type: input
+    id: symbol
+    attributes:
+      label: Symbol
+      description: Exactly as it appears, including the leading dashes or slash.
+      placeholder: '--safe-mode'
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      options:
+        - cli_flag
+        - command
+        - env_var
+        - config_key
+        - not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Claude Code version
+      description: The version you observed this in.
+      placeholder: '2.1.226'
+    validations:
+      required: true
+  - type: dropdown
+    id: problem
+    attributes:
+      label: What is wrong
+      options:
+        - Symbol is missing from the dataset
+        - first_seen is wrong
+        - Marked removed but still works (or the reverse)
+        - Description is wrong or misleading
+        - Scope is wrong (accepted under a different command)
+        - Category is wrong
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence from an official artifact
+      description: |
+        Which public Anthropic source shows this — the changelog entry, the docs page
+        and section, or the output of running the CLI. Terminal output is fine; paste
+        the command and what it printed.
+
+        Please do NOT paste decompiled or leaked material, or anything from a
+        source-map mirror. A record derived from non-public material cannot be
+        accepted and taints the dataset.
+      placeholder: |
+        $ claude --safe-mode --help
+        ...
+
+        or: https://code.claude.com/docs/en/cli-reference — "CLI flags" table
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the record should say
+    validations:
+      required: false

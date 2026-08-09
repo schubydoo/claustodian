@@ -47,6 +47,36 @@ npm run validate
 `prettier --check` reads the working tree while CI reads the commit, so format
 before you stage, not after.
 
+## Workflow
+
+- **Branch from a freshly fetched `main`.** Never commit to `main` directly, including
+  one-line fixes. A stale base shows the PR as behind and forces a rebase later.
+- **Every PR targets `main`.** Stacked PRs tangle review order and make the diff
+  misleading.
+- **Conventional commits.** The history is uniformly
+  `type(scope): subject` — `feat(binary)`, `fix(settings)`, `docs`, `chore(data)`,
+  `test(build-catalog)`. Nothing enforces this; please match it anyway.
+- **Reasoning goes in the commit message**, not the PR body. A maintainer digging into
+  a specific change will find it there. Keep PR descriptions short.
+- **Never mix a code change with a dataset regeneration.** A re-extract touches ~800
+  files and review tooling refuses PRs that large, so the one thing that needed review
+  is the one thing that cannot get it. Code PR first, data PR second — see
+  [the runbook](docs/runbooks/regenerating-the-dataset.md#splitting-the-prs).
+
+`main` requires linear history and squash merges, and blocks merge until the
+`validate` and security checks pass.
+
+## Where things are documented
+
+- [Architecture](docs/ARCHITECTURE.md) — the three lanes, the script map, and the
+  invariants an extractor change has to hold. Read this before changing extraction.
+- [Regenerating the dataset](docs/runbooks/regenerating-the-dataset.md) — the lane
+  order, and the reconciliation that has to happen first.
+- [Publishing](docs/runbooks/publishing.md) — how the site deploys.
+- [CHANGELOG](CHANGELOG.md) — **if your change alters what a consumer can observe**
+  (a new or changed field, a new endpoint, changed semantics), add an entry. Internal
+  changes do not need one.
+
 ## Licensing of contributions
 
 By contributing, you agree your contributions are licensed under the project's licenses: **Apache-2.0** for code (per its Section 5) and **CC-BY-4.0** for data under `data/`. Don't submit material you can't license this way — and per the provenance policy above, never submit anything derived from non-public/leaked sources.
