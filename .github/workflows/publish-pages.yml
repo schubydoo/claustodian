@@ -77,14 +77,22 @@ jobs:
           if [ -f site/robots.txt ]; then cp site/robots.txt _site/robots.txt; fi
           if [ -f site/sitemap.xml ]; then cp site/sitemap.xml _site/sitemap.xml; fi
           # /.well-known/ is a fixed-path discovery directory (RFC 8615), so it only
-          # works at the site ROOT. Whether Pages serves a dot-directory at all is the
-          # open question this copy exists to answer — Jekyll excludes dot-paths at
-          # build time, but this deploy uploads an artifact and never runs Jekyll.
+          # works at the site ROOT. Copying it is NOT sufficient on its own — see
+          # include-hidden-files on the upload step below.
           if [ -d site/.well-known ]; then cp -r site/.well-known _site/.well-known; fi
+          # .gitkeep only exists to keep empty dirs in git. Harmless but pointless to
+          # publish, and include-hidden-files below would otherwise ship both copies.
+          find _site -name .gitkeep -delete
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: _site
+          # Load-bearing for /.well-known/. The action tars _site with
+          # `--exclude=.[^/]*` unless this is true, which silently drops every
+          # dot-prefixed entry — the copy above lands in _site and then never
+          # reaches the artifact, and the deploy still reports success. .git and
+          # .github stay excluded either way.
+          include-hidden-files: 'true'
 
   deploy:
     needs: build
