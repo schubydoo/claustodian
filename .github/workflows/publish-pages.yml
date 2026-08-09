@@ -13,6 +13,9 @@ on:
       - 'data/**'
       - 'schema/**'
       - 'site/**'
+      # Explicit because dot-directories are the kind of path a glob quietly skips;
+      # site/** almost certainly covers it, and a missed deploy here is silent.
+      - 'site/.well-known/**'
       - 'assets/logo/favicon.svg'
       - 'assets/og/og-image.png'
       - 'llms.txt'
@@ -73,6 +76,11 @@ jobs:
           # which carries no directives.
           if [ -f site/robots.txt ]; then cp site/robots.txt _site/robots.txt; fi
           if [ -f site/sitemap.xml ]; then cp site/sitemap.xml _site/sitemap.xml; fi
+          # /.well-known/ is a fixed-path discovery directory (RFC 8615), so it only
+          # works at the site ROOT. Whether Pages serves a dot-directory at all is the
+          # open question this copy exists to answer — Jekyll excludes dot-paths at
+          # build time, but this deploy uploads an artifact and never runs Jekyll.
+          if [ -d site/.well-known ]; then cp -r site/.well-known _site/.well-known; fi
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
