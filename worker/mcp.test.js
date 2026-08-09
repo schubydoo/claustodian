@@ -1,7 +1,7 @@
 // Copyright 2026 Schuby
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   ERROR,
@@ -276,6 +276,17 @@ describe('get_symbol', () => {
     expect(fetched.some((p) => p.includes('etc/passwd'))).toBe(false);
   });
 
+  // Every other version test asserts a REJECTION, so without this one the
+  // accept path was never proven — a resolver that refused everything would
+  // have passed the suite.
+  it('accepts an explicit tracked version and queries that snapshot', async () => {
+    fetched.length = 0;
+    const r = await call({ symbol: '--add-dir', version: '2.1.225' });
+    expect(r.isError).toBe(false);
+    expect(r.structuredContent.version).toBe('2.1.225');
+    expect(fetched).toContain('/versions/2.1.225.json');
+  });
+
   it('rejects a well-formed but untracked version', async () => {
     const r = await call({ symbol: '--add-dir', version: '9.9.9' });
     expect(r.isError).toBe(true);
@@ -308,6 +319,110 @@ describe('search_symbols', () => {
   it('rejects an out-of-range limit', async () => {
     expect((await call({ query: 'a', limit: 0 })).isError).toBe(true);
     expect((await call({ query: 'a', limit: 999 })).isError).toBe(true);
+  });
+
+  it('rejects a missing or empty query', async () => {
+    expect((await call({})).isError).toBe(true);
+    expect((await call({ query: '' })).isError).toBe(true);
+  });
+
+  it('filters by a valid type', async () => {
+    const all = await call({ query: 'model' });
+    const filtered = await call({ query: 'model', type: 'command' });
+    expect(all.structuredContent.total).toBe(2);
+    expect(filtered.structuredContent.total).toBe(1);
+    expect(filtered.structuredContent.results[0].type).toBe('command');
+  });
+
+  it('rejects an untracked version here too, not only in get_symbol', async () => {
+    const r = await call({ query: 'add', version: '9.9.9' });
+    expect(r.isError).toBe(true);
+    expect(r.content[0].text).toContain('not tracked');
+  });
+
+  it('rejects an unknown type', async () => {
+    const r = await call({ query: 'add', type: 'not_a_type' });
+    expect(r.isError).toBe(true);
+    expect(r.content[0].text).toContain('Invalid type');
+  });
+});
+
+describe('snapshot memoisation', () => {
+  it('reuses a parsed snapshot instead of refetching it', async () => {
+    const local = [];
+    const localDeps = {
+      fetchJson: async (path) => {
+        local.push(path);
+        return path === '/index.json' ? INDEX : SNAPSHOT;
+      },
+    };
+    const call = (version) =>
+      handleRpc(
+        rpc('tools/call', { name: 'get_symbol', arguments: { symbol: '--add-dir', version } }),
+        localDeps
+      );
+
+    await call('2.1.226');
+    const afterFirst = local.filter((p) => p === '/versions/2.1.226.json').length;
+    await call('2.1.226');
+    const afterSecond = local.filter((p) => p === '/versions/2.1.226.json').length;
+    expect(afterSecond).toBe(afterFirst);
+  });
+
+  // The cache is bounded at two, so a third version must evict the oldest
+  // rather than growing without limit — each parsed snapshot is several MB.
+  it('evicts once more versions than the bound are requested', async () => {
+    const local = [];
+    const localDeps = {
+      fetchJson: async (path) => {
+        local.push(path);
+        return path === '/index.json' ? INDEX : SNAPSHOT;
+      },
+    };
+    const call = (version) =>
+      handleRpc(
+        rpc('tools/call', { name: 'get_symbol', arguments: { symbol: '--add-dir', version } }),
+        localDeps
+      );
+
+    // Three distinct versions with a bound of two evicts the first.
+    await call('2.1.226');
+    await call('2.1.225');
+    await call('1.0.18');
+    const before = local.filter((p) => p === '/versions/2.1.226.json').length;
+    await call('2.1.226');
+    const after = local.filter((p) => p === '/versions/2.1.226.json').length;
+    expect(after).toBe(before + 1);
+  });
+});
+
+describe('dataset fetching without an injected stub', () => {
+  const realFetch = globalThis.fetch;
+  afterEach(() => {
+    globalThis.fetch = realFetch;
+    vi.restoreAllMocks();
+  });
+
+  it('fetches the real data URL and parses it', async () => {
+    const seen = [];
+    globalThis.fetch = vi.fn(async (url) => {
+      seen.push(String(url));
+      return new Response(JSON.stringify(INDEX), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    const r = await handleRpc(rpc('tools/call', { name: 'list_versions', arguments: {} }));
+    expect(r.isError).toBe(false);
+    expect(seen[0]).toBe('https://claustodian.dev/data/index.json');
+  });
+
+  it('surfaces a dataset fetch failure as a 500 rather than a silent wrong answer', async () => {
+    globalThis.fetch = vi.fn(async () => new Response('nope', { status: 503 }));
+    const res = await handleMcp(post(rpc('tools/call', { name: 'list_versions', arguments: {} })));
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error.message).toContain('503');
   });
 });
 
@@ -370,6 +485,14 @@ describe('handleMcp transport', () => {
     expect(body.error.code).toBe(ERROR.UNSUPPORTED_VERSION);
     expect(body.error.data.supported).toEqual([PROTOCOL_VERSION]);
     expect(body.error.data.requested).toBe('1900-01-01');
+  });
+
+  // An unknown TOOL is a bad parameter, not a missing method, so it stays 400
+  // where an unknown method is 404.
+  it('400s an unknown tool, unlike an unknown method', async () => {
+    const res = await handleMcp(post(rpc('tools/call', { name: 'no_such_tool' })), deps);
+    expect(res.status).toBe(400);
+    expect((await res.json()).error.code).toBe(ERROR.INVALID_PARAMS);
   });
 
   it('404s an unknown method so a legacy 404 can be told apart', async () => {
