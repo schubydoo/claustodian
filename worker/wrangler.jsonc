@@ -5,6 +5,18 @@
   // The route is the root path ONLY, not claustodian.dev/*. Everything under
   // /data is served straight from Pages, so a Worker fault cannot take the
   // dataset offline — the blast radius is one HTML page.
+  //
+  // KNOWN LIMIT, measured not assumed: this pattern matches the bare root and
+  // NOT https://claustodian.dev/?anything. Cloudflare matches a route against
+  // the whole URL, query string included, and refuses a `?` inside a pattern
+  // (API error 10022), so there is no pattern that means "root with any query".
+  // Verified 8/8 alternating requests: bare root negotiates, ?cb=… does not.
+  //
+  // Accepted deliberately. Covering it means routing claustodian.dev/* and
+  // guarding on pathname inside the Worker, which puts all ~800 data files
+  // behind it. The dataset staying up matters more than negotiating a homepage
+  // URL that carries tracking parameters, and the uncovered case degrades to
+  // HTML rather than erroring.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "claustodian-site",
   "main": "index.js",

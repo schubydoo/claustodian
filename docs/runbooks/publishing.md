@@ -138,6 +138,18 @@ Two traps, both survived once already:
 - **Rule changes take up to a couple of minutes to reach every edge machine.** The
   first verifying `curl` after a change can legitimately come back wrong. Sample
   ~20 times before concluding anything; a 6-of-8 result is propagation, not a bug.
+- **A Worker route is matched against the whole URL, query string included.** The
+  route `claustodian.dev/` therefore covers `https://claustodian.dev/` and **not**
+  `https://claustodian.dev/?cb=1`. There is no pattern that fixes this: Cloudflare
+  rejects a `?` inside a route pattern with API error 10022. The only full-coverage
+  option is `claustodian.dev/*` plus a pathname guard in the Worker, which routes
+  every data file through it — deliberately not done.
+
+  This one is a trap for verification, not just for config. The habit of appending
+  `?cb=$RANDOM` to defeat caches **silently disables the Worker**, so a working
+  deployment reads as broken. Test the root with a bare URL, and send a no-cache
+  request header if you need freshness. Measured 20/20 bare against 0/20 with a
+  query string, then 8/8 alternating pairs in one run.
 
 The Worker is deployed manually — there is no CI step and no API token in the repo.
 Its source is `worker/index.js` and its config `worker/wrangler.jsonc`; edit the
