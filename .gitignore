@@ -1,5 +1,6 @@
 # Local Claude Code settings / agent state
 /.claude/
+/.serena/
 /CLAUDE.local.md
 
 # Working notes, plans, and scratch artifacts (not part of the published repo)
