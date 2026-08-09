@@ -2,43 +2,42 @@
   // Cloudflare Worker fronting the site root. See index.js for what it does and
   // docs/runbooks/publishing.md for how it is deployed.
   //
-  // The route is the root path ONLY, not claustodian.dev/*. Everything under
-  // /data is served straight from Pages, so a Worker fault cannot take the
-  // dataset offline — the blast radius is one HTML page.
+  // The route is claustodian.dev/* — every request on the zone reaches the
+  // Worker. index.js hands back anything that is not `/` or `/mcp` untouched,
+  // so the dataset is served exactly as Pages served it, with one extra hop.
   //
-  // KNOWN LIMIT, measured not assumed: this pattern matches the bare root and
-  // NOT https://claustodian.dev/?anything. Cloudflare matches a route against
-  // the whole URL, query string included, and refuses a `?` inside a pattern
-  // (API error 10022), so there is no pattern that means "root with any query".
-  // Verified 8/8 alternating requests: bare root negotiates, ?cb=… does not.
+  // This was previously the exact root path, on the reasoning that a narrow
+  // route keeps ~800 data files out of the Worker's blast radius. Two things
+  // overturned that:
   //
-  // Accepted deliberately, and it costs less than it sounds: nothing here ever
-  // produces such a URL. The site uses no query parameters at all — no
-  // URLSearchParams, no location.search, no pushState in site/index.html or
-  // site/review/index.html; search and pagination are in-memory, so no link the
-  // site emits carries a query. A query string on / only arrives from outside:
-  // a sharer's tracking parameters, a crawler, or a cache-busting probe. Each of
-  // those gets HTML, which is the right default anyway.
+  //  1. A Cloudflare route is matched against the whole URL including the query
+  //     string, and the API rejects a `?` inside a pattern (error 10022), so an
+  //     exact `/` route cannot cover `/?anything`. Measured: 20/20 bare
+  //     negotiated, 0/20 with a query string.
+  //  2. More decisively, a third-party readiness scanner's Markdown probe never
+  //     reached the Worker under the exact route. Its other requests are in the
+  //     observability log; that one is absent, so Cloudflare answered it without
+  //     invoking the Worker. No hand-made variant reproduced it — GET and HEAD,
+  //     with and without the trailing slash, bare `?`, several Accept spellings
+  //     and user agents all matched the exact route correctly.
   //
-  // Covering it means routing claustodian.dev/* and guarding on pathname inside
-  // the Worker, which puts all ~800 data files behind it. Keeping the dataset
-  // out of the Worker's blast radius is worth more than negotiating a request
-  // shape nothing in this repo generates, and the uncovered case degrades to
-  // HTML rather than erroring.
+  // The mechanism is still unexplained, which is the honest reason for widening
+  // rather than a claimed root cause. The reference implementation routes `/*`
+  // and passes that scanner; this makes the two structurally identical.
+  //
+  // The cost is real and bounded: one Worker invocation per data-file request,
+  // returning immediately. Watch the 100k/day free-tier request budget, which is
+  // now shared with dataset traffic rather than just the homepage.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "claustodian-site",
   "main": "index.js",
   "compatibility_date": "2026-08-09",
   "routes": [
     {
-      "pattern": "claustodian.dev/",
-      "zone_name": "claustodian.dev",
-    },
-    {
-      // The MCP endpoint. Exact path, same reasoning as the root: an MCP client
-      // POSTs to /mcp with no query string, so the query-string limit above
-      // does not bite here.
-      "pattern": "claustodian.dev/mcp",
+      // One wildcard route replaces the previous exact `/` and `/mcp` pair.
+      // index.js decides what to do per path; the pathname guard there is what
+      // keeps /data untouched, not the route pattern.
+      "pattern": "claustodian.dev/*",
       "zone_name": "claustodian.dev",
     },
   ],

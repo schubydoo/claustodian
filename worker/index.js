@@ -85,11 +85,28 @@ export default {
    * @returns {Promise<Response>}
    */
   async fetch(request) {
+    const { pathname } = new URL(request.url);
+
     // The MCP endpoint is its own protocol and shares nothing with content
-    // negotiation beyond the Worker. It is routed separately too, so this only
-    // matters for defence in depth if the routes are ever widened.
-    if (new URL(request.url).pathname === MCP_PATH) {
+    // negotiation beyond the Worker.
+    if (pathname === MCP_PATH) {
       return handleMcp(request);
+    }
+
+    // The route is now claustodian.dev/*, so every request reaches this Worker,
+    // including all ~800 data files. Anything that is not the root is handed
+    // straight back untouched — same bytes, same headers, no Vary rewrite — so
+    // the dataset behaves exactly as it did when Pages served it directly.
+    //
+    // Why widen the route at all: with an exact `/` route, a third-party
+    // readiness scanner's Markdown probe never reached this Worker. Its other
+    // requests did, and are in the logs; that one is absent, so it was answered
+    // without the Worker running. The mechanism is still unexplained — every
+    // hand-made variant matched the exact route, including a bare `?`. The
+    // reference implementation this was modelled on routes `/*`, so this makes
+    // the two structurally identical and lets the scanner arbitrate.
+    if (pathname !== '/') {
+      return fetch(request);
     }
 
     const accept = request.headers.get('Accept');
