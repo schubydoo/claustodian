@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  One indexable page. /review/ is a maintainer triage view and is noindex, so it is
+  deliberately absent. The data endpoints are JSON, not pages, and belong in
+  llms.txt rather than here.
+
+  No <lastmod>: the page is hand-written and changes rarely, while the data behind
+  it changes on most days. A lastmod copied from either one would misdescribe the
+  other, and a stale lastmod is worse than none.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://claustodian.dev/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
