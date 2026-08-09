@@ -657,6 +657,55 @@
         padding: 0.08em 0.32em;
         border-radius: 4px;
       }
+      .legend-box {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--card);
+        margin: 0 0 1.25rem;
+      }
+      .legend-box > summary {
+        cursor: pointer;
+        padding: 0.6rem 0.9rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--fg);
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .legend-box > summary::-webkit-details-marker {
+        display: none;
+      }
+      .legend-box > summary::before {
+        content: '\25B8';
+        color: var(--accent);
+        font-size: 0.85em;
+      }
+      .legend-box[open] > summary::before {
+        content: '\25BE';
+      }
+      .legend-box > summary:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -2px;
+        border-radius: 10px;
+      }
+      .legend-body {
+        padding: 0 0.9rem 0.9rem;
+      }
+      .legend-note {
+        margin: 0.9rem 0 0;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border);
+      }
+      .legend-intro {
+        margin: 0 0 0.7rem;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
       .legend {
         display: grid;
         grid-template-columns: max-content 1fr;
@@ -988,11 +1037,12 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             <option value="cli_flag">CLI flags</option>
             <option value="command">Commands</option>
             <option value="env_var">Env vars</option>
+            <option value="config_key">Config keys</option>
           </select>
         </div>
         <div id="category-wrap" hidden>
           <label for="category">Category</label>
-          <select id="category" aria-label="Env var category"></select>
+          <select id="category" aria-label="Category"></select>
         </div>
         <div>
           <label for="sort">Sort by</label>
@@ -1031,69 +1081,95 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       <p id="status" class="status">Loading dataset…</p>
 
       <footer>
-        <!-- Keyed on the chip itself so a reader scans for the badge they just saw
-             instead of parsing six paragraphs. Each entry leads with the thing people
-             get WRONG about that chip — those four corrections are the reason this
-             legend exists and must survive any future edit. -->
-        <dl class="legend">
-          <dt>
-            <span class="seen seen--confirmed"><span class="lbl">since</span>X</span>
-          </dt>
-          <dd>
-            The earliest version we observed the symbol. It is available in any later version until
-            it is removed.
-          </dd>
+        <!-- A closed <details>, like the usage block, so reference material does
+             not cost permanent vertical space and gets a surface of its own to sit
+             on. It is at the BOTTOM, so unlike the usage block it stacks with
+             nothing above it.
 
-          <dt>
-            <span class="seen seen--est"><span class="lbl">since</span>&le;X</span>
-          </dt>
-          <dd>
-            Dashed means estimated, and it is an <b>upper</b> bound — the true version may be
-            <b>earlier</b>, not later.
-          </dd>
+             Rows are ordered to match a result card read LEFT TO RIGHT: type,
+             category, scope, since, unreviewed. Scanning top to bottom therefore
+             walks the same path as scanning a card. One chip per row — pairing
+             cli/cli-internal on a single row made the eye stop. Chips are the real
+             components, so they cannot drift from what the results render. -->
+        <details class="legend-box">
+          <summary>Legend &mdash; what the chips mean</summary>
+          <div class="legend-body">
+            <p class="legend-intro">Reading a result card, left to right:</p>
+            <dl class="legend">
+              <dt><span class="badge t-cli_flag">cli flag</span></dt>
+              <dd>A command-line flag, e.g. <code>--safe-mode</code>.</dd>
 
-          <dt><span class="scope">under remote-control</span></dt>
-          <dd>
-            Only accepted under that exact invocation. <b>No chip does not mean top-level</b> — it
-            means no scope was recorded.
-          </dd>
+              <dt><span class="badge t-command">command</span></dt>
+              <dd>A slash command, e.g. <code>/rename</code>.</dd>
 
-          <dt><span class="unreviewed">unreviewed</span></dt>
-          <dd>
-            Found in an official release binary but not yet human-curated. <b>It exists</b>; the
-            description may be thin.
-          </dd>
+              <dt><span class="badge t-env_var">env var</span></dt>
+              <dd>
+                An environment variable Claude Code reads, e.g. <code>CLAUDE_CODE_SAFE_MODE</code>.
+              </dd>
 
-          <dt><code>settings</code></dt>
-          <dd>
-            A <code>settings.json</code> key. <code>settings-internal</code> is the same file,
-            marked <code>@internal</code> upstream.
-          </dd>
+              <dt><span class="badge t-config_key">config key</span></dt>
+              <dd>A settings key, e.g. <code>worktree.baseRef</code>.</dd>
 
-          <dt><code>global-config</code></dt>
-          <dd>
-            Belongs in <code>~/.claude.json</code>. <b>Silently ignored</b> if you put it in
-            <code>settings.json</code>.
-          </dd>
+              <dt><span class="cat">cli</span></dt>
+              <dd>A flag meant for you — it appears in <code>claude --help</code>.</dd>
 
-          <dt><code>cli-internal</code></dt>
-          <dd>
-            Hidden from <code>claude --help</code>. Real and accepted, but something else sets it,
-            so passing it yourself usually does nothing. <code>cli</code> flags are the ones meant
-            for you.
-          </dd>
-        </dl>
+              <dt><span class="cat">cli-internal</span></dt>
+              <dd>
+                Hidden from <code>claude --help</code>. Real and accepted, but something else sets
+                it, so passing it yourself usually does nothing.
+              </dd>
 
-        <details class="legend-more">
-          <summary>More detail</summary>
-          <p>
-            An estimated <code>first_seen</code> comes from an incidental changelog mention or a
-            docs page with no stated introduction version; the binary lane pins it later. Scopes are
-            full invocation paths, so <span class="scope">under plugin eval</span> means
-            <code>claude plugin --scaffold</code> fails too — the flag belongs to
-            <code>plugin eval</code>, not to <code>plugin</code>. Descriptions come from Anthropic's
-            official docs where available.
-          </p>
+              <dt><span class="cat">settings</span></dt>
+              <dd>A key in <code>settings.json</code>.</dd>
+
+              <dt><span class="cat">settings-internal</span></dt>
+              <dd>Same file, marked <code>@internal</code> upstream.</dd>
+
+              <dt><span class="cat">global-config</span></dt>
+              <dd>
+                Belongs in <code>~/.claude.json</code>. <b>Silently ignored</b> if you put it in
+                <code>settings.json</code>.
+              </dd>
+
+              <dt><span class="scope">under &lt;invocation&gt;</span></dt>
+              <dd>
+                Only accepted under that exact invocation. <b>No chip does not mean top-level</b> —
+                it means no scope was recorded.
+              </dd>
+
+              <dt>
+                <span class="seen seen--confirmed"><span class="lbl">since</span>X</span>
+              </dt>
+              <dd>
+                The earliest version we observed the symbol. It is available in any later version
+                until it is removed.
+              </dd>
+
+              <dt>
+                <span class="seen seen--est"><span class="lbl">since</span>&le;X</span>
+              </dt>
+              <dd>
+                Dashed means estimated, and it is an <b>upper</b> bound — the true version may be
+                <b>earlier</b>, not later.
+              </dd>
+
+              <dt><span class="unreviewed">unreviewed</span></dt>
+              <dd>
+                Found in an official release binary but not yet human-curated. <b>It exists</b>; the
+                description may be thin.
+              </dd>
+            </dl>
+            <p class="legend-note">
+              Env vars use topic categories instead (<span class="cat">network</span>,
+              <span class="cat">telemetry</span>, …). An estimated <code>first_seen</code> comes
+              from an incidental changelog mention or a docs page with no stated introduction
+              version; the binary lane pins it later. Scopes are full invocation paths, so
+              <span class="scope">under plugin eval</span> means
+              <code>claude plugin --scaffold</code> fails too — the flag belongs to
+              <code>plugin eval</code>, not to <code>plugin</code>. Descriptions come from
+              Anthropic's official docs where available.
+            </p>
+          </div>
         </details>
 
         <p>
@@ -1359,19 +1435,27 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       // rebuilt from the active source's env-var categories. Selection is kept if
       // still present, else reset to "all".
       function refreshCategoryControl() {
-        const isEnv = $type.value === 'env_var';
-        $categoryWrap.hidden = !isEnv;
-        if (!isEnv) {
+        // Every type carries a category, not just env_var: flags split cli /
+        // cli-internal, and config keys split settings / settings-internal /
+        // global-config. Hardcoding env_var left those unfilterable.
+        const type = $type.value;
+        const cats =
+          type === 'all'
+            ? []
+            : [
+                ...new Set(
+                  activeSource()
+                    .filter((s) => s.type === type && s.category)
+                    .map((s) => s.category)
+                ),
+              ].sort();
+        // Only worth showing when there is an actual choice to make.
+        const show = cats.length > 1;
+        $categoryWrap.hidden = !show;
+        if (!show) {
           $category.value = 'all';
           return;
         }
-        const cats = [
-          ...new Set(
-            activeSource()
-              .filter((s) => s.type === 'env_var' && s.category)
-              .map((s) => s.category)
-          ),
-        ].sort();
         const prev = $category.value;
         $category.replaceChildren(
           optionEl('all', 'All categories'),
@@ -1388,7 +1472,7 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         // Otherwise ignore it — the control may be hidden/empty (so its value can be
         // "", not "all"), which previously filtered everything out on load.
         const category = $category.value;
-        const byCategory = type === 'env_var' && category && category !== 'all';
+        const byCategory = Boolean(category) && category !== 'all';
         // Search the whole cross-version catalog when "Search all versions" is on,
         // else just the selected snapshot.
         const useCatalog = $allVersions.checked && catalog;
