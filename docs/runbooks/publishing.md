@@ -135,6 +135,15 @@ job.
 | Worker `claustodian-site`, route `/`      | `Accept: text/markdown` on the root returns `llms.txt` (`worker/index.js`) |
 | Same Worker, route `/mcp`                 | MCP server over the dataset, revision 2026-07-28 (`worker/mcp.js`)         |
 
+The server card is published at **two** paths from one source file, because the
+drafts disagree: SEP-2127 says `/.well-known/mcp-server-card`, SEP-1649 says
+`/.well-known/mcp/server-card.json`, and neither is merged. Clients and scanners
+in the wild probe the SEP-1649 path, so publishing only the newer one is correct
+in theory and undiscoverable in practice. The alias is a `cp` in the assemble
+step, so it cannot drift, and its `.json` extension means it needs no media-type
+rule. It is deliberately **not** aliased to `/.well-known/mcp.json` — that is
+SEP-1960, an endpoint manifest with auth config, a different document.
+
 Two traps, both survived once already:
 
 - **A response header must live in the `http_response_headers_transform` phase.**
