@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security or provenance report
+    url: https://github.com/schubydoo/claustodian/security/advisories/new
+    about: Report privately. Do not open a public issue.
+  - name: How to consume the data
+    url: https://github.com/schubydoo/claustodian/blob/main/examples/README.md
+    about: Endpoints, the record schema, and the three rules.
