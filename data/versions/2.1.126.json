@@ -4351,7 +4351,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Require your explicit approval before Claude's `SendMessage` reply reaches one of your sessions beyond this machine; see cross-session messaging. The approval prompt appears even in `bypassPermissions` mode. A `true` from any settings scope applies, so a checked-in project file can turn the requirement on but not off. The cross-machine `SendMessage` approval requires Claude Code v2.1.224 or later",
+      "description": "Require your explicit approval before Claude's `SendMessage` reaches one of your sessions beyond this machine; see cross-session messaging. The approval prompt appears even in `bypassPermissions` mode. A `true` from any settings scope applies, so a checked-in project file can turn the requirement on but not off. The cross-machine `SendMessage` approval requires Claude Code v2.1.224 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
