@@ -194,6 +194,37 @@ Six traps, every one of which has already cost a debugging session here:
   correctly when queried authoritatively. Do not "fix" a record that is already
   right; check the authoritative answer first.
 
+### Agent-readiness checks: what is deliberately not done
+
+<https://isitagentready.com/claustodian.dev> scores this site at **level 4 of 5**,
+and that is the ceiling this project can reach without publishing something
+untrue. Nine of nine achievable checks pass: robots.txt, sitemap, Link headers,
+DNS-AID, Markdown negotiation, AI bot rules, Content Signals, api-catalog and the
+MCP server card.
+
+The remaining checks are unmet **on purpose**. Before "fixing" any of them,
+note that each one asks this site to describe a service it does not run:
+
+| Check                                      | Why it stays unmet                                                                                      |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| `authMd`                                   | Needs a full agent registration flow **or** OAuth Protected Resource Metadata. There is no auth at all. |
+| `oauthDiscovery`, `oauthProtectedResource` | Same: no authorization server, no protected resource.                                                   |
+| `a2aAgentCard`                             | No Agent2Agent agent runs here.                                                                         |
+| `agentSkills`                              | No skills are published. An index of nothing is a stub.                                                 |
+| `webMcp`                                   | Genuinely useful and genuinely unbuilt; the API is mid-migration off `navigator.modelContext`.          |
+
+`/auth.md` is published anyway and will keep failing its check, because the check
+has no representation for "genuinely public". The file still does its real job:
+telling an agent that no credential exists, so it neither hunts for a key nor
+declines to call an open endpoint.
+
+Reaching level 5 requires `authMd`, `a2aAgentCard` and `agentSkills` together.
+Two of those three would be false. **A stub that advertises a capability this
+site does not have is the exact failure this project exists to avoid** — the same
+reasoning that kept the MCP server card unpublished until `/mcp` actually
+answered, and that keeps `/.well-known/mcp.json` unaliased because a card is not
+a manifest.
+
 ### The MCP endpoint
 
 `worker/mcp.js` serves MCP revision **2026-07-28** at `/mcp`. That revision is not
