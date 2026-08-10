@@ -2198,6 +2198,13 @@
       "doc_page": "settings"
     },
     {
+      "symbol": "promptSuggestionEnabled",
+      "type": "config_key",
+      "description": "**Default**: `true`. Show prompt suggestions, the grayed-out predictions that appear in your prompt input. Set to `false` or turn off **Prompt suggestions** in `/config` to disable. `CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION` takes precedence when both are set",
+      "doc_min_version": null,
+      "doc_page": "settings"
+    },
+    {
       "symbol": "prUrlTemplate",
       "type": "config_key",
       "description": "URL template for the PR badge shown in the footer and in tool-result summaries. Substitutes `{host}`, `{owner}`, `{repo}`, `{number}`, and `{url}` from the `gh`-reported PR URL. Use to point PR links at an internal code-review tool instead of `github.com`. Does not affect `#123` autolinks in Claude's prose",
@@ -3587,7 +3594,7 @@
     {
       "symbol": "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION",
       "type": "env_var",
-      "description": "Set to `false` to disable prompt suggestions (the \"Prompt suggestions\" toggle in `/config`). These are the grayed-out predictions that appear in your prompt input after Claude responds. See Prompt suggestions",
+      "description": "Set to `false` to disable prompt suggestions (the \"Prompt suggestions\" toggle in `/config`). These are the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting. See Prompt suggestions",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
