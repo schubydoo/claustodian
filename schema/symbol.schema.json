@@ -12,7 +12,14 @@
     },
     "type": {
       "type": "string",
-      "enum": ["cli_flag", "env_var", "command", "config_key", "internal_config_flag"],
+      "enum": [
+        "cli_flag",
+        "env_var",
+        "command",
+        "config_key",
+        "internal_config_flag",
+        "control_message"
+      ],
       "description": "The kind of symbol this record describes."
     },
     "first_seen": {
@@ -82,6 +89,23 @@
       "minLength": 1,
       "description": "Grouping used for topic (startup, networking, ui, filesystem, auth, ...), for ownership/source scoping (third-party, cloud-auth, ci-detect, runtime, terminal, ...), and for how a symbol is surfaced: `cli-internal` for a flag hidden from `claude --help`, `settings`/`settings-internal` for keys in settings.json, `global-config` for keys in ~/.claude.json."
     },
+    "family": {
+      "type": "string",
+      "enum": ["control_request"],
+      "description": "The discriminated union that owns this message subtype. Only control_message records carry it. The enum widens if further message families (system messages, control responses, result messages) are published later; the record `type` deliberately does not encode the family, so identity survives a reclassification."
+    },
+    "direction": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["host_to_cli", "cli_to_host"]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Which side of the stream-json channel sends this message. Derived from the two disjoint sub-unions the bundle itself declares, never inferred from a call site's surroundings. Null when the version predates that split (before 2.1.133), where the value is genuinely unobservable \u2014 never backfilled from a later version. Only control_message records carry it."
+    },
     "scopes": {
       "type": "array",
       "items": {
@@ -106,6 +130,29 @@
     "category"
   ],
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "control_message"
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "properties": {
+          "family": {
+            "$ref": "#/properties/family"
+          },
+          "direction": {
+            "$ref": "#/properties/direction"
+          }
+        },
+        "required": ["family", "direction"]
+      }
+    }
+  ],
   "if": {
     "properties": {
       "first_seen_estimated": {

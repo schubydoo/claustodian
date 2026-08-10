@@ -20,6 +20,23 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ### Added
 
+- **A `control_message` symbol type in the schema, for the stream-json control
+  protocol.** Claustodian already tracks the transport for that channel
+  (`--input-format`, `--output-format`, `--replay-user-messages` and friends); this
+  adds the vocabulary that travels inside it — the `control_request` subtypes a host
+  application must implement to drive the CLI, such as `initialize`,
+  `set_permission_mode`, `hook_callback` and `remote_control`. Records carry two new
+  fields: `family` (currently always `control_request`) and `direction`
+  (`host_to_cli`, `cli_to_host`, or `null`).
+
+  **`direction` is `null` before 2.1.133 and that is not a gap.** The CLI began
+  declaring the two directions as separate schema unions at 2.1.133; earlier bundles
+  do not distinguish them, so older snapshots report `null` rather than borrowing a
+  later release's answer. Descriptions are likewise absent before 2.1.63.
+
+  **No data ships in this change** — the schema accepts these records, and nothing
+  emits them yet. Additive, so `schemaVersion` stays `1.0.0`.
+
 - **An MCP endpoint at <https://claustodian.dev/mcp>.** The same records, queryable
   over Model Context Protocol instead of by fetching and filtering a snapshot
   yourself: `list_versions`, `get_symbol` (does this flag / command / settings key /
