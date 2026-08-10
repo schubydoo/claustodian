@@ -2549,13 +2549,13 @@
       "type": "config_key",
       "first_seen": "2.0.71",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "When false, prompt suggestions are disabled. When absent or true, prompt suggestions are enabled.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "**Default**: `true`. Show prompt suggestions, the grayed-out predictions that appear in your prompt input. Set to `false` or turn off **Prompt suggestions** in `/config` to disable. `CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION` takes precedence when both are set",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "settings"
     },
     {
       "symbol": "remote",
@@ -3721,7 +3721,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `false` to disable prompt suggestions (the \"Prompt suggestions\" toggle in `/config`). These are the grayed-out predictions that appear in your prompt input after Claude responds. See Prompt suggestions",
+      "description": "Set to `false` to disable prompt suggestions (the \"Prompt suggestions\" toggle in `/config`). These are the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting. See Prompt suggestions",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
