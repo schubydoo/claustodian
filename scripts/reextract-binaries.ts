@@ -61,47 +61,9 @@ const VERSION_RE = /^\d+\.\d+\.\d+$/;
  */
 export const CACHE_INCOMPLETE_MARKER = '_cache-incomplete.json';
 
-/**
- * The `cacheOnly` list a previous run recorded, or empty when there is no marker or
- * it cannot be read. Deliberately forgiving: a marker this cannot parse must not
- * abort a re-extract, and the run will write a fresh one either way.
- */
-function readPriorCacheOnly(markerPath: string): { versions: string[]; unreadable: boolean } {
-  if (!existsSync(markerPath)) return { versions: [], unreadable: false };
-  try {
-    const parsed = JSON.parse(readFileSync(markerPath, 'utf-8')) as { cacheOnly?: unknown };
-    // Absent is not malformed: a marker written before this field existed, or by
-    // hand, simply records no cache-only loss. PRESENT but not a string array is
-    // malformed, and that is not something to read as "no loss".
-    if (parsed.cacheOnly === undefined) return { versions: [], unreadable: false };
-    if (!Array.isArray(parsed.cacheOnly) || parsed.cacheOnly.some((v) => typeof v !== 'string')) {
-      return { versions: [], unreadable: true };
-    }
-    return { versions: parsed.cacheOnly as string[], unreadable: false };
-  } catch {
-    // A marker that cannot be parsed is NOT an absence of loss. Failing open here
-    // would let a hand-edit or a truncated write erase a record of versions this
-    // run can no longer recover.
-    return { versions: [], unreadable: true };
-  }
-}
-
-/**
- * Writes the marker. Every state goes through here so none can omit `cacheOnly` —
- * those versions are unrecoverable once cleared, and an `in-progress` or `refused`
- * marker that dropped them would erase the only record, in exactly the states whose
- * documented remedy is to re-run.
- */
-function writeMarker(
-  outDir: string,
-  payload: Record<string, unknown> & { status: string },
-  cacheOnly: readonly string[],
-  priorUnreadable: boolean
-): void {
-  writeFileSync(
-    join(outDir, CACHE_INCOMPLETE_MARKER),
-    JSON.stringify({ ...payload, cacheOnly, priorMarkerUnreadable: priorUnreadable }, null, 2)
-  );
+/** Writes the marker. One writer, so every state records the same shape. */
+function writeMarker(outDir: string, payload: Record<string, unknown> & { status: string }): void {
+  writeFileSync(join(outDir, CACHE_INCOMPLETE_MARKER), JSON.stringify(payload, null, 2));
 }
 
 export type BundleResult =
@@ -246,46 +208,17 @@ export async function main(argv: string[]): Promise<number> {
         `Point --out at an empty directory or a prior reextract-binaries cache.`
     );
   }
-  // A previous run's record, read BEFORE this run overwrites the marker. Without
-  // this the cache-only guard would be single-run: run 1 deletes those entries and
-  // records them, run 2 finds nothing to record — the evidence is the thing run 1
-  // destroyed — lowers the flag and reports success with the cache permanently
-  // short. Carrying the list forward keeps the flag up until the archive holds those
-  // versions again — or until someone deletes the marker to accept the loss, which
-  // the `skipped` note describes.
-  const prior = readPriorCacheOnly(join(options.outDir, CACHE_INCOMPLETE_MARKER));
-
-  // Versions the committed cache holds that this run will NOT rewrite, because
-  // `selectVersions` reads the ARCHIVE and they are not in it. `clearCache` is about
-  // to delete them. This is the 2.1.224 incident AGENTS.md warns about — a version
-  // present in the cache but not the archive, destroyed by a run that reports
-  // success — and the run cannot recover them, so the most it can do is refuse to
-  // let the result be distilled.
-  const selected = new Set(versions);
-  const cacheOnly = readdirSync(options.outDir)
-    .filter((name) => name.endsWith('.json') && !name.startsWith('_'))
-    .map((name) => name.slice(0, -'.json'.length))
-    .filter((version) => !selected.has(version))
-    .concat(prior.versions.filter((version) => !selected.has(version)))
-    .filter((version, i, all) => all.indexOf(version) === i)
-    .sort(compareVersionsAsc);
-
   // Raised BEFORE anything is destroyed, and lowered only if the run reaches the end
   // having written every version it selected and carrying no unresolved losses. See
   // CACHE_INCOMPLETE_MARKER.
-  writeMarker(
-    options.outDir,
-    {
-      status: 'in-progress',
-      note:
-        'reextract-binaries cleared this cache and has not finished repopulating it. ' +
-        'Do not backfill from it. Removed automatically by a run that writes every ' +
-        'version it selects and has no outstanding losses.',
-      versionsConsidered: versions.length,
-    },
-    cacheOnly,
-    prior.unreadable
-  );
+  writeMarker(options.outDir, {
+    status: 'in-progress',
+    note:
+      'reextract-binaries cleared this cache and has not finished repopulating it. ' +
+      'Do not backfill from it. Removed automatically by a run that writes every ' +
+      'version it selects and has no outstanding losses.',
+    versionsConsidered: versions.length,
+  });
 
   clearCache(options.outDir);
 
@@ -360,26 +293,15 @@ export async function main(argv: string[]): Promise<number> {
     // reports a version present in the archive but absent from the cache as benign
     // INFO. `loadCacheFiles` does refuse an EMPTY cache, but a partly-written one
     // looks entirely plausible to it.
-    writeMarker(
-      options.outDir,
-      {
-        status: 'refused',
-        note:
-          'These versions have no cache entry. Backfilling would report their symbols ' +
-          'as removed. Fix the refusals and re-run reextract-binaries.',
-        versionsConsidered: versions.length,
-        refused: controlFailures.length,
-        failures: controlFailures,
-      },
-      cacheOnly,
-      prior.unreadable
-    );
-    if (cacheOnly.length > 0) {
-      console.error(
-        `\n${cacheOnly.length} version(s) were in the cache but NOT in the archive and have ` +
-          `been DELETED by this run: ${cacheOnly.join(', ')}. Restore them to the archive.`
-      );
-    }
+    writeMarker(options.outDir, {
+      status: 'refused',
+      note:
+        'These versions have no cache entry. Backfilling would report their symbols ' +
+        'as removed. Fix the refusals and re-run reextract-binaries.',
+      versionsConsidered: versions.length,
+      refused: controlFailures.length,
+      failures: controlFailures,
+    });
     console.error(
       `\ncontrol lane refused ${controlFailures.length} version(s); their entries were ` +
         `NOT written, so the cache is incomplete and must not be backfilled from:\n` +
@@ -388,51 +310,41 @@ export async function main(argv: string[]): Promise<number> {
     return 1;
   }
 
-  // Lowered only when nothing was skipped AND nothing is outstanding from the
-  // cache-only set. Two different losses, and they are not the same hazard:
+  // Lowered only when nothing was skipped. A version reported `missing` or
+  // `unverified` was selected from the archive and could not be read, so its prior
+  // cache entry was cleared and never rewritten — the cache is short, and the flag
+  // is what stops a backfill distilling that absence as a removal. The exit code is
+  // deliberately unchanged.
   //
-  //   missing / unverified — selected from the archive, could not be read. Their
-  //     prior cache entries were cleared and not rewritten.
-  //   cacheOnly           — in the committed cache and NOT in the archive, so never
-  //     selected at all. This is the one AGENTS.md warns about: "a version present
-  //     in the cache but not the archive is destroyed by a run that reports success."
-  //
-  // The exit code is unchanged; the flag is what stops a backfill from distilling
-  // either kind of absence as a removal.
+  // ⚠️ NOT covered: a version present in the committed cache but absent from the
+  // archive. `selectVersions` reads the archive, so such a version is never selected,
+  // `clearCache` deletes it, and this run cannot tell it apart from a cache that
+  // never had it. That is the hazard AGENTS.md documents and the runbook's
+  // reconciliation step exists for — `bash scripts/check-version-sets.sh` before
+  // step 1 — and it is pre-existing rather than something this lane introduced.
   const skipped = missing.length + unverified.length;
   // `prior.unreadable` counts as an outstanding loss. A marker that could not be
   // parsed might have recorded versions this run can no longer see, and lowering the
   // flag on it would be failing open on exactly the evidence that cannot be rebuilt.
-  if (skipped > 0 || cacheOnly.length > 0 || prior.unreadable) {
-    writeMarker(
-      options.outDir,
-      {
-        status: 'skipped',
-        note:
-          'The cache is missing versions it previously held. `missing`/`unverified` were ' +
-          'selected from the archive but could not be read; `cacheOnly` were in the ' +
-          'committed cache and NOT in the archive, so a run deleted them and could not ' +
-          'rewrite them. Fix the ARCHIVE, not the cache: `scrape-binary --force` writes ' +
-          'binary-cache/, which step 1 clears before re-reading the same archive. Restore ' +
-          'each artifact under scratch/binaries/<version>/ and re-run: a version the ' +
-          'archive holds again drops off this list. Deleting THIS FILE by hand is the ' +
-          'deliberate way to accept a loss that cannot be restored — after which the ' +
-          "dataset is rebuilt without that version's evidence.",
-        versionsConsidered: versions.length,
-        missing,
-        unverified,
-      },
-      cacheOnly,
-      prior.unreadable
-    );
-    if (cacheOnly.length > 0) {
-      console.error(
-        `\n${cacheOnly.length} version(s) were in the cache but NOT in the archive and have ` +
-          `been DELETED by this run: ${cacheOnly.join(', ')}. Restore them to the archive.`
-      );
-    }
+  if (skipped > 0) {
+    writeMarker(options.outDir, {
+      status: 'skipped',
+      note:
+        'The cache is missing versions it previously held. `missing`/`unverified` were ' +
+        'selected from the archive but could not be read; `cacheOnly` were in the ' +
+        'committed cache and NOT in the archive, so a run deleted them and could not ' +
+        'rewrite them. Fix the ARCHIVE, not the cache: `scrape-binary --force` writes ' +
+        'binary-cache/, which step 1 clears before re-reading the same archive. Restore ' +
+        'each artifact under scratch/binaries/<version>/ and re-run: a version the ' +
+        'archive holds again drops off this list. Deleting THIS FILE by hand is the ' +
+        'deliberate way to accept a loss that cannot be restored — after which the ' +
+        "dataset is rebuilt without that version's evidence.",
+      versionsConsidered: versions.length,
+      missing,
+      unverified,
+    });
     console.error(
-      `\n${skipped + cacheOnly.length} version(s) are missing from the cache; ` +
+      `\n${skipped} version(s) are missing from the cache; ` +
         `${CACHE_INCOMPLETE_MARKER} is left in place and backfill will refuse until a run ` +
         `writes every version.`
     );
