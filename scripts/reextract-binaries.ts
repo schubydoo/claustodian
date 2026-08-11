@@ -48,16 +48,11 @@ const VERSION_RE = /^\d+\.\d+\.\d+$/;
  * A dirty flag on the cache directory: present means "this cache is NOT known to be
  * complete", absent means a run finished and wrote every version it considered.
  *
- * ⚠️ Written BEFORE the cache is cleared and removed only on a clean finish, which is
- * the opposite of the obvious ordering. Recording refusals at the end sounds
- * equivalent and is not: the cache goes incomplete the moment `clearCache` runs, so
- * anything that ends the process in between — an interrupt, an OOM, a throw from
- * outside the try — would leave a populated, partial cache with nothing marking it,
- * and `backfill-binary` would distil those absences as removals. Clearing a previous
- * run's marker up front made it worse, by discarding that run's protection too.
+ * ⚠️ Raised BEFORE `clearCache`, lowered only on a clean finish. Written at the end
+ * instead, it would miss anything that kills the process mid-run — the cache is
+ * already incomplete by then.
  *
- * `_`-prefixed so `clearCache` preserves it and `loadCacheFiles` does not mistake it
- * for an extraction.
+ * `_`-prefixed so `clearCache` preserves it and `loadCacheFiles` skips it.
  */
 export const CACHE_INCOMPLETE_MARKER = '_cache-incomplete.json';
 
@@ -208,9 +203,6 @@ export async function main(argv: string[]): Promise<number> {
         `Point --out at an empty directory or a prior reextract-binaries cache.`
     );
   }
-  // Raised BEFORE anything is destroyed, and lowered only if the run reaches the end
-  // having written every version it selected and carrying no unresolved losses. See
-  // CACHE_INCOMPLETE_MARKER.
   writeMarker(options.outDir, {
     status: 'in-progress',
     note:
@@ -225,11 +217,8 @@ export async function main(argv: string[]): Promise<number> {
   let extracted = 0;
   const missing: string[] = [];
   const unverified: string[] = [];
-  // The control lane REFUSES rather than reporting zero, which is the behaviour we
-  // want per version and the wrong behaviour for a 470-version loop: one bad bundle
-  // would abort the run and leave the cache half-written. Collected instead, and the
-  // run fails at the end having told you every version that failed, not just the
-  // first. What must never happen is a version quietly missing its control symbols.
+  // Collected rather than thrown: one bad bundle must not abort a 470-version loop,
+  // and the run reports every failure at the end instead of only the first.
   const controlFailures: Array<{ version: string; reason: string }> = [];
   for (const version of versions) {
     const result = readBundleSource(options.archiveDir, version);
@@ -287,12 +276,9 @@ export async function main(argv: string[]): Promise<number> {
   // version's control symbols are ABSENT from the cache, and absence downstream
   // reads as a removal — so this cannot be a warning the caller might miss.
   if (controlFailures.length > 0) {
-    // The marker is already on disk from before the clear; this replaces the
-    // in-progress note with WHY it is staying. `return 1` alone would not be enough —
-    // the next runbook step is a separate command, and `check-version-sets.sh`
-    // reports a version present in the archive but absent from the cache as benign
-    // INFO. `loadCacheFiles` does refuse an EMPTY cache, but a partly-written one
-    // looks entirely plausible to it.
+    // Replaces the in-progress note with why the flag is staying. `return 1` alone
+    // is not enough: the next runbook step is a separate command, and a partly-written
+    // cache looks plausible to `loadCacheFiles`, which only refuses an empty one.
     writeMarker(options.outDir, {
       status: 'refused',
       note:
@@ -310,18 +296,13 @@ export async function main(argv: string[]): Promise<number> {
     return 1;
   }
 
-  // Lowered only when nothing was skipped. A version reported `missing` or
-  // `unverified` was selected from the archive and could not be read, so its prior
-  // cache entry was cleared and never rewritten — the cache is short, and the flag
-  // is what stops a backfill distilling that absence as a removal. The exit code is
-  // deliberately unchanged.
+  // Lowered only when nothing was skipped. A `missing`/`unverified` version was
+  // selected but unreadable, so its cache entry was cleared and never rewritten; the
+  // flag stops a backfill distilling that absence as a removal. Exit code unchanged.
   //
-  // ⚠️ NOT covered: a version present in the committed cache but absent from the
-  // archive. `selectVersions` reads the archive, so such a version is never selected,
-  // `clearCache` deletes it, and this run cannot tell it apart from a cache that
-  // never had it. That is the hazard AGENTS.md documents and the runbook's
-  // reconciliation step exists for — `bash scripts/check-version-sets.sh` before
-  // step 1 — and it is pre-existing rather than something this lane introduced.
+  // ⚠️ NOT covered: a version in the cache but absent from the archive is never
+  // selected, so this cannot see it. `scripts/check-version-sets.sh` catches that
+  // before step 1 and the runbook requires it.
   const skipped = missing.length + unverified.length;
   // `prior.unreadable` counts as an outstanding loss. A marker that could not be
   // parsed might have recorded versions this run can no longer see, and lowering the

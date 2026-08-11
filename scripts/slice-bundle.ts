@@ -36,13 +36,10 @@ import { createHash } from 'node:crypto';
  * the copies are byte-identical. If they diverge, file order is not evidence for
  * which one the CLI runs, so that is a refusal too.
  *
- * WHY THE API TAKES BYTES. Not because decoding would merge the regions — an
- * earlier revision claimed that and it is false, since `isPrintable` already accepts
- * every byte >= 0x80 and UTF-8 decoding never alters a byte below 0x20, so run
- * boundaries survive a round trip. The real reasons are narrower: offsets stay
- * byte-exact rather than becoming code-unit indices, a digest can be taken over a
- * subarray without re-encoding, and a 284 MiB artifact is never materialised as a
- * JS string.
+ * WHY THE API TAKES BYTES. Offsets stay byte-exact rather than becoming code-unit
+ * indices, a digest can be taken over a subarray without re-encoding, and a 284 MiB
+ * artifact is never materialised as a JS string. (Not because decoding would merge
+ * the regions — it would not; `isPrintable` already accepts every byte >= 0x80.)
  *
  * WHAT IT REFUSES TO DO. Return something it is not sure about. A slicer that picks
  * the wrong region does not fail — it silently extracts from the wrong bytes and

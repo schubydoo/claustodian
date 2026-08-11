@@ -119,14 +119,12 @@ async function fetchRetry(url: string, tries = 3): Promise<Response> {
 /**
  * The cache-file record for `version`, byte-identical to a full re-extraction.
  *
- * That invariant is why the control lane runs here too. This is the OTHER writer of
- * `binary-cache/<version>.json` — CI calls it per release — so if it omitted a key
- * that `reextract-binaries` writes, the cache would hold two shapes and the backfill
- * would see control symbols appear and vanish with no protocol change behind it.
+ * ⚠️ That invariant is why the control lane runs here too: this is the OTHER writer
+ * of `binary-cache/<version>.json`, so omitting a key it writes would leave the cache
+ * holding two shapes.
  *
- * A control-lane refusal propagates: one version is being scraped, so failing is the
- * whole point. `reextract-binaries` collects instead, because aborting there would
- * leave a half-written cache.
+ * A control-lane refusal propagates — one version is being scraped, so failing is the
+ * point. `reextract-binaries` collects instead, to avoid a half-written cache.
  */
 export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryCacheRecord {
   // Two different inputs on purpose. The regex lanes read the artifact decoded and
@@ -222,36 +220,20 @@ export async function scrapeBinary(
 }
 
 /**
- * Exit code for a control-lane refusal, distinct from every other failure.
+ * Exit code for a deterministic refusal, distinct from every other failure.
  *
- * The CI step that calls this used to be `continue-on-error: true`, and rightly so
- * for the failure it was written for: a CDN hiccup is transient, and blocking the
- * authoritative changelog update on it would be worse. A control-lane refusal is
- * NOT that. It is deterministic, it recurs on every retry, and swallowing it drops
- * the release's ENTIRE cache entry — flags and env vars included, not just the
- * control symbols — so the release ships with no binary evidence and a late
- * `first_seen`.
- *
- * `continue-on-error` swallows every non-zero and cannot tell them apart, so it was
- * removed: the step's run block now tolerates any other code and fails on this one.
- * ⚠️ That makes this VALUE part of a contract with
- * `.github/workflows/update-from-changelog.yml`, which compares against the literal
- * `2`. Changing it here alone silently restores the swallow, so a test pins the
- * literal at both ends.
+ * The CI step tolerates a transient CDN failure but must NOT tolerate this: a
+ * refusal recurs on every retry and drops the release's whole cache entry, flags and
+ * env vars included. ⚠️ The workflow compares against the literal `2`.
  */
 export const CONTROL_REFUSAL_EXIT = 2;
 
 /**
  * Prefixes of the refusals that are DETERMINISTIC — a bad bundle, not a bad network.
  *
- * ⚠️ Every module on the extraction path that refuses rather than reporting zero has
- * to be listed here. It is a list because the refusals it classifies come from
- * different modules with no shared base error; a message that is not matched falls
- * back into the transient bucket, where CI warns and continues with NO cache entry
- * for the release. That already happened once: `slice-bundle` joined the path after
- * this classifier was written and its refusals were being tolerated, and
- * `settings schema:` — reached through `extractBundleSymbols` — was missed the same
- * way. Adding a module that refuses without adding it here is silent.
+ * ⚠️ Every refusing module on the extraction path must be listed. An unmatched
+ * message falls into the transient bucket, where CI warns and continues with no
+ * cache entry. That has happened twice: `slice-bundle` and `settings schema`.
  */
 const REFUSAL_PREFIXES = ['control lane:', 'slice-bundle:', 'settings schema:'] as const;
 
