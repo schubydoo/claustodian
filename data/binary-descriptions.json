@@ -731,6 +731,12 @@
         "description": "Disable Claude in Chrome integration"
       }
     ],
+    "cli_flag:--no-post": [
+      {
+        "from": "2.1.227",
+        "description": "Do not post the findings to the PR (the default; accepted for parity with the /ultrareview and /code-review ultra flags)"
+      }
+    ],
     "cli_flag:--no-publish": [
       {
         "from": "2.1.224",
@@ -837,6 +843,12 @@
       {
         "from": "2.1.64",
         "description": "HTTP port"
+      }
+    ],
+    "cli_flag:--post": [
+      {
+        "from": "2.1.227",
+        "description": "Post the finished review's findings to the PR as you (PR targets only; one plain comment, not a review)"
       }
     ],
     "cli_flag:--prefill": [
@@ -1861,6 +1873,10 @@
       {
         "from": "2.1.163",
         "description": "Open a memory file in your editor"
+      },
+      {
+        "from": "2.1.227",
+        "description": "Edit CLAUDE.md files and memory settings"
       }
     ],
     "command:/migrate": [
@@ -3055,6 +3071,10 @@
       {
         "from": "2.1.162",
         "description": "@internal Cloud gateway URL to pre-fill and auto-connect to during login. Typically set in local managed settings alongside forceLoginMethod: \"gateway\" so users never type the URL. Hidden from public SDK types until Cloud gateway is documented."
+      },
+      {
+        "from": "2.1.227",
+        "description": "Cloud gateway URL to pre-fill and auto-connect to during login, alongside forceLoginMethod: \"gateway\". Honored only from admin-controlled managed settings (MDM / managed-settings.json / policy helper); ignored in user, project, and remote-delivered settings."
       }
     ],
     "config_key:forceLoginMethod": [
