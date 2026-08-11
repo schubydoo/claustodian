@@ -113,6 +113,7 @@ component_management:
         - scripts/env-registry.ts
         - scripts/argv-scopes.ts
         - scripts/control-lane.ts
+        - scripts/slice-bundle.ts
 
     # Lane 3b — interpreting that evidence: what may publish, how it is
     # categorized, how per-version windows are distilled.

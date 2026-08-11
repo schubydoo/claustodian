@@ -34,6 +34,7 @@ importable in tests and runnable via the matching npm script.
 | `scrape-binary.ts`      | binary    | one release from the CDN        | `binary-cache/<version>.json`                                                   |
 | `reextract-binaries.ts` | binary    | the local archive               | `binary-cache/` (rebuilt)                                                       |
 | `extract-bundle.ts`     | binary    | one bundle's source text        | — (library)                                                                     |
+| `slice-bundle.ts`       | binary    | one release artifact's bytes    | — (library)                                                                     |
 | `settings-schema.ts`    | binary    | the embedded zod schema         | — (library)                                                                     |
 | `env-registry.ts`       | binary    | the typed env registry          | — (library)                                                                     |
 | `argv-scopes.ts`        | binary    | esbuild module headers          | — (library)                                                                     |
