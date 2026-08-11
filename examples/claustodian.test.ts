@@ -117,8 +117,11 @@ describe('the published client mirrors the record contract', () => {
       category: 'control-protocol',
     };
 
-    // Reading `direction` without a cast is the point of the two-variant shape:
-    // an optional-field version would type it `undefined` here.
+    // The control variant must carry `direction`, and narrowing on the tag alone
+    // must reach it — no cast, no `?.`. The literal above is freshness-checked
+    // against `ClaudeSymbol`, so dropping `direction` from that variant fails here.
+    // (What a flat optional-field shape would break is the pair of forbidden-field
+    // cases above, whose `@ts-expect-error` directives would go unused.)
     expect(sym.type === 'control_message' ? sym.direction : 'unreachable').toBe('host_to_cli');
   });
 });

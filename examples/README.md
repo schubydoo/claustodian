@@ -23,6 +23,9 @@ fetch a URL and read it. Three tiny reference clients live next to this file:
 | [`claustodian.ts`](claustodian.ts) | Node 18+ (zero deps) | `npx tsx examples/claustodian.ts` |
 | [`claustodian.py`](claustodian.py) | Python 3.9+ (stdlib) | `python3 examples/claustodian.py` |
 
+`claustodian.test.ts` sits beside them but is not a client — it is this repo's own gate,
+asserting that `claustodian.ts` still mirrors the record schema in both directions.
+
 All three implement the same three rules below.
 
 ## Endpoints
