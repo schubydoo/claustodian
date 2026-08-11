@@ -48,19 +48,41 @@
  * A denylist was tried first and is the wrong shape: it admits anything a future
  * release invents, whereas this admits only what the CLI demonstrably routes.
  *
- * COST, AND THE LIMIT IT IMPLIES. Measured on this hardware: 2.1.226 (22.9 MiB of
- * embedded JS) takes 3.7 s and peaks at ~2.6 GB RSS; 2.1.112 (13.0 MiB, npm) takes
- * 2.3 s and ~1.4 GB. Nearly all of it is `indexParents`, which materialises one Map
- * entry per AST node so the upward walks can run.
+ * COST, AND THE LIMIT IT IMPLIES. Measured on this hardware, same machine, both
+ * revisions back to back: 2.1.226 (22.9 MiB of embedded JS) went 3.8 s / ~2.60 GB
+ * to 3.1 s / ~2.15 GB, an 18% saving; 2.1.112 (13.0 MiB, npm) went 2.3 s / ~1.40 GB
+ * to 2.0 s / ~1.17 GB, 13%. (An earlier revision recorded the 2.1.226 before-figure
+ * as 3.7 s. 3.8 s is what it measures on this machine today; the difference is run
+ * variance, not a change.)
  *
- * That is affordable per version and NOT affordable naively across the archive:
- * 3.7 s x 472 releases is ~29 minutes, which is worse than the 2.2 s/version
- * (~17 minutes) that `env-registry.ts` documents REJECTING for the same reason.
- * Nothing calls this module yet, so the trade is not live — but whoever wires it
- * into a full sweep owns that number. Cheapest fixes, in order: restrict the sweep
- * to versions at or above the union floor, collect candidates and unions in one
- * traversal instead of two, and replace the parent Map with a walk that carries its
- * own parent chain. Do not add it to `reextract-binaries` without one of them.
+ * ⚠️ An earlier revision of this paragraph said "nearly all of it is `indexParents`".
+ * That was wrong, and the correction matters to anyone budgeting further work: the
+ * whole change — dropping the Map AND collapsing two full passes into one, which
+ * cannot be attributed separately from these numbers — bought 13-18%, not most of
+ * it. Attributed at 2.1.226, the parse is 669 ms of 3057 ms (22%) and everything
+ * this module does on top is 2388 ms (78%). That residual is the walk plus the
+ * per-node predicates; this two-way split does not divide it further.
+ *
+ * That is affordable per version and STILL NOT affordable naively across the
+ * archive: 3.1 s x 472 releases is ~24 minutes, which remains worse than the
+ * 2.2 s/version (~17 minutes) that `env-registry.ts` documents REJECTING for the
+ * same reason. (This extrapolation applies the LARGEST bundle's cost to every
+ * release, so it is an upper bound; `env-registry.ts` does not say what its own
+ * 2.2 s is measured on.) Nothing calls this module yet, so the trade is not live —
+ * but whoever wires it into a full sweep owns that number.
+ *
+ * ⚠️ Do NOT "fix" it by restricting the sweep to versions at or above the union
+ * floor. An earlier revision listed that first among the cheapest fixes; it is not
+ * a fix, it is the defect. The dispatch era below that floor is the only era that
+ * can date this surface correctly — see CONTROL_DISPATCH_FLOOR and the paragraph
+ * below — so skipping it re-dates every subtype already on the wire by then to
+ * 2.1.63: the 20 that version yields, of which 16 are extractable at 2.1.62 and the
+ * earliest is datable to 1.0.45 — 159 releases earlier by the dataset's own count,
+ * NOT the ~120 quoted below, which spans 1.0.45 to the SCHEMA floor instead. That
+ * is the mass introduction this module exists to avoid, and later arrivals dating
+ * correctly does not undo it. What is left that is safe:
+ * parse once and share the AST if another lane ever needs one, and prune whole
+ * subtrees the walk cannot yield from.
  *
  * FLOORS. The protocol is far older than its own self-description. The names
  * date from 1.0.45; the first zod schema appears at 2.1.20, the first union at
@@ -275,24 +297,44 @@ function singleStringArgument(n: unknown): string | undefined {
   return isStringLiteral(args[0]) ? args[0].value : undefined;
 }
 
-/** Walks every node, recording each one's parent. */
-function indexParents(root: Node): Map<Node, Node | null> {
-  const parents = new Map<Node, Node | null>();
-  const visit = (node: unknown, parent: Node | null): void => {
+/**
+ * One depth-first walk that carries its own ancestor chain, replacing a Map of
+ * every node to its parent. Every consumer here only ever walks UP and by a
+ * bounded number of hops, so the chain is all they need. Dropping the Map and the
+ * extra pass it fed bought 13-18% of the runtime and 16-17% of the peak RSS across
+ * the two bundles measured — worth having, and NOT most of the cost; see the COST
+ * paragraph in the file header for what the rest is.
+ *
+ * ⚠️ `ancestors` is LIVE and is mutated as the walk descends — it is typed
+ * `readonly` to stop a consumer writing to it, which does not stop it changing
+ * underfoot. Read it during the visit, or `slice` what you mean to keep.
+ * `collectCandidates` does exactly that for the arrays it defers.
+ *
+ * Arrays are transparent, so a node's ancestor is the nearest enclosing NODE,
+ * exactly as the Map recorded.
+ *
+ * Visits are pre-order, which is what `parents.keys()` iterated in — that is why
+ * candidate order, last-write-wins on `schemaVariable`, and union order are all
+ * unchanged by this.
+ */
+function walk(root: Node, visit: (node: Node, ancestors: readonly Node[]) => void): void {
+  const ancestors: Node[] = [];
+  const step = (node: unknown): void => {
     if (Array.isArray(node)) {
-      for (const child of node) visit(child, parent);
+      for (const child of node) step(child);
       return;
     }
     if (!isNode(node)) return;
-    parents.set(node, parent);
+    visit(node, ancestors);
+    ancestors.push(node);
     for (const key of Object.keys(node)) {
       if (key === 'type') continue;
       const value = node[key];
-      if (value && typeof value === 'object') visit(value, node);
+      if (value && typeof value === 'object') step(value);
     }
+    ancestors.pop();
   };
-  visit(root, null);
-  return parents;
+  step(root);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -340,23 +382,37 @@ function parse(source: string): Node {
   );
 }
 
+/** An `ArrayExpression` with the only ancestors `unionDescription` can reach. */
+interface ArrayEntry {
+  node: Node;
+  ancestors: readonly Node[];
+}
+
 /**
  * Every object literal carrying a `subtype`, plus every dispatch comparison
  * against one. Enum-shaped subtypes (shape 4) are deliberately collected too, so
  * the family filter can drop them explicitly rather than by silent omission.
+ *
+ * Candidate arrays come out of the same pass. The unions cannot be CLASSIFIED
+ * here — `isControlRequest` needs the full dispatch set, which is only complete
+ * once the walk ends — but they can be COLLECTED here, which is all the second
+ * full traversal was doing. Each array keeps three ancestors and nothing more,
+ * so what is retained is O(arrays), not O(nodes).
  */
-function collectCandidates(parents: Map<Node, Node | null>): {
+function collectCandidates(root: Node): {
   candidates: Candidate[];
   schemaVariable: Map<string, string>;
+  arrays: ArrayEntry[];
 } {
   const candidates: Candidate[] = [];
   const schemaVariable = new Map<string, string>();
+  const arrays: ArrayEntry[] = [];
 
-  for (const node of parents.keys()) {
+  walk(root, (node, ancestors) => {
     if (node.type === 'ObjectExpression') {
       const property = findProperty(node, 'subtype');
-      if (property) collectFromObject(node, property, parents, candidates, schemaVariable);
-      continue;
+      if (property) collectFromObject(node, property, ancestors, candidates, schemaVariable);
+      return;
     }
     if (node.type === 'BinaryExpression' && (node.operator === '===' || node.operator === '==')) {
       const dispatched = dispatchedName(node);
@@ -369,15 +425,19 @@ function collectCandidates(parents: Map<Node, Node | null>): {
           onRequestPath: dispatched.onRequestPath,
         });
       }
+      return;
     }
-  }
-  return { candidates, schemaVariable };
+    if (node.type === 'ArrayExpression') {
+      arrays.push({ node, ancestors: ancestors.slice(-3) });
+    }
+  });
+  return { candidates, schemaVariable, arrays };
 }
 
 function collectFromObject(
   object: Node,
   property: Node,
-  parents: Map<Node, Node | null>,
+  ancestors: readonly Node[],
   candidates: Candidate[],
   schemaVariable: Map<string, string>
 ): void {
@@ -394,11 +454,11 @@ function collectFromObject(
     symbol,
     node: object,
     evidence: built ? 'schema' : 'call_site',
-    description: built ? ownDescription(object, parents) : '',
+    description: built ? ownDescription(ancestors) : '',
   });
 
   if (built) {
-    const bound = boundVariable(object, parents);
+    const bound = boundVariable(ancestors);
     if (bound) schemaVariable.set(bound, symbol);
   }
 }
@@ -437,13 +497,13 @@ function dispatchedName(node: Node): { symbol: string; onRequestPath: boolean } 
  * construct, which is exactly how a nested field's prose gets misattributed to
  * the message.
  */
-function ownDescription(object: Node, parents: Map<Node, Node | null>): string {
-  const wrapper = parents.get(object);
+function ownDescription(ancestors: readonly Node[]): string {
+  const wrapper = ancestors[ancestors.length - 1];
   if (!wrapper || wrapper.type !== 'CallExpression') return '';
-  const member = parents.get(wrapper);
+  const member = ancestors[ancestors.length - 2];
   if (!member || member.type !== 'MemberExpression') return '';
   if ((member.property as Node)?.name !== 'describe') return '';
-  const call = parents.get(member);
+  const call = ancestors[ancestors.length - 3];
   if (!call || call.type !== 'CallExpression') return '';
   const first = (call.arguments as unknown[])[0];
   return isStringLiteral(first) ? first.value : '';
@@ -454,10 +514,10 @@ function ownDescription(object: Node, parents: Map<Node, Node | null>): string {
  * assign (`X = Ee(() => …)`) rather than declare, and indexing only declarator
  * inits misses them.
  */
-function boundVariable(object: Node, parents: Map<Node, Node | null>): string | undefined {
-  let current: Node | null = object;
-  for (let hops = 0; current && hops < 10; hops += 1) {
-    current = parents.get(current) ?? null;
+function boundVariable(ancestors: readonly Node[]): string | undefined {
+  for (let hops = 0; hops < 10; hops += 1) {
+    // Same bound as the Map walk it replaces: up to ten ancestors, nearest first.
+    const current = ancestors[ancestors.length - 1 - hops];
     if (!current) return undefined;
     // A binding site ENDS the walk either way. Falling through a declarator whose
     // id is a pattern, or an assignment to a member expression, would keep hopping
@@ -503,13 +563,12 @@ function referencedName(element: unknown): string | undefined {
 
 /** Arrays whose elements resolve to two or more known schemas. */
 function collectUnions(
-  parents: Map<Node, Node | null>,
+  arrays: readonly ArrayEntry[],
   schemaVariable: Map<string, string>,
   requestDispatched: ReadonlySet<string>
 ): Union[] {
   const unions: Union[] = [];
-  for (const node of parents.keys()) {
-    if (node.type !== 'ArrayExpression') continue;
+  for (const { node, ancestors } of arrays) {
     const elements = node.elements as unknown[];
     if (elements.length === 0) continue;
     const members = new Set<string>();
@@ -524,7 +583,7 @@ function collectUnions(
     const routed = [...members].filter((m) => requestDispatched.has(m)).length;
     unions.push({
       members,
-      description: unionDescription(node, parents),
+      description: unionDescription(ancestors),
       isControlRequest: routed * 2 > members.size,
     });
   }
@@ -532,13 +591,13 @@ function collectUnions(
 }
 
 /** The `.describe()` on the call that consumes a union array. */
-function unionDescription(array: Node, parents: Map<Node, Node | null>): string {
-  const call = parents.get(array);
+function unionDescription(ancestors: readonly Node[]): string {
+  const call = ancestors[ancestors.length - 1];
   if (!call || call.type !== 'CallExpression') return '';
-  const member = parents.get(call);
+  const member = ancestors[ancestors.length - 2];
   if (!member || member.type !== 'MemberExpression') return '';
   if ((member.property as Node)?.name !== 'describe') return '';
-  const describeCall = parents.get(member);
+  const describeCall = ancestors[ancestors.length - 3];
   if (!describeCall || describeCall.type !== 'CallExpression') return '';
   const first = (describeCall.arguments as unknown[])[0];
   return isStringLiteral(first) ? first.value : '';
@@ -609,13 +668,12 @@ export function extractControlMessages(
   version: string
 ): ControlMessageObservation[] {
   const program = parse(source);
-  const parents = indexParents(program);
-  const { candidates, schemaVariable } = collectCandidates(parents);
+  const { candidates, schemaVariable, arrays } = collectCandidates(program);
 
   // The handler path first: union ownership is derived from it, so it has to
   // exist before the unions are classified.
   const requestDispatched = new Set(candidates.filter((c) => c.onRequestPath).map((c) => c.symbol));
-  const unions = collectUnions(parents, schemaVariable, requestDispatched);
+  const unions = collectUnions(arrays, schemaVariable, requestDispatched);
   const controlMembers = new Set(
     unions.filter((u) => u.isControlRequest).flatMap((u) => [...u.members])
   );
