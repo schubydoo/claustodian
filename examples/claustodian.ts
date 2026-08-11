@@ -16,18 +16,32 @@
 
 export const DEFAULT_BASE = 'https://claustodian.dev/data';
 
-// All five values the schema's `type` enum allows. cli_flag, command, env_var and
-// config_key are all populated; internal_config_flag is reserved by the schema and
-// deliberately unused — internal-ness is carried by `category`
+// All six values the schema's `type` enum allows. cli_flag, command, env_var and
+// config_key are all populated. Two are not: internal_config_flag is reserved by the
+// schema and deliberately unused — internal-ness is carried by `category`
 // (`settings-internal`), because typing off a description would churn a record's
-// identity every time Anthropic edits the text.
-export type SymbolType = 'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag';
+// identity every time Anthropic edits the text — and control_message is accepted by
+// the schema but not yet emitted by any lane. Widening this union ahead of the data
+// keeps a consumer that adopts it from failing to compile the first time a
+// control_message record appears in a snapshot.
+export type SymbolType =
+  'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag' | 'control_message';
 export type Status = 'active' | 'deprecated' | 'removed' | 'needs_review';
 export type Confidence = 'high' | 'medium' | 'low';
 
-export interface ClaudeSymbol {
+/** The message family a control_message record belongs to. */
+export type ControlFamily = 'control_request';
+
+/**
+ * Which side of the stream-json channel sends the message. `null` means the
+ * direction is not observable for that record — either the version predates the
+ * split the CLI began declaring at 2.1.133, or the subtype belongs to no
+ * directional union at all. It is never backfilled from a later version.
+ */
+export type ControlDirection = 'host_to_cli' | 'cli_to_host' | null;
+
+interface SymbolFields {
   symbol: string;
-  type: SymbolType;
   first_seen: string;
   removed_in: string | null;
   deprecated_in?: string;
@@ -46,6 +60,29 @@ export interface ClaudeSymbol {
    */
   scopes?: string[];
 }
+
+/**
+ * A record is one of two shapes, and the schema enforces the split rather than
+ * merely allowing it: `family` and `direction` are REQUIRED on control_message
+ * records and FORBIDDEN on every other type. Modelling that as two variants keeps
+ * this type from describing records `npm run validate` would reject, and gives a
+ * consumer the two fields once it has narrowed on `type`:
+ *
+ *     if (sym.type === 'control_message') console.log(sym.direction);
+ *
+ * `?: never` is how the forbidden half is spelled; it is not an optional field.
+ */
+export type ClaudeSymbol =
+  | (SymbolFields & {
+      type: Exclude<SymbolType, 'control_message'>;
+      family?: never;
+      direction?: never;
+    })
+  | (SymbolFields & {
+      type: 'control_message';
+      family: ControlFamily;
+      direction: ControlDirection;
+    });
 
 export interface Snapshot {
   claudeCodeVersion: string;

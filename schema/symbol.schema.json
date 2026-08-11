@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://claustodian.dev/schema/symbol.schema.json",
   "title": "Claustodian Symbol Record",
-  "description": "One trackable Claude Code symbol (a CLI flag, environment variable, command, config key, or internal config flag), along with its lifecycle metadata and provenance.",
+  "description": "One trackable Claude Code symbol (a CLI flag, environment variable, command, config key, internal config flag, or stream-json control message), along with its lifecycle metadata and provenance.",
   "type": "object",
   "properties": {
     "symbol": {
@@ -12,7 +12,14 @@
     },
     "type": {
       "type": "string",
-      "enum": ["cli_flag", "env_var", "command", "config_key", "internal_config_flag"],
+      "enum": [
+        "cli_flag",
+        "env_var",
+        "command",
+        "config_key",
+        "internal_config_flag",
+        "control_message"
+      ],
       "description": "The kind of symbol this record describes."
     },
     "first_seen": {
@@ -82,6 +89,23 @@
       "minLength": 1,
       "description": "Grouping used for topic (startup, networking, ui, filesystem, auth, ...), for ownership/source scoping (third-party, cloud-auth, ci-detect, runtime, terminal, ...), and for how a symbol is surfaced: `cli-internal` for a flag hidden from `claude --help`, `settings`/`settings-internal` for keys in settings.json, `global-config` for keys in ~/.claude.json."
     },
+    "family": {
+      "type": "string",
+      "enum": ["control_request"],
+      "description": "The message family the CLI routes this subtype as. Only control_message records carry it. Membership is proven by the CLI dispatching the subtype on its control-request handler path, or by a union it routes as control requests \u2014 so a record can carry this value without any union naming it, which is the case for every subtype evidenced only by a call site or a dispatch. The enum widens if further families (system messages, control responses, result messages) are published later; the record `type` deliberately does not encode the family, so identity survives a reclassification."
+    },
+    "direction": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": ["host_to_cli", "cli_to_host"]
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Which side of the stream-json channel sends this message. Derived only from the two disjoint sub-unions the bundle itself declares, never inferred from a call site's surroundings. Null means the direction is not observable for this record, which happens two ways: the version predates the split the CLI began declaring at 2.1.133, OR the subtype belongs to no directional sub-union in that version \u2014 true of every subtype evidenced only by a call site or a dispatch, at any version. Null is therefore NOT a statement that the CLI fails to distinguish the two directions, and it is never backfilled from a later version. Only control_message records carry it."
+    },
     "scopes": {
       "type": "array",
       "items": {
@@ -106,6 +130,35 @@
     "category"
   ],
   "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "control_message"
+          }
+        },
+        "required": ["type"]
+      },
+      "then": {
+        "properties": {
+          "family": {
+            "$ref": "#/properties/family"
+          },
+          "direction": {
+            "$ref": "#/properties/direction"
+          }
+        },
+        "required": ["family", "direction"]
+      },
+      "else": {
+        "properties": {
+          "family": false,
+          "direction": false
+        }
+      }
+    }
+  ],
   "if": {
     "properties": {
       "first_seen_estimated": {

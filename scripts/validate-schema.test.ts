@@ -95,6 +95,60 @@ describe('symbol schema', () => {
   it('fails when an unknown extra property is present', () => {
     expect(validate(validSymbol({ extra_field: 'not allowed' }))).toBe(false);
   });
+
+  // The control_message contract. Nothing else in CI can observe these: Codecov and
+  // the statements threshold measure scripts/ and worker/, and a JSON Schema branch
+  // is not a statement in either; `npm run validate` only sees committed data/, and
+  // no control_message records ship yet. Delete the `else` branch or misspell the
+  // enum member and every other test still passes.
+  const controlMessage = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
+    ...validSymbol({
+      symbol: 'remote_control',
+      type: 'control_message',
+      provenance: 'binary',
+      confidence: 'medium',
+      category: 'control-protocol',
+    }),
+    family: 'control_request',
+    direction: null,
+    ...overrides,
+  });
+
+  it('accepts a control_message record with a direction', () => {
+    expect(validate(controlMessage({ direction: 'host_to_cli' }))).toBe(true);
+  });
+
+  it('accepts a control_message record with direction null', () => {
+    // Null is the honest value both before the 2.1.133 split and for any subtype
+    // that belongs to no directional union, so it must validate.
+    expect(validate(controlMessage())).toBe(true);
+  });
+
+  it('fails a control_message record missing family', () => {
+    const record = controlMessage();
+    delete record.family;
+    expect(validate(record)).toBe(false);
+  });
+
+  it('fails a control_message record missing direction', () => {
+    // Absent and null must not be interchangeable: a record has to state the
+    // direction or state that it is unknown.
+    const record = controlMessage();
+    delete record.direction;
+    expect(validate(record)).toBe(false);
+  });
+
+  it('fails a control_message record with an unrecognized direction', () => {
+    expect(validate(controlMessage({ direction: 'sideways' }))).toBe(false);
+  });
+
+  it('fails when a non-control_message record carries direction', () => {
+    expect(validate(validSymbol({ direction: 'host_to_cli' }))).toBe(false);
+  });
+
+  it('fails when a non-control_message record carries family', () => {
+    expect(validate(validSymbol({ family: 'control_request' }))).toBe(false);
+  });
 });
 
 describe('snapshot schema', () => {

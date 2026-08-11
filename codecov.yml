@@ -100,6 +100,11 @@ component_management:
 
     # Lane 3a — reading symbols out of a release bundle. The recall-critical
     # half: every extractor defect this project has shipped lived here.
+    #
+    # control-lane.ts sits here rather than under policy even though it decides
+    # its own family membership, for the same reason env-registry.ts does: what
+    # can go wrong with it is recall against a bundle shape it has not seen, and
+    # that is the failure this grouping exists to make legible.
     - component_id: binary_extraction
       name: binary lane (extraction)
       paths:
@@ -107,6 +112,7 @@ component_management:
         - scripts/settings-schema.ts
         - scripts/env-registry.ts
         - scripts/argv-scopes.ts
+        - scripts/control-lane.ts
 
     # Lane 3b — interpreting that evidence: what may publish, how it is
     # categorized, how per-version windows are distilled.
