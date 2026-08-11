@@ -115,15 +115,29 @@ import { compareVersionsAsc } from './lib.js';
  * is union membership: it is invisible until the union becomes provable, then dates
  * to that version. This module cannot do better with what the bundle contains.
  *
- * ⚠️ The at-risk records are IDENTIFIABLE, and only here. `evidence` collapses to
- * the highest-ranked signal, so a union-only symbol and a dispatched-and-schema'd
- * one both report `schema`; and `controlMessageConfidence` grades a described schema
- * `high`, which the record contract forbids alongside `first_seen_estimated: true`.
- * So a consumer reading the published record alone cannot tell them apart, and the
- * one place the distinction still exists is this module. `admittedBy` carries it out:
- * `'union'` means `first_seen` is an upper bound. An earlier revision deferred that
- * field as speculative; it is not, because the consumer is the PR that emits these
- * records, and without it a known-wrong date ships at high confidence, unflagged.
+ * ⚠️ `admittedBy` carries the one bit that witnesses this, and this module is the
+ * only place that bit exists. `evidence` collapses to the highest-ranked signal, so
+ * a union-only symbol and a dispatched-and-schema'd one both report `schema`; and
+ * `controlMessageConfidence` grades a described schema `high`, which the record
+ * contract forbids alongside `first_seen_estimated: true`. So the published record
+ * alone cannot distinguish them. Measured at the boundary this floor defines:
+ * 2.1.62 publishes 16 symbols, every one `dispatch`; 2.1.63 publishes 20, as 14
+ * `both`, 2 `union` and 4 `dispatch` — and the two `union` records are
+ * `hook_callback` and `elicitation`, `hook_callback` being the false introduction
+ * enumerated above. An earlier revision deferred the field as speculative; it is
+ * not, because the consumer is the PR that emits these records.
+ *
+ * ⚠️ `'union'` is a WITNESS of an upper-bound date, NOT a test for one, and the flag
+ * is partial in both directions. It over-reports harmlessly: a subtype newly added
+ * to an already-routed union is genuinely new and still publishes `'union'`, costing
+ * an unnecessary flag rather than a wrong date. It also UNDER-reports, which is not
+ * harmless. `isControlRequest` is a majority rule, so a union flips from unrouted to
+ * routed once enough members are dispatched; a member that becomes dispatched in
+ * that same release is admitted by both signals at once and publishes `'both'`,
+ * while having been declared — and invisible — a release earlier. Deciding that case
+ * needs cross-version state this module does not have, since it sees one bundle at a
+ * time, so it belongs to whatever assembles these observations. Until then `'both'`
+ * means "two signals here", not "this date is sound".
  *
  * Emitting the flag is still the consumer's decision, not this module's — this lane
  * reports what it observed and does not grade dating confidence.
@@ -200,14 +214,16 @@ export interface ControlMessageObservation {
    * can carry a described schema (`evidence: 'schema'`, graded `high`) and still
    * owe its admission entirely to union membership.
    *
-   * `'union'` alone makes `first_seen` an UPPER BOUND. Such a subtype may have
-   * been declared in earlier releases and been invisible there, because a union
-   * only admits once the CLI demonstrably routes it — `hook_callback` is
-   * declared at 2.1.62 and first published at 2.1.63 for exactly this reason.
-   * See CONTROL_UNION_FLOOR.
+   * `'union'` WITNESSES an upper-bound `first_seen`: such a subtype may have been
+   * declared in earlier releases and been invisible there, because a union only
+   * admits once the CLI demonstrably routes it. `hook_callback` is declared at
+   * 2.1.62 and first published at 2.1.63 for exactly this reason, and measures
+   * `'union'` there.
    *
-   * A consumer that dates records MUST read this rather than `evidence`, which
-   * collapses to the highest-ranked signal and cannot distinguish the two.
+   * It is a witness, not a test — `'both'` does NOT mean the date is sound. See
+   * CONTROL_UNION_FLOOR for the transition case it misses. A consumer that dates
+   * records should read this rather than `evidence`, which collapses to the
+   * highest-ranked signal and cannot distinguish the two at all.
    */
   admittedBy: ControlAdmission;
 }

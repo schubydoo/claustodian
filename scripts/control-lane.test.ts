@@ -499,12 +499,21 @@ describe('extractControlMessages', () => {
 
   describe('admittedBy', () => {
     it('separates a union-only admission from a dispatched one, at the same evidence grade', () => {
-      // The case this field exists for. `hook_callback` here is a member of a
-      // routed union and is NOT itself on the request path — exactly its shape at
-      // 2.1.62, where it is declared and undetectable. It carries a described
-      // schema, so `evidence` is 'schema' and the confidence grade is `high`,
-      // identical to `initialize` beside it. Only `admittedBy` separates them, and
-      // it is the bit that says this subtype's `first_seen` is an upper bound.
+      // The case this field exists for, modelling 2.1.63 — the release where the
+      // union becomes provable and `hook_callback` is published for the FIRST time.
+      // That is the version whose record carries the flag, so it is the state to
+      // pin. Its 2.1.62 shape is this same bundle with the union unrouted, where the
+      // extractor yields no `hook_callback` at all; there is nothing to assert there,
+      // and that absence is precisely why the 2.1.63 date is an upper bound.
+      //
+      // Measured against the real bundles, not inferred: 2.1.62 publishes 16 symbols,
+      // every one `dispatch`; 2.1.63 publishes 20, as 14 `both`, 2 `union` and 4
+      // `dispatch`, and `hook_callback` is one of the two `union` records.
+      //
+      // Here it is a member of a routed union and is NOT itself on the request path.
+      // It carries a described schema, so `evidence` is 'schema' and the confidence
+      // grade is `high`, identical to `initialize` beside it. Only `admittedBy`
+      // separates them.
       const src = [
         'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;',
         'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
