@@ -158,9 +158,13 @@ export const CONTROL_SPLIT_FLOOR = '2.1.133';
  * evidence and the only reliable signal available.
  *
  * Call sites cannot substitute: the bundle ships BOTH sides of the protocol (the
- * SDK lets a JS program act as the host), so every subtype has an outbound
- * construction and an inbound handler somewhere in the same file. Measured on
- * 2.1.226: both sub-unions score 7/7 on each signal.
+ * SDK lets a JS program act as the host), so both signals appear on both sides.
+ * Measured on 2.1.226, per sub-union, as outbound construction (a `subtype`
+ * literal inside a `request`/`send` call) over inbound dispatch (the
+ * `<expr>.request.subtype` path of the 34/35 above): the 7-member cli_to_host
+ * union scores 7/7 and 7/7, the 35-member host_to_cli union 29/35 and 34/35.
+ * So the plausible rule "constructed here means cli_to_host" labels BOTH unions
+ * host_to_cli — it gets the one union it exists to catch exactly backwards.
  */
 const LOOP_ORIGINATES = 'the agent loop originates';
 const CLIENT_SENDS = 'a client sends to drive the loop';
