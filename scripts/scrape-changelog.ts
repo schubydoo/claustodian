@@ -74,7 +74,13 @@ export interface ExtractedSymbol {
   type: ExtractedSymbolType;
 }
 
-/** Matches schema/symbol.schema.json exactly. */
+/**
+ * The shape this pipeline assembles. A SUBSET of schema/symbol.schema.json, not a
+ * mirror of it: the schema's `type` enum also allows `control_message`, and those
+ * records carry `family` and `direction`, none of which any lane here emits. Keep
+ * this narrower than the contract rather than in step with it — widening it would
+ * add fields nothing populates.
+ */
 export interface SymbolRecord {
   symbol: string;
   type: 'cli_flag' | 'env_var' | 'command' | 'config_key' | 'internal_config_flag';
