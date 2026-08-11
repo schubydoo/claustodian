@@ -30,8 +30,11 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { extractControlMessages } from './control-lane.js';
+import { sliceEmbeddedBundle } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
 import { compareVersionsAsc, isMain } from './lib.js';
+import type { ControlMessageObservation } from './control-lane.js';
 
 const DEFAULT_ARCHIVE_DIR = 'scratch/binaries';
 const DEFAULT_OUT_DIR = 'binary-cache';
@@ -41,8 +44,37 @@ const TAR_MAX_BUFFER = 1 << 30;
 const VERSION_RE = /^\d+\.\d+\.\d+$/;
 
 /** Resolving one archived version's source: extractable, absent, or not official. */
+/**
+ * A dirty flag on the cache directory: present means "this cache is NOT known to be
+ * complete", absent means a run finished and wrote every version it considered.
+ *
+ * ⚠️ Raised BEFORE `clearCache`, lowered only on a clean finish. Written at the end
+ * instead, it would miss anything that kills the process mid-run — the cache is
+ * already incomplete by then.
+ *
+ * `_`-prefixed so `clearCache` preserves it and `loadCacheFiles` skips it.
+ */
+export const CACHE_INCOMPLETE_MARKER = '_cache-incomplete.json';
+
+/** Writes the marker. One writer, so every state records the same shape. */
+function writeMarker(outDir: string, payload: Record<string, unknown> & { status: string }): void {
+  writeFileSync(join(outDir, CACHE_INCOMPLETE_MARKER), JSON.stringify(payload, null, 2));
+}
+
 export type BundleResult =
-  { kind: 'ok'; src: string } | { kind: 'missing' } | { kind: 'unverified'; file: string };
+  | {
+      kind: 'ok';
+      /** What the regex lanes read: the artifact decoded, unchanged and unsliced. */
+      src: string;
+      /**
+       * The undecoded artifact, present ONLY for the compiled era. A parser cannot
+       * read `src` there — it is a whole executable — so the AST lane slices this
+       * instead. Absent for npm tarballs, where `src` is already `package/cli.js`.
+       */
+      bytes?: Buffer;
+    }
+  | { kind: 'missing' }
+  | { kind: 'unverified'; file: string };
 
 /** The official SHA-256 for `relPath` from a version dir's `SHA256SUMS`, if any. */
 function officialSha(versionDir: string, relPath: string): string | undefined {
@@ -96,7 +128,10 @@ export function readBundleSource(archiveDir: string, version: string): BundleRes
   if (existsSync(compiled)) {
     if (!isOfficial(compiled, dir, 'linux-x64/claude'))
       return { kind: 'unverified', file: compiled };
-    return { kind: 'ok', src: readFileSync(compiled, 'utf-8') };
+    // Read once as bytes and decode from that, rather than reading twice: `src`
+    // must stay byte-for-byte what the regex lanes have always seen.
+    const bytes = readFileSync(compiled);
+    return { kind: 'ok', src: bytes.toString('utf-8'), bytes };
   }
 
   return { kind: 'missing' };
@@ -168,11 +203,23 @@ export async function main(argv: string[]): Promise<number> {
         `Point --out at an empty directory or a prior reextract-binaries cache.`
     );
   }
+  writeMarker(options.outDir, {
+    status: 'in-progress',
+    note:
+      'reextract-binaries cleared this cache and has not finished repopulating it. ' +
+      'Do not backfill from it. Removed automatically by a run that writes every ' +
+      'version it selects and has no outstanding losses.',
+    versionsConsidered: versions.length,
+  });
+
   clearCache(options.outDir);
 
   let extracted = 0;
   const missing: string[] = [];
   const unverified: string[] = [];
+  // Collected rather than thrown: one bad bundle must not abort a 470-version loop,
+  // and the run reports every failure at the end instead of only the first.
+  const controlFailures: Array<{ version: string; reason: string }> = [];
   for (const version of versions) {
     const result = readBundleSource(options.archiveDir, version);
     if (result.kind === 'missing') {
@@ -184,9 +231,30 @@ export async function main(argv: string[]): Promise<number> {
       continue;
     }
     const symbols = extractBundleSymbols(result.src);
+    // Deliberately uninitialised: the catch `continue`s, so an initial value would
+    // never be read, and a default of `[]` here is exactly the silent-zero this lane
+    // exists to refuse.
+    let controlMessages: ControlMessageObservation[];
+    try {
+      // The compiled era hands us an executable, which no parser can read. Slice the
+      // embedded bundle out for the AST lane; the npm era is already source, and
+      // `src` is what the regex lanes keep seeing either way.
+      const parseable = result.bytes ? sliceEmbeddedBundle(result.bytes, version) : result.src;
+      controlMessages = extractControlMessages(parseable, version);
+    } catch (error) {
+      controlFailures.push({ version, reason: (error as Error).message });
+      continue;
+    }
     writeFileSync(
       join(options.outDir, `${version}.json`),
-      JSON.stringify({ version, source: 'binary', count: symbols.length, symbols })
+      JSON.stringify({
+        version,
+        source: 'binary',
+        count: symbols.length,
+        symbols,
+        controlCount: controlMessages.length,
+        controlMessages,
+      })
     );
     extracted++;
   }
@@ -203,6 +271,64 @@ export async function main(argv: string[]): Promise<number> {
     `Re-extracted ${extracted}/${versions.length} version(s) into ${options.outDir}` +
       (notes.length ? `; ${notes.join('; ')}` : '.')
   );
+
+  // A non-zero exit, and every failure named. A control-lane refusal means that
+  // version's control symbols are ABSENT from the cache, and absence downstream
+  // reads as a removal — so this cannot be a warning the caller might miss.
+  if (controlFailures.length > 0) {
+    // Replaces the in-progress note with why the flag is staying. `return 1` alone
+    // is not enough: the next runbook step is a separate command, and a partly-written
+    // cache looks plausible to `loadCacheFiles`, which only refuses an empty one.
+    writeMarker(options.outDir, {
+      status: 'refused',
+      note:
+        'These versions have no cache entry. Backfilling would report their symbols ' +
+        'as removed. Fix the refusals and re-run reextract-binaries.',
+      versionsConsidered: versions.length,
+      refused: controlFailures.length,
+      failures: controlFailures,
+    });
+    console.error(
+      `\ncontrol lane refused ${controlFailures.length} version(s); their entries were ` +
+        `NOT written, so the cache is incomplete and must not be backfilled from:\n` +
+        controlFailures.map((f) => `  ${f.version}: ${f.reason}`).join('\n')
+    );
+    return 1;
+  }
+
+  // Lowered only when nothing was skipped — `missing` (no readable bundle) or
+  // `unverified` (checksum mismatch, refused). Either way the cache entry was
+  // cleared and never rewritten; the
+  // flag stops a backfill distilling that absence as a removal. Exit code unchanged.
+  //
+  // ⚠️ NOT covered: a version in the cache but absent from the archive is never
+  // selected, so this cannot see it. `scripts/check-version-sets.sh` catches that
+  // before step 1 and the runbook requires it.
+  const skipped = missing.length + unverified.length;
+  if (skipped > 0) {
+    writeMarker(options.outDir, {
+      status: 'skipped',
+      note:
+        'These versions were selected from the archive but not written — `missing` has ' +
+        'no readable bundle, `unverified` failed its checksum. Their prior cache ' +
+        'entries were cleared and not rewritten. Restore each artifact, with its ' +
+        'SHA256SUMS entry, under ' +
+        'scratch/binaries/<version>/ and re-run. `scrape-binary --force` does not help: ' +
+        'it writes binary-cache/, which step 1 clears before re-reading the archive.',
+      versionsConsidered: versions.length,
+      missing,
+      unverified,
+    });
+    console.error(
+      `\n${skipped} version(s) are missing from the cache; ` +
+        `${CACHE_INCOMPLETE_MARKER} is left in place and backfill will refuse until a run ` +
+        `writes every version.`
+    );
+    return 0;
+  }
+
+  // Only here: every version considered was written, so the cache is complete.
+  rmSync(join(options.outDir, CACHE_INCOMPLETE_MARKER), { force: true });
   return 0;
 }
 

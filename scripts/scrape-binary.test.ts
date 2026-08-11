@@ -2,13 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createHash } from 'node:crypto';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { extractControlMessages } from './control-lane.js';
+import { extractSettingsKeys } from './settings-schema.js';
+import { sliceEmbeddedBundle } from './slice-bundle.js';
 import {
   buildCacheRecord,
+  CONTROL_REFUSAL_EXIT,
+  isDeterministicRefusal,
   main,
   parseArgs,
   resolveVersion,
@@ -17,9 +23,42 @@ import {
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
-/** A minimal commander `.option` spec the extractor recognizes, so a fake bundle
- * yields at least one own-evidenced symbol (proves extraction ran on our bytes). */
-const FAKE_BUNDLE = `.option("--demo-flag","a demonstration flag")`;
+/**
+ * A minimal but PARSEABLE bundle: a commander `.option` spec the flag extractor
+ * recognizes, plus a control-request handler for the control lane.
+ *
+ * Both halves are load-bearing now that `buildCacheRecord` runs an AST lane as well
+ * as the regex one. The control lane refuses a bundle it cannot parse, and refuses
+ * a version at or above the dispatch floor that yields nothing — so a fragment like
+ * a bare `.option(...)` is no longer a usable fixture, and every version these tests
+ * scrape is above that floor.
+ */
+const FAKE_BUNDLE = [
+  // The flag lane's evidence.
+  `program.option("--demo-flag","a demonstration flag");`,
+  // The control lane's. Every version these tests scrape is above ALL THREE floors,
+  // so a fixture has to be a miniature of the real protocol, not a fragment: two
+  // schema-bearing subtypes, a union that routes them, BOTH directional sub-unions
+  // (the split guard demands both, not merely a non-empty map), and a handler that
+  // dispatches on `<expr>.request.subtype` so the unions classify as control
+  // requests under the sibling-majority rule.
+  `var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;`,
+  `var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes the session."));`,
+  `var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the active model."));`,
+  `var B1=Ee(()=>Se({subtype:xt("hook_callback")}).describe("Delivers a hook callback."));`,
+  `var B2=Ee(()=>Se({subtype:xt("can_use_tool")}).describe("Asks whether a tool may run."));`,
+  // Two members per side: an array of one resolves to a single member and is not a
+  // union at all, so a one-each split still trips the split guard.
+  `var HOST=Ee(()=>fs([A1(),A2()]).describe("Control requests a client sends to drive the loop."));`,
+  `var CLI=Ee(()=>fs([B1(),B2()]).describe("Control requests the agent loop originates and needs a reply to."));`,
+  `var ALL=Ee(()=>fs([A1(),A2(),B1(),B2()]));`,
+  `function handle(e){` +
+    `if(e.request.subtype==="initialize")return 1;` +
+    `else if(e.request.subtype==="set_model")return 2;` +
+    `else if(e.request.subtype==="hook_callback")return 3;` +
+    `else if(e.request.subtype==="can_use_tool")return 4;` +
+    `return 0}`,
+].join('');
 
 /** Fake a CDN manifest + binary response pair, keyed by URL substring. */
 function stubCdn(version: string, binary: string, checksum: string): void {
@@ -93,12 +132,136 @@ describe('resolveVersion', () => {
 });
 
 describe('buildCacheRecord', () => {
+  it('treats a slicer refusal as deterministic, not as a transient failure', async () => {
+    // The finding this closes. `sliceEmbeddedBundle` joined the extraction path after
+    // the classifier was written and throws its own `slice-bundle:` prefix, so its
+    // refusals were falling into the tolerated bucket — CI would warn and continue
+    // with NO cache entry for the release, which is the outcome the exit code exists
+    // to prevent. Driven end to end rather than by asserting on the prefix.
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-slice-refusal-'));
+    // Compiled-shaped (leading NUL) but carrying no bundle: the slicer refuses.
+    const artifact = Buffer.concat([Buffer.alloc(64, 0), Buffer.from('not a bundle', 'utf-8')]);
+    stubCdn('2.1.214', artifact.toString('binary'), sha256(artifact.toString('binary')));
+
+    const code = await main(['--version', '2.1.214', '--out', root]);
+
+    expect(code).toBe(CONTROL_REFUSAL_EXIT);
+    expect(existsSync(join(root, '2.1.214.json'))).toBe(false);
+    await rm(root, { recursive: true, force: true });
+  });
+
+  it('rethrows a failure that is not a control-lane refusal', async () => {
+    // The refusal code must be narrow. If `main` swallowed every error into exit 2,
+    // a CDN failure would be reported to CI as a deterministic refusal and fail the
+    // run that `continue-on-error` used to tolerate — the opposite mistake.
+    await expect(main(['--version', 'not-a-version'])).rejects.toThrow();
+  });
+
+  it('does not misread a thrown non-Error as a refusal', async () => {
+    // `(error as Error).message` is `undefined` when something throws a string, and
+    // the `?? ''` fallback is what stops `.startsWith` exploding. Getting this wrong
+    // in the other direction would be worse: an unrecognisable failure must rethrow,
+    // not be reported to CI as a deterministic control-lane refusal.
+    vi.stubGlobal('fetch', () => {
+      throw 'a plain string, not an Error';
+    });
+    // The ORIGINAL value must come back out. Without `?? ''` this rejects too — but
+    // with a TypeError from `undefined.startsWith`, which asserting `toBeDefined()`
+    // could not tell apart, so that assertion pinned nothing.
+    await expect(main(['--version', '2.1.214', '--out', '/tmp'])).rejects.toBe(
+      'a plain string, not an Error'
+    );
+    vi.unstubAllGlobals();
+  });
+
+  it('classifies a real refusal from every refusing module on the path', () => {
+    // The list has been outgrown TWICE — `slice-bundle` when it joined the path, then
+    // `settings schema`, which was there all along, reached through
+    // `extractBundleSymbols`. Both times the refusal silently took CI's tolerated
+    // branch. Every module is TRIGGERED here rather than asserted as a string, so one
+    // that changes its own prefix breaks this instead of going quiet.
+    const refusals: string[] = [];
+    try {
+      sliceEmbeddedBundle(Buffer.alloc(9000, 0), 'x');
+    } catch (e) {
+      refusals.push((e as Error).message);
+    }
+    try {
+      extractControlMessages('var x=1;', '2.1.226');
+    } catch (e) {
+      refusals.push((e as Error).message);
+    }
+    try {
+      // An anchor key with no reachable schema root. An earlier version of this test
+      // asserted this module's prefix as a literal and claimed triggering it needed a
+      // crafted bundle — that was untrue, and an untriggered assertion would still
+      // pass if the module changed its prefix, which is the exact drift this guards.
+      extractSettingsKeys('cleanupPeriodDays:v.number()');
+    } catch (e) {
+      refusals.push((e as Error).message);
+    }
+    expect(refusals).toHaveLength(3);
+    for (const message of refusals) expect(isDeterministicRefusal(message)).toBe(true);
+    // And a transient failure must NOT be classified as deterministic.
+    expect(isDeterministicRefusal('fetch failed')).toBe(false);
+  });
+
+  it('pins the refusal exit code as the literal the workflow compares against', () => {
+    // `expect(code).toBe(CONTROL_REFUSAL_EXIT)` alone pins nothing: it passes if the
+    // constant becomes 0, which would restore the very swallow this exists to stop.
+    // The value is a contract with the workflow, so assert the literal AND that the
+    // workflow still tests for it.
+    expect(CONTROL_REFUSAL_EXIT).toBe(2);
+
+    const workflow = readFileSync('.github/workflows/update-from-changelog.yml', 'utf-8');
+    expect(workflow).toMatch(new RegExp(`"\\$code"\\s*=\\s*"${CONTROL_REFUSAL_EXIT}"`));
+    // And that the tolerance is not back in the step, where it would swallow this.
+    expect(workflow).not.toMatch(/^\s*continue-on-error:/m);
+  });
+
+  it('returns the control-refusal exit code, distinct from a transient failure', async () => {
+    // CI tells a deterministic refusal from a CDN hiccup on this code alone. If the
+    // two ever collapse to one code, `continue-on-error`-style tolerance silently
+    // swallows a refusal and the release ships with no binary evidence at all.
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-refusal-'));
+    // A bundle that parses but yields no control requests at a version above the
+    // dispatch floor — the lane refuses rather than writing a zero.
+    stubCdn('2.1.214', 'var x=1;', sha256('var x=1;'));
+    const code = await main(['--version', '2.1.214', '--out', root]);
+
+    expect(code).toBe(CONTROL_REFUSAL_EXIT);
+    expect(existsSync(join(root, '2.1.214.json'))).toBe(false);
+    await rm(root, { recursive: true, force: true });
+  });
+
   it('produces the same shape reextract-binaries writes', () => {
-    const record = buildCacheRecord('2.1.214', FAKE_BUNDLE);
+    const record = buildCacheRecord('2.1.214', Buffer.from(FAKE_BUNDLE, 'utf-8'));
     expect(record.version).toBe('2.1.214');
     expect(record.source).toBe('binary');
     expect(record.count).toBe(record.symbols.length);
     expect(record.symbols.some((s) => s.symbol === '--demo-flag')).toBe(true);
+
+    // The KEYS and their order, not just the fields this test happened to know
+    // about. `reextract-binaries` writes an object literal in this order and the
+    // two files must be interchangeable; asserting a subset let a writer add,
+    // drop or reorder a key without failing anything.
+    expect(Object.keys(record)).toEqual([
+      'version',
+      'source',
+      'count',
+      'symbols',
+      'controlCount',
+      'controlMessages',
+    ]);
+    // And the control half must be real, not an empty array standing in for it.
+    expect(record.controlCount).toBe(record.controlMessages.length);
+    expect(record.controlMessages.map((m) => m.symbol).sort()).toEqual([
+      'can_use_tool',
+      'hook_callback',
+      'initialize',
+      'set_model',
+    ]);
+    expect(record.controlMessages.every((m) => m.family === 'control_request')).toBe(true);
   });
 });
 

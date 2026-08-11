@@ -28,6 +28,8 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { extractControlMessages, type ControlMessageObservation } from './control-lane.js';
+import { sliceEmbeddedBundle } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
 import { isMain } from './lib.js';
 
@@ -39,7 +41,7 @@ const DEFAULT_INDEX_PATH = 'data/index.json';
 /** A strict `major.minor.patch` — rejects junk version input early. */
 const VERSION_RE = /^\d+\.\d+\.\d+$/;
 /** Per-request deadline. Bounds a stalled connection (one that accepts but never
- * responds) so the non-fatal scrape step fails fast and lets the authoritative
+ * responds) so the tolerated scrape step fails fast and lets the authoritative
  * changelog update proceed, rather than hanging to the job-level timeout. Ample
  * for the ~250 MB binary on CI bandwidth; the manifest fetch is tiny. */
 const REQUEST_TIMEOUT_MS = 120_000;
@@ -114,10 +116,34 @@ async function fetchRetry(url: string, tries = 3): Promise<Response> {
   throw lastErr;
 }
 
-/** The cache-file record for `version`, byte-identical to a full re-extraction. */
-export function buildCacheRecord(version: string, bundle: string): BinaryCacheRecord {
+/**
+ * The cache-file record for `version`, byte-identical to a full re-extraction.
+ *
+ * ⚠️ That invariant is why the control lane runs here too: this is the OTHER writer
+ * of `binary-cache/<version>.json`, so omitting a key it writes would leave the cache
+ * holding two shapes.
+ *
+ * A control-lane refusal propagates — one version is being scraped, so failing is the
+ * point. `reextract-binaries` collects instead, to avoid a half-written cache.
+ */
+export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryCacheRecord {
+  // Two different inputs on purpose. The regex lanes read the artifact decoded and
+  // unsliced, exactly as they always have — changing that would change published
+  // data. The AST lane cannot read an executable at all, so it gets the embedded
+  // bundle; for an npm-era artifact that is a pass-through.
+  const bundle = Buffer.from(artifact.buffer, artifact.byteOffset, artifact.byteLength).toString(
+    'utf-8'
+  );
   const symbols = extractBundleSymbols(bundle);
-  return { version, source: 'binary', count: symbols.length, symbols };
+  const controlMessages = extractControlMessages(sliceEmbeddedBundle(artifact, version), version);
+  return {
+    version,
+    source: 'binary',
+    count: symbols.length,
+    symbols,
+    controlCount: controlMessages.length,
+    controlMessages,
+  };
 }
 
 export interface BinaryCacheRecord {
@@ -125,6 +151,8 @@ export interface BinaryCacheRecord {
   source: 'binary';
   count: number;
   symbols: ReturnType<typeof extractBundleSymbols>;
+  controlCount: number;
+  controlMessages: ControlMessageObservation[];
 }
 
 /** Write `record` to `<outDir>/<version>.json` atomically (tmp + rename). */
@@ -185,14 +213,50 @@ export async function scrapeBinary(
     );
   }
 
-  const record = buildCacheRecord(version, buf.toString('utf-8'));
+  const record = buildCacheRecord(version, buf);
   const path = writeCacheFile(options.outDir, record);
   console.log(`${version}: extracted ${record.count} symbol(s) → ${path} (checksum verified).`);
   return { path, count: record.count };
 }
 
+/**
+ * Exit code for a deterministic refusal, distinct from every other failure.
+ *
+ * The CI step tolerates a transient CDN failure but must NOT tolerate this: a
+ * refusal recurs on every retry and drops the release's whole cache entry, flags and
+ * env vars included. ⚠️ The workflow compares against the literal `2`.
+ */
+export const CONTROL_REFUSAL_EXIT = 2;
+
+/**
+ * Prefixes of the refusals that are DETERMINISTIC — a bad bundle, not a bad network.
+ *
+ * ⚠️ Every refusing module on the extraction path must be listed. An unmatched
+ * message falls into the transient bucket, where CI warns and continues with no
+ * cache entry. That has happened twice: `slice-bundle` and `settings schema`.
+ */
+const REFUSAL_PREFIXES = ['control lane:', 'slice-bundle:', 'settings schema:'] as const;
+
+/** True when a failure will recur on retry, so CI must fail rather than tolerate it. */
+export function isDeterministicRefusal(message: string): boolean {
+  return REFUSAL_PREFIXES.some((prefix) => message.startsWith(prefix));
+}
+
 export async function main(argv: string[]): Promise<number> {
-  await scrapeBinary(parseArgs(argv));
+  try {
+    await scrapeBinary(parseArgs(argv));
+  } catch (error) {
+    const message = (error as Error).message ?? '';
+    if (isDeterministicRefusal(message)) {
+      console.error(
+        `${message}\n\nThis is deterministic, not a transient CDN failure: retrying will ` +
+          `refuse again. No cache entry was written for this version, so its symbols are ` +
+          `absent rather than zero. Fix the lane or the bundle before re-running.`
+      );
+      return CONTROL_REFUSAL_EXIT;
+    }
+    throw error;
+  }
   return 0;
 }
 

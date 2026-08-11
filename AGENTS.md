@@ -48,6 +48,7 @@ this** — there is a reconciliation step that has to happen first.
 | Path                          | What                                                     |
 | ----------------------------- | -------------------------------------------------------- |
 | `scripts/extract-bundle.ts`   | positive-evidence extraction from a release bundle       |
+| `scripts/control-lane.ts`     | AST extraction of the stream-json control protocol       |
 | `scripts/binary-lane.ts`      | policy: what publishes, how it is categorised, re-dating |
 | `scripts/backfill-binary.ts`  | observations → `data/binary-observations.json`           |
 | `scripts/fetch-docs.ts`       | official docs pages → `data/docs.json`                   |

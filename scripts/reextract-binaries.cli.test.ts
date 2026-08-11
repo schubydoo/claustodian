@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  CACHE_INCOMPLETE_MARKER,
   isDedicatedCache,
   main,
   parseArgs,
@@ -63,13 +64,20 @@ describe('reextract-binaries readBundleSource', () => {
     expect(readBundleSource('scratch/binaries', '$(touch pwned)')).toEqual({ kind: 'missing' });
   });
 
-  it('extracts a checksum-verified compiled bundle', async () => {
+  it('extracts a checksum-verified compiled bundle, carrying the raw bytes too', async () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-ok-'));
     await writeCompiled(root, '1.0.0', 'process.env.CLAUDE_CODE_OK;');
-    expect(readBundleSource(root, '1.0.0')).toEqual({
-      kind: 'ok',
-      src: 'process.env.CLAUDE_CODE_OK;',
-    });
+    const result = readBundleSource(root, '1.0.0');
+
+    expect(result.kind).toBe('ok');
+    // `src` stays byte-for-byte what the regex lanes have always read. Changing it
+    // would change published data.
+    expect(result).toMatchObject({ kind: 'ok', src: 'process.env.CLAUDE_CODE_OK;' });
+    // The undecoded artifact rides alongside, because the AST lane cannot read an
+    // executable and has to slice the embedded bundle out of these bytes.
+    const bytes = (result as { bytes?: Buffer }).bytes;
+    expect(bytes).toBeInstanceOf(Buffer);
+    expect(bytes?.toString('utf-8')).toBe('process.env.CLAUDE_CODE_OK;');
   });
 
   it('refuses a bundle whose hash does not match SHA256SUMS', async () => {
@@ -170,7 +178,15 @@ describe('reextract-binaries main()', () => {
     const archive = join(root, 'archive');
     const out = join(root, 'out');
     await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();'); // ok
-    await writeCompiled(archive, '2.0.0', '.option("--foo <v>","desc")'); // ok
+    // Valid JS, and carrying a control request: the control lane parses the bundle
+    // and refuses a version at or above the dispatch floor that yields nothing, so a
+    // fixture for this era has to be a real program rather than a fragment.
+    await writeCompiled(
+      archive,
+      '2.0.0',
+      'program.option("--foo <v>","desc");' +
+        'function h(e){if(e.request.subtype==="initialize")return 1;return 0}'
+    ); // ok
     await mkdir(join(archive, '3.0.0'), { recursive: true }); // no bundle → missing
     // 4.0.0 present but tampered → refused
     await mkdir(join(archive, '4.0.0', 'linux-x64'), { recursive: true });
@@ -192,14 +208,128 @@ describe('reextract-binaries main()', () => {
     };
     expect(c1.symbols.some((s) => s.symbol === 'CLAUDE_CODE_A')).toBe(true);
     expect(c2.symbols.some((s) => s.symbol === '--foo')).toBe(true);
+    // The control lane's output rides in the same file, keyed separately so the
+    // two extractions cannot be confused for one another downstream.
+    const c2control = JSON.parse(await readFile(join(out, '2.0.0.json'), 'utf-8')) as Record<
+      string,
+      unknown
+    > & {
+      controlCount: number;
+      controlMessages: { symbol: string; family: string }[];
+    };
+    expect(c2control.controlMessages.map((m) => m.symbol)).toEqual(['initialize']);
+    expect(c2control.controlCount).toBe(1);
+    expect(c2control.controlMessages[0]?.family).toBe('control_request');
+    // The invariant is that the TWO writers agree, so the key order is pinned on both
+    // ends — `scrape-binary.test.ts` asserts the same list for `buildCacheRecord`.
+    // Pinning one writer alone would let the other drift and still be green.
+    expect(Object.keys(c2control)).toEqual([
+      'version',
+      'source',
+      'count',
+      'symbols',
+      'controlCount',
+      'controlMessages',
+    ]);
     expect(existsSync(join(out, '3.0.0.json'))).toBe(false);
     expect(existsSync(join(out, '4.0.0.json'))).toBe(false); // refused, not extracted
+    // Those two had their prior cache entries cleared and never rewritten, so the
+    // cache is missing them and the flag must stay up — otherwise a backfill would
+    // distil their absence as a removal.
+    expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(true);
     expect(logSpy).toHaveBeenCalledWith(
       expect.stringContaining('without a readable binary: 3.0.0')
     );
     expect(logSpy).toHaveBeenCalledWith(
       expect.stringContaining('refused (checksum mismatch or missing SHA256SUMS): 4.0.0')
     );
+  });
+
+  it('fails the run and writes nothing for a version whose bundle the control lane refuses', async () => {
+    // The whole point of the control lane's refusal is that absence downstream reads
+    // as a removal. So a refusal must not be a warning the caller can miss: no cache
+    // entry for that version, a non-zero exit, and the version named in the error.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-refuse-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();'); // below the floor
+    await writeCompiled(archive, '2.0.0', 'this is not parseable javascript {{{'); // refused
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const code = await main(['--archive', archive, '--out', out]);
+
+    expect(code).toBe(1);
+    expect(existsSync(join(out, '2.0.0.json'))).toBe(false);
+    expect(existsSync(join(out, '1.0.0.json'))).toBe(true); // unaffected versions still written
+    expect(errSpy).toHaveBeenCalledWith(expect.stringContaining('2.0.0'));
+    expect(errSpy).toHaveBeenCalledWith(expect.stringContaining('must not be backfilled from'));
+    errSpy.mockRestore();
+  });
+
+  it('leaves the cache marked when the run dies unexpectedly mid-way', async () => {
+    // THE property, and the only case that distinguishes a write-ahead flag from one
+    // written at the end: an interrupt, an OOM, or any throw outside the extraction
+    // loop. A clean run and a refused run look the same under either ordering, so
+    // testing only those pins nothing.
+    //
+    // Induced without mocking: a DIRECTORY named like a cache entry makes
+    // `clearCache`'s non-recursive `rmSync` throw, which is a failure at exactly the
+    // point the flag has to already be up.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-crash-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await mkdir(join(out, '0.9.0.json'), { recursive: true });
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await expect(main(['--archive', archive, '--out', out])).rejects.toThrow();
+
+    expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(true);
+  });
+
+  it('unmarks the cache only when every selected version was written', async () => {
+    // The ordering is the whole point. The cache goes incomplete the moment
+    // `clearCache` runs, so a marker written at the END protects nothing against an
+    // interrupt, an OOM, or a throw from outside the try — the run would leave a
+    // populated, partial cache with nothing marking it.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-marker-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    // A prior run left the cache marked; a clean run lowers it. NOTE this does not
+    // pin the ORDERING — a flag written only at the end would pass here too. The
+    // crash test above is what covers that.
+    await mkdir(out, { recursive: true });
+    await writeFile(join(out, CACHE_INCOMPLETE_MARKER), JSON.stringify({ status: 'refused' }));
+
+    const code = await main(['--archive', archive, '--out', out]);
+
+    expect(code).toBe(0);
+    expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(false); // clean run lowers it
+    expect(existsSync(join(out, '1.0.0.json'))).toBe(true);
+  });
+
+  it('leaves the cache marked incomplete when a version is refused', async () => {
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-marker2-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await writeCompiled(archive, '2.0.0', 'this is not parseable javascript {{{');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(await main(['--archive', archive, '--out', out])).toBe(1);
+
+    const marker = JSON.parse(await readFile(join(out, CACHE_INCOMPLETE_MARKER), 'utf-8')) as {
+      status: string;
+      refused: number;
+    };
+    expect(marker.status).toBe('refused');
+    expect(marker.refused).toBe(1);
+    errSpy.mockRestore();
   });
 
   it('clears every prior cache file backfill would read (non-underscore *.json), keeping _-prefixed', async () => {
@@ -230,6 +360,29 @@ describe('reextract-binaries main()', () => {
       /Refusing to regenerate/
     );
     expect(existsSync(join(out, 'latest.json'))).toBe(true); // untouched
+  });
+
+  it('carries no raw bytes for an npm tarball, whose src is already source', async () => {
+    // The distinction the AST lane keys on: `bytes` present means "compiled, slice
+    // it"; absent means `src` is already `package/cli.js` and there is nothing to
+    // slice. Getting this backwards would feed a parser an executable.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-tar-src-'));
+    const pkg = join(root, 'pkg');
+    await mkdir(join(pkg, 'package'), { recursive: true });
+    await writeFile(join(pkg, 'package', 'cli.js'), 'process.env.CLAUDE_CODE_TGZ;');
+    await mkdir(join(root, '1.0.0'), { recursive: true });
+    const tgz = join(root, '1.0.0', 'bundle.tgz');
+    execFileSync('tar', ['czf', tgz, '-C', pkg, 'package']);
+    await writeFile(
+      join(root, '1.0.0', 'SHA256SUMS'),
+      `${createHash('sha256')
+        .update(await readFile(tgz))
+        .digest('hex')}  bundle.tgz\n`
+    );
+
+    const result = readBundleSource(root, '1.0.0');
+    expect(result).toEqual({ kind: 'ok', src: 'process.env.CLAUDE_CODE_TGZ;' });
+    expect((result as { bytes?: Buffer }).bytes).toBeUndefined();
   });
 
   it('extracts a verified npm bundle.tgz even when the archive path contains a space', async () => {

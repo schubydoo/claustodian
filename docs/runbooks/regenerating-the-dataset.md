@@ -6,7 +6,18 @@ Rebuilding `data/` from the three lanes. For _why_ the steps are in this order, 
 **Who can run this:** a maintainer with the local binary archive. Steps 2–4 work
 without it; step 1 does not.
 
-**Cost:** roughly 11 minutes of machine time for a full re-extract, plus review.
+**Cost:** roughly 24 minutes of machine time for a full re-extract, plus review.
+
+That is up from ~11 minutes: the control lane now runs in the same loop, and for the
+compiled era each artifact is sliced before it is parsed.
+
+⚠️ **The figure is derived, not measured end to end, and it is a floor.** The ~13
+minutes is a two-point fit of PARSE time (13.0 MiB → 2.0 s, 22.9 MiB → 3.1 s) applied
+to the 470 archived bundles, whose mean is 10.4 MiB. It predates the slicer and does
+not include it: slicing costs roughly a further 0.8–1.1 s per compiled artifact
+(measured at 2.1.113 and 2.1.226), which over the 98 compiled versions is about
+another 1.5 minutes. Re-measure on the first real run and replace this whole
+paragraph with the number.
 
 ---
 
@@ -52,6 +63,48 @@ assuming — the check script lists them separately.
 ---
 
 ## The order
+
+**Step 1 can now fail without failing loudly on its own terms.** The control lane
+refuses a bundle it cannot parse, or one at or above 1.0.45 that yields no control
+requests, rather than writing a zero. `reextract-binaries` collects those refusals,
+writes NO cache entry for the affected versions, prints each one, and **exits 1**.
+Do not run step 2 after a non-zero exit: the cache is incomplete, and a missing
+version reads downstream as a removal.
+
+You do not have to remember that. `binary-cache/_cache-incomplete.json` is a dirty flag:
+`reextract-binaries` raises it BEFORE it clears the cache and lowers it only after writing
+every version, and `backfill-binary` refuses while it exists — so step 2 stops itself.
+
+The ordering is deliberate. The cache is incomplete from the moment it is cleared, so a
+marker written only at the end would protect nothing against an interrupt, an out-of-memory
+kill, or any throw outside the extraction loop. If you see this file, the cache is not usable. Read it — `status` says which of three
+things happened, and each has a different way out:
+
+| `status`      | What happened                                                                                                        | How to clear it                                                                                    |
+| ------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `in-progress` | The run was interrupted or died                                                                                      | Re-run step 1                                                                                      |
+| `refused`     | A lane refused a bundle it could not read                                                                            | Fix the listed versions, then re-run step 1                                                        |
+| `skipped`     | Versions were selected from the archive but could not be read, so their cache entries were cleared and not rewritten | Fix the **archive** (restore the artifact under `scratch/binaries/<version>/`), then re-run step 1 |
+
+⚠️ **Fix the archive, not the cache.** `npm run scrape-binary -- --version <v> --force`
+writes `binary-cache/`, which step 1 clears before re-reading the same unchanged archive —
+so it cannot lower this flag. Restore the artifact under `scratch/binaries/<version>/` **with its `SHA256SUMS`
+entry** — `readBundleSource` refuses anything it cannot verify — or remove an archive
+directory that should not be there.
+
+⚠️ **This does contradict the reconciliation step above**, which prescribes the same
+command, and the contradiction is real rather than something to explain away. Step 1 clears
+`binary-cache/` and rebuilds it from `scratch/binaries/`, so a cache entry fetched for a
+version the archive does not hold is deleted by the very next step. If you fetch one during
+reconciliation, put the artifact in the archive too.
+
+⚠️ **`check-version-sets.sh` will not tell you about a `skipped` cache.** It reports a
+version present in the archive but absent from the cache as benign `INFO` — "a re-extract
+will pick these up" — which it cannot know is false when a re-extract just failed to. A
+clean run of that script is not evidence this is resolved; the marker's absence is.
+
+The file is `_`-prefixed so the next run preserves it and the backfill does not mistake it
+for an extraction.
 
 ```bash
 npm run reextract-binaries   # 1. archive      -> binary-cache/
@@ -104,7 +157,7 @@ one thing that cannot get it.
 3. If the regeneration itself exceeds 500 files, split again: `binary-cache/` first,
    then `data/`. CI has no cross-check between them, so the halves are safe apart.
 
-Regeneration is ~11 minutes. Review is worth more than the 11 minutes.
+Regeneration is ~24 minutes. Review is worth more than the 24 minutes.
 
 ---
 

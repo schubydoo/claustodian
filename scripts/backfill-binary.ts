@@ -27,6 +27,7 @@
  * archive-backed) or the CI `scrape-binary` (one release, CDN-backed). Because
  * the cache is committed, CI can re-distill with no binaries or re-download.
  */
+import { existsSync } from 'node:fs';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
@@ -37,6 +38,7 @@ import {
   type DescriptionEra,
 } from './binary-lane.js';
 import { compareVersionsAsc, type ExtractedSymbolType, isMain } from './lib.js';
+import { CACHE_INCOMPLETE_MARKER } from './reextract-binaries.js';
 
 /** One per-version extraction file: `binary-cache/<version>.json`. */
 export interface BinaryCacheFile {
@@ -261,6 +263,20 @@ export async function loadCacheFiles(dir: string): Promise<BinaryCacheFile[]> {
     throw new Error(
       `No cache files in ${dir}. The binary archive/cache is a maintainer-local artifact; ` +
         `rebuild it (see scratch/backfill-notes.md) before regenerating the observations.`
+    );
+  }
+  // "Zero files" is not enough: a partly-written cache is indistinguishable from a
+  // complete one by its listing alone, so this reads the marker the re-extract leaves.
+  const marker = join(dir, CACHE_INCOMPLETE_MARKER);
+  if (existsSync(marker)) {
+    throw new Error(
+      `${marker} exists: the cache is not known to be complete. Read it — its ` +
+        `\`status\` is in-progress (interrupted), refused (a lane could not read a ` +
+        `bundle) or skipped (versions are missing from the cache, possibly because ` +
+        `the archive no longer has them). Distilling now would report those versions' ` +
+        `symbols as removed. Fix the cause the file names — a re-run alone does not ` +
+        `clear a \`skipped\` flag, because the archive is what is short — and only ` +
+        `backfill once the marker is gone.`
     );
   }
   return files;
