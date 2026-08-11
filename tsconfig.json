@@ -13,6 +13,6 @@
     "resolveJsonModule": true,
     "noUncheckedIndexedAccess": true
   },
-  "include": ["scripts/**/*.ts", "schema/**/*", "vitest.config.ts"],
+  "include": ["scripts/**/*.ts", "examples/**/*.ts", "schema/**/*", "vitest.config.ts"],
   "exclude": ["node_modules", "dist", "scratch"]
 }
