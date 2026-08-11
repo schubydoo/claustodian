@@ -61,6 +61,23 @@ const VERSION_RE = /^\d+\.\d+\.\d+$/;
  */
 export const CACHE_INCOMPLETE_MARKER = '_cache-incomplete.json';
 
+/**
+ * The `cacheOnly` list a previous run recorded, or empty when there is no marker or
+ * it cannot be read. Deliberately forgiving: a marker this cannot parse must not
+ * abort a re-extract, and the run will write a fresh one either way.
+ */
+function readPriorCacheOnly(markerPath: string): string[] {
+  if (!existsSync(markerPath)) return [];
+  try {
+    const parsed = JSON.parse(readFileSync(markerPath, 'utf-8')) as { cacheOnly?: unknown };
+    return Array.isArray(parsed.cacheOnly)
+      ? parsed.cacheOnly.filter((v): v is string => typeof v === 'string')
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 export type BundleResult =
   | {
       kind: 'ok';
@@ -203,8 +220,17 @@ export async function main(argv: string[]): Promise<number> {
         `Point --out at an empty directory or a prior reextract-binaries cache.`
     );
   }
+  // A previous run's record, read BEFORE this run overwrites the marker. Without
+  // this the cache-only guard would be single-run: run 1 deletes those entries and
+  // records them, run 2 finds nothing to record — the evidence is the thing run 1
+  // destroyed — lowers the flag and reports success with the cache permanently
+  // short. Carrying the list forward keeps the flag up until the ARCHIVE is fixed,
+  // which is the only thing that resolves it.
+  const priorCacheOnly = readPriorCacheOnly(join(options.outDir, CACHE_INCOMPLETE_MARKER));
+
   // Raised BEFORE anything is destroyed, and lowered only if the run reaches the end
-  // having written every version. See CACHE_INCOMPLETE_MARKER.
+  // having written every version it selected and carrying no unresolved losses. See
+  // CACHE_INCOMPLETE_MARKER.
   writeFileSync(
     join(options.outDir, CACHE_INCOMPLETE_MARKER),
     JSON.stringify(
@@ -212,7 +238,8 @@ export async function main(argv: string[]): Promise<number> {
         status: 'in-progress',
         note:
           'reextract-binaries cleared this cache and has not finished repopulating it. ' +
-          'Do not backfill from it. Removed automatically when a run completes with no refusals.',
+          'Do not backfill from it. Removed automatically by a run that writes every ' +
+          'version it selects and has no outstanding losses.',
         versionsConsidered: versions.length,
       },
       null,
@@ -230,6 +257,8 @@ export async function main(argv: string[]): Promise<number> {
     .filter((name) => name.endsWith('.json') && !name.startsWith('_'))
     .map((name) => name.slice(0, -'.json'.length))
     .filter((version) => !selected.has(version))
+    .concat(priorCacheOnly.filter((version) => !selected.has(version)))
+    .filter((version, i, all) => all.indexOf(version) === i)
     .sort(compareVersionsAsc);
 
   clearCache(options.outDir);
@@ -328,12 +357,17 @@ export async function main(argv: string[]): Promise<number> {
     return 1;
   }
 
-  // Lowered only when NOTHING was skipped. A version reported `missing` or
-  // `unverified` had its committed cache entry deleted by `clearCache` and never
-  // rewritten, so the cache is missing it — which is precisely the hazard AGENTS.md
-  // warns about ("a version present in the cache but not the archive is destroyed by
-  // a run that reports success"). The exit code is unchanged; the flag is what stops
-  // a backfill from distilling those absences as removals.
+  // Lowered only when nothing was skipped AND nothing is outstanding from the
+  // cache-only set. Two different losses, and they are not the same hazard:
+  //
+  //   missing / unverified — selected from the archive, could not be read. Their
+  //     prior cache entries were cleared and not rewritten.
+  //   cacheOnly           — in the committed cache and NOT in the archive, so never
+  //     selected at all. This is the one AGENTS.md warns about: "a version present
+  //     in the cache but not the archive is destroyed by a run that reports success."
+  //
+  // The exit code is unchanged; the flag is what stops a backfill from distilling
+  // either kind of absence as a removal.
   const skipped = missing.length + unverified.length;
   if (skipped > 0 || cacheOnly.length > 0) {
     writeFileSync(

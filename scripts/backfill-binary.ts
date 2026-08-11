@@ -273,10 +273,12 @@ export async function loadCacheFiles(dir: string): Promise<BinaryCacheFile[]> {
   const marker = join(dir, CACHE_INCOMPLETE_MARKER);
   if (existsSync(marker)) {
     throw new Error(
-      `${marker} exists: the last re-extract did not finish writing this cache — it ` +
-        `either refused some versions or was interrupted, and the file says which. ` +
-        `Distilling now would report the missing versions' symbols as removed. ` +
-        `Re-run reextract-binaries to completion, and only ` +
+      `${marker} exists: the cache is not known to be complete. Read it — its ` +
+        `\`status\` is in-progress (interrupted), refused (a lane could not read a ` +
+        `bundle) or skipped (versions are missing from the cache, possibly because ` +
+        `the archive no longer has them). Distilling now would report those versions' ` +
+        `symbols as removed. Fix the cause the file names — a re-run alone does not ` +
+        `clear a \`skipped\` flag, because the archive is what is short — and only ` +
         `backfill once the marker is gone.`
     );
   }

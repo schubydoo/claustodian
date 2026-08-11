@@ -91,6 +91,10 @@ writes `binary-cache/`, which step 1 clears before re-reading the same unchanged
 so it cannot lower this flag. Restore the artifact under `scratch/binaries/<version>/`, or
 remove an archive directory that should not be there.
 
+That is not a contradiction of the reconciliation step above, which prescribes the same
+command: there it fills a cache entry you are **not** about to re-extract over. Once step 1
+runs, only the archive decides what the cache ends up holding.
+
 ⚠️ **`check-version-sets.sh` will not tell you about a `skipped` cache.** It reports a
 version present in the archive but absent from the cache as benign `INFO` — "a re-extract
 will pick these up" — which it cannot know is false when a re-extract just failed to. A

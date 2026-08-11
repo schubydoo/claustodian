@@ -314,6 +314,30 @@ describe('reextract-binaries main()', () => {
     errSpy.mockRestore();
   });
 
+  it("keeps a prior run's cache-only loss recorded when a later run cannot see it", async () => {
+    // The guard's only evidence is the cache directory, which the FIRST run deletes.
+    // Without carrying the record forward, a second run finds nothing to record,
+    // lowers the flag and reports success with the cache permanently short — and the
+    // marker's own message tells the maintainer to do exactly that re-run.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-sticky-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await mkdir(out, { recursive: true });
+    await writeFile(join(out, '9.9.9.json'), JSON.stringify({ version: '9.9.9', symbols: [] }));
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await main(['--archive', archive, '--out', out]); // run 1: sees and deletes 9.9.9
+    await main(['--archive', archive, '--out', out]); // run 2: 9.9.9 is already gone
+
+    const marker = JSON.parse(await readFile(join(out, CACHE_INCOMPLETE_MARKER), 'utf-8')) as {
+      cacheOnly: string[];
+    };
+    expect(marker.cacheOnly).toEqual(['9.9.9']); // still recorded, still flagged
+    errSpy.mockRestore();
+  });
+
   it('unmarks the cache only when every selected version was written', async () => {
     // The ordering is the whole point. The cache goes incomplete the moment
     // `clearCache` runs, so a marker written at the END protects nothing against an

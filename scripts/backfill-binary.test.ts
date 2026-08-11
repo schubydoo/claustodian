@@ -440,7 +440,7 @@ describe('loadCacheFiles', () => {
     await writeFile(join(root, '2.1.0.json'), JSON.stringify({ version: '2.1.0', symbols: [] }));
     await writeFile(join(root, CACHE_INCOMPLETE_MARKER), JSON.stringify({ failures: [] }));
 
-    await expect(loadCacheFiles(root)).rejects.toThrow(/did not finish writing this cache/);
+    await expect(loadCacheFiles(root)).rejects.toThrow(/not known to be complete/);
   });
 
   it('loads normally once the marker is gone', async () => {
