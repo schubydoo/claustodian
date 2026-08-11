@@ -45,11 +45,21 @@ const VERSION_RE = /^\d+\.\d+\.\d+$/;
 
 /** Resolving one archived version's source: extractable, absent, or not official. */
 /**
- * Written into the cache directory when the control lane refused any version, and
- * removed at the start of every run. `_`-prefixed so `clearCache` preserves it and
- * `loadCacheFiles` does not mistake it for an extraction.
+ * A dirty flag on the cache directory: present means "this cache is NOT known to be
+ * complete", absent means a run finished and wrote every version it considered.
+ *
+ * ⚠️ Written BEFORE the cache is cleared and removed only on a clean finish, which is
+ * the opposite of the obvious ordering. Recording refusals at the end sounds
+ * equivalent and is not: the cache goes incomplete the moment `clearCache` runs, so
+ * anything that ends the process in between — an interrupt, an OOM, a throw from
+ * outside the try — would leave a populated, partial cache with nothing marking it,
+ * and `backfill-binary` would distil those absences as removals. Clearing a previous
+ * run's marker up front made it worse, by discarding that run's protection too.
+ *
+ * `_`-prefixed so `clearCache` preserves it and `loadCacheFiles` does not mistake it
+ * for an extraction.
  */
-export const CONTROL_FAILURE_MARKER = '_control-failures.json';
+export const CACHE_INCOMPLETE_MARKER = '_cache-incomplete.json';
 
 export type BundleResult =
   | {
@@ -193,10 +203,23 @@ export async function main(argv: string[]): Promise<number> {
         `Point --out at an empty directory or a prior reextract-binaries cache.`
     );
   }
+  // Raised BEFORE anything is destroyed, and lowered only if the run reaches the end
+  // having written every version. See CACHE_INCOMPLETE_MARKER.
+  writeFileSync(
+    join(options.outDir, CACHE_INCOMPLETE_MARKER),
+    JSON.stringify(
+      {
+        status: 'in-progress',
+        note:
+          'reextract-binaries cleared this cache and has not finished repopulating it. ' +
+          'Do not backfill from it. Removed automatically when a run completes with no refusals.',
+        versionsConsidered: versions.length,
+      },
+      null,
+      2
+    )
+  );
   clearCache(options.outDir);
-  // A stale marker from a previous failed run must not outlive it, or a clean run
-  // would look incomplete forever.
-  rmSync(join(options.outDir, CONTROL_FAILURE_MARKER), { force: true });
 
   let extracted = 0;
   const missing: string[] = [];
@@ -263,16 +286,19 @@ export async function main(argv: string[]): Promise<number> {
   // version's control symbols are ABSENT from the cache, and absence downstream
   // reads as a removal — so this cannot be a warning the caller might miss.
   if (controlFailures.length > 0) {
-    // `return 1` is not enough on its own: the next step in the runbook is a
-    // separate command, and `check-version-sets.sh` reports a version present in
-    // the archive but absent from the cache as benign INFO. So the incompleteness
-    // is recorded IN the cache directory, under the `_` prefix that `clearCache`
-    // and `loadCacheFiles` both already skip, and `backfill-binary` refuses while
-    // it exists.
+    // The marker is already on disk from before the clear; this replaces the
+    // in-progress note with WHY it is staying. `return 1` alone would not be enough —
+    // the next runbook step is a separate command, and `check-version-sets.sh`
+    // reports a version present in the archive but absent from the cache as benign
+    // INFO, so nothing else would stop a backfill.
     writeFileSync(
-      join(options.outDir, CONTROL_FAILURE_MARKER),
+      join(options.outDir, CACHE_INCOMPLETE_MARKER),
       JSON.stringify(
         {
+          status: 'refused',
+          note:
+            'These versions have no cache entry. Backfilling would report their symbols ' +
+            'as removed. Fix the refusals and re-run reextract-binaries.',
           versionsConsidered: versions.length,
           refused: controlFailures.length,
           failures: controlFailures,
@@ -288,6 +314,9 @@ export async function main(argv: string[]): Promise<number> {
     );
     return 1;
   }
+
+  // Only here: every version considered was written, so the cache is complete.
+  rmSync(join(options.outDir, CACHE_INCOMPLETE_MARKER), { force: true });
   return 0;
 }
 

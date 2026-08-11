@@ -38,7 +38,7 @@ import {
   type DescriptionEra,
 } from './binary-lane.js';
 import { compareVersionsAsc, type ExtractedSymbolType, isMain } from './lib.js';
-import { CONTROL_FAILURE_MARKER } from './reextract-binaries.js';
+import { CACHE_INCOMPLETE_MARKER } from './reextract-binaries.js';
 
 /** One per-version extraction file: `binary-cache/<version>.json`. */
 export interface BinaryCacheFile {
@@ -268,12 +268,13 @@ export async function loadCacheFiles(dir: string): Promise<BinaryCacheFile[]> {
   // Guarding on "zero files" is not enough: a re-extract that refused SOME versions
   // leaves a populated cache that is quietly missing them, and distilling it would
   // publish those absences as removals. The marker is the only thing that knows.
-  const marker = join(dir, CONTROL_FAILURE_MARKER);
+  const marker = join(dir, CACHE_INCOMPLETE_MARKER);
   if (existsSync(marker)) {
     throw new Error(
-      `${marker} exists: the last re-extract refused one or more versions and their ` +
-        `cache entries were never written. Distilling now would report those versions' ` +
-        `symbols as removed. Fix the refusals, re-run reextract-binaries, and only ` +
+      `${marker} exists: the last re-extract did not finish writing this cache — it ` +
+        `either refused some versions or was interrupted, and the file says which. ` +
+        `Distilling now would report the missing versions' symbols as removed. ` +
+        `Re-run reextract-binaries to completion, and only ` +
         `backfill once the marker is gone.`
     );
   }

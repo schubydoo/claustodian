@@ -12,7 +12,7 @@ import {
   main,
   type BinaryCacheFile,
 } from './backfill-binary.js';
-import { CONTROL_FAILURE_MARKER } from './reextract-binaries.js';
+import { CACHE_INCOMPLETE_MARKER } from './reextract-binaries.js';
 
 /** A cache file whose symbols carry descriptions. */
 function descFile(
@@ -431,15 +431,16 @@ describe('loadCacheFiles', () => {
     root = undefined;
   });
 
-  it('refuses while the control-failure marker is present', async () => {
-    // The guard that matters, and it had no test. A re-extract that refused SOME
-    // versions leaves a POPULATED cache quietly missing them — so the "no files at
-    // all" check passes and distilling would publish those absences as removals.
+  it('refuses while the cache is marked incomplete', async () => {
+    // The guard that matters. A re-extract that refused SOME versions — or that was
+    // interrupted after clearing the cache — leaves a POPULATED cache quietly missing
+    // them, so the "no files at all" check passes and distilling would publish those
+    // absences as removals.
     root = await mkdtemp(join(tmpdir(), 'claustodian-backfill-marker-'));
     await writeFile(join(root, '2.1.0.json'), JSON.stringify({ version: '2.1.0', symbols: [] }));
-    await writeFile(join(root, CONTROL_FAILURE_MARKER), JSON.stringify({ failures: [] }));
+    await writeFile(join(root, CACHE_INCOMPLETE_MARKER), JSON.stringify({ failures: [] }));
 
-    await expect(loadCacheFiles(root)).rejects.toThrow(/refused one or more versions/);
+    await expect(loadCacheFiles(root)).rejects.toThrow(/did not finish writing this cache/);
   });
 
   it('loads normally once the marker is gone', async () => {

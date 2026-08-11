@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  CACHE_INCOMPLETE_MARKER,
   isDedicatedCache,
   main,
   parseArgs,
@@ -259,6 +260,70 @@ describe('reextract-binaries main()', () => {
     expect(existsSync(join(out, '1.0.0.json'))).toBe(true); // unaffected versions still written
     expect(errSpy).toHaveBeenCalledWith(expect.stringContaining('2.0.0'));
     expect(errSpy).toHaveBeenCalledWith(expect.stringContaining('must not be backfilled from'));
+    errSpy.mockRestore();
+  });
+
+  it('leaves the cache marked when the run dies unexpectedly mid-way', async () => {
+    // THE property, and the only case that distinguishes a write-ahead flag from one
+    // written at the end: an interrupt, an OOM, or any throw outside the extraction
+    // loop. A clean run and a refused run look the same under either ordering, so
+    // testing only those pins nothing.
+    //
+    // Induced without mocking: a DIRECTORY named like a cache entry makes
+    // `clearCache`'s non-recursive `rmSync` throw, which is a failure at exactly the
+    // point the flag has to already be up.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-crash-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await mkdir(join(out, '0.9.0.json'), { recursive: true });
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await expect(main(['--archive', archive, '--out', out])).rejects.toThrow();
+
+    expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(true);
+  });
+
+  it('marks the cache incomplete BEFORE clearing it, and only unmarks on a clean run', async () => {
+    // The ordering is the whole point. The cache goes incomplete the moment
+    // `clearCache` runs, so a marker written at the END protects nothing against an
+    // interrupt, an OOM, or a throw from outside the try — the run would leave a
+    // populated, partial cache with nothing marking it.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-marker-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    // A prior run left the cache marked; a fresh run must not lower that flag until
+    // it has actually finished repopulating.
+    await mkdir(out, { recursive: true });
+    await writeFile(join(out, CACHE_INCOMPLETE_MARKER), JSON.stringify({ status: 'refused' }));
+
+    const code = await main(['--archive', archive, '--out', out]);
+
+    expect(code).toBe(0);
+    expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(false); // clean run lowers it
+    expect(existsSync(join(out, '1.0.0.json'))).toBe(true);
+  });
+
+  it('leaves the cache marked incomplete when a version is refused', async () => {
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-marker2-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await writeCompiled(archive, '2.0.0', 'this is not parseable javascript {{{');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(await main(['--archive', archive, '--out', out])).toBe(1);
+
+    const marker = JSON.parse(await readFile(join(out, CACHE_INCOMPLETE_MARKER), 'utf-8')) as {
+      status: string;
+      refused: number;
+    };
+    expect(marker.status).toBe('refused');
+    expect(marker.refused).toBe(1);
     errSpy.mockRestore();
   });
 

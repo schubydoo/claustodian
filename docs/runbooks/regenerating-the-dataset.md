@@ -71,11 +71,16 @@ writes NO cache entry for the affected versions, prints each one, and **exits 1*
 Do not run step 2 after a non-zero exit: the cache is incomplete, and a missing
 version reads downstream as a removal.
 
-You do not have to remember that. A refused run leaves `binary-cache/_control-failures.json`
-listing every version and why, and `backfill-binary` refuses while it exists — so step 2
-stops itself rather than distilling a cache that is quietly missing versions. The marker is
-`_`-prefixed so the next `reextract-binaries` preserves it and the backfill skips it as a
-cache file; a clean run clears it at the start.
+You do not have to remember that. `binary-cache/_cache-incomplete.json` is a dirty flag:
+`reextract-binaries` raises it BEFORE it clears the cache and lowers it only after writing
+every version, and `backfill-binary` refuses while it exists — so step 2 stops itself.
+
+The ordering is deliberate. The cache is incomplete from the moment it is cleared, so a
+marker written only at the end would protect nothing against an interrupt, an out-of-memory
+kill, or any throw outside the extraction loop. If you see this file, the cache is not
+usable: read it (it says whether the run was refused or simply never finished) and re-run
+step 1 to completion. It is `_`-prefixed so the next run preserves it and the backfill does
+not mistake it for an extraction.
 
 ```bash
 npm run reextract-binaries   # 1. archive      -> binary-cache/
