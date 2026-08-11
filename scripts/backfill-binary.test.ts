@@ -444,8 +444,9 @@ describe('loadCacheFiles', () => {
   });
 
   it('loads normally once the marker is gone', async () => {
-    // The other half: the marker is the ONLY thing that refuses here, so its absence
-    // must not leave a permanent block behind.
+    // The other half: the marker must not leave a permanent block behind. (It is not
+    // the only refusal in `loadCacheFiles` — an empty cache directory throws too —
+    // so this pins the marker path specifically, with a cache file present.)
     root = await mkdtemp(join(tmpdir(), 'claustodian-backfill-ok-'));
     await writeFile(join(root, '2.1.0.json'), JSON.stringify({ version: '2.1.0', symbols: [] }));
 

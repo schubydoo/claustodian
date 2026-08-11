@@ -267,7 +267,9 @@ export async function loadCacheFiles(dir: string): Promise<BinaryCacheFile[]> {
   }
   // Guarding on "zero files" is not enough: a re-extract that refused SOME versions
   // leaves a populated cache that is quietly missing them, and distilling it would
-  // publish those absences as removals. The marker is the only thing that knows.
+  // publish those absences as removals. Nothing in the file listing distinguishes
+  // that from a complete cache — the count is plausible either way — so the marker
+  // the re-extract leaves behind is what this reads.
   const marker = join(dir, CACHE_INCOMPLETE_MARKER);
   if (existsSync(marker)) {
     throw new Error(
