@@ -86,10 +86,16 @@ describe('sliceEmbeddedBundle', () => {
     expect(out).toBe(copy);
   });
 
-  it('refuses when several banner regions disagree', () => {
-    // File order is not evidence for which copy the CLI runs.
-    const a = jsRegion(true, 2, 'first');
-    const b = jsRegion(true, 3, 'second');
+  it('refuses when several banner regions disagree at the SAME size', () => {
+    // Same length, different content — so this fails for a content digest and passes
+    // for a length comparison. An earlier version of this test used regions of
+    // different sizes, which pinned nothing: it survived replacing the digest with
+    // a length check, which is the cheap wrong implementation someone would reach
+    // for. File order is not evidence for which copy the CLI runs.
+    const a = jsRegion(true, 2, 'aaa');
+    const b = jsRegion(true, 2, 'bbb');
+    expect(a.length).toBe(b.length);
+    expect(a).not.toBe(b);
     expect(() => sliceEmbeddedBundle(artifact(a, b), '2.1.500')).toThrow(/not identical/);
   });
 
