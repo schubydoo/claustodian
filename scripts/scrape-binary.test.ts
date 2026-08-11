@@ -135,6 +135,18 @@ describe('buildCacheRecord', () => {
     await expect(main(['--version', 'not-a-version'])).rejects.toThrow();
   });
 
+  it('does not misread a thrown non-Error as a refusal', async () => {
+    // `(error as Error).message` is `undefined` when something throws a string, and
+    // the `?? ''` fallback is what stops `.startsWith` exploding. Getting this wrong
+    // in the other direction would be worse: an unrecognisable failure must rethrow,
+    // not be reported to CI as a deterministic control-lane refusal.
+    vi.stubGlobal('fetch', () => {
+      throw 'a plain string, not an Error';
+    });
+    await expect(main(['--version', '2.1.214', '--out', '/tmp'])).rejects.toBeDefined();
+    vi.unstubAllGlobals();
+  });
+
   it('pins the refusal exit code as the literal the workflow compares against', () => {
     // `expect(code).toBe(CONTROL_REFUSAL_EXIT)` alone pins nothing: it passes if the
     // constant becomes 0, which would restore the very swallow this exists to stop.
