@@ -50,10 +50,13 @@ jobs:
       # new release version; download just that ONE release's compiled binary
       # (~250 MB from the CDN — not the 139 GB maintainer-local archive), verify it
       # against the release manifest, and extract it into the committed binary-cache/.
-      # Non-fatal: a CDN hiccup must never block the authoritative changelog update —
-      # the re-distill below then simply reproduces the existing evidence unchanged.
+      # A CDN hiccup must never block the authoritative changelog update — the
+      # re-distill below then simply reproduces the existing evidence unchanged. That
+      # tolerance now lives in the script block rather than in `continue-on-error`,
+      # because the step gained a failure mode that must NOT be tolerated: a control-
+      # lane refusal is deterministic and drops the release's whole cache entry.
+      # `continue-on-error` cannot tell the two apart — it swallows every non-zero.
       - name: Scrape the new release's binary into the cache
-        continue-on-error: true
         env:
           # Via env, never interpolated into the shell command — the input is
           # attacker-controllable (workflow_dispatch), so `${{ }}` in `run:` would
@@ -61,11 +64,26 @@ jobs:
           # strict major.minor.patch. Empty (e.g. repository_dispatch) → index latest.
           INPUT_VERSION: ${{ inputs.version }}
         run: |
+          set +e
           if [ -n "$INPUT_VERSION" ]; then
             npm run scrape-binary -- --version "$INPUT_VERSION"
           else
             npm run scrape-binary
           fi
+          code=$?
+          set -e
+          # 2 is a control-lane refusal: deterministic, recurs on retry, and it drops
+          # this release's WHOLE cache entry rather than just its control symbols.
+          # Fatal. Anything else is treated as the transient CDN failure this step has
+          # always tolerated: warn, and let the re-distill reproduce existing evidence.
+          if [ "$code" = "2" ]; then
+            echo "::error::control lane refused this release; its binary cache entry was not written"
+            exit 2
+          fi
+          if [ "$code" != "0" ]; then
+            echo "::warning::binary scrape failed (exit $code) — treating as transient; evidence unchanged"
+          fi
+          exit 0
       # Re-distill data/binary-observations.json + binary-descriptions.json from the
       # committed cache (no binaries needed). Runs every time so the evidence always
       # matches the cache, whether or not the scrape step above added a version.

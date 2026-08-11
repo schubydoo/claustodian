@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createHash } from 'node:crypto';
+import { existsSync } from 'node:fs';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -9,6 +10,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   buildCacheRecord,
+  CONTROL_REFUSAL_EXIT,
   main,
   parseArgs,
   resolveVersion,
@@ -126,12 +128,49 @@ describe('resolveVersion', () => {
 });
 
 describe('buildCacheRecord', () => {
+  it('returns the control-refusal exit code, distinct from a transient failure', async () => {
+    // CI tells a deterministic refusal from a CDN hiccup on this code alone. If the
+    // two ever collapse to one code, `continue-on-error`-style tolerance silently
+    // swallows a refusal and the release ships with no binary evidence at all.
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-refusal-'));
+    // A bundle that parses but yields no control requests at a version above the
+    // dispatch floor — the lane refuses rather than writing a zero.
+    stubCdn('2.1.214', 'var x=1;', sha256('var x=1;'));
+    const code = await main(['--version', '2.1.214', '--out', root]);
+
+    expect(code).toBe(CONTROL_REFUSAL_EXIT);
+    expect(existsSync(join(root, '2.1.214.json'))).toBe(false);
+    await rm(root, { recursive: true, force: true });
+  });
+
   it('produces the same shape reextract-binaries writes', () => {
     const record = buildCacheRecord('2.1.214', FAKE_BUNDLE);
     expect(record.version).toBe('2.1.214');
     expect(record.source).toBe('binary');
     expect(record.count).toBe(record.symbols.length);
     expect(record.symbols.some((s) => s.symbol === '--demo-flag')).toBe(true);
+
+    // The KEYS and their order, not just the fields this test happened to know
+    // about. `reextract-binaries` writes an object literal in this order and the
+    // two files must be interchangeable; asserting a subset let a writer add,
+    // drop or reorder a key without failing anything.
+    expect(Object.keys(record)).toEqual([
+      'version',
+      'source',
+      'count',
+      'symbols',
+      'controlCount',
+      'controlMessages',
+    ]);
+    // And the control half must be real, not an empty array standing in for it.
+    expect(record.controlCount).toBe(record.controlMessages.length);
+    expect(record.controlMessages.map((m) => m.symbol).sort()).toEqual([
+      'can_use_tool',
+      'hook_callback',
+      'initialize',
+      'set_model',
+    ]);
+    expect(record.controlMessages.every((m) => m.family === 'control_request')).toBe(true);
   });
 });
 

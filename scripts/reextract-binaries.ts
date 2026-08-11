@@ -43,6 +43,13 @@ const TAR_MAX_BUFFER = 1 << 30;
 const VERSION_RE = /^\d+\.\d+\.\d+$/;
 
 /** Resolving one archived version's source: extractable, absent, or not official. */
+/**
+ * Written into the cache directory when the control lane refused any version, and
+ * removed at the start of every run. `_`-prefixed so `clearCache` preserves it and
+ * `loadCacheFiles` does not mistake it for an extraction.
+ */
+export const CONTROL_FAILURE_MARKER = '_control-failures.json';
+
 export type BundleResult =
   { kind: 'ok'; src: string } | { kind: 'missing' } | { kind: 'unverified'; file: string };
 
@@ -171,6 +178,9 @@ export async function main(argv: string[]): Promise<number> {
     );
   }
   clearCache(options.outDir);
+  // A stale marker from a previous failed run must not outlive it, or a clean run
+  // would look incomplete forever.
+  rmSync(join(options.outDir, CONTROL_FAILURE_MARKER), { force: true });
 
   let extracted = 0;
   const missing: string[] = [];
@@ -230,6 +240,16 @@ export async function main(argv: string[]): Promise<number> {
   // version's control symbols are ABSENT from the cache, and absence downstream
   // reads as a removal — so this cannot be a warning the caller might miss.
   if (controlFailures.length > 0) {
+    // `return 1` is not enough on its own: the next step in the runbook is a
+    // separate command, and `check-version-sets.sh` reports a version present in
+    // the archive but absent from the cache as benign INFO. So the incompleteness
+    // is recorded IN the cache directory, under the `_` prefix that `clearCache`
+    // and `loadCacheFiles` both already skip, and `backfill-binary` refuses while
+    // it exists.
+    writeFileSync(
+      join(options.outDir, CONTROL_FAILURE_MARKER),
+      JSON.stringify({ refusedAt: versions.length, failures: controlFailures }, null, 2)
+    );
     console.error(
       `\ncontrol lane refused ${controlFailures.length} version(s); their entries were ` +
         `NOT written, so the cache is incomplete and must not be backfilled from:\n` +

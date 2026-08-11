@@ -27,6 +27,7 @@
  * archive-backed) or the CI `scrape-binary` (one release, CDN-backed). Because
  * the cache is committed, CI can re-distill with no binaries or re-download.
  */
+import { existsSync } from 'node:fs';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
@@ -37,6 +38,7 @@ import {
   type DescriptionEra,
 } from './binary-lane.js';
 import { compareVersionsAsc, type ExtractedSymbolType, isMain } from './lib.js';
+import { CONTROL_FAILURE_MARKER } from './reextract-binaries.js';
 
 /** One per-version extraction file: `binary-cache/<version>.json`. */
 export interface BinaryCacheFile {
@@ -261,6 +263,18 @@ export async function loadCacheFiles(dir: string): Promise<BinaryCacheFile[]> {
     throw new Error(
       `No cache files in ${dir}. The binary archive/cache is a maintainer-local artifact; ` +
         `rebuild it (see scratch/backfill-notes.md) before regenerating the observations.`
+    );
+  }
+  // Guarding on "zero files" is not enough: a re-extract that refused SOME versions
+  // leaves a populated cache that is quietly missing them, and distilling it would
+  // publish those absences as removals. The marker is the only thing that knows.
+  const marker = join(dir, CONTROL_FAILURE_MARKER);
+  if (existsSync(marker)) {
+    throw new Error(
+      `${marker} exists: the last re-extract refused one or more versions and their ` +
+        `cache entries were never written. Distilling now would report those versions' ` +
+        `symbols as removed. Fix the refusals, re-run reextract-binaries, and only ` +
+        `backfill once the marker is gone.`
     );
   }
   return files;

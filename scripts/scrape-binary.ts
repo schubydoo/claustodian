@@ -213,8 +213,34 @@ export async function scrapeBinary(
   return { path, count: record.count };
 }
 
+/**
+ * Exit code for a control-lane refusal, distinct from every other failure.
+ *
+ * The CI step that calls this is `continue-on-error: true`, and rightly so for the
+ * failure it was written for: a CDN hiccup is transient, and blocking the
+ * authoritative changelog update on it would be worse. A control-lane refusal is
+ * NOT that. It is deterministic, it recurs on every retry, and swallowing it drops
+ * the release's ENTIRE cache entry — flags and env vars included, not just the
+ * control symbols — so the release ships with no binary evidence and a late
+ * `first_seen`. The workflow tells the two apart on this code.
+ */
+export const CONTROL_REFUSAL_EXIT = 2;
+
 export async function main(argv: string[]): Promise<number> {
-  await scrapeBinary(parseArgs(argv));
+  try {
+    await scrapeBinary(parseArgs(argv));
+  } catch (error) {
+    const message = (error as Error).message ?? '';
+    if (message.startsWith('control lane:')) {
+      console.error(
+        `${message}\n\nThis is deterministic, not a transient CDN failure: retrying will ` +
+          `refuse again. No cache entry was written for this version, so its symbols are ` +
+          `absent rather than zero. Fix the lane or the bundle before re-running.`
+      );
+      return CONTROL_REFUSAL_EXIT;
+    }
+    throw error;
+  }
   return 0;
 }
 
