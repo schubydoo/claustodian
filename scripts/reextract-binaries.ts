@@ -219,6 +219,19 @@ export async function main(argv: string[]): Promise<number> {
       2
     )
   );
+  // Versions the committed cache holds that this run will NOT rewrite, because
+  // `selectVersions` reads the ARCHIVE and they are not in it. `clearCache` is about
+  // to delete them. This is the 2.1.224 incident AGENTS.md warns about — a version
+  // present in the cache but not the archive, destroyed by a run that reports
+  // success — and the run cannot recover them, so the most it can do is refuse to
+  // let the result be distilled.
+  const selected = new Set(versions);
+  const cacheOnly = readdirSync(options.outDir)
+    .filter((name) => name.endsWith('.json') && !name.startsWith('_'))
+    .map((name) => name.slice(0, -'.json'.length))
+    .filter((version) => !selected.has(version))
+    .sort(compareVersionsAsc);
+
   clearCache(options.outDir);
 
   let extracted = 0;
@@ -322,31 +335,42 @@ export async function main(argv: string[]): Promise<number> {
   // a run that reports success"). The exit code is unchanged; the flag is what stops
   // a backfill from distilling those absences as removals.
   const skipped = missing.length + unverified.length;
-  if (skipped > 0) {
+  if (skipped > 0 || cacheOnly.length > 0) {
     writeFileSync(
       join(options.outDir, CACHE_INCOMPLETE_MARKER),
       JSON.stringify(
         {
           status: 'skipped',
           note:
-            'These versions were selected from the archive but never written, so their ' +
-            'prior cache entries were deleted and not replaced. To clear this flag: fix ' +
-            'each version below (re-fetch with `npm run scrape-binary -- --version <v> ' +
-            '--force`, which is checksum-verified), then re-run reextract-binaries until ' +
-            'it writes every version. NOTE check-version-sets.sh reports these as benign ' +
-            'INFO ("a re-extract will pick these up") — it cannot know a re-extract just ' +
-            'failed to, so do not read a clean run of it as this being resolved.',
+            'The cache is missing versions it previously held. `missing`/`unverified` were ' +
+            'selected from the archive but could not be read; `cacheOnly` were in the ' +
+            'committed cache and NOT in the archive, so this run deleted them and could ' +
+            'not rewrite them. Fix the ARCHIVE, not the cache: `scrape-binary --force` ' +
+            'writes binary-cache/, which step 1 clears before re-reading the same archive, ' +
+            'so it cannot clear this flag. Restore each artifact under ' +
+            'scratch/binaries/<version>/ (or remove a version directory that should not be ' +
+            'there), then re-run. NOTE check-version-sets.sh reports the archive-vs-cache ' +
+            'gap as benign INFO ("a re-extract will pick these up") — it cannot know a ' +
+            're-extract just failed to, so a clean run of it is not evidence this is fixed.',
           versionsConsidered: versions.length,
           missing,
           unverified,
+          cacheOnly,
         },
         null,
         2
       )
     );
+    if (cacheOnly.length > 0) {
+      console.error(
+        `\n${cacheOnly.length} version(s) were in the cache but NOT in the archive and have ` +
+          `been DELETED by this run: ${cacheOnly.join(', ')}. Restore them to the archive.`
+      );
+    }
     console.error(
-      `\n${skipped} version(s) were selected but not written; ${CACHE_INCOMPLETE_MARKER} ` +
-        `is left in place and backfill will refuse until a run writes every version.`
+      `\n${skipped + cacheOnly.length} version(s) are missing from the cache; ` +
+        `${CACHE_INCOMPLETE_MARKER} is left in place and backfill will refuse until a run ` +
+        `writes every version.`
     );
     return 0;
   }

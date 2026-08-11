@@ -288,6 +288,32 @@ describe('reextract-binaries main()', () => {
     expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(true);
   });
 
+  it('flags a version the cache held but the archive does not, which the run deletes', async () => {
+    // The 2.1.224 incident AGENTS.md warns about: `selectVersions` reads the ARCHIVE,
+    // so a cache-only version is never selected, `clearCache` deletes it, and the run
+    // reports success. The run cannot recover it — the least it can do is refuse to
+    // let the result be distilled, which is what the flag does.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-cacheonly-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await mkdir(out, { recursive: true });
+    // Present in the cache, absent from the archive.
+    await writeFile(join(out, '9.9.9.json'), JSON.stringify({ version: '9.9.9', symbols: [] }));
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await main(['--archive', archive, '--out', out]);
+
+    expect(existsSync(join(out, '9.9.9.json'))).toBe(false); // deleted, as documented
+    const marker = JSON.parse(await readFile(join(out, CACHE_INCOMPLETE_MARKER), 'utf-8')) as {
+      cacheOnly: string[];
+    };
+    expect(marker.cacheOnly).toEqual(['9.9.9']);
+    expect(errSpy).toHaveBeenCalledWith(expect.stringContaining('9.9.9'));
+    errSpy.mockRestore();
+  });
+
   it('unmarks the cache only when every selected version was written', async () => {
     // The ordering is the whole point. The cache goes incomplete the moment
     // `clearCache` runs, so a marker written at the END protects nothing against an
