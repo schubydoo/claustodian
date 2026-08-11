@@ -296,8 +296,9 @@ export async function main(argv: string[]): Promise<number> {
     return 1;
   }
 
-  // Lowered only when nothing was skipped. A `missing`/`unverified` version was
-  // selected but unreadable, so its cache entry was cleared and never rewritten; the
+  // Lowered only when nothing was skipped — `missing` (no readable bundle) or
+  // `unverified` (checksum mismatch, refused). Either way the cache entry was
+  // cleared and never rewritten; the
   // flag stops a backfill distilling that absence as a removal. Exit code unchanged.
   //
   // ⚠️ NOT covered: a version in the cache but absent from the archive is never
@@ -308,8 +309,10 @@ export async function main(argv: string[]): Promise<number> {
     writeMarker(options.outDir, {
       status: 'skipped',
       note:
-        'These versions were selected from the archive but could not be read, so their ' +
-        'prior cache entries were cleared and not rewritten. Restore each artifact under ' +
+        'These versions were selected from the archive but not written — `missing` has ' +
+        'no readable bundle, `unverified` failed its checksum. Their prior cache ' +
+        'entries were cleared and not rewritten. Restore each artifact, with its ' +
+        'SHA256SUMS entry, under ' +
         'scratch/binaries/<version>/ and re-run. `scrape-binary --force` does not help: ' +
         'it writes binary-cache/, which step 1 clears before re-reading the archive.',
       versionsConsidered: versions.length,

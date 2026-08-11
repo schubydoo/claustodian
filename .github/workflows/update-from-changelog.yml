@@ -77,7 +77,7 @@ jobs:
           # Fatal. Anything else is treated as the transient CDN failure this step has
           # always tolerated: warn, and let the re-distill reproduce existing evidence.
           if [ "$code" = "2" ]; then
-            echo "::error::control lane refused this release; its binary cache entry was not written"
+            echo "::error::an extraction lane refused this release; its binary cache entry was not written"
             exit 2
           fi
           if [ "$code" != "0" ]; then

@@ -88,8 +88,9 @@ things happened, and each has a different way out:
 
 ⚠️ **Fix the archive, not the cache.** `npm run scrape-binary -- --version <v> --force`
 writes `binary-cache/`, which step 1 clears before re-reading the same unchanged archive —
-so it cannot lower this flag. Restore the artifact under `scratch/binaries/<version>/`, or
-remove an archive directory that should not be there.
+so it cannot lower this flag. Restore the artifact under `scratch/binaries/<version>/` **with its `SHA256SUMS`
+entry** — `readBundleSource` refuses anything it cannot verify — or remove an archive
+directory that should not be there.
 
 ⚠️ **This does contradict the reconciliation step above**, which prescribes the same
 command, and the contradiction is real rather than something to explain away. Step 1 clears
