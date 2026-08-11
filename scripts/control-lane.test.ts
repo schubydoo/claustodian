@@ -269,4 +269,110 @@ describe('extractControlMessages', () => {
       expect(found.has('set_model')).toBe(true);
     });
   });
+
+  describe('shapes it must tolerate without leaking or throwing', () => {
+    // Minified output is not tidy. Every construct below appears in real bundles or
+    // is one refactor away from appearing: object spread, sparse arrays, schemas
+    // bound to a member rather than a name, unions with no description. The
+    // extractor has to walk past all of them and still admit exactly the two
+    // subtypes the CLI actually routes.
+    const messy = [
+      'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a,other="zzz",obj={};',
+      'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes the session."));',
+      'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the active model."));',
+      // union shapes: no describe, bare identifiers, a hole, empty, non-string describe
+      'var ALL=Ee(()=>fs([A1(),A2()]));',
+      'var BARE=Ee(()=>fs([A1,A2]));',
+      'var HOLE=Ee(()=>fs([,A1()]));',
+      'var EMPTY=Ee(()=>fs([]));',
+      'var NUMDESC=Ee(()=>fs([A1(),A2()]).describe(1));',
+      // object shapes: spread sibling, numeric key, plain object with no subtype
+      'q({...other,subtype:"initialize"});',
+      'q({0:1,subtype:"set_model"});',
+      'var plain={a:1};',
+      // builder arity that proves nothing — must yield no symbol at all
+      'var W1=Ee(()=>Se({subtype:xt("a","b")}));',
+      'var W2=Ee(()=>Se({subtype:xt()}));',
+      // wrappers that are not a describe() call
+      'var RAW={subtype:xt("initialize")};',
+      'var OPT=Ee(()=>Se({subtype:xt("set_model")}).optional());',
+      'var DREF=Se({subtype:xt("initialize")}).describe;',
+      'var DNUM=Ee(()=>Se({subtype:xt("set_model")}).describe(2));',
+      // bindings that resolve to no name
+      'var {z}=Ee(()=>Se({subtype:xt("initialize")}));',
+      'obj.x=Ee(()=>Se({subtype:xt("set_model")}));',
+      // dispatch: loose equality, a non-literal operand, and an unrelated member
+      'function h(e){' +
+        'if(e.request.subtype==="initialize")return 1;' +
+        'else if(e.request.subtype=="set_model")return 2;' +
+        'else if(e.request.subtype===other)return 3;' +
+        'else if(e.other==="zzz")return 4;' +
+        'return 0}',
+    ].join('\n');
+
+    it('admits exactly the routed subtypes and nothing the odd shapes carry', () => {
+      const found = bySymbol(extractControlMessages(messy, '2.1.226'));
+
+      expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
+    });
+
+    it('keeps the right description when the same subtype appears in many shapes', () => {
+      const found = bySymbol(extractControlMessages(messy, '2.1.226'));
+
+      expect(found.get('initialize')?.description).toBe('Initializes the session.');
+      expect(found.get('set_model')?.description).toBe('Sets the active model.');
+    });
+
+    it('recognises a loose-equality dispatch as routing', () => {
+      // `==` and `===` are both minifier output; only one was exercised before.
+      const found = bySymbol(extractControlMessages(messy, '2.1.226'));
+
+      expect(found.has('set_model')).toBe(true);
+    });
+
+    it('reads a dispatch written with the literal on the left', () => {
+      // `"x" === e.request.subtype` is the same routing, operands reversed.
+      const yoda = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var ALL=Ee(()=>fs([A1(),A2()]));',
+        'function h(e){' +
+          'if("initialize"===e.request.subtype)return 1;' +
+          'else if("set_model"===e.request.subtype)return 2;' +
+          'return 0}',
+      ].join('\n');
+      const found = bySymbol(extractControlMessages(yoda, '2.1.226'));
+
+      expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
+    });
+
+    it('walks past union arrays that are not consumed by a describe() call', () => {
+      // A union array reached a `.describe()` in every fixture so far. These three
+      // consumers are all legal minifier output and none carries a description.
+      const undescribed = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var LOOSE=[A1(),A2()];',
+        'var OPT=Ee(()=>fs([A1(),A2()]).optional());',
+        'var DREF=fs([A1(),A2()]).describe;',
+        'function h(e){' +
+          'if(e.request.subtype==="initialize")return 1;' +
+          'else if(e.request.subtype==="set_model")return 2;' +
+          'return 0}',
+      ].join('\n');
+      const found = bySymbol(extractControlMessages(undescribed, '2.1.226'));
+
+      expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
+      expect(found.get('initialize')?.direction).toBeNull();
+    });
+
+    it('assigns no direction when no union carries a directional description', () => {
+      const found = bySymbol(extractControlMessages(messy, '2.1.226'));
+
+      expect(found.get('initialize')?.direction).toBeNull();
+      expect(found.get('set_model')?.direction).toBeNull();
+    });
+  });
 });
