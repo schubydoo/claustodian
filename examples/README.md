@@ -23,6 +23,11 @@ fetch a URL and read it. Three tiny reference clients live next to this file:
 | [`claustodian.ts`](claustodian.ts) | Node 18+ (zero deps) | `npx tsx examples/claustodian.ts` |
 | [`claustodian.py`](claustodian.py) | Python 3.9+ (stdlib) | `python3 examples/claustodian.py` |
 
+`claustodian.test.ts` sits beside them but is not a client — it is this repo's own gate,
+asserting that the `type` and `family` enums in `claustodian.ts` still match the ones
+the schema declares, in both directions, and that the two record shapes stay in step
+with the schema's conditional.
+
 All three implement the same three rules below.
 
 ## Endpoints
