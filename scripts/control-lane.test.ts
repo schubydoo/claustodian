@@ -218,9 +218,15 @@ describe('extractControlMessages', () => {
   });
 
   describe('floors', () => {
-    it('pins the two floors this lane depends on', () => {
-      // Both are measured, not chosen: 2.1.30 is the first union array, 2.1.133
-      // the first direction split. Changing either changes what null means.
+    it('pins the three floors this lane depends on', () => {
+      // All three are measured, not chosen, and each was checked against real
+      // bundles: 1.0.44 yields 0 symbols and 1.0.45 yields 1; 2.1.62 has no routed
+      // union and 2.1.63 has one; 2.1.132 is undirected and 2.1.133 is split.
+      //
+      // ⚠️ The union floor is NOT the first union array of subtype schemas — that
+      // is 2.1.30, and setting this constant to it made every release from 2.1.30
+      // to 2.1.62 throw, because those unions are not routed as control requests.
+      // Do not "correct" 2.1.63 back to 2.1.30.
       expect(CONTROL_DISPATCH_FLOOR).toBe('1.0.45');
       expect(CONTROL_UNION_FLOOR).toBe('2.1.63');
       expect(CONTROL_SPLIT_FLOOR).toBe('2.1.133');
@@ -433,8 +439,8 @@ describe('extractControlMessages', () => {
 
     it('throws when the union survives but the direction prose is gone', () => {
       // The anchors are English text in a `.describe()`. A rewording nulls every
-      // direction, which is byte-identical to a pre-2.1.133 bundle — so a 2.1.300
-      // record would assert the CLI does not distinguish the two directions.
+      // direction, and null is indistinguishable from the null a call-site-only
+      // subtype legitimately carries — so the loss leaves no trace in the output.
       const reworded = [
         'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;',
         'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',

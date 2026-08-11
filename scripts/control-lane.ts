@@ -64,7 +64,9 @@
  *
  * FLOORS. The protocol is far older than its own self-description. The names
  * date from 1.0.45; the first zod schema appears at 2.1.20, the first union at
- * 2.1.30, the first description at 2.1.63, and the direction split at 2.1.133.
+ * 2.1.30 (though the first union the CLI ROUTES as control requests is 2.1.63 —
+ * see CONTROL_UNION_FLOOR, the two are not the same thing), the first description
+ * at 2.1.63, and the direction split at 2.1.133.
  * So `first_seen` must never be taken from the schema lane — dating from
  * schemas would move the whole surface ~120 releases later and manufacture a
  * mass introduction.
@@ -88,6 +90,25 @@ import { compareVersionsAsc } from './lib.js';
  * dispatched on the control-request handler path, so `isControlRequest` is false
  * and there is no routed union to demand. Measured with this module: 2.1.62 has
  * none (the union guard fires), 2.1.63 has one and yields 20 symbols.
+ *
+ * ⚠️ THIS FLOOR IS A DATING BOUNDARY, and the 16 -> 20 step across it is not four
+ * new subtypes. Attributed against the two bundles rather than inferred:
+ *   elicitation            — string present at 2.1.62, not declared as a subtype
+ *   mcp_oauth_callback_url — absent from 2.1.62 entirely
+ *   remote_control         — absent from 2.1.62 entirely
+ *   hook_callback          — ALREADY DECLARED at 2.1.62, and undetectable there
+ * so three of the four are genuine arrivals and one is a false introduction.
+ *
+ * `hook_callback` is the shape of the limit. It is CLI->host: the CLI SENDS it, so
+ * the CLI has no handler for it, and at 2.1.62 the bundle carries no host-side
+ * handler either — measured, it is neither request- nor plain-dispatched there.
+ * Its only evidence is membership of a union that nothing yet proves is a
+ * control-request union. So a CLI->host subtype declared before its union becomes
+ * provable will date to the floor rather than to its true introduction, and this
+ * module cannot do better with what the bundle contains. Whoever assembles
+ * `first_seen` should treat a symbol whose sole evidence is union membership as an
+ * upper bound — `first_seen_estimated` in the record contract exists for exactly
+ * this — rather than as a confirmed introduction.
  */
 export const CONTROL_UNION_FLOOR = '2.1.63';
 
@@ -515,8 +536,10 @@ export function controlMessageConfidence(
 /**
  * Extracts the `control_request` subtypes from one bundle's source.
  *
- * Throws rather than returning an empty array at or above CONTROL_UNION_FLOOR:
- * downstream, zero symbols reads as every symbol having been removed at once.
+ * Throws rather than returning an empty array at or above CONTROL_DISPATCH_FLOOR:
+ * downstream, zero symbols reads as every symbol having been removed at once. The
+ * union and split floors carry their own guards on top of that — see the three
+ * checks at the end of this function.
  */
 export function extractControlMessages(
   source: string,
@@ -590,9 +613,10 @@ export function extractControlMessages(
     if (missing.length > 0) {
       throw new Error(
         `control lane: no ${missing.join(' and no ')} union at ${version}, at or above ` +
-          `the ${CONTROL_SPLIT_FLOOR} split floor. Publishing null for that side would ` +
-          'assert the CLI does not send those messages, which it does. The union ' +
-          'description this reads has probably been reworded.'
+          `the ${CONTROL_SPLIT_FLOOR} split floor. Every subtype on that side would ` +
+          'publish null, indistinguishable from the null a call-site-only subtype ' +
+          'legitimately carries — so the loss would be invisible in the output. The ' +
+          'union description this reads has probably been reworded.'
       );
     }
   }
