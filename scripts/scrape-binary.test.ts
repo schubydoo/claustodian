@@ -128,6 +128,13 @@ describe('resolveVersion', () => {
 });
 
 describe('buildCacheRecord', () => {
+  it('rethrows a failure that is not a control-lane refusal', async () => {
+    // The refusal code must be narrow. If `main` swallowed every error into exit 2,
+    // a CDN failure would be reported to CI as a deterministic refusal and fail the
+    // run that `continue-on-error` used to tolerate — the opposite mistake.
+    await expect(main(['--version', 'not-a-version'])).rejects.toThrow();
+  });
+
   it('pins the refusal exit code as the literal the workflow compares against', () => {
     // `expect(code).toBe(CONTROL_REFUSAL_EXIT)` alone pins nothing: it passes if the
     // constant becomes 0, which would restore the very swallow this exists to stop.

@@ -1,13 +1,18 @@
 // Copyright 2026 Schuby
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, expect, it } from 'vitest';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   distillDescriptions,
   distillObservations,
+  loadCacheFiles,
   main,
   type BinaryCacheFile,
 } from './backfill-binary.js';
+import { CONTROL_FAILURE_MARKER } from './reextract-binaries.js';
 
 /** A cache file whose symbols carry descriptions. */
 function descFile(
@@ -416,5 +421,34 @@ describe('distillObservations — flag visibility eras', () => {
       { from: '2.1.16', hidden: true },
       { from: '2.1.19', hidden: false },
     ]);
+  });
+});
+
+describe('loadCacheFiles', () => {
+  let root: string | undefined;
+  afterEach(async () => {
+    if (root) await rm(root, { recursive: true, force: true });
+    root = undefined;
+  });
+
+  it('refuses while the control-failure marker is present', async () => {
+    // The guard that matters, and it had no test. A re-extract that refused SOME
+    // versions leaves a POPULATED cache quietly missing them — so the "no files at
+    // all" check passes and distilling would publish those absences as removals.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-backfill-marker-'));
+    await writeFile(join(root, '2.1.0.json'), JSON.stringify({ version: '2.1.0', symbols: [] }));
+    await writeFile(join(root, CONTROL_FAILURE_MARKER), JSON.stringify({ failures: [] }));
+
+    await expect(loadCacheFiles(root)).rejects.toThrow(/refused one or more versions/);
+  });
+
+  it('loads normally once the marker is gone', async () => {
+    // The other half: the marker is the ONLY thing that refuses here, so its absence
+    // must not leave a permanent block behind.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-backfill-ok-'));
+    await writeFile(join(root, '2.1.0.json'), JSON.stringify({ version: '2.1.0', symbols: [] }));
+
+    const files = await loadCacheFiles(root);
+    expect(files.map((f) => f.version)).toEqual(['2.1.0']);
   });
 });
