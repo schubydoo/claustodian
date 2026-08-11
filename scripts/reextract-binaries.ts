@@ -202,7 +202,10 @@ export async function main(argv: string[]): Promise<number> {
       continue;
     }
     const symbols = extractBundleSymbols(result.src);
-    let controlMessages: ControlMessageObservation[] = [];
+    // Deliberately uninitialised: the catch `continue`s, so an initial value would
+    // never be read, and a default of `[]` here is exactly the silent-zero this lane
+    // exists to refuse.
+    let controlMessages: ControlMessageObservation[];
     try {
       controlMessages = extractControlMessages(result.src, version);
     } catch (error) {
