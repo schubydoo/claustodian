@@ -304,22 +304,14 @@ export async function main(argv: string[]): Promise<number> {
   // selected, so this cannot see it. `scripts/check-version-sets.sh` catches that
   // before step 1 and the runbook requires it.
   const skipped = missing.length + unverified.length;
-  // `prior.unreadable` counts as an outstanding loss. A marker that could not be
-  // parsed might have recorded versions this run can no longer see, and lowering the
-  // flag on it would be failing open on exactly the evidence that cannot be rebuilt.
   if (skipped > 0) {
     writeMarker(options.outDir, {
       status: 'skipped',
       note:
-        'The cache is missing versions it previously held. `missing`/`unverified` were ' +
-        'selected from the archive but could not be read; `cacheOnly` were in the ' +
-        'committed cache and NOT in the archive, so a run deleted them and could not ' +
-        'rewrite them. Fix the ARCHIVE, not the cache: `scrape-binary --force` writes ' +
-        'binary-cache/, which step 1 clears before re-reading the same archive. Restore ' +
-        'each artifact under scratch/binaries/<version>/ and re-run: a version the ' +
-        'archive holds again drops off this list. Deleting THIS FILE by hand is the ' +
-        'deliberate way to accept a loss that cannot be restored — after which the ' +
-        "dataset is rebuilt without that version's evidence.",
+        'These versions were selected from the archive but could not be read, so their ' +
+        'prior cache entries were cleared and not rewritten. Restore each artifact under ' +
+        'scratch/binaries/<version>/ and re-run. `scrape-binary --force` does not help: ' +
+        'it writes binary-cache/, which step 1 clears before re-reading the archive.',
       versionsConsidered: versions.length,
       missing,
       unverified,
