@@ -28,6 +28,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { extractControlMessages, type ControlMessageObservation } from './control-lane.js';
 import { extractBundleSymbols } from './extract-bundle.js';
 import { isMain } from './lib.js';
 
@@ -114,10 +115,29 @@ async function fetchRetry(url: string, tries = 3): Promise<Response> {
   throw lastErr;
 }
 
-/** The cache-file record for `version`, byte-identical to a full re-extraction. */
+/**
+ * The cache-file record for `version`, byte-identical to a full re-extraction.
+ *
+ * That invariant is why the control lane runs here too. This is the OTHER writer of
+ * `binary-cache/<version>.json` — CI calls it per release — so if it omitted a key
+ * that `reextract-binaries` writes, the cache would hold two shapes and the backfill
+ * would see control symbols appear and vanish with no protocol change behind it.
+ *
+ * A control-lane refusal propagates: one version is being scraped, so failing is the
+ * whole point. `reextract-binaries` collects instead, because aborting there would
+ * leave a half-written cache.
+ */
 export function buildCacheRecord(version: string, bundle: string): BinaryCacheRecord {
   const symbols = extractBundleSymbols(bundle);
-  return { version, source: 'binary', count: symbols.length, symbols };
+  const controlMessages = extractControlMessages(bundle, version);
+  return {
+    version,
+    source: 'binary',
+    count: symbols.length,
+    symbols,
+    controlCount: controlMessages.length,
+    controlMessages,
+  };
 }
 
 export interface BinaryCacheRecord {
@@ -125,6 +145,8 @@ export interface BinaryCacheRecord {
   source: 'binary';
   count: number;
   symbols: ReturnType<typeof extractBundleSymbols>;
+  controlCount: number;
+  controlMessages: ControlMessageObservation[];
 }
 
 /** Write `record` to `<outDir>/<version>.json` atomically (tmp + rename). */

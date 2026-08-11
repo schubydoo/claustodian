@@ -68,8 +68,14 @@
  * 2.2 s/version (~17 minutes) that `env-registry.ts` documents REJECTING for the
  * same reason. (This extrapolation applies the LARGEST bundle's cost to every
  * release, so it is an upper bound; `env-registry.ts` does not say what its own
- * 2.2 s is measured on.) Nothing calls this module yet, so the trade is not live —
- * but whoever wires it into a full sweep owns that number.
+ * 2.2 s is measured on.)
+ *
+ * Size-weighted it is cheaper than that ceiling suggests, and the two figures must
+ * not be read as disagreeing: the archived bundles average 10.4 MiB, not 22.9, so a
+ * two-point fit (13.0 MiB -> 2.0 s, 22.9 -> 3.1 s) over all 470 slices estimates
+ * ~13 minutes, about 1.7 s/version. That is an ESTIMATE from a fit, not a measured
+ * sweep, and it is why the runbook now budgets ~24 minutes for the whole re-extract
+ * rather than the ~11 it did before this lane joined the loop.
  *
  * ⚠️ Do NOT "fix" it by restricting the sweep to versions at or above the union
  * floor. An earlier revision listed that first among the cheapest fixes; it is not

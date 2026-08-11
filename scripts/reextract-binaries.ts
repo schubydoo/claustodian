@@ -30,8 +30,10 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { extractControlMessages } from './control-lane.js';
 import { extractBundleSymbols } from './extract-bundle.js';
 import { compareVersionsAsc, isMain } from './lib.js';
+import type { ControlMessageObservation } from './control-lane.js';
 
 const DEFAULT_ARCHIVE_DIR = 'scratch/binaries';
 const DEFAULT_OUT_DIR = 'binary-cache';
@@ -173,6 +175,12 @@ export async function main(argv: string[]): Promise<number> {
   let extracted = 0;
   const missing: string[] = [];
   const unverified: string[] = [];
+  // The control lane REFUSES rather than reporting zero, which is the behaviour we
+  // want per version and the wrong behaviour for a 470-version loop: one bad bundle
+  // would abort the run and leave the cache half-written. Collected instead, and the
+  // run fails at the end having told you every version that failed, not just the
+  // first. What must never happen is a version quietly missing its control symbols.
+  const controlFailures: Array<{ version: string; reason: string }> = [];
   for (const version of versions) {
     const result = readBundleSource(options.archiveDir, version);
     if (result.kind === 'missing') {
@@ -184,9 +192,23 @@ export async function main(argv: string[]): Promise<number> {
       continue;
     }
     const symbols = extractBundleSymbols(result.src);
+    let controlMessages: ControlMessageObservation[] = [];
+    try {
+      controlMessages = extractControlMessages(result.src, version);
+    } catch (error) {
+      controlFailures.push({ version, reason: (error as Error).message });
+      continue;
+    }
     writeFileSync(
       join(options.outDir, `${version}.json`),
-      JSON.stringify({ version, source: 'binary', count: symbols.length, symbols })
+      JSON.stringify({
+        version,
+        source: 'binary',
+        count: symbols.length,
+        symbols,
+        controlCount: controlMessages.length,
+        controlMessages,
+      })
     );
     extracted++;
   }
@@ -203,6 +225,18 @@ export async function main(argv: string[]): Promise<number> {
     `Re-extracted ${extracted}/${versions.length} version(s) into ${options.outDir}` +
       (notes.length ? `; ${notes.join('; ')}` : '.')
   );
+
+  // A non-zero exit, and every failure named. A control-lane refusal means that
+  // version's control symbols are ABSENT from the cache, and absence downstream
+  // reads as a removal — so this cannot be a warning the caller might miss.
+  if (controlFailures.length > 0) {
+    console.error(
+      `\ncontrol lane refused ${controlFailures.length} version(s); their entries were ` +
+        `NOT written, so the cache is incomplete and must not be backfilled from:\n` +
+        controlFailures.map((f) => `  ${f.version}: ${f.reason}`).join('\n')
+    );
+    return 1;
+  }
   return 0;
 }
 

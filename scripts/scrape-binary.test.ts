@@ -17,9 +17,42 @@ import {
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
-/** A minimal commander `.option` spec the extractor recognizes, so a fake bundle
- * yields at least one own-evidenced symbol (proves extraction ran on our bytes). */
-const FAKE_BUNDLE = `.option("--demo-flag","a demonstration flag")`;
+/**
+ * A minimal but PARSEABLE bundle: a commander `.option` spec the flag extractor
+ * recognizes, plus a control-request handler for the control lane.
+ *
+ * Both halves are load-bearing now that `buildCacheRecord` runs an AST lane as well
+ * as the regex one. The control lane refuses a bundle it cannot parse, and refuses
+ * a version at or above the dispatch floor that yields nothing — so a fragment like
+ * a bare `.option(...)` is no longer a usable fixture, and every version these tests
+ * scrape is above that floor.
+ */
+const FAKE_BUNDLE = [
+  // The flag lane's evidence.
+  `program.option("--demo-flag","a demonstration flag");`,
+  // The control lane's. Every version these tests scrape is above ALL THREE floors,
+  // so a fixture has to be a miniature of the real protocol, not a fragment: two
+  // schema-bearing subtypes, a union that routes them, BOTH directional sub-unions
+  // (the split guard demands both, not merely a non-empty map), and a handler that
+  // dispatches on `<expr>.request.subtype` so the unions classify as control
+  // requests under the sibling-majority rule.
+  `var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;`,
+  `var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes the session."));`,
+  `var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the active model."));`,
+  `var B1=Ee(()=>Se({subtype:xt("hook_callback")}).describe("Delivers a hook callback."));`,
+  `var B2=Ee(()=>Se({subtype:xt("can_use_tool")}).describe("Asks whether a tool may run."));`,
+  // Two members per side: an array of one resolves to a single member and is not a
+  // union at all, so a one-each split still trips the split guard.
+  `var HOST=Ee(()=>fs([A1(),A2()]).describe("Control requests a client sends to drive the loop."));`,
+  `var CLI=Ee(()=>fs([B1(),B2()]).describe("Control requests the agent loop originates and needs a reply to."));`,
+  `var ALL=Ee(()=>fs([A1(),A2(),B1(),B2()]));`,
+  `function handle(e){` +
+    `if(e.request.subtype==="initialize")return 1;` +
+    `else if(e.request.subtype==="set_model")return 2;` +
+    `else if(e.request.subtype==="hook_callback")return 3;` +
+    `else if(e.request.subtype==="can_use_tool")return 4;` +
+    `return 0}`,
+].join('');
 
 /** Fake a CDN manifest + binary response pair, keyed by URL substring. */
 function stubCdn(version: string, binary: string, checksum: string): void {

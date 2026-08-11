@@ -170,7 +170,15 @@ describe('reextract-binaries main()', () => {
     const archive = join(root, 'archive');
     const out = join(root, 'out');
     await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();'); // ok
-    await writeCompiled(archive, '2.0.0', '.option("--foo <v>","desc")'); // ok
+    // Valid JS, and carrying a control request: the control lane parses the bundle
+    // and refuses a version at or above the dispatch floor that yields nothing, so a
+    // fixture for this era has to be a real program rather than a fragment.
+    await writeCompiled(
+      archive,
+      '2.0.0',
+      'program.option("--foo <v>","desc");' +
+        'function h(e){if(e.request.subtype==="initialize")return 1;return 0}'
+    ); // ok
     await mkdir(join(archive, '3.0.0'), { recursive: true }); // no bundle → missing
     // 4.0.0 present but tampered → refused
     await mkdir(join(archive, '4.0.0', 'linux-x64'), { recursive: true });
@@ -192,6 +200,15 @@ describe('reextract-binaries main()', () => {
     };
     expect(c1.symbols.some((s) => s.symbol === 'CLAUDE_CODE_A')).toBe(true);
     expect(c2.symbols.some((s) => s.symbol === '--foo')).toBe(true);
+    // The control lane's output rides in the same file, keyed separately so the
+    // two extractions cannot be confused for one another downstream.
+    const c2control = JSON.parse(await readFile(join(out, '2.0.0.json'), 'utf-8')) as {
+      controlCount: number;
+      controlMessages: { symbol: string; family: string }[];
+    };
+    expect(c2control.controlMessages.map((m) => m.symbol)).toEqual(['initialize']);
+    expect(c2control.controlCount).toBe(1);
+    expect(c2control.controlMessages[0]?.family).toBe('control_request');
     expect(existsSync(join(out, '3.0.0.json'))).toBe(false);
     expect(existsSync(join(out, '4.0.0.json'))).toBe(false); // refused, not extracted
     expect(logSpy).toHaveBeenCalledWith(
@@ -200,6 +217,28 @@ describe('reextract-binaries main()', () => {
     expect(logSpy).toHaveBeenCalledWith(
       expect.stringContaining('refused (checksum mismatch or missing SHA256SUMS): 4.0.0')
     );
+  });
+
+  it('fails the run and writes nothing for a version whose bundle the control lane refuses', async () => {
+    // The whole point of the control lane's refusal is that absence downstream reads
+    // as a removal. So a refusal must not be a warning the caller can miss: no cache
+    // entry for that version, a non-zero exit, and the version named in the error.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-refuse-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();'); // below the floor
+    await writeCompiled(archive, '2.0.0', 'this is not parseable javascript {{{'); // refused
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const code = await main(['--archive', archive, '--out', out]);
+
+    expect(code).toBe(1);
+    expect(existsSync(join(out, '2.0.0.json'))).toBe(false);
+    expect(existsSync(join(out, '1.0.0.json'))).toBe(true); // unaffected versions still written
+    expect(errSpy).toHaveBeenCalledWith(expect.stringContaining('2.0.0'));
+    expect(errSpy).toHaveBeenCalledWith(expect.stringContaining('must not be backfilled from'));
+    errSpy.mockRestore();
   });
 
   it('clears every prior cache file backfill would read (non-underscore *.json), keeping _-prefixed', async () => {

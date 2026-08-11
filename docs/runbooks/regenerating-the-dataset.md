@@ -6,7 +6,13 @@ Rebuilding `data/` from the three lanes. For _why_ the steps are in this order, 
 **Who can run this:** a maintainer with the local binary archive. Steps 2–4 work
 without it; step 1 does not.
 
-**Cost:** roughly 11 minutes of machine time for a full re-extract, plus review.
+**Cost:** roughly 24 minutes of machine time for a full re-extract, plus review.
+
+That is up from ~11 minutes: the control lane now runs in the same loop and parses
+each bundle with oxc. The added ~13 minutes is derived, not measured end to end —
+a two-point fit (13.0 MiB → 2.0 s, 22.9 MiB → 3.1 s) applied to the 470 archived
+bundles, whose mean is 10.4 MiB. Re-measure on the first real run and correct this
+line. The per-version worst case is the tip's 3.1 s.
 
 ---
 
@@ -52,6 +58,13 @@ assuming — the check script lists them separately.
 ---
 
 ## The order
+
+**Step 1 can now fail without failing loudly on its own terms.** The control lane
+refuses a bundle it cannot parse, or one at or above 1.0.45 that yields no control
+requests, rather than writing a zero. `reextract-binaries` collects those refusals,
+writes NO cache entry for the affected versions, prints each one, and **exits 1**.
+Do not run step 2 after a non-zero exit: the cache is incomplete, and a missing
+version reads downstream as a removal.
 
 ```bash
 npm run reextract-binaries   # 1. archive      -> binary-cache/
@@ -104,7 +117,7 @@ one thing that cannot get it.
 3. If the regeneration itself exceeds 500 files, split again: `binary-cache/` first,
    then `data/`. CI has no cross-check between them, so the halves are safe apart.
 
-Regeneration is ~11 minutes. Review is worth more than the 11 minutes.
+Regeneration is ~24 minutes. Review is worth more than the 24 minutes.
 
 ---
 

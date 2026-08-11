@@ -139,9 +139,10 @@ not rebuild on a custom-domain change, which has already caused one outage.
 - **No API.** Static files only: cacheable, vendorable, and readable offline.
 - **No `internal_config_flag` records.** The type is in the schema enum and unused;
   internal-ness is a `category`, per the identity invariant above.
-- **No `control_message` records yet.** The type and its extractor are in the tree,
-  but no lane emits them and the site cannot filter them; the dataset PR that turns
-  them on follows separately.
+- **No `control_message` records yet.** The extractor now runs in the extraction
+  loop and its output is cached per version, but nothing assembles those
+  observations into records and the site cannot filter them. The PR that emits them
+  follows separately, and the dataset regeneration after that.
 - **No LLM-authored content in the dataset.** Descriptions come from the docs, the
   changelog, or the binary's own text. A generated summary would be an unverified
   artifact in a dataset whose whole value is that claims are checkable.
