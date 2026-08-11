@@ -508,7 +508,9 @@ describe('extractControlMessages', () => {
       //
       // Measured against the real bundles, not inferred: 2.1.62 publishes 16 symbols,
       // every one `dispatch`; 2.1.63 publishes 20, as 14 `both`, 2 `union` and 4
-      // `dispatch`, and `hook_callback` is one of the two `union` records.
+      // `dispatch`, and `hook_callback` is one of the two `union` records — carrying
+      // "Delivers a hook callback with its input data.", so it grades `high` there,
+      // which is the grade the record contract forbids flagging as estimated.
       //
       // Here it is a member of a routed union and is NOT itself on the request path.
       // It carries a described schema, so `evidence` is 'schema' and the confidence

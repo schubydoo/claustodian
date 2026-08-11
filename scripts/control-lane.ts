@@ -124,7 +124,9 @@ import { compareVersionsAsc } from './lib.js';
  * 2.1.62 publishes 16 symbols, every one `dispatch`; 2.1.63 publishes 20, as 14
  * `both`, 2 `union` and 4 `dispatch` — and the two `union` records are
  * `hook_callback` and `elicitation`, `hook_callback` being the false introduction
- * enumerated above. An earlier revision deferred the field as speculative; it is
+ * enumerated above. Both carry their own `.describe()` at 2.1.63, so both grade
+ * `high`: measured, because `evidence: 'schema'` alone would not settle it — that
+ * flag is set from the builder call, and the grade needs a non-empty description. An earlier revision deferred the field as speculative; it is
  * not, because the consumer is the PR that emits these records.
  *
  * ⚠️ `'union'` is a WITNESS of an upper-bound date, NOT a test for one, and the flag

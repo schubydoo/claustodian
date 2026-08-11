@@ -13,7 +13,9 @@ import { pathToFileURL } from 'node:url';
  * lane modules share it without importing one another. The changelog and docs
  * lanes only ever produce the first three; the binary lane also reads settings
  * keys out of the embedded zod schema, which is where the config kinds come
- * from. Now the full SymbolRecord `type` enum. */
+ * from. This is the SUBSET of the SymbolRecord `type` enum that the lanes in
+ * `scripts/` produce — the schema also allows `control_message`, which no lane
+ * emits yet, so it is deliberately absent here rather than missing. */
 export type ExtractedSymbolType =
   'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag';
 
