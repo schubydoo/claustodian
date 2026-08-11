@@ -10,10 +10,11 @@ import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
 /** The symbol kinds the lanes extract. Lives here — a dependency-free leaf — so
- * lane modules share it without importing one another. The changelog and docs
- * lanes only ever produce the first three; the binary lane also reads settings
- * keys out of the embedded zod schema, which is where the config kinds come
- * from. This is the SymbolRecord `type` enum MINUS `control_message`: control-lane.ts
+ * lane modules share it without importing one another. The changelog lane only
+ * ever produces the first three — its SYMBOL_PATTERNS classify backticked tokens
+ * as flags, commands or env vars and nothing else. The docs lane adds `config_key`
+ * from the settings tables, and the binary lane also reads settings keys out of
+ * the embedded zod schema. This is the SymbolRecord `type` enum MINUS `control_message`: control-lane.ts
  * extracts those observations, but nothing assembles them into records yet, so no
  * value of this type is ever `control_message`. Membership is not "what a lane
  * produces" — nothing emits `internal_config_flag` either, and it stays because it
