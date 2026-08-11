@@ -1,6 +1,8 @@
 // Copyright 2026 Schuby
 // SPDX-License-Identifier: Apache-2.0
 
+import { createHash } from 'node:crypto';
+
 /**
  * Extract the embedded JavaScript from a Bun-compiled release artifact.
  *
@@ -25,9 +27,14 @@
  * (1.02), a generated hljs bundle (0.94), Chart.js (0.20) — and none contains a
  * single control-protocol marker.
  *
- * The banner is the primary signal and size is the tie-break, not the other way
- * round: "largest" alone would silently follow a future release that vendors
- * something bigger than the CLI.
+ * Selection is by banner ONLY. Size is a floor, not a ranking, and there is no
+ * fallback to "largest run": "largest" alone would silently follow a future release
+ * that vendors something bigger than the CLI. Absence of a banner is a refusal.
+ *
+ * More than one banner region is normal — 2.1.113 embeds the CLI bundle TWICE, as
+ * two identical 12.39 MiB regions at different offsets — and is accepted only while
+ * the copies are byte-identical. If they diverge, file order is not evidence for
+ * which one the CLI runs, so that is a refusal too.
  *
  * WHAT IT REFUSES TO DO. Return something it is not sure about. A slicer that picks
  * the wrong region does not fail — it silently extracts from the wrong bytes and
@@ -41,10 +48,11 @@
 export const BUN_BANNER = '// @bun';
 
 /**
- * Smallest plausible CLI bundle. The oldest compiled release measured (2.1.113) is
- * 12.4 MiB and they only grow; 1 MiB is far below that and still far above any
+ * Smallest plausible CLI bundle. This is the size of the EMBEDDED bundle, not of
+ * the artifact around it: the smallest measured is 12.39 MiB at 2.1.113, inside a
+ * 225 MiB artifact. 1 MiB sits far below every measured bundle and far above any
  * accidental run of printable bytes, so it separates "found the bundle" from "found
- * noise" without tracking the real size.
+ * a marker" without tracking a real size that would need revisiting each release.
  */
 const MIN_PLAUSIBLE_BYTES = 1 * 1024 * 1024;
 
@@ -56,25 +64,22 @@ function isPrintable(byte: number): boolean {
 }
 
 /**
- * The banner-carrying run if there is one, otherwise the longest.
+ * Every maximal printable run that carries the banner and clears the size floor.
  *
- * Single pass, holding two candidates. An earlier revision collected every maximal
- * run and sorted them, which exhausts the heap on a 284 MiB artifact — there are
- * millions of short runs between the embedded assets, and none of them could ever
- * win.
+ * Single pass holding only candidates. An earlier revision collected every run and
+ * sorted them, which exhausts the heap on a 284 MiB artifact — there are millions
+ * of short runs between the embedded assets and none could ever win.
+ *
+ * It returns ALL banner runs rather than the first, because artifacts really do
+ * carry more than one: 2.1.113 embeds the CLI bundle TWICE, two identical 12.39 MiB
+ * regions at different offsets. Taking the first would be picking by file position.
  */
-function selectRegion(bytes: Uint8Array): { start: number; end: number } | undefined {
-  let longest: { start: number; end: number } | undefined;
-  let banner: { start: number; end: number } | undefined;
-
+function bannerRuns(bytes: Uint8Array): Array<{ start: number; end: number }> {
+  const found: Array<{ start: number; end: number }> = [];
   const consider = (start: number, end: number): void => {
-    if (banner) return; // the banner run wins outright; stop paying for comparisons
-    if (!longest || end - start > longest.end - longest.start) longest = { start, end };
-    // Decode only the head — enough to recognise the banner, cheap per run.
-    if (end - start >= MIN_PLAUSIBLE_BYTES) {
-      const head = Buffer.from(bytes.subarray(start, Math.min(end, start + 64))).toString('utf-8');
-      if (head.startsWith(BUN_BANNER)) banner = { start, end };
-    }
+    if (end - start < MIN_PLAUSIBLE_BYTES) return;
+    const head = Buffer.from(bytes.subarray(start, Math.min(end, start + 64))).toString('utf-8');
+    if (head.startsWith(BUN_BANNER)) found.push({ start, end });
   };
 
   let start = -1;
@@ -86,17 +91,26 @@ function selectRegion(bytes: Uint8Array): { start: number; end: number } | undef
     if (start !== -1) consider(start, i);
     start = -1;
   }
-  return banner ?? longest;
+  return found;
+}
+
+/** Content digest, so duplicate embedded copies can be told from differing ones. */
+function digest(bytes: Uint8Array, start: number, end: number): string {
+  return createHash('sha256').update(bytes.subarray(start, end)).digest('hex');
 }
 
 /**
- * True when `raw` is already JavaScript rather than a compiled artifact — the
+ * True when `bytes` is already JavaScript rather than a compiled artifact — the
  * npm-tarball era, where the caller extracted `package/cli.js` and there is nothing
  * to slice.
  *
- * Checked on the BYTES rather than a decoded string: decoding a binary as UTF-8
- * first turns every invalid sequence into U+FFFD, which is not a control character
- * and would make a 284 MiB executable look like one continuous run of text.
+ * The API takes BYTES, and the earlier rationale for that was wrong: it claimed
+ * decoding first would merge the regions, which cannot happen — `isPrintable`
+ * already accepts every byte >= 0x80, and UTF-8 decoding never turns a byte below
+ * 0x20 into anything else, so run boundaries survive a round trip. The real reasons
+ * are narrower: offsets stay byte-exact rather than becoming code-unit indices, a
+ * digest can be taken over a subarray without re-encoding, and a 284 MiB artifact
+ * is never materialised as a JS string.
  */
 export function looksLikeSource(bytes: Uint8Array): boolean {
   // A compiled artifact has NUL bytes in its first few KiB; a JS file does not.
@@ -105,30 +119,53 @@ export function looksLikeSource(bytes: Uint8Array): boolean {
 }
 
 /**
- * The embedded CLI bundle as text, or `raw` unchanged when it is already source.
+ * The embedded CLI bundle as text, or `bytes` decoded unchanged when it is already
+ * source.
  *
- * @throws when the artifact is compiled but no plausible bundle can be located —
- * never returns the raw artifact as a fallback, because a parser would then reject
- * it and the failure would be reported against the wrong cause.
+ * @throws when the artifact is compiled but no banner region can be located, or
+ * when several disagree. It does not fall back to returning a region it is unsure
+ * of.
+ *
+ * ⚠️ It CAN still return the raw input, in one case: when `looksLikeSource` judges
+ * the input to be source already. That judgement is a negative test — no NUL byte
+ * in the first 8 KiB — so an artifact that happened to lack one there would be
+ * passed through whole. That failure is loud rather than silent, but it surfaces one
+ * step later, at the caller's parser, which will reject it and blame the bundle.
  */
 export function sliceEmbeddedBundle(bytes: Uint8Array, label = 'artifact'): string {
   if (looksLikeSource(bytes)) return Buffer.from(bytes).toString('utf-8');
 
-  const chosen = selectRegion(bytes);
-  if (!chosen) {
+  const candidates = bannerRuns(bytes);
+
+  // No silent fallback to "largest run". Every compiled artifact measured carries
+  // the banner, so its absence means this is not an artifact shape this understands
+  // — and guessing by size is exactly how a future release that vendors something
+  // bigger than the CLI would be extracted from the wrong region without failing.
+  if (candidates.length === 0) {
     throw new Error(
-      `slice-bundle: ${label} contains no printable runs at all. It is not a ` +
-        `release artifact this can read.`
+      `slice-bundle: no region in ${label} begins with "${BUN_BANNER}" and clears the ` +
+        `${MIN_PLAUSIBLE_BYTES}-byte floor. Refusing rather than guessing by size: ` +
+        `picking the wrong region reports wrong counts instead of failing.`
     );
   }
 
-  const size = chosen.end - chosen.start;
-  if (size < MIN_PLAUSIBLE_BYTES) {
-    throw new Error(
-      `slice-bundle: the largest printable run in ${label} is ${size} bytes, below ` +
-        `the ${MIN_PLAUSIBLE_BYTES}-byte floor for a CLI bundle. Refusing to return ` +
-        `it — extracting from the wrong region reports wrong counts rather than failing.`
-    );
+  // More than one is normal — 2.1.113 embeds the bundle twice — but only while the
+  // copies are identical. If they ever diverge, "first in the file" is not a reason
+  // to prefer one, so say so rather than choose.
+  const first = candidates[0] as { start: number; end: number };
+  if (candidates.length > 1) {
+    const reference = digest(bytes, first.start, first.end);
+    const differing = candidates
+      .slice(1)
+      .filter((run) => digest(bytes, run.start, run.end) !== reference);
+    if (differing.length > 0) {
+      throw new Error(
+        `slice-bundle: ${label} carries ${candidates.length} banner regions and they ` +
+          `are not identical (sizes ${candidates.map((r) => r.end - r.start).join(', ')}). ` +
+          `Refusing — file order is not evidence for which one the CLI runs.`
+      );
+    }
   }
-  return Buffer.from(bytes.subarray(chosen.start, chosen.end)).toString('utf-8');
+
+  return Buffer.from(bytes.subarray(first.start, first.end)).toString('utf-8');
 }

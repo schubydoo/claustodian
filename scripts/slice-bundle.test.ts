@@ -32,16 +32,12 @@ describe('looksLikeSource', () => {
     expect(looksLikeSource(artifact(jsRegion(true, 2)))).toBe(false);
   });
 
-  it('takes bytes because decoding first would merge the regions', () => {
-    // Not about NUL — that survives a UTF-8 round trip. The hazard is that INVALID
-    // sequences decode to U+FFFD, whose code point is >= 0x80 and therefore counts
-    // as printable by the run rule. Scan a decoded string and the separators between
-    // embedded regions vanish, so everything reads as one continuous run and nothing
-    // gets sliced. Hence the API takes bytes.
-    const invalid = Buffer.from([0xff, 0xfe, 0xff]);
-    const decoded = invalid.toString('utf-8');
-    expect(decoded).toBe('\uFFFD\uFFFD\uFFFD');
-    expect(decoded.charCodeAt(0)).toBeGreaterThanOrEqual(0x80);
+  it('is a negative test, so an artifact without an early NUL reads as source', () => {
+    // Worth pinning because it is the module's one remaining path back to the raw
+    // input. The misclassification is loud — the caller's parser rejects it — but it
+    // is loud one step later and blames the bundle rather than this judgement.
+    const noEarlyNul = Buffer.concat([Buffer.from('x'.repeat(9000), 'utf-8'), Buffer.alloc(16, 0)]);
+    expect(looksLikeSource(noEarlyNul)).toBe(true);
   });
 });
 
@@ -72,17 +68,37 @@ describe('sliceEmbeddedBundle', () => {
     expect(out).not.toContain('/*vendored*/');
   });
 
-  it('falls back to the largest region when no banner is present', () => {
-    const small = jsRegion(false, 2, 'small');
-    const large = jsRegion(false, 4, 'large');
-    expect(sliceEmbeddedBundle(artifact(small, large))).toContain('/*large*/');
+  it('refuses when no region carries the banner, rather than taking the largest', () => {
+    // The failure the banner exists to prevent. Releases vendor mermaid,
+    // highlight.js and Chart.js; "largest" works today only because the CLI happens
+    // to be biggest, and a release that vendored something bigger would be extracted
+    // from the wrong region without failing.
+    const vendored = jsRegion(false, 4, 'vendored');
+    expect(() => sliceEmbeddedBundle(artifact(vendored), '2.1.999')).toThrow(
+      /no region .* begins with/
+    );
   });
 
-  it('refuses rather than returning a region too small to be a CLI bundle', () => {
+  it('accepts several banner regions while they are identical', () => {
+    // 2.1.113 embeds the CLI bundle twice, as two identical 12.39 MiB regions.
+    const copy = jsRegion(true, 2, 'cli');
+    const out = sliceEmbeddedBundle(artifact(copy, copy), '2.1.113');
+    expect(out).toBe(copy);
+  });
+
+  it('refuses when several banner regions disagree', () => {
+    // File order is not evidence for which copy the CLI runs.
+    const a = jsRegion(true, 2, 'first');
+    const b = jsRegion(true, 3, 'second');
+    expect(() => sliceEmbeddedBundle(artifact(a, b), '2.1.500')).toThrow(/not identical/);
+  });
+
+  it('refuses a banner region too small to be a CLI bundle', () => {
     // Returning something dubious is the dangerous outcome: a wrong region does not
-    // fail, it reports wrong counts. The oldest compiled release is 12.4 MiB.
+    // fail, it reports wrong counts. The smallest compiled bundle measured is
+    // 12.39 MiB, so a banner on a few bytes is a marker, not the CLI.
     expect(() => sliceEmbeddedBundle(artifact('// @bun tiny'), '2.1.113')).toThrow(
-      /below the .* floor for a CLI bundle/
+      /clears the \d+-byte floor/
     );
   });
 
@@ -90,15 +106,9 @@ describe('sliceEmbeddedBundle', () => {
     expect(() => sliceEmbeddedBundle(artifact('tiny'), '2.1.199')).toThrow(/2\.1\.199/);
   });
 
-  it('never returns the raw artifact as a fallback', () => {
-    // A fallback would push the failure into the parser, which would then blame the
-    // bundle for being unparseable rather than the slicer for finding nothing.
-    let threw = false;
-    try {
-      sliceEmbeddedBundle(artifact('nope'), 'x');
-    } catch {
-      threw = true;
-    }
-    expect(threw).toBe(true);
+  it('refuses an artifact with no printable region at all', () => {
+    expect(() => sliceEmbeddedBundle(Buffer.alloc(9000, 0), 'empty')).toThrow(
+      /no region .* begins with/
+    );
   });
 });
