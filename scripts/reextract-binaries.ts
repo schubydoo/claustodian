@@ -31,6 +31,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { extractControlMessages } from './control-lane.js';
+import { sliceEmbeddedBundle } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
 import { compareVersionsAsc, isMain } from './lib.js';
 import type { ControlMessageObservation } from './control-lane.js';
@@ -51,7 +52,19 @@ const VERSION_RE = /^\d+\.\d+\.\d+$/;
 export const CONTROL_FAILURE_MARKER = '_control-failures.json';
 
 export type BundleResult =
-  { kind: 'ok'; src: string } | { kind: 'missing' } | { kind: 'unverified'; file: string };
+  | {
+      kind: 'ok';
+      /** What the regex lanes read: the artifact decoded, unchanged and unsliced. */
+      src: string;
+      /**
+       * The undecoded artifact, present ONLY for the compiled era. A parser cannot
+       * read `src` there — it is a whole executable — so the AST lane slices this
+       * instead. Absent for npm tarballs, where `src` is already `package/cli.js`.
+       */
+      bytes?: Buffer;
+    }
+  | { kind: 'missing' }
+  | { kind: 'unverified'; file: string };
 
 /** The official SHA-256 for `relPath` from a version dir's `SHA256SUMS`, if any. */
 function officialSha(versionDir: string, relPath: string): string | undefined {
@@ -105,7 +118,10 @@ export function readBundleSource(archiveDir: string, version: string): BundleRes
   if (existsSync(compiled)) {
     if (!isOfficial(compiled, dir, 'linux-x64/claude'))
       return { kind: 'unverified', file: compiled };
-    return { kind: 'ok', src: readFileSync(compiled, 'utf-8') };
+    // Read once as bytes and decode from that, rather than reading twice: `src`
+    // must stay byte-for-byte what the regex lanes have always seen.
+    const bytes = readFileSync(compiled);
+    return { kind: 'ok', src: bytes.toString('utf-8'), bytes };
   }
 
   return { kind: 'missing' };
@@ -207,7 +223,11 @@ export async function main(argv: string[]): Promise<number> {
     // exists to refuse.
     let controlMessages: ControlMessageObservation[];
     try {
-      controlMessages = extractControlMessages(result.src, version);
+      // The compiled era hands us an executable, which no parser can read. Slice the
+      // embedded bundle out for the AST lane; the npm era is already source, and
+      // `src` is what the regex lanes keep seeing either way.
+      const parseable = result.bytes ? sliceEmbeddedBundle(result.bytes, version) : result.src;
+      controlMessages = extractControlMessages(parseable, version);
     } catch (error) {
       controlFailures.push({ version, reason: (error as Error).message });
       continue;

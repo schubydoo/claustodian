@@ -63,13 +63,20 @@ describe('reextract-binaries readBundleSource', () => {
     expect(readBundleSource('scratch/binaries', '$(touch pwned)')).toEqual({ kind: 'missing' });
   });
 
-  it('extracts a checksum-verified compiled bundle', async () => {
+  it('extracts a checksum-verified compiled bundle, carrying the raw bytes too', async () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-ok-'));
     await writeCompiled(root, '1.0.0', 'process.env.CLAUDE_CODE_OK;');
-    expect(readBundleSource(root, '1.0.0')).toEqual({
-      kind: 'ok',
-      src: 'process.env.CLAUDE_CODE_OK;',
-    });
+    const result = readBundleSource(root, '1.0.0');
+
+    expect(result.kind).toBe('ok');
+    // `src` stays byte-for-byte what the regex lanes have always read. Changing it
+    // would change published data.
+    expect(result).toMatchObject({ kind: 'ok', src: 'process.env.CLAUDE_CODE_OK;' });
+    // The undecoded artifact rides alongside, because the AST lane cannot read an
+    // executable and has to slice the embedded bundle out of these bytes.
+    const bytes = (result as { bytes?: Buffer }).bytes;
+    expect(bytes).toBeInstanceOf(Buffer);
+    expect(bytes?.toString('utf-8')).toBe('process.env.CLAUDE_CODE_OK;');
   });
 
   it('refuses a bundle whose hash does not match SHA256SUMS', async () => {
@@ -269,6 +276,29 @@ describe('reextract-binaries main()', () => {
       /Refusing to regenerate/
     );
     expect(existsSync(join(out, 'latest.json'))).toBe(true); // untouched
+  });
+
+  it('carries no raw bytes for an npm tarball, whose src is already source', async () => {
+    // The distinction the AST lane keys on: `bytes` present means "compiled, slice
+    // it"; absent means `src` is already `package/cli.js` and there is nothing to
+    // slice. Getting this backwards would feed a parser an executable.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-tar-src-'));
+    const pkg = join(root, 'pkg');
+    await mkdir(join(pkg, 'package'), { recursive: true });
+    await writeFile(join(pkg, 'package', 'cli.js'), 'process.env.CLAUDE_CODE_TGZ;');
+    await mkdir(join(root, '1.0.0'), { recursive: true });
+    const tgz = join(root, '1.0.0', 'bundle.tgz');
+    execFileSync('tar', ['czf', tgz, '-C', pkg, 'package']);
+    await writeFile(
+      join(root, '1.0.0', 'SHA256SUMS'),
+      `${createHash('sha256')
+        .update(await readFile(tgz))
+        .digest('hex')}  bundle.tgz\n`
+    );
+
+    const result = readBundleSource(root, '1.0.0');
+    expect(result).toEqual({ kind: 'ok', src: 'process.env.CLAUDE_CODE_TGZ;' });
+    expect((result as { bytes?: Buffer }).bytes).toBeUndefined();
   });
 
   it('extracts a verified npm bundle.tgz even when the archive path contains a space', async () => {

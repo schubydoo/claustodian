@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -128,6 +128,19 @@ describe('resolveVersion', () => {
 });
 
 describe('buildCacheRecord', () => {
+  it('pins the refusal exit code as the literal the workflow compares against', () => {
+    // `expect(code).toBe(CONTROL_REFUSAL_EXIT)` alone pins nothing: it passes if the
+    // constant becomes 0, which would restore the very swallow this exists to stop.
+    // The value is a contract with the workflow, so assert the literal AND that the
+    // workflow still tests for it.
+    expect(CONTROL_REFUSAL_EXIT).toBe(2);
+
+    const workflow = readFileSync('.github/workflows/update-from-changelog.yml', 'utf-8');
+    expect(workflow).toMatch(new RegExp(`"\\$code"\\s*=\\s*"${CONTROL_REFUSAL_EXIT}"`));
+    // And that the tolerance is not back in the step, where it would swallow this.
+    expect(workflow).not.toMatch(/^\s*continue-on-error:/m);
+  });
+
   it('returns the control-refusal exit code, distinct from a transient failure', async () => {
     // CI tells a deterministic refusal from a CDN hiccup on this code alone. If the
     // two ever collapse to one code, `continue-on-error`-style tolerance silently
@@ -144,7 +157,7 @@ describe('buildCacheRecord', () => {
   });
 
   it('produces the same shape reextract-binaries writes', () => {
-    const record = buildCacheRecord('2.1.214', FAKE_BUNDLE);
+    const record = buildCacheRecord('2.1.214', Buffer.from(FAKE_BUNDLE, 'utf-8'));
     expect(record.version).toBe('2.1.214');
     expect(record.source).toBe('binary');
     expect(record.count).toBe(record.symbols.length);

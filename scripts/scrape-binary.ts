@@ -29,6 +29,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { extractControlMessages, type ControlMessageObservation } from './control-lane.js';
+import { sliceEmbeddedBundle } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
 import { isMain } from './lib.js';
 
@@ -40,7 +41,7 @@ const DEFAULT_INDEX_PATH = 'data/index.json';
 /** A strict `major.minor.patch` — rejects junk version input early. */
 const VERSION_RE = /^\d+\.\d+\.\d+$/;
 /** Per-request deadline. Bounds a stalled connection (one that accepts but never
- * responds) so the non-fatal scrape step fails fast and lets the authoritative
+ * responds) so the tolerated scrape step fails fast and lets the authoritative
  * changelog update proceed, rather than hanging to the job-level timeout. Ample
  * for the ~250 MB binary on CI bandwidth; the manifest fetch is tiny. */
 const REQUEST_TIMEOUT_MS = 120_000;
@@ -127,9 +128,16 @@ async function fetchRetry(url: string, tries = 3): Promise<Response> {
  * whole point. `reextract-binaries` collects instead, because aborting there would
  * leave a half-written cache.
  */
-export function buildCacheRecord(version: string, bundle: string): BinaryCacheRecord {
+export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryCacheRecord {
+  // Two different inputs on purpose. The regex lanes read the artifact decoded and
+  // unsliced, exactly as they always have — changing that would change published
+  // data. The AST lane cannot read an executable at all, so it gets the embedded
+  // bundle; for an npm-era artifact that is a pass-through.
+  const bundle = Buffer.from(artifact.buffer, artifact.byteOffset, artifact.byteLength).toString(
+    'utf-8'
+  );
   const symbols = extractBundleSymbols(bundle);
-  const controlMessages = extractControlMessages(bundle, version);
+  const controlMessages = extractControlMessages(sliceEmbeddedBundle(artifact, version), version);
   return {
     version,
     source: 'binary',
@@ -207,7 +215,7 @@ export async function scrapeBinary(
     );
   }
 
-  const record = buildCacheRecord(version, buf.toString('utf-8'));
+  const record = buildCacheRecord(version, buf);
   const path = writeCacheFile(options.outDir, record);
   console.log(`${version}: extracted ${record.count} symbol(s) → ${path} (checksum verified).`);
   return { path, count: record.count };
@@ -216,13 +224,20 @@ export async function scrapeBinary(
 /**
  * Exit code for a control-lane refusal, distinct from every other failure.
  *
- * The CI step that calls this is `continue-on-error: true`, and rightly so for the
- * failure it was written for: a CDN hiccup is transient, and blocking the
+ * The CI step that calls this used to be `continue-on-error: true`, and rightly so
+ * for the failure it was written for: a CDN hiccup is transient, and blocking the
  * authoritative changelog update on it would be worse. A control-lane refusal is
  * NOT that. It is deterministic, it recurs on every retry, and swallowing it drops
  * the release's ENTIRE cache entry — flags and env vars included, not just the
  * control symbols — so the release ships with no binary evidence and a late
- * `first_seen`. The workflow tells the two apart on this code.
+ * `first_seen`.
+ *
+ * `continue-on-error` swallows every non-zero and cannot tell them apart, so it was
+ * removed: the step's run block now tolerates any other code and fails on this one.
+ * ⚠️ That makes this VALUE part of a contract with
+ * `.github/workflows/update-from-changelog.yml`, which compares against the literal
+ * `2`. Changing it here alone silently restores the swallow, so a test pins the
+ * literal at both ends.
  */
 export const CONTROL_REFUSAL_EXIT = 2;
 
