@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { extractControlMessages } from './control-lane.js';
+import { extractSettingsKeys } from './settings-schema.js';
 import { sliceEmbeddedBundle } from './slice-bundle.js';
 import {
   buildCacheRecord,
@@ -174,11 +175,11 @@ describe('buildCacheRecord', () => {
   });
 
   it('classifies a real refusal from every refusing module on the path', () => {
-    // The list has now been outgrown TWICE — `slice-bundle` when it joined the path,
-    // then `settings schema` which was there all along, reached through
+    // The list has been outgrown TWICE — `slice-bundle` when it joined the path, then
+    // `settings schema`, which was there all along, reached through
     // `extractBundleSymbols`. Both times the refusal silently took CI's tolerated
-    // branch. Triggered for real rather than asserted as strings, so a module that
-    // changes its own prefix breaks this rather than going quiet.
+    // branch. Every module is TRIGGERED here rather than asserted as a string, so one
+    // that changes its own prefix breaks this instead of going quiet.
     const refusals: string[] = [];
     try {
       sliceEmbeddedBundle(Buffer.alloc(9000, 0), 'x');
@@ -190,14 +191,17 @@ describe('buildCacheRecord', () => {
     } catch (e) {
       refusals.push((e as Error).message);
     }
-    expect(refusals).toHaveLength(2);
+    try {
+      // An anchor key with no reachable schema root. An earlier version of this test
+      // asserted this module's prefix as a literal and claimed triggering it needed a
+      // crafted bundle — that was untrue, and an untriggered assertion would still
+      // pass if the module changed its prefix, which is the exact drift this guards.
+      extractSettingsKeys('cleanupPeriodDays:v.number()');
+    } catch (e) {
+      refusals.push((e as Error).message);
+    }
+    expect(refusals).toHaveLength(3);
     for (const message of refusals) expect(isDeterministicRefusal(message)).toBe(true);
-
-    // settings-schema's refusals need a crafted bundle to trigger; its prefix is
-    // asserted directly. See the five `settings schema:` throws in settings-schema.ts.
-    expect(isDeterministicRefusal('settings schema: reached the root but read zero keys.')).toBe(
-      true
-    );
     // And a transient failure must NOT be classified as deterministic.
     expect(isDeterministicRefusal('fetch failed')).toBe(false);
   });

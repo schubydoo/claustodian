@@ -330,8 +330,12 @@ export async function main(argv: string[]): Promise<number> {
           status: 'skipped',
           note:
             'These versions were selected from the archive but never written, so their ' +
-            'prior cache entries were deleted and not replaced. Reconcile the version ' +
-            'sets (scripts/check-version-sets.sh) and re-run.',
+            'prior cache entries were deleted and not replaced. To clear this flag: fix ' +
+            'each version below (re-fetch with `npm run scrape-binary -- --version <v> ' +
+            '--force`, which is checksum-verified), then re-run reextract-binaries until ' +
+            'it writes every version. NOTE check-version-sets.sh reports these as benign ' +
+            'INFO ("a re-extract will pick these up") — it cannot know a re-extract just ' +
+            'failed to, so do not read a clean run of it as this being resolved.',
           versionsConsidered: versions.length,
           missing,
           unverified,

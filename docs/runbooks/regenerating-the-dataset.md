@@ -77,10 +77,22 @@ every version, and `backfill-binary` refuses while it exists — so step 2 stops
 
 The ordering is deliberate. The cache is incomplete from the moment it is cleared, so a
 marker written only at the end would protect nothing against an interrupt, an out-of-memory
-kill, or any throw outside the extraction loop. If you see this file, the cache is not
-usable: read it (it says whether the run was refused or simply never finished) and re-run
-step 1 to completion. It is `_`-prefixed so the next run preserves it and the backfill does
-not mistake it for an extraction.
+kill, or any throw outside the extraction loop. If you see this file, the cache is not usable. Read it — `status` says which of three
+things happened, and each has a different way out:
+
+| `status`      | What happened                             | How to clear it                                                                                        |
+| ------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `in-progress` | The run was interrupted or died           | Re-run step 1                                                                                          |
+| `refused`     | A lane refused a bundle it could not read | Fix the listed versions, then re-run step 1                                                            |
+| `skipped`     | Versions were selected but never written  | Re-fetch each listed version with `npm run scrape-binary -- --version <v> --force`, then re-run step 1 |
+
+⚠️ **`check-version-sets.sh` will not tell you about a `skipped` cache.** It reports a
+version present in the archive but absent from the cache as benign `INFO` — "a re-extract
+will pick these up" — which it cannot know is false when a re-extract just failed to. A
+clean run of that script is not evidence this is resolved; the marker's absence is.
+
+The file is `_`-prefixed so the next run preserves it and the backfill does not mistake it
+for an extraction.
 
 ```bash
 npm run reextract-binaries   # 1. archive      -> binary-cache/
