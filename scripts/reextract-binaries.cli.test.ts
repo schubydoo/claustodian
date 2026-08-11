@@ -233,6 +233,10 @@ describe('reextract-binaries main()', () => {
     ]);
     expect(existsSync(join(out, '3.0.0.json'))).toBe(false);
     expect(existsSync(join(out, '4.0.0.json'))).toBe(false); // refused, not extracted
+    // Those two had their prior cache entries cleared and never rewritten, so the
+    // cache is missing them and the flag must stay up — otherwise a backfill would
+    // distil their absence as a removal.
+    expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(true);
     expect(logSpy).toHaveBeenCalledWith(
       expect.stringContaining('without a readable binary: 3.0.0')
     );
@@ -284,7 +288,7 @@ describe('reextract-binaries main()', () => {
     expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(true);
   });
 
-  it('marks the cache incomplete BEFORE clearing it, and only unmarks on a clean run', async () => {
+  it('unmarks the cache only when every selected version was written', async () => {
     // The ordering is the whole point. The cache goes incomplete the moment
     // `clearCache` runs, so a marker written at the END protects nothing against an
     // interrupt, an OOM, or a throw from outside the try — the run would leave a
@@ -295,8 +299,9 @@ describe('reextract-binaries main()', () => {
     await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    // A prior run left the cache marked; a fresh run must not lower that flag until
-    // it has actually finished repopulating.
+    // A prior run left the cache marked; a clean run lowers it. NOTE this does not
+    // pin the ORDERING — a flag written only at the end would pass here too. The
+    // crash test above is what covers that.
     await mkdir(out, { recursive: true });
     await writeFile(join(out, CACHE_INCOMPLETE_MARKER), JSON.stringify({ status: 'refused' }));
 

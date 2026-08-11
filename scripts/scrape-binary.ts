@@ -249,9 +249,11 @@ export const CONTROL_REFUSAL_EXIT = 2;
  * different modules with no shared base error; a message that is not matched falls
  * back into the transient bucket, where CI warns and continues with NO cache entry
  * for the release. That already happened once: `slice-bundle` joined the path after
- * this classifier was written and its refusals were being tolerated.
+ * this classifier was written and its refusals were being tolerated, and
+ * `settings schema:` — reached through `extractBundleSymbols` — was missed the same
+ * way. Adding a module that refuses without adding it here is silent.
  */
-const REFUSAL_PREFIXES = ['control lane:', 'slice-bundle:'] as const;
+const REFUSAL_PREFIXES = ['control lane:', 'slice-bundle:', 'settings schema:'] as const;
 
 /** True when a failure will recur on retry, so CI must fail rather than tolerate it. */
 export function isDeterministicRefusal(message: string): boolean {

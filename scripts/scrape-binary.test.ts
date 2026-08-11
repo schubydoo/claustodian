@@ -8,9 +8,12 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { extractControlMessages } from './control-lane.js';
+import { sliceEmbeddedBundle } from './slice-bundle.js';
 import {
   buildCacheRecord,
   CONTROL_REFUSAL_EXIT,
+  isDeterministicRefusal,
   main,
   parseArgs,
   resolveVersion,
@@ -168,6 +171,35 @@ describe('buildCacheRecord', () => {
       'a plain string, not an Error'
     );
     vi.unstubAllGlobals();
+  });
+
+  it('classifies a real refusal from every refusing module on the path', () => {
+    // The list has now been outgrown TWICE — `slice-bundle` when it joined the path,
+    // then `settings schema` which was there all along, reached through
+    // `extractBundleSymbols`. Both times the refusal silently took CI's tolerated
+    // branch. Triggered for real rather than asserted as strings, so a module that
+    // changes its own prefix breaks this rather than going quiet.
+    const refusals: string[] = [];
+    try {
+      sliceEmbeddedBundle(Buffer.alloc(9000, 0), 'x');
+    } catch (e) {
+      refusals.push((e as Error).message);
+    }
+    try {
+      extractControlMessages('var x=1;', '2.1.226');
+    } catch (e) {
+      refusals.push((e as Error).message);
+    }
+    expect(refusals).toHaveLength(2);
+    for (const message of refusals) expect(isDeterministicRefusal(message)).toBe(true);
+
+    // settings-schema's refusals need a crafted bundle to trigger; its prefix is
+    // asserted directly. See the five `settings schema:` throws in settings-schema.ts.
+    expect(isDeterministicRefusal('settings schema: reached the root but read zero keys.')).toBe(
+      true
+    );
+    // And a transient failure must NOT be classified as deterministic.
+    expect(isDeterministicRefusal('fetch failed')).toBe(false);
   });
 
   it('pins the refusal exit code as the literal the workflow compares against', () => {

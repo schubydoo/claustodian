@@ -315,6 +315,38 @@ export async function main(argv: string[]): Promise<number> {
     return 1;
   }
 
+  // Lowered only when NOTHING was skipped. A version reported `missing` or
+  // `unverified` had its committed cache entry deleted by `clearCache` and never
+  // rewritten, so the cache is missing it — which is precisely the hazard AGENTS.md
+  // warns about ("a version present in the cache but not the archive is destroyed by
+  // a run that reports success"). The exit code is unchanged; the flag is what stops
+  // a backfill from distilling those absences as removals.
+  const skipped = missing.length + unverified.length;
+  if (skipped > 0) {
+    writeFileSync(
+      join(options.outDir, CACHE_INCOMPLETE_MARKER),
+      JSON.stringify(
+        {
+          status: 'skipped',
+          note:
+            'These versions were selected from the archive but never written, so their ' +
+            'prior cache entries were deleted and not replaced. Reconcile the version ' +
+            'sets (scripts/check-version-sets.sh) and re-run.',
+          versionsConsidered: versions.length,
+          missing,
+          unverified,
+        },
+        null,
+        2
+      )
+    );
+    console.error(
+      `\n${skipped} version(s) were selected but not written; ${CACHE_INCOMPLETE_MARKER} ` +
+        `is left in place and backfill will refuse until a run writes every version.`
+    );
+    return 0;
+  }
+
   // Only here: every version considered was written, so the cache is complete.
   rmSync(join(options.outDir, CACHE_INCOMPLETE_MARKER), { force: true });
   return 0;
