@@ -218,4 +218,55 @@ describe('extractControlMessages', () => {
       expect(CONTROL_SPLIT_FLOOR).toBe('2.1.133');
     });
   });
+
+  describe('binding forms', () => {
+    // The real bundle lazy-inits by ASSIGNMENT (`X = Ee(() => ...)`), not by
+    // declarator. Indexing only declarator inits silently loses every schema, and
+    // with them every union — so direction goes null across the board while the
+    // symbol count still looks plausible.
+    const assigned = [
+      'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;',
+      'var A1,A2,B1,B2,HOST,CLI;',
+      'A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes the SDK session."));',
+      'A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the active model."));',
+      'B1=Ee(()=>Se({subtype:xt("hook_callback")}).describe("Delivers a hook callback."));',
+      'B2=Ee(()=>Se({subtype:xt("can_use_tool")}).describe("Asks for permission."));',
+      'HOST=Ee(()=>fs([A1(),A2()]).describe("Control requests a client sends to drive the loop."));',
+      'CLI=Ee(()=>fs([B1(),B2()]).describe("Control requests the agent loop originates and needs a reply to."));',
+      'function h(e){' +
+        'if(e.request.subtype==="initialize")return 1;' +
+        'else if(e.request.subtype==="set_model")return 2;' +
+        'else if(e.request.subtype==="hook_callback")return 3;' +
+        'else if(e.request.subtype==="can_use_tool")return 4;' +
+        'return 0}',
+    ].join('\n');
+
+    it('binds a schema assigned rather than declared, so its union still resolves', () => {
+      const found = bySymbol(extractControlMessages(assigned, '2.1.226'));
+
+      expect(found.size).toBe(4);
+      expect(found.get('initialize')?.direction).toBe('host_to_cli');
+      expect(found.get('hook_callback')?.direction).toBe('cli_to_host');
+    });
+
+    it('reads a quoted or computed property key', () => {
+      // Minifiers quote a key when they feel like it, and a computed key must not
+      // throw on the way past.
+      const quoted = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a,k="x";',
+        'var A1=Ee(()=>Se({[k]:1,"subtype":xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({"subtype":xt("set_model")}));',
+        'var ALL=Ee(()=>fs([A1(),A2()]));',
+        'function h(e){' +
+          'if(e.request.subtype==="initialize")return 1;' +
+          'else if(e.request.subtype==="set_model")return 2;' +
+          'return 0}',
+      ].join('\n');
+      const found = bySymbol(extractControlMessages(quoted, '2.1.226'));
+
+      expect(found.has('initialize')).toBe(true);
+      expect(found.get('initialize')?.description).toBe('Initializes.');
+      expect(found.has('set_model')).toBe(true);
+    });
+  });
 });
