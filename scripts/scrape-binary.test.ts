@@ -128,6 +128,24 @@ describe('resolveVersion', () => {
 });
 
 describe('buildCacheRecord', () => {
+  it('treats a slicer refusal as deterministic, not as a transient failure', async () => {
+    // The finding this closes. `sliceEmbeddedBundle` joined the extraction path after
+    // the classifier was written and throws its own `slice-bundle:` prefix, so its
+    // refusals were falling into the tolerated bucket — CI would warn and continue
+    // with NO cache entry for the release, which is the outcome the exit code exists
+    // to prevent. Driven end to end rather than by asserting on the prefix.
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-slice-refusal-'));
+    // Compiled-shaped (leading NUL) but carrying no bundle: the slicer refuses.
+    const artifact = Buffer.concat([Buffer.alloc(64, 0), Buffer.from('not a bundle', 'utf-8')]);
+    stubCdn('2.1.214', artifact.toString('binary'), sha256(artifact.toString('binary')));
+
+    const code = await main(['--version', '2.1.214', '--out', root]);
+
+    expect(code).toBe(CONTROL_REFUSAL_EXIT);
+    expect(existsSync(join(root, '2.1.214.json'))).toBe(false);
+    await rm(root, { recursive: true, force: true });
+  });
+
   it('rethrows a failure that is not a control-lane refusal', async () => {
     // The refusal code must be narrow. If `main` swallowed every error into exit 2,
     // a CDN failure would be reported to CI as a deterministic refusal and fail the
@@ -143,7 +161,12 @@ describe('buildCacheRecord', () => {
     vi.stubGlobal('fetch', () => {
       throw 'a plain string, not an Error';
     });
-    await expect(main(['--version', '2.1.214', '--out', '/tmp'])).rejects.toBeDefined();
+    // The ORIGINAL value must come back out. Without `?? ''` this rejects too — but
+    // with a TypeError from `undefined.startsWith`, which asserting `toBeDefined()`
+    // could not tell apart, so that assertion pinned nothing.
+    await expect(main(['--version', '2.1.214', '--out', '/tmp'])).rejects.toBe(
+      'a plain string, not an Error'
+    );
     vi.unstubAllGlobals();
   });
 

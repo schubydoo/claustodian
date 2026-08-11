@@ -8,11 +8,16 @@ without it; step 1 does not.
 
 **Cost:** roughly 24 minutes of machine time for a full re-extract, plus review.
 
-That is up from ~11 minutes: the control lane now runs in the same loop and parses
-each bundle with oxc. The added ~13 minutes is derived, not measured end to end —
-a two-point fit (13.0 MiB → 2.0 s, 22.9 MiB → 3.1 s) applied to the 470 archived
-bundles, whose mean is 10.4 MiB. Re-measure on the first real run and correct this
-line. The per-version worst case is the tip's 3.1 s.
+That is up from ~11 minutes: the control lane now runs in the same loop, and for the
+compiled era each artifact is sliced before it is parsed.
+
+⚠️ **The figure is derived, not measured end to end, and it is a floor.** The ~13
+minutes is a two-point fit of PARSE time (13.0 MiB → 2.0 s, 22.9 MiB → 3.1 s) applied
+to the 470 archived bundles, whose mean is 10.4 MiB. It predates the slicer and does
+not include it: slicing costs roughly a further 0.8–1.1 s per compiled artifact
+(measured at 2.1.113 and 2.1.226), which over the 98 compiled versions is about
+another 1.5 minutes. Re-measure on the first real run and replace this whole
+paragraph with the number.
 
 ---
 
@@ -65,6 +70,12 @@ requests, rather than writing a zero. `reextract-binaries` collects those refusa
 writes NO cache entry for the affected versions, prints each one, and **exits 1**.
 Do not run step 2 after a non-zero exit: the cache is incomplete, and a missing
 version reads downstream as a removal.
+
+You do not have to remember that. A refused run leaves `binary-cache/_control-failures.json`
+listing every version and why, and `backfill-binary` refuses while it exists — so step 2
+stops itself rather than distilling a cache that is quietly missing versions. The marker is
+`_`-prefixed so the next `reextract-binaries` preserves it and the backfill skips it as a
+cache file; a clean run clears it at the start.
 
 ```bash
 npm run reextract-binaries   # 1. archive      -> binary-cache/

@@ -241,12 +241,29 @@ export async function scrapeBinary(
  */
 export const CONTROL_REFUSAL_EXIT = 2;
 
+/**
+ * Prefixes of the refusals that are DETERMINISTIC — a bad bundle, not a bad network.
+ *
+ * ⚠️ Every module on the extraction path that refuses rather than reporting zero has
+ * to be listed here. It is a list because the refusals it classifies come from
+ * different modules with no shared base error; a message that is not matched falls
+ * back into the transient bucket, where CI warns and continues with NO cache entry
+ * for the release. That already happened once: `slice-bundle` joined the path after
+ * this classifier was written and its refusals were being tolerated.
+ */
+const REFUSAL_PREFIXES = ['control lane:', 'slice-bundle:'] as const;
+
+/** True when a failure will recur on retry, so CI must fail rather than tolerate it. */
+export function isDeterministicRefusal(message: string): boolean {
+  return REFUSAL_PREFIXES.some((prefix) => message.startsWith(prefix));
+}
+
 export async function main(argv: string[]): Promise<number> {
   try {
     await scrapeBinary(parseArgs(argv));
   } catch (error) {
     const message = (error as Error).message ?? '';
-    if (message.startsWith('control lane:')) {
+    if (isDeterministicRefusal(message)) {
       console.error(
         `${message}\n\nThis is deterministic, not a transient CDN failure: retrying will ` +
           `refuse again. No cache entry was written for this version, so its symbols are ` +

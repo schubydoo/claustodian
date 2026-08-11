@@ -271,7 +271,15 @@ export async function main(argv: string[]): Promise<number> {
     // it exists.
     writeFileSync(
       join(options.outDir, CONTROL_FAILURE_MARKER),
-      JSON.stringify({ refusedAt: versions.length, failures: controlFailures }, null, 2)
+      JSON.stringify(
+        {
+          versionsConsidered: versions.length,
+          refused: controlFailures.length,
+          failures: controlFailures,
+        },
+        null,
+        2
+      )
     );
     console.error(
       `\ncontrol lane refused ${controlFailures.length} version(s); their entries were ` +

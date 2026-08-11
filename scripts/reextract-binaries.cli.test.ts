@@ -209,13 +209,27 @@ describe('reextract-binaries main()', () => {
     expect(c2.symbols.some((s) => s.symbol === '--foo')).toBe(true);
     // The control lane's output rides in the same file, keyed separately so the
     // two extractions cannot be confused for one another downstream.
-    const c2control = JSON.parse(await readFile(join(out, '2.0.0.json'), 'utf-8')) as {
+    const c2control = JSON.parse(await readFile(join(out, '2.0.0.json'), 'utf-8')) as Record<
+      string,
+      unknown
+    > & {
       controlCount: number;
       controlMessages: { symbol: string; family: string }[];
     };
     expect(c2control.controlMessages.map((m) => m.symbol)).toEqual(['initialize']);
     expect(c2control.controlCount).toBe(1);
     expect(c2control.controlMessages[0]?.family).toBe('control_request');
+    // The invariant is that the TWO writers agree, so the key order is pinned on both
+    // ends — `scrape-binary.test.ts` asserts the same list for `buildCacheRecord`.
+    // Pinning one writer alone would let the other drift and still be green.
+    expect(Object.keys(c2control)).toEqual([
+      'version',
+      'source',
+      'count',
+      'symbols',
+      'controlCount',
+      'controlMessages',
+    ]);
     expect(existsSync(join(out, '3.0.0.json'))).toBe(false);
     expect(existsSync(join(out, '4.0.0.json'))).toBe(false); // refused, not extracted
     expect(logSpy).toHaveBeenCalledWith(
