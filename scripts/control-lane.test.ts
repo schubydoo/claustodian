@@ -3,6 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  CONTROL_DISPATCH_FLOOR,
   CONTROL_SPLIT_FLOOR,
   CONTROL_UNION_FLOOR,
   controlMessageConfidence,
@@ -201,8 +202,14 @@ describe('extractControlMessages', () => {
       expect(() => extractControlMessages('var x=1;', '2.1.226')).toThrow(/no control_request/i);
     });
 
-    it('returns empty below the union floor, where absence is expected', () => {
-      expect(extractControlMessages('var x=1;', '2.1.20')).toEqual([]);
+    it('throws on an empty result in the dispatch era, which dates the whole surface', () => {
+      // Every other guard is gated at or above a floor, which left 1.0.45 up to the
+      // union floor unguarded — the one era that can date the surface correctly.
+      expect(() => extractControlMessages('var x=1;', '2.1.20')).toThrow(/dispatch floor/i);
+    });
+
+    it('returns empty below the dispatch floor, where absence is expected', () => {
+      expect(extractControlMessages('var x=1;', '1.0.44')).toEqual([]);
     });
 
     it('throws on source it cannot parse, rather than reporting zero symbols', () => {
@@ -214,7 +221,8 @@ describe('extractControlMessages', () => {
     it('pins the two floors this lane depends on', () => {
       // Both are measured, not chosen: 2.1.30 is the first union array, 2.1.133
       // the first direction split. Changing either changes what null means.
-      expect(CONTROL_UNION_FLOOR).toBe('2.1.30');
+      expect(CONTROL_DISPATCH_FLOOR).toBe('1.0.45');
+      expect(CONTROL_UNION_FLOOR).toBe('2.1.63');
       expect(CONTROL_SPLIT_FLOOR).toBe('2.1.133');
     });
   });
@@ -398,6 +406,31 @@ describe('extractControlMessages', () => {
       expect(() => extractControlMessages(routed, '2.1.226')).toThrow(/no control_request union/i);
     });
 
+    it('throws when only ONE side of the split is reworded', () => {
+      // Each side comes from its own anchor phrase. A count check passes here,
+      // because the surviving side keeps the map non-empty — while every subtype in
+      // the reworded union publishes null.
+      const halfReworded = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var B1=Ee(()=>Se({subtype:xt("hook_callback")}).describe("Hook callback."));',
+        'var B2=Ee(()=>Se({subtype:xt("can_use_tool")}).describe("Permission."));',
+        'var HOST=Ee(()=>fs([A1(),A2()]).describe("Control requests a client sends to drive the loop."));',
+        'var CLI=Ee(()=>fs([B1(),B2()]).describe("Requests the loop makes, reworded."));',
+        'function h(e){' +
+          'if(e.request.subtype==="initialize")return 1;' +
+          'else if(e.request.subtype==="set_model")return 2;' +
+          'else if(e.request.subtype==="hook_callback")return 3;' +
+          'else if(e.request.subtype==="can_use_tool")return 4;' +
+          'return 0}',
+      ].join('\n');
+
+      expect(() => extractControlMessages(halfReworded, '2.1.226')).toThrow(
+        /no cli_to_host union/i
+      );
+    });
+
     it('throws when the union survives but the direction prose is gone', () => {
       // The anchors are English text in a `.describe()`. A rewording nulls every
       // direction, which is byte-identical to a pre-2.1.133 bundle — so a 2.1.300
@@ -410,7 +443,9 @@ describe('extractControlMessages', () => {
         routed,
       ].join('\n');
 
-      expect(() => extractControlMessages(reworded, '2.1.226')).toThrow(/no direction split/i);
+      expect(() => extractControlMessages(reworded, '2.1.226')).toThrow(
+        /no host_to_cli and no cli_to_host union/i
+      );
       // Below the floor the very same bundle is fine: null is the honest answer there.
       expect(extractControlMessages(reworded, '2.1.132')).toHaveLength(2);
     });
@@ -441,7 +476,10 @@ describe('extractControlMessages', () => {
         'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
         'var ALL=Ee(()=>fs([A1(),A2()]));',
         'var OUTER=wrap(function(){var {z}=Ee(()=>Se({subtype:xt("hook_callback")}));});',
-        'var SPURIOUS=Ee(()=>fs([OUTER,A1()]));',
+        // THREE members, two of them routed. With only [OUTER, A1()] the union is
+        // 1-of-2 routed either way, so the majority rule discards it whether or not
+        // OUTER wrongly binds — and the test passes with and without its fix.
+        'var SPURIOUS=Ee(()=>fs([OUTER,A1(),A2()]));',
         routed,
       ].join('\n');
       const found = bySymbol(extractControlMessages(nested, '2.1.132'));

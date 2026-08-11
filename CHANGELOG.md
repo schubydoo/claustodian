@@ -29,10 +29,14 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   fields: `family` (currently always `control_request`) and `direction`
   (`host_to_cli`, `cli_to_host`, or `null`).
 
-  **`direction` is `null` before 2.1.133 and that is not a gap.** The CLI began
-  declaring the two directions as separate schema unions at 2.1.133; earlier bundles
-  do not distinguish them, so older snapshots report `null` rather than borrowing a
-  later release's answer. Descriptions are likewise absent before 2.1.63.
+  **`direction: null` means "not observable for this record", not "this version
+  predates the split".** It arises two ways. The CLI began declaring the two
+  directions as separate schema unions at 2.1.133, so every record in an older
+  snapshot has null; but a subtype evidenced only by a call site or a dispatch
+  belongs to no directional union at _any_ version, so it is null there too — in the
+  2.1.226 snapshot that includes `remote_control`, alongside sibling records that
+  carry a direction. Null is never backfilled from a later release. Descriptions are
+  likewise absent before 2.1.63.
 
   **No data ships in this change** — the schema accepts these records, and nothing
   emits them yet. Additive, so `schemaVersion` stays `1.0.0`.

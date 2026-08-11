@@ -92,7 +92,7 @@
     "family": {
       "type": "string",
       "enum": ["control_request"],
-      "description": "The discriminated union that owns this message subtype. Only control_message records carry it. The enum widens if further message families (system messages, control responses, result messages) are published later; the record `type` deliberately does not encode the family, so identity survives a reclassification."
+      "description": "The message family the CLI routes this subtype as. Only control_message records carry it. Membership is proven by the CLI dispatching the subtype on its control-request handler path, or by a union it routes as control requests \u2014 so a record can carry this value without any union naming it, which is the case for every subtype evidenced only by a call site or a dispatch. The enum widens if further families (system messages, control responses, result messages) are published later; the record `type` deliberately does not encode the family, so identity survives a reclassification."
     },
     "direction": {
       "oneOf": [
@@ -104,7 +104,7 @@
           "type": "null"
         }
       ],
-      "description": "Which side of the stream-json channel sends this message. Derived from the two disjoint sub-unions the bundle itself declares, never inferred from a call site's surroundings. Null when the version predates that split (before 2.1.133), where the value is genuinely unobservable \u2014 never backfilled from a later version. Only control_message records carry it."
+      "description": "Which side of the stream-json channel sends this message. Derived only from the two disjoint sub-unions the bundle itself declares, never inferred from a call site's surroundings. Null means the direction is not observable for this record, which happens two ways: the version predates the split the CLI began declaring at 2.1.133, OR the subtype belongs to no directional sub-union in that version \u2014 true of every subtype evidenced only by a call site or a dispatch, at any version. Null is therefore NOT a statement that the CLI fails to distinguish the two directions, and it is never backfilled from a later version. Only control_message records carry it."
     },
     "scopes": {
       "type": "array",

@@ -67,20 +67,52 @@
  * 2.1.30, the first description at 2.1.63, and the direction split at 2.1.133.
  * So `first_seen` must never be taken from the schema lane — dating from
  * schemas would move the whole surface ~120 releases later and manufacture a
- * mass introduction. Below CONTROL_UNION_FLOOR this module yields nothing and
- * absence is expected; at or above it, an empty result is a bug and throws.
+ * mass introduction.
+ *
+ * Below CONTROL_UNION_FLOOR this module does NOT yield nothing — an earlier
+ * version of this comment claimed it did, and the code has never behaved that way.
+ * `belongs` reduces to the dispatch signal there, which still works: 1 symbol at
+ * 1.0.45, 3 at 1.0.93, 7 at 2.0.30. That era is precisely the one that can date
+ * the surface correctly, so it is guarded too — see CONTROL_DISPATCH_FLOOR. Only
+ * below 1.0.45 is an empty result expected.
  */
 import { parseSync } from 'oxc-parser';
 import { compareVersionsAsc } from './lib.js';
 
-/** First version with a union array of control-request schemas (2.1.29 has none). */
-export const CONTROL_UNION_FLOOR = '2.1.30';
+/**
+ * First version carrying a union the CLI ROUTES as control requests.
+ *
+ * ⚠️ Not the same thing as the first union of subtype schemas, which is 2.1.30 —
+ * this constant was originally set to that number, and it was wrong. A union of
+ * schemas exists from 2.1.30, but through 2.1.62 its members are largely not
+ * dispatched on the control-request handler path, so `isControlRequest` is false
+ * and there is no routed union to demand. Measured with this module: 2.1.62 has
+ * none (the union guard fires), 2.1.63 has one and yields 20 symbols.
+ */
+export const CONTROL_UNION_FLOOR = '2.1.63';
+
+/**
+ * First version that routes anything on `<expr>.request.subtype` at all — the
+ * bottom of the era this lane dates the surface from.
+ *
+ * Below the union floor there is no union to check, but the dispatch signal still
+ * works and is the ONLY evidence available: measured, 1.0.44 yields 0 symbols and
+ * 1.0.45 yields 1, rising to 3 at 1.0.93, 4 at 1.0.110 and 7 at 2.0.30. That
+ * matches the independent string measurement that put `"control_request"` at
+ * 1.0.45, so two instruments agree on this boundary.
+ */
+export const CONTROL_DISPATCH_FLOOR = '1.0.45';
 
 /**
  * First version whose control-request union splits into two disjoint sub-unions,
  * one per direction. Below this the split does not exist and `direction` is
- * genuinely unobservable — it is reported as null, never borrowed from a later
+ * unobservable for every record — reported as null, never borrowed from a later
  * release.
+ *
+ * ⚠️ Null does NOT mean "older than this floor". A subtype that belongs to no
+ * directional sub-union is null at ANY version — that is every subtype evidenced
+ * only by a call site or a dispatch, `remote_control` included. The schema's
+ * `direction` description states both cases; keep the two in step.
  */
 export const CONTROL_SPLIT_FLOOR = '2.1.133';
 
@@ -545,23 +577,36 @@ export function extractControlMessages(
     );
   }
 
-  // The prose anchors die (Anthropic rewords a `.describe()`): every record
-  // publishes direction null, which is byte-identical to a pre-2.1.133 bundle and
-  // which the schema tells consumers means "this version predates the split".
-  if (compareVersionsAsc(version, CONTROL_SPLIT_FLOOR) >= 0 && directions.size === 0) {
-    throw new Error(
-      `control lane: no direction split at ${version}, at or above the ` +
-        `${CONTROL_SPLIT_FLOOR} split floor. Publishing null here would assert that ` +
-        'the CLI does not distinguish the two directions, which it does. The union ' +
-        'descriptions this reads have probably been reworded.'
-    );
+  // The prose anchors die (Anthropic rewords a `.describe()`): the affected side's
+  // subtypes all publish null, which is indistinguishable from the legitimate null
+  // carried by a subtype that belongs to no directional union — so a consumer has
+  // no way to tell a reworded bundle from a call-site-only record.
+  if (compareVersionsAsc(version, CONTROL_SPLIT_FLOOR) >= 0) {
+    // BOTH sides, not a non-empty map. Each side comes from its own anchor phrase,
+    // so rewording one leaves the other populating the map — the count check would
+    // pass while that sub-union's subtypes all published null.
+    const sides = new Set([...directions.values()]);
+    const missing = (['host_to_cli', 'cli_to_host'] as const).filter((d) => !sides.has(d));
+    if (missing.length > 0) {
+      throw new Error(
+        `control lane: no ${missing.join(' and no ')} union at ${version}, at or above ` +
+          `the ${CONTROL_SPLIT_FLOOR} split floor. Publishing null for that side would ` +
+          'assert the CLI does not send those messages, which it does. The union ' +
+          'description this reads has probably been reworded.'
+      );
+    }
   }
 
-  if (result.length === 0 && compareVersionsAsc(version, CONTROL_UNION_FLOOR) >= 0) {
+  // Every guard above is gated at or above a floor, which left the dispatch era —
+  // 1.0.45 up to the union floor — unguarded. That is the era that supplies
+  // `first_seen` for the whole surface, so a silent [] there dates everything from
+  // the union floor instead: the single most damaging output this module can produce.
+  if (result.length === 0 && compareVersionsAsc(version, CONTROL_DISPATCH_FLOOR) >= 0) {
     throw new Error(
       `control lane: no control_request subtypes found at ${version}, at or above the ` +
-        `${CONTROL_UNION_FLOOR} union floor. Refusing to report zero — downstream that ` +
-        'reads as every subtype being removed in one release.'
+        `${CONTROL_DISPATCH_FLOOR} dispatch floor. Refusing to report zero — downstream ` +
+        'that reads as every subtype being removed in one release, and in this era it ' +
+        'would date the entire surface from a later version.'
     );
   }
   return result;
