@@ -249,6 +249,10 @@ describe('extractControlMessages', () => {
       expect(found.get('hook_callback')?.direction).toBe('cli_to_host');
     });
 
+    // The fixtures below carry no directional union, so they are versioned at
+    // 2.1.132 — below CONTROL_SPLIT_FLOOR, where a null direction is the honest
+    // answer. At or above the floor the lane refuses that state outright; see the
+    // guard tests.
     it('reads a quoted or computed property key', () => {
       // Minifiers quote a key when they feel like it, and a computed key must not
       // throw on the way past.
@@ -262,7 +266,7 @@ describe('extractControlMessages', () => {
           'else if(e.request.subtype==="set_model")return 2;' +
           'return 0}',
       ].join('\n');
-      const found = bySymbol(extractControlMessages(quoted, '2.1.226'));
+      const found = bySymbol(extractControlMessages(quoted, '2.1.132'));
 
       expect(found.has('initialize')).toBe(true);
       expect(found.get('initialize')?.description).toBe('Initializes.');
@@ -311,13 +315,13 @@ describe('extractControlMessages', () => {
     ].join('\n');
 
     it('admits exactly the routed subtypes and nothing the odd shapes carry', () => {
-      const found = bySymbol(extractControlMessages(messy, '2.1.226'));
+      const found = bySymbol(extractControlMessages(messy, '2.1.132'));
 
       expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
     });
 
     it('keeps the right description when the same subtype appears in many shapes', () => {
-      const found = bySymbol(extractControlMessages(messy, '2.1.226'));
+      const found = bySymbol(extractControlMessages(messy, '2.1.132'));
 
       expect(found.get('initialize')?.description).toBe('Initializes the session.');
       expect(found.get('set_model')?.description).toBe('Sets the active model.');
@@ -325,7 +329,7 @@ describe('extractControlMessages', () => {
 
     it('recognises a loose-equality dispatch as routing', () => {
       // `==` and `===` are both minifier output; only one was exercised before.
-      const found = bySymbol(extractControlMessages(messy, '2.1.226'));
+      const found = bySymbol(extractControlMessages(messy, '2.1.132'));
 
       expect(found.has('set_model')).toBe(true);
     });
@@ -342,7 +346,7 @@ describe('extractControlMessages', () => {
           'else if("set_model"===e.request.subtype)return 2;' +
           'return 0}',
       ].join('\n');
-      const found = bySymbol(extractControlMessages(yoda, '2.1.226'));
+      const found = bySymbol(extractControlMessages(yoda, '2.1.132'));
 
       expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
     });
@@ -362,17 +366,90 @@ describe('extractControlMessages', () => {
           'else if(e.request.subtype==="set_model")return 2;' +
           'return 0}',
       ].join('\n');
-      const found = bySymbol(extractControlMessages(undescribed, '2.1.226'));
+      const found = bySymbol(extractControlMessages(undescribed, '2.1.132'));
 
       expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
       expect(found.get('initialize')?.direction).toBeNull();
     });
 
     it('assigns no direction when no union carries a directional description', () => {
-      const found = bySymbol(extractControlMessages(messy, '2.1.226'));
+      const found = bySymbol(extractControlMessages(messy, '2.1.132'));
 
       expect(found.get('initialize')?.direction).toBeNull();
       expect(found.get('set_model')?.direction).toBeNull();
+    });
+  });
+
+  describe('each failure mode has its own guard', () => {
+    // `belongs` is a union of two independent signals, so a final-count check
+    // alone fires only when BOTH die in the same release. Either dying alone
+    // publishes a plausible-looking set that is quietly wrong.
+    const routed =
+      'function h(e){' +
+      'if(e.request.subtype==="initialize")return 1;' +
+      'else if(e.request.subtype==="set_model")return 2;' +
+      'return 0}';
+
+    it('throws when the union shape is gone but dispatch survives', () => {
+      // The realistic version of this is a `union([...])` → `discriminatedUnion`
+      // refactor: the array becomes an object map, every call-site-only subtype
+      // disappears (`remote_control` among them) and every direction nulls — while
+      // the symbol count still looks entirely plausible.
+      expect(() => extractControlMessages(routed, '2.1.226')).toThrow(/no control_request union/i);
+    });
+
+    it('throws when the union survives but the direction prose is gone', () => {
+      // The anchors are English text in a `.describe()`. A rewording nulls every
+      // direction, which is byte-identical to a pre-2.1.133 bundle — so a 2.1.300
+      // record would assert the CLI does not distinguish the two directions.
+      const reworded = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var ALL=Ee(()=>fs([A1(),A2()]).describe("Requests, reworded beyond recognition."));',
+        routed,
+      ].join('\n');
+
+      expect(() => extractControlMessages(reworded, '2.1.226')).toThrow(/no direction split/i);
+      // Below the floor the very same bundle is fine: null is the honest answer there.
+      expect(extractControlMessages(reworded, '2.1.132')).toHaveLength(2);
+    });
+
+    it('refuses when two unions claim opposite directions for one subtype', () => {
+      // Last-wins would decide the published direction by AST order — a property
+      // of the minifier, not the protocol, so it could flip between adjacent
+      // releases with no protocol change at all.
+      const conflicting = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var HOST=Ee(()=>fs([A1(),A2()]).describe("Control requests a client sends to drive the loop."));',
+        'var CLI=Ee(()=>fs([A1(),A2()]).describe("Control requests the agent loop originates and needs a reply to."));',
+        routed,
+      ].join('\n');
+
+      expect(() => extractControlMessages(conflicting, '2.1.226')).toThrow(/claimed by both/i);
+    });
+
+    it('does not bind a schema to an enclosing declarator it does not belong to', () => {
+      // The walk must STOP at a binding site whose name it cannot read. Falling
+      // through a destructuring declarator lets the schema bind to `OUTER`, and any
+      // array holding `OUTER` then reads as a union containing that subtype.
+      const nested = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a,wrap=(f)=>f;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var ALL=Ee(()=>fs([A1(),A2()]));',
+        'var OUTER=wrap(function(){var {z}=Ee(()=>Se({subtype:xt("hook_callback")}));});',
+        'var SPURIOUS=Ee(()=>fs([OUTER,A1()]));',
+        routed,
+      ].join('\n');
+      const found = bySymbol(extractControlMessages(nested, '2.1.132'));
+
+      // hook_callback is never routed on the request path here, so it must not be
+      // admitted — and OUTER must not have inherited its name.
+      expect(found.has('hook_callback')).toBe(false);
+      expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
     });
   });
 });

@@ -150,6 +150,12 @@
           }
         },
         "required": ["family", "direction"]
+      },
+      "else": {
+        "properties": {
+          "family": false,
+          "direction": false
+        }
       }
     }
   ],

@@ -48,6 +48,20 @@
  * A denylist was tried first and is the wrong shape: it admits anything a future
  * release invents, whereas this admits only what the CLI demonstrably routes.
  *
+ * COST, AND THE LIMIT IT IMPLIES. Measured on this hardware: 2.1.226 (22.9 MiB of
+ * embedded JS) takes 3.7 s and peaks at ~2.6 GB RSS; 2.1.112 (13.0 MiB, npm) takes
+ * 2.3 s and ~1.4 GB. Nearly all of it is `indexParents`, which materialises one Map
+ * entry per AST node so the upward walks can run.
+ *
+ * That is affordable per version and NOT affordable naively across the archive:
+ * 3.7 s x 472 releases is ~29 minutes, which is worse than the 2.2 s/version
+ * (~17 minutes) that `env-registry.ts` documents REJECTING for the same reason.
+ * Nothing calls this module yet, so the trade is not live — but whoever wires it
+ * into a full sweep owns that number. Cheapest fixes, in order: restrict the sweep
+ * to versions at or above the union floor, collect candidates and unions in one
+ * traversal instead of two, and replace the parent Map with a walk that carries its
+ * own parent chain. Do not add it to `reextract-binaries` without one of them.
+ *
  * FLOORS. The protocol is far older than its own self-description. The names
  * date from 1.0.45; the first zod schema appears at 2.1.20, the first union at
  * 2.1.30, the first description at 2.1.63, and the direction split at 2.1.133.
@@ -184,13 +198,18 @@ interface Candidate {
 }
 
 /**
- * Parses as a script, then as a module. npm-era `cli.js` is ESM while the
- * Bun-embedded bundle is CJS-wrapped; hardcoding either yields parse errors on
- * every version of the other format.
+ * Parses as a module, falling back to script. npm-era `cli.js` is ESM while the
+ * Bun-embedded bundle is CJS-wrapped, so both have to be reachable — but the
+ * order is not arbitrary. oxc recovers from errors rather than bailing at the
+ * first `import`, so a failed attempt costs a FULL parse of a ~20 MB bundle.
+ * Measured: `module` parses both formats with zero errors (2.1.226 Bun bundle
+ * 505 ms, 2.1.112 npm bundle 349 ms), whereas `script` fails the npm format with
+ * 10 errors after 414 ms. Module-first therefore costs one parse per version;
+ * script-first cost two for all 380 npm-era releases.
  */
 function parse(source: string): Node {
   let best: { errors: unknown[]; program: Node } | undefined;
-  for (const sourceType of ['script', 'module'] as const) {
+  for (const sourceType of ['module', 'script'] as const) {
     const attempt = parseSync('bundle.js', source, { sourceType }) as unknown as {
       errors: unknown[];
       program: Node;
@@ -205,19 +224,15 @@ function parse(source: string): Node {
   );
 }
 
-/** Text of a node, for callee inspection. */
-const textOf = (source: string, n: Node): string =>
-  source.slice(n.start as number, n.end as number);
-
 /**
  * Every object literal carrying a `subtype`, plus every dispatch comparison
  * against one. Enum-shaped subtypes (shape 4) are deliberately collected too, so
  * the family filter can drop them explicitly rather than by silent omission.
  */
-function collectCandidates(
-  source: string,
-  parents: Map<Node, Node | null>
-): { candidates: Candidate[]; schemaVariable: Map<string, string> } {
+function collectCandidates(parents: Map<Node, Node | null>): {
+  candidates: Candidate[];
+  schemaVariable: Map<string, string>;
+} {
   const candidates: Candidate[] = [];
   const schemaVariable = new Map<string, string>();
 
@@ -228,7 +243,7 @@ function collectCandidates(
       continue;
     }
     if (node.type === 'BinaryExpression' && (node.operator === '===' || node.operator === '==')) {
-      const dispatched = dispatchedName(source, node);
+      const dispatched = dispatchedName(node);
       if (dispatched) {
         candidates.push({
           symbol: dispatched.symbol,
@@ -276,10 +291,7 @@ function collectFromObject(
  * `<expr>.subtype === "name"` in either operand order, with the member path so
  * the caller can tell a control-request handler from any other family's.
  */
-function dispatchedName(
-  source: string,
-  node: Node
-): { symbol: string; onRequestPath: boolean } | undefined {
+function dispatchedName(node: Node): { symbol: string; onRequestPath: boolean } | undefined {
   const left = node.left;
   const right = node.right;
   const onLeft =
@@ -291,10 +303,16 @@ function dispatchedName(
   const member = onLeft ? (left as Node) : onRight ? (right as Node) : undefined;
   const literal = onLeft ? right : onRight ? left : undefined;
   if (!member || !isStringLiteral(literal)) return undefined;
-  return {
-    symbol: literal.value,
-    onRequestPath: /\brequest\.subtype$/.test(textOf(source, member)),
-  };
+  // `<expr>.request.subtype` read structurally. A regex over the source slice
+  // would work on minified input and quietly stop working on anything with a
+  // space or comment between the dots, and it assumes the parser's offsets index
+  // the string the same way `slice` does.
+  const object = member.object;
+  const onRequestPath =
+    isNode(object) &&
+    object.type === 'MemberExpression' &&
+    (object.property as Node)?.name === 'request';
+  return { symbol: literal.value, onRequestPath };
 }
 
 /**
@@ -325,13 +343,17 @@ function boundVariable(object: Node, parents: Map<Node, Node | null>): string | 
   for (let hops = 0; current && hops < 10; hops += 1) {
     current = parents.get(current) ?? null;
     if (!current) return undefined;
+    // A binding site ENDS the walk either way. Falling through a declarator whose
+    // id is a pattern, or an assignment to a member expression, would keep hopping
+    // outward and bind the schema to some enclosing declarator that is not its
+    // binding at all — which then reads as a union member.
     if (current.type === 'VariableDeclarator') {
       const id = current.id;
-      if (isNode(id) && id.type === 'Identifier') return id.name as string;
+      return isNode(id) && id.type === 'Identifier' ? (id.name as string) : undefined;
     }
     if (current.type === 'AssignmentExpression') {
       const target = current.left;
-      if (isNode(target) && target.type === 'Identifier') return target.name as string;
+      return isNode(target) && target.type === 'Identifier' ? (target.name as string) : undefined;
     }
   }
   return undefined;
@@ -414,11 +436,29 @@ function unionDescription(array: Node, parents: Map<Node, Node | null>): string 
 function directionsFrom(unions: Union[]): Map<string, ControlDirection> {
   const directions = new Map<string, ControlDirection>();
   for (const union of unions) {
+    // Only a union the CLI routes as control requests may name a direction. A
+    // system-message union whose prose happened to contain an anchor would
+    // otherwise vote on symbols it does not own.
+    if (!union.isControlRequest) continue;
     let side: ControlDirection = null;
     if (union.description.includes(LOOP_ORIGINATES)) side = 'cli_to_host';
     else if (union.description.includes(CLIENT_SENDS)) side = 'host_to_cli';
     if (!side) continue;
-    for (const member of union.members) directions.set(member, side);
+    for (const member of union.members) {
+      const existing = directions.get(member);
+      // Last-wins would decide the published direction by AST order, which is a
+      // property of the minifier's output rather than of the protocol — so it
+      // could flip between adjacent releases with no protocol change. Refuse
+      // instead: two unions disagreeing is a shape this module does not model.
+      if (existing && existing !== side) {
+        throw new Error(
+          `control lane: "${member}" is claimed by both a ${existing} and a ${side} ` +
+            'union. Direction would be decided by AST order, which is not stable ' +
+            'across builds — refusing to publish either.'
+        );
+      }
+      directions.set(member, side);
+    }
   }
   return directions;
 }
@@ -452,7 +492,7 @@ export function extractControlMessages(
 ): ControlMessageObservation[] {
   const program = parse(source);
   const parents = indexParents(program);
-  const { candidates, schemaVariable } = collectCandidates(source, parents);
+  const { candidates, schemaVariable } = collectCandidates(parents);
 
   // The handler path first: union ownership is derived from it, so it has to
   // exist before the unions are classified.
@@ -488,6 +528,34 @@ export function extractControlMessages(
   }
 
   const result = [...observations.values()].sort((a, b) => a.symbol.localeCompare(b.symbol));
+
+  // Three guards, one per way this can fail, because `belongs` is a UNION of two
+  // independent signals: a final-count check alone fires only if both die in the
+  // same release, and either dying alone is silent and wrong.
+  //
+  // Unions die, dispatch survives (a `union([...])` → `discriminatedUnion(...)`
+  // refactor replaces the array with an object map): the call-site-only subtypes
+  // vanish — `remote_control` among them — and every direction flips to null.
+  if (compareVersionsAsc(version, CONTROL_UNION_FLOOR) >= 0 && controlMembers.size === 0) {
+    throw new Error(
+      `control lane: no control_request union at ${version}, at or above the ` +
+        `${CONTROL_UNION_FLOOR} union floor. Dispatch evidence alone would still ` +
+        'publish a plausible-looking set, minus every call-site-only subtype and ' +
+        'with every direction nulled. Refusing.'
+    );
+  }
+
+  // The prose anchors die (Anthropic rewords a `.describe()`): every record
+  // publishes direction null, which is byte-identical to a pre-2.1.133 bundle and
+  // which the schema tells consumers means "this version predates the split".
+  if (compareVersionsAsc(version, CONTROL_SPLIT_FLOOR) >= 0 && directions.size === 0) {
+    throw new Error(
+      `control lane: no direction split at ${version}, at or above the ` +
+        `${CONTROL_SPLIT_FLOOR} split floor. Publishing null here would assert that ` +
+        'the CLI does not distinguish the two directions, which it does. The union ' +
+        'descriptions this reads have probably been reworded.'
+    );
+  }
 
   if (result.length === 0 && compareVersionsAsc(version, CONTROL_UNION_FLOOR) >= 0) {
     throw new Error(
