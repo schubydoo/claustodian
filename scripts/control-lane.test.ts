@@ -496,4 +496,50 @@ describe('extractControlMessages', () => {
       expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
     });
   });
+
+  describe('admittedBy', () => {
+    it('separates a union-only admission from a dispatched one, at the same evidence grade', () => {
+      // The case this field exists for. `hook_callback` here is a member of a
+      // routed union and is NOT itself on the request path — exactly its shape at
+      // 2.1.62, where it is declared and undetectable. It carries a described
+      // schema, so `evidence` is 'schema' and the confidence grade is `high`,
+      // identical to `initialize` beside it. Only `admittedBy` separates them, and
+      // it is the bit that says this subtype's `first_seen` is an upper bound.
+      const src = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var B1=Ee(()=>Se({subtype:xt("hook_callback")}).describe("Delivers a hook callback."));',
+        // THREE members, two of them routed: 2*2 > 3 carries the majority rule, so
+        // the union is classified as control requests and admits all three. With
+        // only the two routed members the union would admit nothing new and the
+        // union-only case would not arise.
+        'var ALL=Ee(()=>fs([A1(),A2(),B1()]));',
+        // Routes the other two, plus one subtype that is in no union at all.
+        'function h(e){' +
+          'if(e.request.subtype==="initialize")return 1;' +
+          'else if(e.request.subtype==="set_model")return 2;' +
+          'else if(e.request.subtype==="add_directory")return 3;' +
+          'return 0}',
+      ].join('\n');
+      const found = bySymbol(extractControlMessages(src, '2.1.132'));
+
+      // Union only — declared, never routed. The upper-bound case.
+      expect(found.get('hook_callback')?.admittedBy).toBe('union');
+      // Dispatch only — routed, in no union.
+      expect(found.get('add_directory')?.admittedBy).toBe('dispatch');
+      // Both signals.
+      expect(found.get('initialize')?.admittedBy).toBe('both');
+
+      // And the point: neither `evidence` nor the confidence grade tells them
+      // apart, so a consumer reading only those publishes the same record for a
+      // sound date and an upper bound.
+      const hook = found.get('hook_callback')!;
+      const init = found.get('initialize')!;
+      expect(hook.evidence).toBe('schema');
+      expect(init.evidence).toBe('schema');
+      expect(controlMessageConfidence(hook)).toBe('high');
+      expect(controlMessageConfidence(init)).toBe('high');
+    });
+  });
 });

@@ -115,14 +115,18 @@ import { compareVersionsAsc } from './lib.js';
  * is union membership: it is invisible until the union becomes provable, then dates
  * to that version. This module cannot do better with what the bundle contains.
  *
- * ⚠️ That limit is currently UNMITIGABLE downstream, deliberately noted rather than
- * papered over. A consumer cannot tell such a record apart: `evidence` collapses to
+ * ⚠️ The at-risk records are IDENTIFIABLE, and only here. `evidence` collapses to
  * the highest-ranked signal, so a union-only symbol and a dispatched-and-schema'd
  * one both report `schema`; and `controlMessageConfidence` grades a described schema
  * `high`, which the record contract forbids alongside `first_seen_estimated: true`.
- * Marking these as estimated would need the observation to carry which signal
- * admitted it — a field this module does not yet emit, and a change to make
- * deliberately when something consumes it, not speculatively here.
+ * So a consumer reading the published record alone cannot tell them apart, and the
+ * one place the distinction still exists is this module. `admittedBy` carries it out:
+ * `'union'` means `first_seen` is an upper bound. An earlier revision deferred that
+ * field as speculative; it is not, because the consumer is the PR that emits these
+ * records, and without it a known-wrong date ships at high confidence, unflagged.
+ *
+ * Emitting the flag is still the consumer's decision, not this module's — this lane
+ * reports what it observed and does not grade dating confidence.
  */
 export const CONTROL_UNION_FLOOR = '2.1.63';
 
@@ -176,6 +180,12 @@ export type ControlDirection = 'host_to_cli' | 'cli_to_host' | null;
 /** How strongly the bundle evidences a subtype. */
 export type ControlEvidence = 'schema' | 'call_site' | 'dispatch';
 
+/**
+ * Which of the two admission signals proved this subtype belongs. `belongs` is
+ * their union, so every published symbol carries one of these three.
+ */
+export type ControlAdmission = 'union' | 'dispatch' | 'both';
+
 /** One control-request subtype as observed in a single bundle. */
 export interface ControlMessageObservation {
   symbol: string;
@@ -184,6 +194,22 @@ export interface ControlMessageObservation {
   /** The schema object's own `.describe()` text; empty when it has none. */
   description: string;
   evidence: ControlEvidence;
+  /**
+   * Which signal admitted this symbol — NOT how strongly the bundle evidences
+   * it, which is `evidence`. The two differ in the case that matters: a subtype
+   * can carry a described schema (`evidence: 'schema'`, graded `high`) and still
+   * owe its admission entirely to union membership.
+   *
+   * `'union'` alone makes `first_seen` an UPPER BOUND. Such a subtype may have
+   * been declared in earlier releases and been invisible there, because a union
+   * only admits once the CLI demonstrably routes it — `hook_callback` is
+   * declared at 2.1.62 and first published at 2.1.63 for exactly this reason.
+   * See CONTROL_UNION_FLOOR.
+   *
+   * A consumer that dates records MUST read this rather than `evidence`, which
+   * collapses to the highest-ranked signal and cannot distinguish the two.
+   */
+  admittedBy: ControlAdmission;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -583,6 +609,16 @@ export function extractControlMessages(
   const belongs = (symbol: string): boolean =>
     controlMembers.has(symbol) || requestDispatched.has(symbol);
 
+  // Which side of that union admitted it. Recorded per symbol because it is the
+  // only place the distinction exists: downstream, `evidence` has already
+  // collapsed to the highest-ranked signal and a union-only admission is
+  // indistinguishable from a dispatched-and-schema'd one.
+  const admissionOf = (symbol: string): ControlAdmission => {
+    const byUnion = controlMembers.has(symbol);
+    const byDispatch = requestDispatched.has(symbol);
+    return byUnion && byDispatch ? 'both' : byUnion ? 'union' : 'dispatch';
+  };
+
   const observations = new Map<string, ControlMessageObservation>();
   const rank: Record<ControlEvidence, number> = { dispatch: 0, call_site: 1, schema: 2 };
 
@@ -598,6 +634,9 @@ export function extractControlMessages(
         existing && rank[existing.evidence] >= rank[candidate.evidence]
           ? existing.evidence
           : candidate.evidence,
+      // Not merged: admission is a property of the symbol, not of the candidate
+      // occurrence, so every occurrence resolves to the same value.
+      admittedBy: admissionOf(candidate.symbol),
     });
   }
 
