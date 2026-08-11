@@ -338,6 +338,49 @@ describe('reextract-binaries main()', () => {
     errSpy.mockRestore();
   });
 
+  it('keeps the cache-only record in a REFUSED marker, not just a skipped one', async () => {
+    // The record is unrecoverable once `clearCache` runs, so every marker state has to
+    // carry it. `refused` and `in-progress` are the states whose documented remedy is
+    // "re-run", which is exactly when dropping it would erase the evidence.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-refused-cacheonly-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '2.0.0', 'this is not parseable javascript {{{'); // refuses
+    await mkdir(out, { recursive: true });
+    await writeFile(join(out, '9.9.9.json'), JSON.stringify({ version: '9.9.9', symbols: [] }));
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    expect(await main(['--archive', archive, '--out', out])).toBe(1);
+
+    const marker = JSON.parse(await readFile(join(out, CACHE_INCOMPLETE_MARKER), 'utf-8')) as {
+      status: string;
+      cacheOnly: string[];
+    };
+    expect(marker.status).toBe('refused');
+    expect(marker.cacheOnly).toEqual(['9.9.9']);
+    expect(errSpy).toHaveBeenCalledWith(expect.stringContaining('9.9.9'));
+    errSpy.mockRestore();
+  });
+
+  it('treats an unparseable prior marker as an unknown loss rather than none', async () => {
+    // Failing open would let a hand-edit or a truncated write erase the record.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-badmarker-'));
+    const archive = join(root, 'archive');
+    const out = join(root, 'out');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await mkdir(out, { recursive: true });
+    await writeFile(join(out, CACHE_INCOMPLETE_MARKER), '{ truncated');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await main(['--archive', archive, '--out', out]);
+
+    const marker = JSON.parse(await readFile(join(out, CACHE_INCOMPLETE_MARKER), 'utf-8')) as {
+      priorMarkerUnreadable: boolean;
+    };
+    expect(marker.priorMarkerUnreadable).toBe(true);
+  });
+
   it('unmarks the cache only when every selected version was written', async () => {
     // The ordering is the whole point. The cache goes incomplete the moment
     // `clearCache` runs, so a marker written at the END protects nothing against an
