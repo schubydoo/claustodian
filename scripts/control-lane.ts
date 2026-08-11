@@ -360,10 +360,15 @@ interface Candidate {
  * Bun-embedded bundle is CJS-wrapped, so both have to be reachable — but the
  * order is not arbitrary. oxc recovers from errors rather than bailing at the
  * first `import`, so a failed attempt costs a FULL parse of a ~20 MB bundle.
- * Measured: `module` parses both formats with zero errors (2.1.226 Bun bundle
- * 505 ms, 2.1.112 npm bundle 349 ms), whereas `script` fails the npm format with
- * 10 errors after 414 ms. Module-first therefore costs one parse per version;
- * script-first cost two for all 380 npm-era releases.
+ * Re-measured on this machine, all four combinations: `module` parses both formats
+ * with zero errors (2.1.226 Bun bundle 675 ms, 2.1.112 npm bundle 408 ms), whereas
+ * `script` fails the npm format with 10 errors after 400 ms. Module-first therefore
+ * costs one parse per version; script-first cost two for all 380 npm-era releases.
+ *
+ * Note the order is chosen for CORRECTNESS, not speed: `script` is the faster parse
+ * on the Bun bundle (507 ms against module's 675 ms) and would still be the wrong
+ * default. An earlier revision recorded 505 ms and 349 ms as the module figures;
+ * they do not reproduce here, and 505 ms is today's SCRIPT timing for that bundle.
  */
 function parse(source: string): Node {
   let best: { errors: unknown[]; program: Node } | undefined;
@@ -381,6 +386,14 @@ function parse(source: string): Node {
       'is indistinguishable from a protocol that vanished.'
   );
 }
+
+/**
+ * How far above an array `unionDescription` reads. The slice kept per array and
+ * the reads in that function MUST agree: keep fewer and it silently returns `''`
+ * for a union that does have a description, which publishes as "no description"
+ * rather than failing.
+ */
+const UNION_DESCRIPTION_HOPS = 3;
 
 /** An `ArrayExpression` with the only ancestors `unionDescription` can reach. */
 interface ArrayEntry {
@@ -428,7 +441,11 @@ function collectCandidates(root: Node): {
       return;
     }
     if (node.type === 'ArrayExpression') {
-      arrays.push({ node, ancestors: ancestors.slice(-3) });
+      // A union needs two distinct members, and members never outnumber elements,
+      // so anything shorter is discarded by `collectUnions` regardless. Filtering
+      // here is equivalent and keeps the retained set to arrays that could matter.
+      if ((node.elements as unknown[]).length < 2) return;
+      arrays.push({ node, ancestors: ancestors.slice(-UNION_DESCRIPTION_HOPS) });
     }
   });
   return { candidates, schemaVariable, arrays };
@@ -592,6 +609,8 @@ function collectUnions(
 
 /** The `.describe()` on the call that consumes a union array. */
 function unionDescription(ancestors: readonly Node[]): string {
+  // Reads exactly UNION_DESCRIPTION_HOPS levels; adding a fourth means widening
+  // the slice kept in `collectCandidates` or this silently returns ''.
   const call = ancestors[ancestors.length - 1];
   if (!call || call.type !== 'CallExpression') return '';
   const member = ancestors[ancestors.length - 2];
