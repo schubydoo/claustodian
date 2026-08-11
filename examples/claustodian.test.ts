@@ -3,7 +3,7 @@
 
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import type { ClaudeSymbol, SymbolType } from './claustodian.js';
+import type { ClaudeSymbol, ControlFamily, SymbolType } from './claustodian.js';
 
 /**
  * The published client restates the record contract by hand, and nothing checked
@@ -28,6 +28,13 @@ const SYMBOL_TYPES = [
 ] as const;
 
 /**
+ * The schema's `family` enum has one member today, and its own description says it
+ * widens if further message families are published. That makes it the next enum
+ * likely to drift, so it is pinned the same way rather than left to the `type` pair.
+ */
+const CONTROL_FAMILIES = ['control_request'] as const;
+
+/**
  * True only when A and B are the same type — not merely mutually assignable, which
  * a plain `extends` pair reports for a union and its own superset.
  */
@@ -36,7 +43,7 @@ type Equal<A, B> =
 
 const schema = JSON.parse(
   readFileSync(new URL('../schema/symbol.schema.json', import.meta.url), 'utf8')
-) as { properties: { type: { enum: string[] } } };
+) as { properties: { type: { enum: string[] }; family: { enum: string[] } } };
 
 /** Every field the contract requires on every record, so each case varies one thing. */
 const base = {
@@ -64,6 +71,13 @@ describe('the published client mirrors the record contract', () => {
     // compiling — which the type-check gate now runs over `examples/`.
     const typesMatch: Equal<SymbolType, (typeof SYMBOL_TYPES)[number]> = true;
     expect(typesMatch).toBe(true);
+  });
+
+  it('types exactly the family enum the schema declares, in both directions', () => {
+    expect([...schema.properties.family.enum].sort()).toEqual([...CONTROL_FAMILIES].sort());
+
+    const familiesMatch: Equal<ControlFamily, (typeof CONTROL_FAMILIES)[number]> = true;
+    expect(familiesMatch).toBe(true);
   });
 
   it('requires family and direction on control_message records', () => {
