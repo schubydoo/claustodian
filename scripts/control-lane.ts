@@ -163,8 +163,9 @@ export const CONTROL_SPLIT_FLOOR = '2.1.133';
  * literal inside a `request`/`send` call) over inbound dispatch (the
  * `<expr>.request.subtype` path of the 34/35 above): the 7-member cli_to_host
  * union scores 7/7 and 7/7, the 35-member host_to_cli union 29/35 and 34/35.
- * So the plausible rule "constructed here means cli_to_host" labels BOTH unions
- * host_to_cli — it gets the one union it exists to catch exactly backwards.
+ * Neither signal separates them: the plausible rule "constructed here means
+ * cli_to_host" labels 36 of the 42 subtypes cli_to_host, including 29 of the 35
+ * that are not.
  */
 const LOOP_ORIGINATES = 'the agent loop originates';
 const CLIENT_SENDS = 'a client sends to drive the loop';
