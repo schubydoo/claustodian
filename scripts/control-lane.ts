@@ -88,8 +88,11 @@ import { compareVersionsAsc } from './lib.js';
  * this constant was originally set to that number, and it was wrong. A union of
  * schemas exists from 2.1.30, but through 2.1.62 its members are largely not
  * dispatched on the control-request handler path, so `isControlRequest` is false
- * and there is no routed union to demand. Measured with this module: 2.1.62 has
- * none (the union guard fires), 2.1.63 has one and yields 20 symbols.
+ * and there is no routed union to demand. Measured with this module: 2.1.62 yields
+ * 16 symbols and no routed union, 2.1.63 yields 20 and has one. (With the floor at
+ * 2.1.63 the union guard does not fire at 2.1.62 — it is below the floor. An
+ * earlier version of this comment said it did, which was true only of the 2.1.30
+ * floor it replaced.)
  *
  * ⚠️ THIS FLOOR IS A DATING BOUNDARY, and the 16 -> 20 step across it is not four
  * new subtypes. Attributed against the two bundles rather than inferred:
@@ -99,16 +102,27 @@ import { compareVersionsAsc } from './lib.js';
  *   hook_callback          — ALREADY DECLARED at 2.1.62, and undetectable there
  * so three of the four are genuine arrivals and one is a false introduction.
  *
- * `hook_callback` is the shape of the limit. It is CLI->host: the CLI SENDS it, so
- * the CLI has no handler for it, and at 2.1.62 the bundle carries no host-side
- * handler either — measured, it is neither request- nor plain-dispatched there.
- * Its only evidence is membership of a union that nothing yet proves is a
- * control-request union. So a CLI->host subtype declared before its union becomes
- * provable will date to the floor rather than to its true introduction, and this
- * module cannot do better with what the bundle contains. Whoever assembles
- * `first_seen` should treat a symbol whose sole evidence is union membership as an
- * upper bound — `first_seen_estimated` in the record contract exists for exactly
- * this — rather than as a confirmed introduction.
+ * What makes `hook_callback` undetectable at 2.1.62 is measured, not reasoned:
+ * there it is neither request- nor plain-dispatched, so its only evidence is
+ * membership of a union nothing yet proves is a control-request union. Do NOT read
+ * a mechanism into that beyond the measurement — in particular it is not "CLI->host
+ * subtypes have no handler", which this file measures the opposite of twice (the
+ * cli_to_host sub-union scores 7/7 on the request path at 2.1.226, and the bundle
+ * ships both sides of the protocol). It is a fact about that release, not about
+ * that direction.
+ *
+ * The at-risk class is therefore any subtype whose only evidence in a given version
+ * is union membership: it is invisible until the union becomes provable, then dates
+ * to that version. This module cannot do better with what the bundle contains.
+ *
+ * ⚠️ That limit is currently UNMITIGABLE downstream, deliberately noted rather than
+ * papered over. A consumer cannot tell such a record apart: `evidence` collapses to
+ * the highest-ranked signal, so a union-only symbol and a dispatched-and-schema'd
+ * one both report `schema`; and `controlMessageConfidence` grades a described schema
+ * `high`, which the record contract forbids alongside `first_seen_estimated: true`.
+ * Marking these as estimated would need the observation to carry which signal
+ * admitted it — a field this module does not yet emit, and a change to make
+ * deliberately when something consumes it, not speculatively here.
  */
 export const CONTROL_UNION_FLOOR = '2.1.63';
 
