@@ -2291,6 +2291,10 @@
       {
         "from": "2.1.92",
         "description": "Resume a Claude Code session from claude.ai"
+      },
+      {
+        "from": "2.1.229",
+        "description": "Send this session to the cloud, or resume one from claude.ai"
       }
     ],
     "command:/terminal-setup": [
@@ -3299,6 +3303,12 @@
       {
         "from": "2.1.136",
         "description": "Absolute path to the helper executable"
+      }
+    ],
+    "config_key:policyHelpers": [
+      {
+        "from": "2.1.229",
+        "description": "Per-OS variant of policyHelper, keyed by platform: macos, linux, windows, wsl. The entry for the current platform wins over policyHelper; a platform with no entry falls back to policyHelper (wsl falls back to the linux entry first). Honored only from admin-controlled policy sources."
       }
     ],
     "config_key:prUrlTemplate": [
