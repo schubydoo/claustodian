@@ -16,6 +16,53 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-08-14
+
+### Fixed
+
+- **A documentation description no longer backfills onto older snapshots.**
+  `data/docs.json` is one capture of the current documentation. There is no
+  per-version documentation history, so a docs-sourced description is evidence
+  about the tip and nothing else. Every historical snapshot published it anyway.
+  The result was text that refutes itself: `data/versions/2.1.200.json` described
+  `/review` as "Alias of `/code-review` … **Before v2.1.223**, `/review` was a
+  separate command." Every snapshot from 2.1.186 on carried that sentence.
+
+  The resolver kept a description when the binary help text had not changed since
+  that version. That test was a proxy for whether the docs text still applied, and
+  it is not a sound one. `/review`'s binary text is unchanged since 2.1.186, while
+  its docs text describes behavior that began at 2.1.223.
+
+  A description is now refused at a version when its own text names either a
+  release later than that version, or a backticked symbol — of any of the four
+  types this dataset publishes, where the span holds that symbol alone — whose
+  `first_seen` is later than that version. The check is self-consistency against
+  the dataset, not a judgement about prose. A symbol the dataset does not know is
+  ignored, because absence of a record is not evidence that the symbol did not
+  exist.
+
+  When the binary observed the symbol at that version, its text replaces the docs
+  text and `description_source` becomes `binary`. `/cost` at 0.2.21 becomes "Show
+  the total cost and duration of the current session" instead of "Alias for
+  `/usage`", a command that did not exist until 2.0.0.
+
+  Otherwise the description keeps the leading sentences that name nothing later
+  than the version. These descriptions are an era-correct opening plus sentences
+  appended as behavior grew, so truncation preserves correct text that a blanket
+  removal would discard.
+
+  A record's description becomes empty only when both conditions hold: its first
+  sentence already names something later, and the binary lane has no description
+  for it to fall back on. `MCP_OAUTH_CALLBACK_PORT` is the shape — blank before
+  2.1.30, the release that introduced the `--callback-port` its only sentence
+  points at. The binary lane does not record env var help text, which is why that
+  fallback is missing there.
+
+  Nothing changes at the newest version: the guard cannot fire there, because no
+  release compares greater and no `first_seen` is later.
+
+---
+
 ## 2026-08-13
 
 ### Fixed
