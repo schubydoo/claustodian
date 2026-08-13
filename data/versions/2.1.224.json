@@ -2306,7 +2306,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Emit a `prompt_suggestion` message after each turn with a predicted next user prompt. Requires `--print`, `--output-format stream-json`, and `--verbose`. See Prompt suggestions",
+      "description": "Emit a `prompt_suggestion` message with a predicted next user prompt after each turn that generates one; very short conversations can produce none. Requires `--print`, `--output-format stream-json`, and `--verbose`. See Prompt suggestions",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli"
@@ -2969,7 +2969,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Only use MCP servers from `--mcp-config`, ignoring all other MCP configurations",
+      "description": "Only use MCP servers from `--mcp-config`, ignoring all other MCP configurations. See Exclusive control with managed-mcp.json for what the flag does under a managed MCP file",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -3163,7 +3163,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for all, or tool names like `\"Bash,Edit,Read\"`. The flag doesn't affect MCP tools; to deny those too, use `--disallowedTools \"mcp__*\"`, or pass `--strict-mcp-config` without `--mcp-config` so no MCP servers load. A list that omits `EndConversation` doesn't remove it; `\"\"` removes it only when no MCP tools remain",
+      "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for all, or tool names like `\"Bash,Edit,Read\"`. The flag doesn't affect MCP tools; to deny those too, use `--disallowedTools \"mcp__*\"`. A list that omits `EndConversation` doesn't remove it; `\"\"` removes it only when no MCP tools remain",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -3360,7 +3360,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Skip the `--prune` confirmation prompt. Required when stdin or stdout is not a TTY",
+      "description": "Accept the command that a plugin with a `command` source runs, without the confirmation prompt. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
@@ -3577,8 +3577,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Report a bug or share your conversation. You choose how much session history to include and confirm on a consent screen before anything is sent. When you're signed in to Anthropic on a first-party connection, the report goes to Anthropic; on a third-party provider, or without Anthropic credentials, Claude Code writes the report to a local archive under `~/.claude/feedback-bundles/` that you forward yourself. Alias: `/share`. Before v2.1.212, `/bug` and `/share` were aliases of `/feedback`",
-      "description_source": "docs",
+      "description": "Report a bug or share your conversation",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -4037,7 +4037,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Toggle fast mode on or off. In non-interactive mode (`-p`), `/fast` works only in a session launched with fast mode in its `--settings` value, for example `claude -p --settings '{\"fastMode\": true}'`; the toggle then applies to the current session only and isn't saved as your default, and in any other non-interactive session the command reports that fast mode isn't available. Requires Claude Code v2.1.205 or later",
+      "description": "Toggle fast mode on or off. Availability in non-interactive mode with `-p` is limited; see Toggle fast mode. Requires Claude Code v2.1.205 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5443,7 +5443,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) Load claude.ai connectors alongside a deployed `managed-mcp.json`, which otherwise takes exclusive control and suppresses them. See Managed MCP configuration",
+      "description": "(Managed settings only) Load the claude.ai connectors Claude Code fetches itself alongside a deployed `managed-mcp.json`, which otherwise takes exclusive control and suppresses them. Connectors delivered to cloud sessions stay suppressed. See Managed MCP configuration",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -5456,7 +5456,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) Only managed hooks, SDK hooks, and hooks from plugins force-enabled in managed settings `enabledPlugins` are loaded. User, project, and all other plugin hooks are blocked. See Hook configuration",
+      "description": "(Managed settings only) Restrict which hooks run; see Hook configuration for the full effect list",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -6106,7 +6106,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Disable all hooks and any custom status line",
+      "description": "Disable all hooks, any custom status line, and any custom file suggestion command",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -6754,7 +6754,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) **Default**: `\"first-wins\"`. Controls whether Claude Code applies managed settings supplied by an embedding host process, such as the Agent SDK or an IDE extension, when an admin-deployed managed tier is also present. With `\"first-wins\"`, Claude Code drops the parent-supplied settings. With `\"merge\"`, Claude Code applies them under the admin tier through a restrictive-only filter. For the filter's limits and how the managed sources interact, see Settings precedence and Restrict parent settings",
+      "description": "(Managed settings only) **Default**: `\"first-wins\"`. Controls whether Claude Code applies managed settings supplied by an embedding host process, such as the Agent SDK or an IDE extension, when an admin-deployed managed tier is also present. With `\"first-wins\"`, Claude Code drops the parent-supplied settings. With `\"merge\"`, Claude Code applies them under the admin tier through a restrictive-only filter. For the filter's limits and how the managed sources interact, see Parent settings from embedding hosts and Restrict parent settings",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -7144,7 +7144,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Connect Remote Control automatically when each interactive session starts, instead of waiting for `/remote-control`. Set to `true` to turn auto-connect on, `false` to turn it off, or leave unset to follow your organization's admin default if one is set, and otherwise Claude Code's current default. Appears in `/config` as **Enable Remote Control for all sessions**. Claude Code ignores a `true` from project or local settings; for the full per-scope behavior, see Enable Remote Control for all sessions and the exceptions under Settings precedence",
+      "description": "Connect Remote Control automatically when each interactive session starts, instead of waiting for `/remote-control`. Set to `true` to turn auto-connect on, `false` to turn it off, or leave unset to follow your organization's admin default if one is set, and otherwise Claude Code's current default. Appears in `/config` as **Enable Remote Control for all sessions**. Claude Code ignores a `true` from project or local settings; for the full per-scope behavior, see Enable Remote Control for all sessions and the exceptions to managed settings precedence",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -7597,7 +7597,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Array of domains to allow for outbound network traffic. Supports wildcards (e.g., `*.example.com`).",
+      "description": "Array of domains to allow for outbound network traffic. Supports wildcards, such as `*.example.com`. Write IPv6 literals bracketed, with an optional port: `\"[::1]\"` allows every port and `\"[::1]:443\"` one port.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -7610,7 +7610,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Array of domains to block for outbound network traffic. Supports the same wildcard syntax as `allowedDomains`. Takes precedence over `allowedDomains` when both match. Merged from all settings sources regardless of `allowManagedDomainsOnly`.",
+      "description": "Array of domains to block for outbound network traffic. Supports the same wildcard syntax as `allowedDomains`. For IPv6 literals, see IPv6 addresses in domain lists. Takes precedence over `allowedDomains` when both match. Merged from all settings sources regardless of `allowManagedDomainsOnly`.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -8090,13 +8090,13 @@
       "type": "config_key",
       "first_seen": "2.1.105",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Configure a custom command that rewrites rows in the subagent task display. See Subagent status lines",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "settings"
     },
     {
       "symbol": "subagentStatusLine.command",
@@ -10459,7 +10459,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `0` to omit the attribution block, which carries the client version and a prompt fingerprint, from the start of the system prompt. Caching on a direct connection to the Anthropic API is unaffected either way. Before v2.1.181 the block included a per-request token on custom base URLs and Microsoft Foundry connections, so on those versions set it to `0` when your LLM gateway caches on the request body or forwards requests to a third-party provider, or when you connect to Microsoft Foundry directly",
+      "description": "Set to `0` to omit the attribution block, which carries the client version and a prompt fingerprint, from the start of the system prompt. Caching on a direct connection to the Anthropic API is unaffected either way. In some direct-connection setups, Claude Code keeps the block on auto mode classifier requests even when you set `0`. In System prompt attribution block, check which connections and credentials this covers. Before v2.1.181 the block included a per-request token on custom base URLs and Microsoft Foundry connections, so on those versions set it to `0` when your LLM gateway caches on the request body or forwards requests to a third-party provider, or when you connect to Microsoft Foundry directly",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -11433,7 +11433,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
+      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -13758,7 +13758,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set by host platforms that embed Claude Code and manage model provider routing on its behalf. When set, Claude Code ignores provider-selection, endpoint, and authentication variables such as `CLAUDE_CODE_USE_BEDROCK`, `ANTHROPIC_BASE_URL`, and `ANTHROPIC_API_KEY` in settings files, so user settings can't override the host's routing. Claude Code also ignores model-selection keys such as `model`, `fallbackModel`, and `modelOverrides` in managed settings, whichever managed source delivers them, so the host's model configuration takes precedence over an out-of-date managed model pin; an `availableModels` allowlist in managed settings still applies unless the host supplies its own. Claude Code also skips the automatic telemetry opt-out for Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry, so telemetry follows the standard `DISABLE_TELEMETRY` opt-out. See Default behaviors by API provider",
+      "description": "Set by host platforms that embed Claude Code and manage model provider routing on its behalf. When set, Claude Code ignores provider-selection, endpoint, and authentication variables such as `CLAUDE_CODE_USE_BEDROCK`, `ANTHROPIC_BASE_URL`, and `ANTHROPIC_API_KEY` in settings files, so user settings can't override the host's routing. Claude Code also ignores model-selection keys such as `model`, `fallbackModel`, and `modelOverrides` in managed settings, whichever managed source delivers them, so the host's model configuration takes precedence over an out-of-date managed model pin; an `availableModels` allowlist in managed settings still applies unless the host supplies its own. Claude Code also skips the automatic telemetry opt-out it otherwise applies on third-party providers such as Amazon Bedrock, Claude Platform on AWS, Google Cloud's Agent Platform, and Microsoft Foundry, so telemetry follows the standard `DISABLE_TELEMETRY` opt-out. See Default behaviors by API provider",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -16548,7 +16548,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable GrowthBook feature-flag fetching and use code defaults for every flag. This makes Remote Control and the other features that need feature-flag fetching unavailable. Telemetry event logging stays on unless `DISABLE_TELEMETRY` is also set",
+      "description": "Set to `1` or `true` to disable GrowthBook feature-flag fetching and use code defaults for every flag. This makes Remote Control and the other features that need feature-flag fetching unavailable. Setting it to `0` or `false` leaves fetching on. Telemetry event logging stays on unless `DISABLE_TELEMETRY` is also set",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"

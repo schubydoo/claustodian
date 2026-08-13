@@ -1303,6 +1303,12 @@
         "description": "List all currently approved tools"
       }
     ],
+    "command:/artifact-components": [
+      {
+        "from": "2.1.232",
+        "description": "Embed reusable components in an Artifact"
+      }
+    ],
     "command:/artifacts": [
       {
         "from": "2.1.206",
@@ -3307,8 +3313,12 @@
     ],
     "config_key:policyHelpers": [
       {
-        "from": "2.1.229",
+        "from": "2.1.228",
         "description": "Per-OS variant of policyHelper, keyed by platform: macos, linux, windows, wsl. The entry for the current platform wins over policyHelper; a platform with no entry falls back to policyHelper (wsl falls back to the linux entry first). Honored only from admin-controlled policy sources."
+      },
+      {
+        "from": "2.1.232",
+        "description": "@internal Per-OS variant of policyHelper, keyed by platform: macos, linux, windows, wsl, plus an optional \"default\" entry that is a STATIC settings payload (a JSON object of managed settings, not a helper). Each per-OS entry carries a helper (\"path\", with timeoutMs/refreshIntervalMs), its own static \"defaultSettings\" payload, or both; an entry may be payload-only. Selection for a platform walks its chain (the platform's own entry; on wsl the linux entry next): the first helper on the chain wins over policyHelper; if no helper is configured \\u2014 or the selected helper fails at startup or refresh \\u2014 the first payload applies (the chain's \"defaultSettings\" in platform-specific-first order, then the top-level \"default\", applied with no process spawned; unrecognized platforms reach only \"default\"); with no payload either, policyHelper. Honored only from admin-controlled policy sources."
       }
     ],
     "config_key:prUrlTemplate": [
