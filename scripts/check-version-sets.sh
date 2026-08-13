@@ -2,11 +2,20 @@
 # Copyright 2026 Schuby
 # SPDX-License-Identifier: Apache-2.0
 #
-# Check-only. Reconciles the three version sets before a re-extract:
+# Check-only. Reconciles the four version sets before a re-extract:
 #
+#   npm packument        every release Anthropic published   (the ground truth)
 #   scratch/binaries/    the local archive        (maintainer-only, gitignored)
 #   binary-cache/*.json  committed extractions
 #   CHANGELOG            announced releases
+#
+# The npm set is what makes the others checkable. The local three can only
+# disagree with each other, so a release missing from ALL of them produces no
+# disagreement and this script reported OK. That happened: 2.1.232 was published,
+# archived nowhere, extracted nowhere and had no changelog heading, and the check
+# passed while a whole release was missing. It was found by hand, against npm.
+# A release with no changelog heading is common rather than exceptional, so this is
+# not a corner case. Counts are deliberately absent: they go stale on their own.
 #
 # `reextract-binaries` reads ONLY the archive and clears binary-cache first, so a
 # version that exists in the cache but not the archive is destroyed by a run that
@@ -19,6 +28,8 @@
 set -euo pipefail
 
 ARCHIVE_DIR="${ARCHIVE_DIR:-scratch/binaries}"
+# Same source `scratch/archive-binaries.ts` uses for its version list.
+REGISTRY="${REGISTRY:-https://registry.npmjs.org/@anthropic-ai/claude-code}"
 CACHE_DIR="${CACHE_DIR:-binary-cache}"
 DATA_DIR="${DATA_DIR:-data}"
 
@@ -40,7 +51,16 @@ list_archive() {
 list_snapshots() {
   find "$DATA_DIR/versions" -maxdepth 1 -name '*.json' -exec basename {} .json \; 2>/dev/null | sort
 }
+# Network. Prints nothing and returns non-zero when unreachable, so the caller can
+# skip this comparison rather than fail a check that is otherwise offline.
+list_npm() {
+  curl -fsSL --max-time 30 "$REGISTRY" 2>/dev/null |
+    node -e 'let d="";process.stdin.on("data",c=>{d+=c}).on("end",()=>{try{
+      const v=Object.keys(JSON.parse(d).versions).filter(x=>/^[0-9]+\.[0-9]+\.[0-9]+$/.test(x));
+      if(!v.length)process.exit(1);console.log(v.join("\n"))}catch{process.exit(1)}})' | sort
+}
 
+list_npm > "$tmp/npm" || : > "$tmp/npm"
 list_cache > "$tmp/cache"
 list_archive > "$tmp/archive"
 list_snapshots > "$tmp/snapshots"
@@ -56,10 +76,49 @@ show_capped() {
 }
 
 status=0
-printf 'archive   %s\ncache     %s\nsnapshots %s\n\n' \
+printf 'npm       %s\narchive   %s\ncache     %s\nsnapshots %s\n\n' \
+  "$(wc -l < "$tmp/npm" | tr -d ' ')" \
   "$(wc -l < "$tmp/archive" | tr -d ' ')" \
   "$(wc -l < "$tmp/cache" | tr -d ' ')" \
   "$(wc -l < "$tmp/snapshots" | tr -d ' ')"
+
+# The only comparison that can see a release missing from every local set.
+if [ ! -s "$tmp/npm" ]; then
+  echo "NOTE: no usable release list from $REGISTRY (unreachable, or a response"
+  echo "      that is not a packument) — skipping the published-releases check."
+  echo "      The remaining comparisons only detect DISAGREEMENT between local sets,"
+  echo "      so they cannot see a release that is absent from all of them."
+  echo
+elif [ -s "$tmp/archive" ]; then
+  comm -23 "$tmp/npm" "$tmp/archive" > "$tmp/npm_only_raw" || true
+  comm -23 "$tmp/npm_only_raw" "$tmp/gaps" > "$tmp/npm_only" || true
+  if [ -s "$tmp/npm_only" ]; then
+    echo "FAIL: published on npm but NOT in the archive — a re-extract cannot see these:"
+    show_capped "$tmp/npm_only"
+    echo "      Archive each with: VERSION=<v> npx tsx scratch/archive-binaries.ts"
+    echo "      (maintainer-only, gitignored. scrape-binary writes the CACHE, which"
+    echo "       step 1 clears — the archive is what a re-extract reads.)"
+    echo
+    status=1
+  fi
+else
+  # No archive: a contributor without it, or a maintainer on the wrong machine.
+  # Fall back to the cache. It cannot answer "would a re-extract see this", which
+  # is the question the archive answers, but it still names a published release
+  # nobody has extracted. Reported, never silent — a skipped check that still
+  # prints OK is the exact shape this comparison was added to close.
+  comm -23 "$tmp/npm" "$tmp/cache" > "$tmp/npm_only_raw" || true
+  comm -23 "$tmp/npm_only_raw" "$tmp/gaps" > "$tmp/npm_only" || true
+  echo "NOTE: no local archive, so the published-vs-archive check did NOT run."
+  if [ -s "$tmp/npm_only" ]; then
+    echo "      Published on npm and not extracted into binary-cache either:"
+    show_capped "$tmp/npm_only"
+  else
+    echo "      Every published release has a cache entry, which is as far as this"
+    echo "      machine can check."
+  fi
+  echo
+fi
 
 if [ ! -s "$tmp/archive" ]; then
   echo "NOTE: no local archive at $ARCHIVE_DIR — skipping archive comparisons."
