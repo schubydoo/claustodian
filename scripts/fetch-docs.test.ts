@@ -63,6 +63,31 @@ describe('symbolFromCell', () => {
     expect(symbolFromCell('`.claude/settings.json`')).toBeNull();
   });
 
+  it('takes the slash command, not its bracketed arguments, as the subject', () => {
+    // commands.md writes a command's arguments inside the same backtick span.
+    // Scanning for a flag first took the argument as the row's subject: it lost
+    // the command AND published the argument as a top-level CLI flag carrying
+    // the command's description.
+    expect(symbolFromCell('`/reload-plugins [--force]`')).toEqual({
+      symbol: '/reload-plugins',
+      type: 'command',
+    });
+    expect(
+      symbolFromCell('`/code-review [low\\|medium\\|high] [--fix] [--comment] [pr#\\|branch]`')
+    ).toEqual({ symbol: '/code-review', type: 'command' });
+    expect(symbolFromCell('`/import [codex\\|gemini] [--dry-run] [--yes]`')).toEqual({
+      symbol: '/import',
+      type: 'command',
+    });
+  });
+
+  it('still reads a genuine flag whose cell is not a slash command', () => {
+    // The command anchor only fires on a cell that STARTS with `/…`, so a real
+    // flag row is untouched by the reordering.
+    expect(symbolFromCell('`--force`')).toEqual({ symbol: '--force', type: 'cli_flag' });
+    expect(symbolFromCell('`--dry-run <path>`')).toEqual({ symbol: '--dry-run', type: 'cli_flag' });
+  });
+
   it('still recognizes a leading slash command with surrounding text', () => {
     expect(symbolFromCell('`/compact` clears history')).toEqual({
       symbol: '/compact',

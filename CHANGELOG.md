@@ -20,6 +20,29 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ### Fixed
 
+- **A slash command's bracketed arguments no longer publish as top-level CLI
+  flags.** The docs parser read a table's first cell by scanning for a `--flag`
+  before testing the slash-command anchor. The commands page writes a command's
+  arguments inside the same backtick span, so three rows resolved to their
+  argument instead of their command:
+
+  | cell                                                | was                    | now                         |
+  | --------------------------------------------------- | ---------------------- | --------------------------- |
+  | `` `/reload-plugins [--force]` ``                   | `cli_flag` `--force`   | `command` `/reload-plugins` |
+  | `` `/code-review … [--fix] …` ``                    | `cli_flag` `--fix`     | `command` `/code-review`    |
+  | `` `/review … [--fix] …` ``                         | `cli_flag` `--fix`     | `command` `/review`         |
+  | `` `/import [codex\|gemini] [--dry-run] [--yes]` `` | `cli_flag` `--dry-run` | `command` `/import`         |
+
+  Each cost the dataset twice. The command was lost from the docs lane, and the
+  argument was published as a `claude` CLI flag carrying the _command's_
+  description — `--force` shipped as "Reload all active plugins to apply pending
+  changes without restarting", which describes `/reload-plugins`.
+
+  `--fix` had no evidence in any other lane and is removed. `--force` and
+  `--dry-run` are real flags the binary lane observes independently; they keep
+  their records and pick up correct descriptions. `/code-review`, `/import`,
+  `/reload-plugins` and `/review` gain their documented descriptions.
+
 - **Six subprocess flags no longer publish as Claude Code CLI flags.** The changelog
   lane suppresses a subprocess tool's own flags when a bullet lists them as examples,
   but the rule only recognised an `(e.g., …)` lead-in. Two bullets write the example
