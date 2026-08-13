@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.225",
+  "claudeCodeVersion": "2.1.228",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -1979,6 +1979,19 @@
       "category": "cli"
     },
     {
+      "symbol": "--no-post",
+      "type": "cli_flag",
+      "first_seen": "2.1.227",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Do not post the findings to the PR (the default; accepted for parity with the /ultrareview and /code-review ultra flags)",
+      "source_url": null,
+      "category": "cli",
+      "description_source": "binary"
+    },
+    {
       "symbol": "--no-publish",
       "type": "cli_flag",
       "first_seen": "2.1.224",
@@ -2250,6 +2263,19 @@
       "provenance": "binary",
       "confidence": "medium",
       "description": "HTTP port",
+      "source_url": null,
+      "category": "cli",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "--post",
+      "type": "cli_flag",
+      "first_seen": "2.1.227",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Post the finished review's findings to the PR as you (PR targets only; one plain comment, not a review)",
       "source_url": null,
       "category": "cli",
       "description_source": "binary"
@@ -4372,8 +4398,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open a memory file in your editor",
-      "description_source": "binary",
+      "description": "Edit `CLAUDE.md` files, enable or disable auto memory, and view auto memory entries",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -5653,6 +5679,20 @@
       "category": "settings"
     },
     {
+      "symbol": "autoConnectIde",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Default**: `false`. Automatically connect to a running IDE when Claude Code starts from an external terminal. Appears in `/config` as **Auto-connect to IDE (external terminal)** when running outside a VS Code or JetBrains terminal. The `CLAUDE_CODE_AUTO_CONNECT_IDE` environment variable overrides this when set",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
+    },
+    {
       "symbol": "autoDreamEnabled",
       "type": "config_key",
       "first_seen": "2.1.81",
@@ -5664,6 +5704,20 @@
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
+    },
+    {
+      "symbol": "autoInstallIdeExtension",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Default**: `true`. Automatically install the Claude Code IDE extension when running from a VS Code terminal. Appears in `/config` as **Auto-install IDE extension** when running inside a VS Code or JetBrains terminal. You can also set the `CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL` environment variable to `1`",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
     },
     {
       "symbol": "autoMemoryDirectory",
@@ -5952,6 +6006,20 @@
       "description_source": "binary"
     },
     {
+      "symbol": "browserExternalPageTools",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "(Managed settings only) Set to `\"disabled\"` to prevent Claude from using tools to read or act on external pages in the desktop app's Browser pane. Users can still navigate to external sites themselves, and local dev server previews are unaffected",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "settings"
+    },
+    {
       "symbol": "channelsEnabled",
       "type": "config_key",
       "first_seen": "2.1.84",
@@ -6095,6 +6163,20 @@
       "category": "settings"
     },
     {
+      "symbol": "diffTool",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Default**: `auto`. Where to display file diffs when an IDE is connected: `auto` opens diffs in the IDE's diff viewer, `terminal` keeps them in the terminal. Appears in `/config` as **Diff tool** only when Claude Code is connected to a VS Code or JetBrains IDE",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
+    },
+    {
       "symbol": "disableAgentView",
       "type": "config_key",
       "first_seen": "2.1.139",
@@ -6147,6 +6229,20 @@
       "category": "settings"
     },
     {
+      "symbol": "disableBrowserExternalNavigation",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "(Managed settings only) Set to `true` to turn off external browsing in the desktop app's Browser pane. Neither users nor Claude can navigate to external sites, and localhost dev server previews are unaffected. The value must be the JSON boolean `true`; the string `\"true\"` is ignored",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "settings"
+    },
+    {
       "symbol": "disableBundledSkills",
       "type": "config_key",
       "first_seen": "2.1.169",
@@ -6181,6 +6277,20 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "Set to `\"disable\"` to prevent Claude Code from registering the `claude-cli://` protocol handler with the operating system when you send the first prompt of an interactive session. Deep links let external tools open a Claude Code session with a pre-filled prompt. Useful in environments where protocol handler registration is restricted or managed separately",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "settings"
+    },
+    {
+      "symbol": "disableMobileSimulatorTools",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "(Managed settings only) Set to `true` to block Claude's tools for the desktop app's iOS Simulator pane. Users keep manual use of the pane; only Claude's access is removed. The value must be the JSON boolean `true`; any other value is ignored, and a malformed value such as `\"true\"` or `1` logs a warning",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -6394,6 +6504,20 @@
       "category": "settings"
     },
     {
+      "symbol": "externalEditorContext",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Default**: `false`. Prepend Claude's previous response as `#`-commented context when you open the external editor with `Ctrl+G`. Appears in `/config` as **Show last response in external editor**",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
+    },
+    {
       "symbol": "extraKnownMarketplaces",
       "type": "config_key",
       "first_seen": "2.0.9",
@@ -6542,10 +6666,10 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "@internal Cloud gateway URL to pre-fill and auto-connect to during login. Typically set in local managed settings alongside forceLoginMethod: \"gateway\" so users never type the URL. Hidden from public SDK types until Cloud gateway is documented.",
-      "description_source": "binary",
+      "description": "Pre-fills and locks the gateway URL on the `/login` Cloud gateway screen. Either this key or `forceLoginMethod: \"gateway\"` surfaces that screen; set both so the URL is filled in. Honored only at the managed policy tier; ignored in user and project settings. See Claude apps gateway",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
-      "category": "settings-internal"
+      "category": "settings"
     },
     {
       "symbol": "forceLoginMethod",
@@ -6730,6 +6854,18 @@
       "category": "settings"
     },
     {
+      "symbol": "modelProposedGoals",
+      "type": "config_key",
+      "first_seen": "2.1.227",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
       "symbol": "otelHeadersHelper",
       "type": "config_key",
       "first_seen": "1.0.53",
@@ -6767,6 +6903,20 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
+    },
+    {
+      "symbol": "permissionExplainerEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Default**: `true`. Show a model-generated explanation of the command when you press `Ctrl+E` on a Bash or PowerShell permission prompt. Set to `false` to turn the shortcut off",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
     },
     {
       "symbol": "permissions",
@@ -8156,6 +8306,20 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
+    },
+    {
+      "symbol": "teammateDefaultModel",
+      "type": "config_key",
+      "first_seen": "2.1.226",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Default model for agent team teammates when the spawn prompt doesn't specify one. Set to a model alias such as `\"sonnet\"`, or `null` to inherit the lead's current `/model` selection. Appears in `/config` as **Default teammate model**",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "global-config"
     },
     {
       "symbol": "teammateMode",
@@ -9972,9 +10136,45 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_BRIDGE_REATTACH_NO_BACKFILL",
+      "type": "env_var",
+      "first_seen": "2.1.227",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_BRIDGE_REATTACH_OUTBOUND_ONLY",
       "type": "env_var",
       "first_seen": "2.1.147",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_BRIDGE_REATTACH_OWNER_ACCT",
+      "type": "env_var",
+      "first_seen": "2.1.227",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_BRIDGE_REATTACH_OWNER_ORG",
+      "type": "env_var",
+      "first_seen": "2.1.227",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -10404,6 +10604,18 @@
       "symbol": "CLAUDE_CODE_ARTIFACT_COMMENTS_AUTOREACT",
       "type": "env_var",
       "first_seen": "2.1.221",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_ARTIFACT_COMMENT_RESPONDER",
+      "type": "env_var",
+      "first_seen": "2.1.227",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -13081,6 +13293,19 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "Set by Claude Code, not by you: in sessions that bind an inbox socket, Claude Code exports that socket's path to hooks and Bash commands when it binds the socket. In a session that starts with messaging on, Claude Code binds the socket before any hook runs. Other sessions on the machine deliver messages to this path. Each session exports its own socket rather than one inherited from a parent, and messages arriving on it go through the session's inbound controls. Settings `env` blocks can't set it. Requires Claude Code v2.1.224 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MESSAGING_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.228",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set by Claude Code, not by you: in sessions that bind an inbox socket, Claude Code exports this per-session token to hooks and Bash commands alongside `CLAUDE_CODE_MESSAGING_SOCKET`. A script posting to the socket can send `{\"type\":\"auth\",\"token\":\"<token>\"}` as its first line to prove it belongs to the session. The own-child rules say when Claude Code consults it. Each session exports its own token, never one inherited from a parent session. Settings `env` blocks can't set it. Requires Claude Code v2.1.228 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
