@@ -51,15 +51,25 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   appended as behavior grew, so truncation preserves correct text that a blanket
   removal would discard.
 
-  A record's description becomes empty only when both conditions hold: its first
-  sentence already names something later, and the binary lane has no description
-  for it to fall back on. `MCP_OAUTH_CALLBACK_PORT` is the shape — blank before
-  2.1.30, the release that introduced the `--callback-port` its only sentence
-  points at. The binary lane does not record env var help text, which is why that
-  fallback is missing there.
+  A description becomes empty when the binary lane has no text to fall back on and
+  either of two things is true. Its first sentence already names something later —
+  `MCP_OAUTH_CALLBACK_PORT` is blank before 2.1.30, the release that introduced the
+  `--callback-port` its only sentence points at. Or the sentence that trips the
+  guard is _correcting_ the ones before it, in which case the prefix cannot be
+  published either.
 
-  Nothing changes at the newest version: the guard cannot fire there, because no
-  release compares greater and no `first_seen` is later.
+  That second case empties records whose opening sentence reads fine.
+  `ENABLE_TOOL_SEARCH` has eight sentences and only the last is a "Before v2.1.221"
+  correction, yet the whole record is blank below that release. A correction is
+  known to invalidate something earlier, and sentence granularity cannot say which,
+  so the honest answer is to publish none of it rather than guess which half
+  survived. The binary lane does not record env var help text, which is why these
+  cases are env vars.
+
+  Nothing changes at the newest version. The guard skips that snapshot outright
+  rather than relying on no release comparing greater — a release can be known to
+  the binary lane before the changelog has a heading for it, so that property was
+  never guaranteed by the data.
 
 ---
 

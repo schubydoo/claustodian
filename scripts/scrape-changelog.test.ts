@@ -1623,6 +1623,44 @@ describe('truncateToVersion', () => {
     ).toBe(false);
   });
 
+  it('only treats a correction as one when it is still ahead of the snapshot', () => {
+    // Both markers live in the SAME sentence, which is the only arrangement that
+    // exercises the comparison: the sentence trips on its forward half (v2.1.300)
+    // while its backward half (v2.1.100) is already settled history at 2.1.196, so
+    // it corrects nothing there and the prefix survives.
+    const text =
+      'Accepts a list. Before v2.1.100 it was opt-in, and since v2.1.300 it takes a map.';
+    expect(truncateToVersion(text, '2.1.196', firstSeen, releases)).toBe('Accepts a list.');
+    // Below v2.1.100 the correction IS still ahead, so nothing survives.
+    expect(truncateToVersion(text, '1.0.62', firstSeen, releases)).toBe('');
+  });
+
+  it('treats the trailing "X and earlier" form as a correction too', () => {
+    // The second capture group of the dated pattern. Reversing the phrasing must not
+    // change the outcome.
+    expect(
+      truncateToVersion(
+        'Accepts a list. On v2.1.300 and earlier it was opt-in.',
+        '2.1.196',
+        firstSeen,
+        releases
+      )
+    ).toBe('');
+  });
+
+  it('treats an undated backward phrase as a correction', () => {
+    // No version to compare, so it cannot be shown to be settled history. The safe
+    // reading is that it still corrects the prefix.
+    expect(
+      truncateToVersion(
+        'Accepts a map. On earlier versions it took v2.1.300 only.',
+        '2.1.196',
+        firstSeen,
+        releases
+      )
+    ).toBe('');
+  });
+
   it('does not end a sentence on an abbreviation', () => {
     // The future reference sits in the fragment straight after the abbreviation,
     // which is the only arrangement where the split changes the outcome.
@@ -1664,16 +1702,31 @@ describe('assembleSnapshots — a docs description never backfills onto history'
   const at = (snaps: ReturnType<typeof assembleSnapshots>, v: string) =>
     snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === '/review');
 
-  it('drops the sentence a historical snapshot cannot support, and keeps it at the tip', () => {
+  it('drops a backward-looking marker AND the prefix it corrects, keeping both at the tip', () => {
     // The live defect: data/versions/2.1.200.json described `/review` with
     // "Before v2.1.223, `/review` was a separate command" — a 2.1.200 snapshot
     // describing 2.1.223, in text that says so.
+    //
+    // Keeping the prefix would be worse than the defect, not better: "Alias of
+    // code-review" is exactly what the removed sentence says was NOT true until
+    // 2.1.223, so publishing it alone turns a self-refuting description into a
+    // quietly wrong one. Nothing survives; at the tip the whole text does.
     const snaps = assembleSnapshots(
       [review('Alias of code-review. Before v2.1.223, `/review` was a separate command.')],
       blocks
     );
-    expect(at(snaps, '2.1.200')?.description).toBe('Alias of code-review.');
+    expect(at(snaps, '2.1.200')?.description).toBe('');
     expect(at(snaps, '2.1.230')?.description).toContain('Before v2.1.223');
+  });
+
+  it('keeps the prefix when the marker is FORWARD-looking', () => {
+    // Direction is the whole distinction. "As of vX" APPENDS behaviour, so the
+    // prefix stood on its own before X and truncating to it is right.
+    const snaps = assembleSnapshots(
+      [review('Review the current diff. As of v2.1.223, it also accepts a PR number.')],
+      blocks
+    );
+    expect(at(snaps, '2.1.200')?.description).toBe('Review the current diff.');
   });
 
   it('prefers the era-correct binary text over truncating', () => {
@@ -1697,8 +1750,31 @@ describe('assembleSnapshots — a docs description never backfills onto history'
     // changelog alone left `data/versions/2.1.181.json` publishing "From v2.1.182,
     // named shorthand keys are also accepted" — the defect this guard removes.
     const snaps = assembleSnapshots(
-      [review('Open the settings interface. From v2.1.223, shorthand keys are accepted.')],
-      // 2.1.223 is deliberately NOT a block here; it is known only to the binary lane.
+      [review('Open the settings interface. From v2.1.226, shorthand keys are accepted.')],
+      // 2.1.226 is deliberately NOT a block — it is known only to the binary lane, and
+      // it sits BELOW the newest block, which is the real shape: 2.1.182 and 2.1.213
+      // are mid-range releases with no changelog heading. Using a version that IS a
+      // block would make the `observedVersions` argument inert and the test unfailable.
+      [
+        { version: '2.1.150', bullets: [] },
+        { version: '2.1.200', bullets: [] },
+        { version: '2.1.230', bullets: [] },
+      ],
+      undefined,
+      undefined,
+      undefined,
+      ['2.1.226']
+    );
+    expect(at(snaps, '2.1.200')?.description).toBe('Open the settings interface.');
+  });
+
+  it('never rewrites the newest snapshot, even when a release above it is known', () => {
+    // "Nothing changes at the newest version" held only because no release and no
+    // `first_seen` happened to exceed it. A docs page can cite a release the
+    // changelog has no heading for yet, and that would silently rewrite the one
+    // snapshot this change promises to leave alone. Both inputs are clamped now.
+    const snaps = assembleSnapshots(
+      [review('Review the current diff. As of v2.1.300, it also accepts a PR number.')],
       [
         { version: '2.1.150', bullets: [] },
         { version: '2.1.200', bullets: [] },
@@ -1706,9 +1782,40 @@ describe('assembleSnapshots — a docs description never backfills onto history'
       undefined,
       undefined,
       undefined,
-      ['2.1.223']
+      ['2.1.300'] // known to the binary lane, newer than every snapshot
     );
-    expect(at(snaps, '2.1.200')?.description).toBe('Open the settings interface.');
+    expect(at(snaps, '2.1.200')?.description).toBe(
+      'Review the current diff. As of v2.1.300, it also accepts a PR number.'
+    );
+  });
+
+  it('ignores a first_seen above the newest snapshot, not just a release above it', () => {
+    // The other half of the same clamp. `enrichWithDocs` stamps a NON-estimated
+    // `first_seen` from `doc_min_version`, so a docs page citing a release the
+    // changelog has no heading for yet puts a date above the tip into the map — and
+    // that would rewrite the newest snapshot, the one promised untouched.
+    const snaps = assembleSnapshots(
+      [
+        review('Rewind the session. Aliases: `/undo`'),
+        {
+          symbol: '/undo',
+          type: 'command',
+          first_seen: '2.1.300',
+          removed_in: null,
+          status: 'active',
+          provenance: 'docs',
+          confidence: 'high',
+          description: 'Undo.',
+          source_url: null,
+          category: 'command',
+        },
+      ],
+      [
+        { version: '2.1.150', bullets: [] },
+        { version: '2.1.200', bullets: [] },
+      ]
+    );
+    expect(at(snaps, '2.1.200')?.description).toBe('Rewind the session. Aliases: `/undo`');
   });
 
   it('does not trust an estimated first_seen as proof a symbol did not exist', () => {

@@ -615,24 +615,54 @@ function recordKeysFor(token: string): string[] {
   return [];
 }
 
-export function describesFutureState(
+/**
+ * The single latest version a text names, by either half of the rule, or null.
+ *
+ * Both halves depend only on the text, so this is computed once per distinct string
+ * and then compared against each version. Without the memo `deanachronize` rescans
+ * every description once per snapshot it is live in, and `matchAll` allocates an
+ * iterator and a match object per hit — on the order of (records x versions) scans
+ * of text that never changes between them.
+ *
+ * The memo is created per `assembleSnapshots` call, so it can never be read with a
+ * different `firstSeenByKey` or `releases` than it was filled under.
+ */
+export function latestVersionNamed(
   text: string,
-  version: string,
   firstSeenByKey: ReadonlyMap<string, string>,
-  releases: ReadonlySet<string>
-): boolean {
+  releases: ReadonlySet<string>,
+  memo?: Map<string, string | null>
+): string | null {
+  const cached = memo?.get(text);
+  if (cached !== undefined) return cached;
+
+  let latest: string | null = null;
+  const consider = (v: string) => {
+    if (latest === null || compareVersionsAsc(v, latest) > 0) latest = v;
+  };
   for (const match of text.matchAll(VERSION_IN_PROSE)) {
     const named = match[1] as string;
-    if (!releases.has(named)) continue;
-    if (compareVersionsAsc(named, version) > 0) return true;
+    if (releases.has(named)) consider(named);
   }
   for (const match of text.matchAll(TOKEN_IN_PROSE)) {
     for (const key of recordKeysFor(match[1] as string)) {
       const firstSeen = firstSeenByKey.get(key);
-      if (firstSeen !== undefined && compareVersionsAsc(firstSeen, version) > 0) return true;
+      if (firstSeen !== undefined) consider(firstSeen);
     }
   }
-  return false;
+  memo?.set(text, latest);
+  return latest;
+}
+
+export function describesFutureState(
+  text: string,
+  version: string,
+  firstSeenByKey: ReadonlyMap<string, string>,
+  releases: ReadonlySet<string>,
+  memo?: Map<string, string | null>
+): boolean {
+  const latest = latestVersionNamed(text, firstSeenByKey, releases, memo);
+  return latest !== null && compareVersionsAsc(latest, version) > 0;
 }
 
 /**
@@ -665,27 +695,80 @@ function sentencesOutsideCode(text: string): string[] {
 }
 
 /**
+ * True when a sentence's era marker looks BACKWARD — it corrects the sentences
+ * before it rather than adding behaviour after them.
+ *
+ * The direction decides whether a prefix may be published. "As of v2.1.196, …" and
+ * "From v2.1.182, …" append; the prefix stood on its own before that release, so
+ * keeping it is right. "Before v2.1.221, …" and "On earlier versions, …" exist to
+ * say the prefix was NOT true yet, so keeping the prefix and dropping the marker
+ * publishes the later behaviour with the qualifier that revealed it removed.
+ *
+ * `CLAUDE_CODE_RESUME_INTERRUPTED_TURN` is the live case, reachable because
+ * `binary-descriptions.json` holds no `env_var:` key at all, so an env var never has
+ * binary text to fall back on. Its docs text ends "To turn this off, unset the
+ * variable or set it to `0`. Before v2.1.221, Claude Code ignored `0` …". Truncating
+ * at 2.1.200 would publish the first sentence — which the removed one says was false
+ * until 2.1.221 — turning a self-refuting description into a quietly wrong one.
+ */
+const BACKWARD_MARKER_DATED =
+  /\b(?:before|prior to|until)\s+v?(\d+\.\d+\.\d+)|\bv?(\d+\.\d+\.\d+)\s+and earlier\b/gi;
+const BACKWARD_MARKER_UNDATED = /\bon earlier versions\b|\bin earlier releases\b/i;
+
+/**
+ * True when a sentence corrects what came before it AT THIS VERSION.
+ *
+ * The marker's own version has to be compared, not just matched. "before v2.1.212"
+ * read at a 2.1.215 snapshot is settled history that corrects nothing there, and a
+ * sentence carrying both directions — "Before v2.1.100 this was opt-in; as of
+ * v2.1.230 it also accepts a map" — trips on the FORWARD half at 2.1.150 while its
+ * backward half is already in the past.
+ */
+function correctsThePrefix(sentence: string, version: string): boolean {
+  for (const match of sentence.matchAll(BACKWARD_MARKER_DATED)) {
+    const named = (match[1] ?? match[2]) as string;
+    if (compareVersionsAsc(named, version) > 0) return true;
+  }
+  // An undated phrase names no boundary to compare, so it is treated as correcting.
+  return BACKWARD_MARKER_UNDATED.test(sentence);
+}
+
+/**
  * Keep the leading sentences that name nothing later than `version`, and drop the
- * rest. "Nothing later" is the whole of the check — a sentence can still be wrong
+ * rest — unless the sentence that trips the guard is correcting them, in which case
+ * nothing survives. "Nothing later" is the whole of the check — a sentence can still be wrong
  * for its version in a way no rule here can see.
  *
  * These descriptions are an era-correct opening followed by sentences appended as
  * behaviour grew — "Override the API endpoint … As of v2.1.196, …". Discarding the
  * whole string would throw away correct text, so truncation keeps what the version
- * can carry. A record empties only when its FIRST sentence already names the
- * future, and only when the binary lane has no description to fall back on —
- * `MCP_OAUTH_CALLBACK_PORT` before 2.1.30 is the shape. Empty is the honest answer
- * there: no leading sentence avoids naming the future.
+ * can carry. A record empties when the binary lane has no text to fall back on AND
+ * either its FIRST sentence already names the future — `MCP_OAUTH_CALLBACK_PORT`
+ * before 2.1.30 — or the sentence that trips the guard is CORRECTING the ones before
+ * it, in which case the prefix goes with it.
+ *
+ * ⚠️ The second case empties records whose opening sentence is perfectly fine.
+ * `ENABLE_TOOL_SEARCH` has eight sentences, only the last of which is a "Before
+ * v2.1.221" correction, and the whole record empties below that release. That is
+ * deliberate but blunt: the correction is known to invalidate SOMETHING earlier, and
+ * sentence granularity cannot say which, so the honest answer is to publish none of
+ * it. Narrowing this needs sub-sentence attribution, which is a different project.
  */
 export function truncateToVersion(
   text: string,
   version: string,
   firstSeenByKey: ReadonlyMap<string, string>,
-  releases: ReadonlySet<string>
+  releases: ReadonlySet<string>,
+  memo?: Map<string, string | null>
 ): string {
   const kept: string[] = [];
   for (const sentence of sentencesOutsideCode(text)) {
-    if (describesFutureState(sentence, version, firstSeenByKey, releases)) break;
+    if (describesFutureState(sentence, version, firstSeenByKey, releases, memo)) {
+      // The marker corrects what came before it, so the prefix cannot be published
+      // either. Empty is the same answer `MCP_OAUTH_CALLBACK_PORT` already gets.
+      if (correctsThePrefix(sentence, version)) return '';
+      break;
+    }
     kept.push(sentence);
   }
   return kept.join('').trim();
@@ -775,6 +858,7 @@ export function assembleSnapshots(
    * "From v2.1.182, named shorthand keys are also accepted": a 2.1.181 snapshot
    * describing 2.1.182, which is the very defect this guard exists to remove.
    */
+  const newestSnapshot = versionsOldestFirst[versionsOldestFirst.length - 1];
   const releases = new Set([...versionsOldestFirst, ...(observedVersions ?? [])]);
 
   /**
@@ -784,6 +868,14 @@ export function assembleSnapshots(
    * guess `describesFutureState` refuses to make for an unknown symbol. `/undo`
    * (2.1.108) carries the flag, and `/rewind`'s description names `/undo`, so
    * trusting it rewrites `/rewind` across its whole history on a guess.
+   *
+   * ⚠️ Even a NON-estimated date is "first observed, not necessarily first existed"
+   * — `schema/symbol.schema.json` says so, and `enrichWithBinary` sets it from the
+   * earliest archived bundle that contained the symbol. So this half still reads
+   * "not extracted before X" as "absent before X", a weaker form of the guess the
+   * release half refuses to make for an unknown dotted triple. It is tolerable only
+   * because the direction is safe: it removes text and never asserts a date. Do not
+   * reuse this map anywhere that would publish one.
    */
   const firstSeenByKey = new Map(
     records
@@ -794,13 +886,31 @@ export function assembleSnapshots(
   /**
    * Last resort when no era-correct binary text exists: keep the leading sentences
    * that name nothing later than the version. A description that already names
-   * nothing later is returned untouched, so the common case allocates nothing.
+   * nothing later is returned untouched, and each description's analysis is
+   * memoised, so a description is scanned once however many snapshots it is live in.
    */
+  /** Per-description analysis, reused across every snapshot the record is live in. */
+  const namedMemo = new Map<string, string | null>();
+
+  /**
+   * The guard's single entry point, so the newest snapshot is left alone by
+   * construction rather than by luck.
+   *
+   * Clamping the EVIDENCE instead — dropping releases and dates above the tip out of
+   * the maps — was worse. `check-new-release.yml` triggers off the GitHub Releases
+   * feed, not the changelog, so `observedVersions` can hold a version with no
+   * `## X.Y.Z` heading yet. Dropping it would publish "From v2.1.232, …" unguarded
+   * into every historical snapshot, which is the defect this guard exists to remove.
+   * Skip the DECISION at the tip; keep every piece of evidence everywhere else.
+   */
+  const isAnachronistic = (text: string, version: string): boolean =>
+    version !== newestSnapshot &&
+    describesFutureState(text, version, firstSeenByKey, releases, namedMemo);
+
   const deanachronize = (record: SymbolRecord, version: string): SymbolRecord => {
     const text = record.description;
-    if (text === '' || !describesFutureState(text, version, firstSeenByKey, releases))
-      return record;
-    const truncated = truncateToVersion(text, version, firstSeenByKey, releases);
+    if (text === '' || !isAnachronistic(text, version)) return record;
+    const truncated = truncateToVersion(text, version, firstSeenByKey, releases, namedMemo);
     // `description_source` names where the text came from, and the schema says it
     // is absent when the description is empty. Keeping it on an emptied record
     // would assert "the official docs say this" while saying nothing.
@@ -843,7 +953,7 @@ export function assembleSnapshots(
     if (
       categorized.description !== '' &&
       isCurrentDescriptionEra(eras, version) &&
-      !describesFutureState(categorized.description, version, firstSeenByKey, releases)
+      !isAnachronistic(categorized.description, version)
     )
       return categorized;
     const era = descriptionAt(eras, version);
