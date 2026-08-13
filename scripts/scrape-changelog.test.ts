@@ -323,6 +323,49 @@ describe('isSubprocessFlagBullet', () => {
     expect([...subprocessFlagExamples(unclosed)]).toEqual(['--topo-order']);
   });
 
+  it('flags a bare example clause opening straight off the word "flags"', () => {
+    // 2.1.229 — git/gh flags listed without an "e.g.," lead-in, which wrongly
+    // seeded `--force`/`--amend`/`--no-verify` as Claude Code flags.
+    const dangerous =
+      '- Changed `/commit-push-pr` so git/gh commands with dangerous flags (`--force`, `--amend`, `--no-verify`, etc.) are no longer auto-approved';
+    expect(isSubprocessFlagBullet(dangerous)).toBe(true);
+    expect([...subprocessFlagExamples(dangerous)].sort()).toEqual([
+      '--amend',
+      '--force',
+      '--no-verify',
+    ]);
+  });
+
+  it('flags a bare example clause for a non-git subprocess tool', () => {
+    // 2.1.214 — docker's own daemon-redirect flags.
+    const docker =
+      "- Added permission prompts for `docker` commands (including the Podman `docker` shim) carrying daemon-redirect flags (`--url`, `--connection`, `--identity`, and Podman's remote mode) that previously ran without one";
+    expect([...subprocessFlagExamples(docker)].sort()).toEqual([
+      '--connection',
+      '--identity',
+      '--url',
+    ]);
+  });
+
+  it('does not flag a bullet whose only parenthetical is an issue link', () => {
+    // 2.1.47 — "git … flag (anthropics/claude-code#25750)". The clause holds no
+    // flag token, so the bullet is left to normal extraction.
+    const issueLink =
+      '- Fixed read-only git commands triggering FSEvents file watcher loops on macOS by adding --no-optional-locks flag (anthropics/claude-code#25750)';
+    expect(isSubprocessFlagBullet(issueLink)).toBe(false);
+  });
+
+  it('keeps a first-party flag when the bare clause follows an unrelated tool word', () => {
+    // The clause must open off "flags"; a first-party flag introduced elsewhere
+    // in the bullet survives.
+    const firstParty = '- Added `--git-notes` for git integration (writes a note per commit)';
+    expect(isSubprocessFlagBullet(firstParty)).toBe(false);
+    const keys = [
+      ...collectChangelogSymbols([{ version: '2.1.41', bullets: [firstParty] }]).keys(),
+    ];
+    expect(keys).toContain('cli_flag:--git-notes');
+  });
+
   it('collectChangelogSymbols keeps a first-party flag that trails the example clause', () => {
     const trailing =
       '- Added support for additional `git` flags (e.g., `--topo-order`) and added `--foo`';
