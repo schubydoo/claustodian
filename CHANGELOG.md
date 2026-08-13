@@ -42,6 +42,7 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   `--dry-run` are real flags the binary lane observes independently; they keep
   their records and pick up correct descriptions. `/code-review`, `/import`,
   `/reload-plugins` and `/review` gain their documented descriptions.
+
 - **Six subprocess flags no longer publish as Claude Code CLI flags.** The changelog
   lane suppresses a subprocess tool's own flags when a bullet lists them as examples,
   but the rule only recognised an `(e.g., …)` lead-in. Two bullets write the example
