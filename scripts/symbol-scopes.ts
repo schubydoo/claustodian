@@ -25,11 +25,37 @@
  *
  * SOURCE. An exhaustive sweep of `claude <path> --help` at 2.1.226, the same
  * first-party `help` evidence PROMOTED_BINARY_SYMBOLS already uses for
- * descriptions. Every top-level subcommand was enumerated AND every
- * sub-subcommand of each (depth two — `plugin eval`, `mcp add`,
- * `plugin marketplace add`, `auth login`, …), reading the `Options:` block of
- * each. Anything the bare `claude --help` accepts (65 flags) is excluded, since a
- * flag valid top-level must stay unscoped: a non-empty list asserts the opposite.
+ * descriptions, reading the `Options:` block of every invocation the help output
+ * itself names. The walk now recurses to whatever depth the binary goes rather
+ * than stopping at a fixed one; at 2.1.226 that bottoms out at depth three —
+ * `plugin eval init` and `plugin marketplace {add,list,remove,update}`, the only
+ * five, with no depth four. Anything the bare `claude --help` accepts (65 flags)
+ * is excluded, since a flag valid top-level must stay unscoped: a non-empty list
+ * asserts the opposite.
+ *
+ * The first capture stopped at depth two and so missed all five, which cost four
+ * entries: `--interactive` (`plugin eval init`), `--json`
+ * (`plugin marketplace list`) and `--scope` (`plugin marketplace add`,
+ * `plugin marketplace remove`) each published an INCOMPLETE list — a false "no"
+ * on a real invocation, since completeness is the whole contract — and `--sparse`
+ * was absent. Depth is therefore a property to re-derive, not to assume: run
+ * `claude <path> --help` down to exhaustion and stop when a level names no
+ * further commands.
+ *
+ * ⚠️ A HIDDEN flag defeats the exclusion rule, and silently. The rule reads
+ * "accepted by bare `claude --help`", but a flag registered with `.hideHelp()`
+ * never appears there, so it is never excluded — and if some subcommand also
+ * accepts a flag of that name, it acquires that subcommand as its COMPLETE scope
+ * and the record then asserts it is invalid on bare `claude`. `--remote` was
+ * exactly this: hidden top-level since 1.0.68 as a deprecated alias for `--cloud`
+ * (the 2.1.226 bundle tests `t==="--cloud"||…||t==="--remote"` in top-level
+ * argv), documented that way on the official `cli-reference` page, yet published
+ * as `['plugin tag']` from `claude plugin tag --remote <name>`. It carries no
+ * scope now. A help sweep CANNOT find this class — the flag is invisible to it by
+ * construction — so cross-check the table against the top-level flags the docs
+ * lane parses and against `hidden_eras` in data/binary-observations.json.
+ * `--interview` is the same hidden shape without the harm: `.hideHelp()` on the
+ * `plugin eval init` handler, so the sweep missed it but nothing false shipped.
  *
  * Five entries the sweep cannot reach are carried over from the 2.1.202 capture.
  * The four `remote-control` ones come from the official docs page —
@@ -91,8 +117,19 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--env', ['mcp add']],
   ['--force', ['install', 'plugin init', 'plugin tag']],
   ['--header', ['mcp add']],
-  ['--interactive', ['project purge']],
-  ['--json', ['agents', 'auth status', 'plugin eval', 'plugin list', 'ultrareview']],
+  ['--interactive', ['plugin eval init', 'project purge']],
+  ['--interview', ['plugin eval init']],
+  [
+    '--json',
+    [
+      'agents',
+      'auth status',
+      'plugin eval',
+      'plugin list',
+      'plugin marketplace list',
+      'ultrareview',
+    ],
+  ],
   ['--judge-model', ['plugin eval']],
   ['--keep-data', ['plugin uninstall']],
   ['--keep-temp', ['plugin eval']],
@@ -107,7 +144,6 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--prune', ['plugin uninstall']],
   ['--publish-report', ['plugin eval']],
   ['--push', ['plugin tag']],
-  ['--remote', ['plugin tag']],
   ['--report', ['plugin eval']],
   ['--runs', ['plugin eval']],
   ['--sandbox', ['remote-control']],
@@ -122,11 +158,14 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
       'plugin disable',
       'plugin enable',
       'plugin install',
+      'plugin marketplace add',
+      'plugin marketplace remove',
       'plugin prune',
       'plugin uninstall',
       'plugin update',
     ],
   ],
+  ['--sparse', ['plugin marketplace add']],
   ['--spawn', ['remote-control']],
   ['--sso', ['auth login']],
   ['--strict', ['plugin validate']],
