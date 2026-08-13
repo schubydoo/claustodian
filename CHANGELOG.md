@@ -42,6 +42,24 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   `--dry-run` are real flags the binary lane observes independently; they keep
   their records and pick up correct descriptions. `/code-review`, `/import`,
   `/reload-plugins` and `/review` gain their documented descriptions.
+- **Six subprocess flags no longer publish as Claude Code CLI flags.** The changelog
+  lane suppresses a subprocess tool's own flags when a bullet lists them as examples,
+  but the rule only recognised an `(e.g., …)` lead-in. Two bullets write the example
+  list as a bare parenthetical opening straight off the word "flags", and both leaked:
+
+  - 2.1.214 — "`docker` commands … carrying daemon-redirect flags (`--url`,
+    `--connection`, `--identity`, …)" published `--url`, `--connection` and
+    `--identity` as `cli_flag` records with `confidence: "high"` and no evidence in
+    any other lane. They are removed from every snapshot from 2.1.214 on.
+  - 2.1.229 — "`/commit-push-pr` so git/gh commands with dangerous flags (`--force`,
+    `--amend`, `--no-verify`, etc.)" would have added `--amend`, moved `--no-verify`
+    from `provenance: "binary"` / `first_seen: "2.1.224"` to `provenance: "changelog"`
+    / `first_seen: "2.1.229"` (dropping its help description), and flipped `--force`
+    from `provenance: "docs"` to `provenance: "changelog"`. None of that now happens.
+
+  The rule still requires a subprocess tool name, the word "flags", and at least one
+  flag token inside the clause, so a bullet introducing a genuine first-party flag is
+  untouched.
 
 ---
 
