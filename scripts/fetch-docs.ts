@@ -144,6 +144,22 @@ function minVersion(cell: string): string | null {
  * cell's first backtick span; skips `claude sub command` rows and prose.
  */
 function symbolFromInner(inner: string): { symbol: string; type: DocSymbolType } | null {
+  // A slash command names the WHOLE cell (`/compact`, optionally `/compact <arg>`)
+  // — anchored at the start. An embedded slash in a path or capability name
+  // (`claude/channel`, `commands/foo`, `tools/src`) has a leading segment before
+  // the `/`, so it is prose about channels/plugins/tools, not a command.
+  //
+  // Tested BEFORE the flag scan, because the commands page writes a command's
+  // arguments into the same span: `` `/reload-plugins [--force]` ``. Scanning for
+  // a flag first took `--force` as the row's subject, which both lost the
+  // `/reload-plugins` command AND published `--force` as a top-level CLI flag
+  // carrying the *command's* description ("Reload all active plugins to apply
+  // pending changes without restarting…"). Same for `/code-review … [--fix] …`
+  // and `/import [codex|gemini] [--dry-run] [--yes]`. A bracketed argument of a
+  // slash command is not a `claude` CLI flag; the anchor is what tells them apart.
+  const command = inner.match(/^(\/[a-z][a-z0-9-]+)/);
+  if (command?.[1]) return { symbol: command[1], type: 'command' };
+
   // Capitals are matched so a camelCase flag is seen whole and rejected by the
   // grammar, not truncated at its first capital. cli-reference.md writes the pair
   // as `--allowedTools`, `--allowed-tools`; a `/--[a-z][a-z0-9-]+/` match stops at
@@ -152,13 +168,6 @@ function symbolFromInner(inner: string): { symbol: string; type: DocSymbolType }
   for (const token of inner.match(/--[A-Za-z][A-Za-z0-9-]*/g) ?? []) {
     if (/^--[a-z][a-z0-9-]+$/.test(token)) return { symbol: token, type: 'cli_flag' };
   }
-
-  // A slash command names the WHOLE cell (`/compact`, optionally `/compact <arg>`)
-  // — anchored at the start. An embedded slash in a path or capability name
-  // (`claude/channel`, `commands/foo`, `tools/src`) has a leading segment before
-  // the `/`, so it is prose about channels/plugins/tools, not a command.
-  const command = inner.match(/^(\/[a-z][a-z0-9-]+)/);
-  if (command?.[1]) return { symbol: command[1], type: 'command' };
 
   const env = inner.match(/\b([A-Z][A-Z0-9_]{3,})\b/);
   if (env?.[1] && !ENV_DENYLIST.has(env[1])) return { symbol: env[1], type: 'env_var' };
