@@ -554,12 +554,233 @@ export interface BinaryScopeWindow {
   scopes: readonly string[];
 }
 
+/**
+ * A description that names state the snapshot cannot have yet.
+ *
+ * `docs.json` is ONE capture of the current documentation — there is no
+ * per-version docs history — so a docs-sourced description is evidence about the
+ * tip and nothing else. Publishing it unchanged into every historical snapshot
+ * backfills today's answer into the past, which is the thing invariant 4 exists
+ * to forbid, and it produces text that refutes itself: `data/versions/2.1.200.json`
+ * described `/review` with "Before v2.1.223, `/review` was a separate command".
+ *
+ * The check is self-consistency against the dataset rather than a heuristic about
+ * prose. A description is anachronistic at `version` when it names either
+ *   - a release later than `version` (`v2.1.223`, `2.1.223`), or
+ *   - a backticked symbol of any of the four surfaces whose OWN `first_seen` is
+ *     later than `version` — `/code-review` at 2.1.150 named `--post`, dated
+ *     2.1.227, and `DISABLE_TELEMETRY` at 0.2.100 named `DISABLE_GROWTHBOOK`,
+ *     dated 2.1.124. The span must hold the symbol ALONE: a symbol inside a
+ *     multi-word span such as `` `claude --cloud` `` is not matched. That gap
+ *     under-corrects, since the guard only ever removes text.
+ *
+ * Neither half guesses. A dotted triple counts only when it is a release this
+ * dataset actually has, and a symbol counts only when its date is evidence:
+ *
+ *   - `terminalProgressBarEnabled` is documented as "Ghostty 1.2.0+, and iTerm2
+ *     3.6.6+". Those are other products' versions. Compared as releases, `3.6.6`
+ *     beats every Claude Code version ever shipped, so a bare-triple rule reads
+ *     correct current prose as anachronistic AT THE TIP, rewriting that record
+ *     everywhere including `latest.json`. An IPv4 literal (`127.0.0.1` yields
+ *     `127.0.0`) and a four-part build number do the same. Requiring a known
+ *     release rejects all three, because none of them is one.
+ *   - A `first_seen_estimated` date is an UPPER BOUND, not evidence — the schema
+ *     says so. `--help` is stamped 2.1.200 and has existed since the earliest
+ *     archived release. Treating that as proof of absence is the same guess this
+ *     function refuses to make for a symbol it has never heard of, so an
+ *     estimated record is excluded from the map by its builder.
+ */
+const VERSION_IN_PROSE = /\bv?(\d+\.\d+\.\d+)\b/g;
+const TOKEN_IN_PROSE = /`([^`\s]+)`/g;
+
+/**
+ * The record keys a backticked token could name, by its own spelling.
+ *
+ * All four surfaces appear in these descriptions, not just flags and commands:
+ * `DISABLE_TELEMETRY`'s docs text names `` `DISABLE_GROWTHBOOK` `` (2.1.124) and
+ * publishes it at 0.2.100. Matching only `--flag` and `/command` left every env-var
+ * and settings-key reference unchecked.
+ *
+ * A BARE lowercase word is deliberately excluded. `ultracode` and `env` are real
+ * settings keys and also ordinary words a description can backtick meaning
+ * something else, and a false positive here truncates correct text. camelCase and
+ * dotted keys carry their own evidence of being an identifier, so the rule stays
+ * on tokens that cannot be mistaken for prose.
+ */
+function recordKeysFor(token: string): string[] {
+  if (/^--[a-z][a-z0-9-]*$/.test(token)) return [`cli_flag:${token}`];
+  if (/^\/[a-z][a-z0-9-]*$/.test(token)) return [`command:${token}`];
+  if (/^[A-Z][A-Z0-9_]{3,}$/.test(token)) return [`env_var:${token}`];
+  if (/[a-z][A-Z]/.test(token) || token.includes('.')) return [`config_key:${token}`];
+  return [];
+}
+
+/**
+ * The single latest version a text names, by either half of the rule, or null.
+ *
+ * Both halves depend only on the text, so this is computed once per distinct string
+ * and then compared against each version. Without the memo `deanachronize` rescans
+ * every description once per snapshot it is live in, and `matchAll` allocates an
+ * iterator and a match object per hit — on the order of (records x versions) scans
+ * of text that never changes between them.
+ *
+ * The memo is created per `assembleSnapshots` call, so it can never be read with a
+ * different `firstSeenByKey` or `releases` than it was filled under.
+ */
+export function latestVersionNamed(
+  text: string,
+  firstSeenByKey: ReadonlyMap<string, string>,
+  releases: ReadonlySet<string>,
+  memo?: Map<string, string | null>
+): string | null {
+  const cached = memo?.get(text);
+  if (cached !== undefined) return cached;
+
+  let latest: string | null = null;
+  const consider = (v: string) => {
+    if (latest === null || compareVersionsAsc(v, latest) > 0) latest = v;
+  };
+  for (const match of text.matchAll(VERSION_IN_PROSE)) {
+    const named = match[1] as string;
+    if (releases.has(named)) consider(named);
+  }
+  for (const match of text.matchAll(TOKEN_IN_PROSE)) {
+    for (const key of recordKeysFor(match[1] as string)) {
+      const firstSeen = firstSeenByKey.get(key);
+      if (firstSeen !== undefined) consider(firstSeen);
+    }
+  }
+  memo?.set(text, latest);
+  return latest;
+}
+
+export function describesFutureState(
+  text: string,
+  version: string,
+  firstSeenByKey: ReadonlyMap<string, string>,
+  releases: ReadonlySet<string>,
+  memo?: Map<string, string | null>
+): boolean {
+  const latest = latestVersionNamed(text, firstSeenByKey, releases, memo);
+  return latest !== null && compareVersionsAsc(latest, version) > 0;
+}
+
+/**
+ * Split on sentence ends that are NOT inside a code span. A description carries
+ * spans like `` `2.1.0` `` and `` `--flag` ``, and splitting inside one would cut
+ * a token in half and defeat the check that runs on each sentence.
+ */
+const ABBREVIATION_END = /\b(?:e\.g|i\.e|etc|vs|approx|cf|no)\.$/i;
+
+function sentencesOutsideCode(text: string): string[] {
+  const out: string[] = [];
+  let buffer = '';
+  let inCode = false;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i] as string;
+    if (char === '`') inCode = !inCode;
+    buffer += char;
+    const ends = char === '.' || char === '!' || char === '?';
+    // `e.g.` and `etc.` end a word, not a sentence. Splitting there would cut a
+    // clause off mid-thought and drop the half that carries the qualifier.
+    if (!inCode && ends && !ABBREVIATION_END.test(buffer)) {
+      if (i + 1 >= text.length || /\s/.test(text[i + 1] as string)) {
+        out.push(buffer);
+        buffer = '';
+      }
+    }
+  }
+  if (buffer.trim() !== '') out.push(buffer);
+  return out;
+}
+
+/**
+ * True when a sentence's era marker looks BACKWARD — it corrects the sentences
+ * before it rather than adding behaviour after them.
+ *
+ * The direction decides whether a prefix may be published. "As of v2.1.196, …" and
+ * "From v2.1.182, …" append; the prefix stood on its own before that release, so
+ * keeping it is right. "Before v2.1.221, …" and "On earlier versions, …" exist to
+ * say the prefix was NOT true yet, so keeping the prefix and dropping the marker
+ * publishes the later behaviour with the qualifier that revealed it removed.
+ *
+ * `CLAUDE_CODE_RESUME_INTERRUPTED_TURN` is the live case, reachable because
+ * `binary-descriptions.json` holds no `env_var:` key at all, so an env var never has
+ * binary text to fall back on. Its docs text ends "To turn this off, unset the
+ * variable or set it to `0`. Before v2.1.221, Claude Code ignored `0` …". Truncating
+ * at 2.1.200 would publish the first sentence — which the removed one says was false
+ * until 2.1.221 — turning a self-refuting description into a quietly wrong one.
+ */
+const BACKWARD_MARKER_DATED =
+  /\b(?:before|prior to|until)\s+v?(\d+\.\d+\.\d+)|\bv?(\d+\.\d+\.\d+)\s+and earlier\b/gi;
+const BACKWARD_MARKER_UNDATED = /\bon earlier versions\b|\bin earlier releases\b/i;
+
+/**
+ * True when a sentence corrects what came before it AT THIS VERSION.
+ *
+ * The marker's own version has to be compared, not just matched. "before v2.1.212"
+ * read at a 2.1.215 snapshot is settled history that corrects nothing there, and a
+ * sentence carrying both directions — "Before v2.1.100 this was opt-in; as of
+ * v2.1.230 it also accepts a map" — trips on the FORWARD half at 2.1.150 while its
+ * backward half is already in the past.
+ */
+function correctsThePrefix(sentence: string, version: string): boolean {
+  for (const match of sentence.matchAll(BACKWARD_MARKER_DATED)) {
+    const named = (match[1] ?? match[2]) as string;
+    if (compareVersionsAsc(named, version) > 0) return true;
+  }
+  // An undated phrase names no boundary to compare, so it is treated as correcting.
+  return BACKWARD_MARKER_UNDATED.test(sentence);
+}
+
+/**
+ * Keep the leading sentences that name nothing later than `version`, and drop the
+ * rest — unless the sentence that trips the guard is correcting them, in which case
+ * nothing survives. "Nothing later" is the whole of the check — a sentence can still be wrong
+ * for its version in a way no rule here can see.
+ *
+ * These descriptions are an era-correct opening followed by sentences appended as
+ * behaviour grew — "Override the API endpoint … As of v2.1.196, …". Discarding the
+ * whole string would throw away correct text, so truncation keeps what the version
+ * can carry. A record empties when the binary lane has no text to fall back on AND
+ * either its FIRST sentence already names the future — `MCP_OAUTH_CALLBACK_PORT`
+ * before 2.1.30 — or the sentence that trips the guard is CORRECTING the ones before
+ * it, in which case the prefix goes with it.
+ *
+ * ⚠️ The second case empties records whose opening sentence is perfectly fine.
+ * `ENABLE_TOOL_SEARCH` has eight sentences, only the last of which is a "Before
+ * v2.1.221" correction, and the whole record empties below that release. That is
+ * deliberate but blunt: the correction is known to invalidate SOMETHING earlier, and
+ * sentence granularity cannot say which, so the honest answer is to publish none of
+ * it. Narrowing this needs sub-sentence attribution, which is a different project.
+ */
+export function truncateToVersion(
+  text: string,
+  version: string,
+  firstSeenByKey: ReadonlyMap<string, string>,
+  releases: ReadonlySet<string>,
+  memo?: Map<string, string | null>
+): string {
+  const kept: string[] = [];
+  for (const sentence of sentencesOutsideCode(text)) {
+    if (describesFutureState(sentence, version, firstSeenByKey, releases, memo)) {
+      // The marker corrects what came before it, so the prefix cannot be published
+      // either. Empty is the same answer `MCP_OAUTH_CALLBACK_PORT` already gets.
+      if (correctsThePrefix(sentence, version)) return '';
+      break;
+    }
+    kept.push(sentence);
+  }
+  return kept.join('').trim();
+}
+
 export function assembleSnapshots(
   records: SymbolRecord[],
   blocks: ChangelogBlock[],
   binaryDescriptions?: BinaryDescriptions['descriptions'],
   binaryScopes?: ReadonlyMap<string, BinaryScopeWindow>,
-  binaryHidden?: ReadonlyMap<string, readonly HiddenEra[]>
+  binaryHidden?: ReadonlyMap<string, readonly HiddenEra[]>,
+  observedVersions?: readonly string[]
 ): VersionSnapshot[] {
   const versionsOldestFirst = blocks
     .map((block) => block.version)
@@ -626,15 +847,93 @@ export function assembleSnapshots(
     );
   };
 
+  /**
+   * Every release this dataset has evidence of, so a dotted triple in prose can be
+   * told apart from another product's version number.
+   *
+   * The union of both lanes, not the changelog alone. Anthropic ships releases with
+   * no changelog heading — more versions have an extracted binary than have a
+   * snapshot — and the docs cite them. Gating on snapshots alone left `2.1.182`
+   * and `2.1.213` unrecognised, so `data/versions/2.1.181.json` went on publishing
+   * "From v2.1.182, named shorthand keys are also accepted": a 2.1.181 snapshot
+   * describing 2.1.182, which is the very defect this guard exists to remove.
+   */
+  const newestSnapshot = versionsOldestFirst[versionsOldestFirst.length - 1];
+  const releases = new Set([...versionsOldestFirst, ...(observedVersions ?? [])]);
+
+  /**
+   * Every symbol's own `first_seen`, so a description can be tested against it.
+   * An ESTIMATED date is excluded: it is an upper bound the schema itself labels
+   * unconfirmed, so treating it as proof the symbol did not exist yet is the same
+   * guess `describesFutureState` refuses to make for an unknown symbol. `/undo`
+   * (2.1.108) carries the flag, and `/rewind`'s description names `/undo`, so
+   * trusting it rewrites `/rewind` across its whole history on a guess.
+   *
+   * ⚠️ Even a NON-estimated date is "first observed, not necessarily first existed"
+   * — `schema/symbol.schema.json` says so, and `enrichWithBinary` sets it from the
+   * earliest archived bundle that contained the symbol. So this half still reads
+   * "not extracted before X" as "absent before X", a weaker form of the guess the
+   * release half refuses to make for an unknown dotted triple. It is tolerable only
+   * because the direction is safe: it removes text and never asserts a date. Do not
+   * reuse this map anywhere that would publish one.
+   */
+  const firstSeenByKey = new Map(
+    records
+      .filter((r) => r.first_seen_estimated !== true)
+      .map((r) => [`${r.type}:${r.symbol}`, r.first_seen])
+  );
+
+  /**
+   * Last resort when no era-correct binary text exists: keep the leading sentences
+   * that name nothing later than the version. A description that already names
+   * nothing later is returned untouched, and each description's analysis is
+   * memoised, so a description is scanned once however many snapshots it is live in.
+   */
+  /** Per-description analysis, reused across every snapshot the record is live in. */
+  const namedMemo = new Map<string, string | null>();
+
+  /**
+   * The guard's single entry point, so the newest snapshot is left alone by
+   * construction rather than by luck.
+   *
+   * Clamping the EVIDENCE instead — dropping releases and dates above the tip out of
+   * the maps — was worse. `check-new-release.yml` triggers off the GitHub Releases
+   * feed, not the changelog, so `observedVersions` can hold a version with no
+   * `## X.Y.Z` heading yet. Dropping it would publish "From v2.1.232, …" unguarded
+   * into every historical snapshot, which is the defect this guard exists to remove.
+   * Skip the DECISION at the tip; keep every piece of evidence everywhere else.
+   */
+  const isAnachronistic = (text: string, version: string): boolean =>
+    version !== newestSnapshot &&
+    describesFutureState(text, version, firstSeenByKey, releases, namedMemo);
+
+  const deanachronize = (record: SymbolRecord, version: string): SymbolRecord => {
+    const text = record.description;
+    if (text === '' || !isAnachronistic(text, version)) return record;
+    const truncated = truncateToVersion(text, version, firstSeenByKey, releases, namedMemo);
+    // `description_source` names where the text came from, and the schema says it
+    // is absent when the description is empty. Keeping it on an emptied record
+    // would assert "the official docs say this" while saying nothing.
+    if (truncated === '') {
+      const emptied: SymbolRecord = { ...record, description: '' };
+      delete emptied.description_source;
+      return emptied;
+    }
+    return { ...record, description: truncated };
+  };
+
   // Resolve the description from the binary timeline: a curated (non-empty)
   // description wins in the current era; a HISTORICAL snapshot takes the text
   // observed in that version's binary (de-anachronized), and a previously-EMPTY
   // description is filled from the binary at every version. Symbols with no
   // timeline, or versions before the first binary observation, are untouched.
   const describeAt = (record: SymbolRecord, version: string): SymbolRecord => {
-    if (!binaryDescriptions) return record;
-    const eras = binaryDescriptions[`${record.type}:${record.symbol}`];
-    if (!eras || eras.length === 0) return record;
+    const eras = binaryDescriptions?.[`${record.type}:${record.symbol}`];
+    // Runs even with no binary timeline: the anachronism guard below is the only
+    // thing standing between a docs-sourced description and every snapshot the
+    // symbol is live at, and a record with no binary timeline has nothing else to
+    // fall back on — `MCP_OAUTH_CALLBACK_PORT` is that shape.
+    if (!eras || eras.length === 0) return deanachronize(record, version);
     // A config key's category is per-version for the same reason its description
     // is: the `@internal` marker lives IN the description and moves. enrichWithBinary
     // can only pick one value for the record, so without resolving it here every
@@ -644,12 +943,23 @@ export function assembleSnapshots(
       record.type === 'config_key'
         ? withCategory(record, binaryConfigCategory(eras, version))
         : record;
-    if (categorized.description !== '' && isCurrentDescriptionEra(eras, version))
+    // `isCurrentDescriptionEra` asks whether the BINARY help text has changed since
+    // this version, and was used as a proxy for whether the docs text still
+    // applies. It is not a sound one: `/review`'s binary text is unchanged since
+    // 2.1.186, while its docs text describes behaviour that began at 2.1.223, so
+    // every snapshot from 2.1.186 on published the later text. The proxy still
+    // stands for a description that names nothing later than the version — the
+    // guard is what it now defers to.
+    if (
+      categorized.description !== '' &&
+      isCurrentDescriptionEra(eras, version) &&
+      !isAnachronistic(categorized.description, version)
+    )
       return categorized;
     const era = descriptionAt(eras, version);
     return era && era.description !== categorized.description
       ? { ...categorized, description: era.description, description_source: 'binary' }
-      : categorized;
+      : deanachronize(categorized, version);
   };
 
   return versionsOldestFirst.map((version) => ({
@@ -934,7 +1244,8 @@ export function buildEnrichedSnapshots(
     blocks,
     binaryDescriptions,
     binaryScopeMap(binary),
-    binaryHiddenMap(binary)
+    binaryHiddenMap(binary),
+    binary?.observedVersions
   );
 }
 

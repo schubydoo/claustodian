@@ -16,6 +16,63 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-08-14
+
+### Fixed
+
+- **A documentation description no longer backfills onto older snapshots.**
+  `data/docs.json` is one capture of the current documentation. There is no
+  per-version documentation history, so a docs-sourced description is evidence
+  about the tip and nothing else. Every historical snapshot published it anyway.
+  The result was text that refutes itself: `data/versions/2.1.200.json` described
+  `/review` as "Alias of `/code-review` … **Before v2.1.223**, `/review` was a
+  separate command." Every snapshot from 2.1.186 on carried that sentence.
+
+  The resolver kept a description when the binary help text had not changed since
+  that version. That test was a proxy for whether the docs text still applied, and
+  it is not a sound one. `/review`'s binary text is unchanged since 2.1.186, while
+  its docs text describes behavior that began at 2.1.223.
+
+  A description is now refused at a version when its own text names either a
+  release later than that version, or a backticked symbol — of any of the four
+  types this dataset publishes, where the span holds that symbol alone — whose
+  `first_seen` is later than that version. The check is self-consistency against
+  the dataset, not a judgement about prose. A symbol the dataset does not know is
+  ignored, because absence of a record is not evidence that the symbol did not
+  exist.
+
+  When the binary observed the symbol at that version, its text replaces the docs
+  text and `description_source` becomes `binary`. `/cost` at 0.2.21 becomes "Show
+  the total cost and duration of the current session" instead of "Alias for
+  `/usage`", a command that did not exist until 2.0.0.
+
+  Otherwise the description keeps the leading sentences that name nothing later
+  than the version. These descriptions are an era-correct opening plus sentences
+  appended as behavior grew, so truncation preserves correct text that a blanket
+  removal would discard.
+
+  A description becomes empty when the binary lane has no text to fall back on and
+  either of two things is true. Its first sentence already names something later —
+  `MCP_OAUTH_CALLBACK_PORT` is blank before 2.1.30, the release that introduced the
+  `--callback-port` its only sentence points at. Or the sentence that trips the
+  guard is _correcting_ the ones before it, in which case the prefix cannot be
+  published either.
+
+  That second case empties records whose opening sentence reads fine.
+  `ENABLE_TOOL_SEARCH` has eight sentences and only the last is a "Before v2.1.221"
+  correction, yet the whole record is blank below that release. A correction is
+  known to invalidate something earlier, and sentence granularity cannot say which,
+  so the honest answer is to publish none of it rather than guess which half
+  survived. The binary lane does not record env var help text, which is why these
+  cases are env vars.
+
+  Nothing changes at the newest version. The guard skips that snapshot outright
+  rather than relying on no release comparing greater — a release can be known to
+  the binary lane before the changelog has a heading for it, so that property was
+  never guaranteed by the data.
+
+---
+
 ## 2026-08-13
 
 ### Fixed
