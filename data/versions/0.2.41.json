@@ -119,6 +119,8 @@
         "plugin disable",
         "plugin enable",
         "plugin install",
+        "plugin marketplace add",
+        "plugin marketplace remove",
         "plugin prune",
         "plugin uninstall",
         "plugin update"
@@ -132,8 +134,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Enable verbose logging, shows full turn-by-turn output. Overrides the `viewMode` setting for this session",
-      "description_source": "docs",
+      "description": "Override verbose mode setting from config",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -158,8 +160,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Report a bug or share your conversation. You choose how much session history to include and confirm on a consent screen before anything is sent. When you're signed in to Anthropic on a first-party connection, the report goes to Anthropic; on a third-party provider, or without Anthropic credentials, Claude Code writes the report to a local archive under `~/.claude/feedback-bundles/` that you forward yourself. Alias: `/share`. Before v2.1.212, `/bug` and `/share` were aliases of `/feedback`",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -210,8 +211,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Alias for `/usage`",
-      "description_source": "docs",
+      "description": "Show the total cost and duration of the current session",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -262,8 +263,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Initialize project with a `CLAUDE.md` guide. Set `CLAUDE_CODE_NEW_INIT=1` for an interactive flow that also walks through skills, hooks, and personal memory files. If `/init` finds configuration from a coding agent that `/import` supports, it offers to carry it over with `/import`",
-      "description_source": "docs",
+      "description": "Initialize a new CLAUDE.md file with codebase documentation",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -314,8 +315,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Removed in v2.1.91. Ask Claude directly to view pull request comments instead. On earlier versions, fetches and displays comments from a GitHub pull request; automatically detects the PR for the current branch, or pass a PR URL or number. Requires the `gh` CLI",
-      "description_source": "docs",
+      "description": "Get comments from a GitHub pull request",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -405,7 +406,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Custom headers to add to requests (`Name: Value` format, newline-separated for multiple headers). If a name or value contains a character an HTTP header can't carry, such as a curly quote or a zero-width space, Claude Code fails the request with an error that identifies the pair by position. Requires Claude Code v2.1.227 or later. Invalid request header value lists the exact character set and where the check runs",
+      "description": "Custom headers to add to requests (`Name: Value` format, newline-separated for multiple headers). If a name or value contains a character an HTTP header can't carry, such as a curly quote or a zero-width space, Claude Code fails the request with an error that identifies the pair by position.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -495,7 +496,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to enable debug mode, equivalent to launching with `--debug`. Debug logs are written to `~/.claude/debug/<session-id>.txt`, or to the path set by `CLAUDE_CODE_DEBUG_LOGS_DIR`. Only the truthy values `1`, `true`, `yes`, and `on` enable debug mode, so namespace patterns like `DEBUG=express:*` set for other tools do not trigger it",
+      "description": "Set to `1` to enable debug mode, equivalent to launching with `--debug`.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -520,7 +521,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable automatic background updates. Manual `claude update` still works. Use `DISABLE_UPDATES` to block both",
+      "description": "Set to `1` to disable automatic background updates. Manual `claude update` still works.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -584,7 +585,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events do not include user data like code, file paths, or bash commands. Also disables feature-flag fetching with the same effect as `DISABLE_GROWTHBOOK`, which makes Remote Control and the other features that need feature-flag fetching unavailable",
+      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events do not include user data like code, file paths, or bash commands.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -635,8 +636,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to enable demo mode: hides your email and organization name from the header and `/status` output, and skips onboarding. **Setting it to `0` or `false` still enables demo mode**, unlike most on/off variables; unset the variable to turn it off. Useful when streaming or recording a session",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },

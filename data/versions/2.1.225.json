@@ -1551,6 +1551,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
+        "plugin eval init",
         "project purge"
       ]
     },
@@ -1565,7 +1566,10 @@
       "description": "Alias for --interactive",
       "description_source": "binary",
       "source_url": null,
-      "category": "cli-internal"
+      "category": "cli-internal",
+      "scopes": [
+        "plugin eval init"
+      ]
     },
     {
       "symbol": "--json",
@@ -1584,6 +1588,7 @@
         "auth status",
         "plugin eval",
         "plugin list",
+        "plugin marketplace list",
         "ultrareview"
       ]
     },
@@ -2439,10 +2444,7 @@
       "description": "Deprecated alias for `--cloud`, including the existing-session form",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli-internal",
-      "scopes": [
-        "plugin tag"
-      ]
+      "category": "cli-internal"
     },
     {
       "symbol": "--remote-control",
@@ -2767,6 +2769,8 @@
         "plugin disable",
         "plugin enable",
         "plugin install",
+        "plugin marketplace add",
+        "plugin marketplace remove",
         "plugin prune",
         "plugin uninstall",
         "plugin update"
@@ -2904,7 +2908,10 @@
       "description": "Limit checkout to specific directories via git sparse-checkout (for monorepos). Example: --sparse .claude-plugin plugins",
       "source_url": null,
       "category": "cli",
-      "description_source": "binary"
+      "description_source": "binary",
+      "scopes": [
+        "plugin marketplace add"
+      ]
     },
     {
       "symbol": "--spawn",
@@ -3678,7 +3685,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "**Skill.** Review the current diff, or a PR number, branch, or path you pass, for correctness bugs and cleanup opportunities. Pass `--fix` to apply findings, `--comment` to post them as inline GitHub PR comments, or `ultra` to run a deep cloud review. With `ultra` on a `github.com` PR target, `--post` preselects posting the finished findings to the PR in the launch dialog. See Review a diff locally for the effort levels, targeting, and how it relates to `/simplify`. Alias: `/review`",
+      "description": "**Skill.** Review the current diff, or a PR number, branch, or path you pass, for correctness bugs and cleanup opportunities. Pass `--fix` to apply findings, `--comment` to post them as inline GitHub PR comments, or `ultra` to run a deep cloud review.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6388,8 +6395,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Environment variables applied to every session and to subprocesses Claude Code spawns from it. Set a variable to `\"\"` to override a shell export with an empty string, which Claude Code treats as unset for provider selection. Subprocesses still inherit the empty value. `NO_COLOR` and `FORCE_COLOR` set here reach only subprocesses; to change Claude Code's own interface colors, set them in your shell before launching `claude`. Claude Code ignores identity variables set here that its hosting environments own, such as `CLAUDE_CODE_REMOTE` and `CLAUDE_CODE_ACCOUNT_UUID`. It also ignores `CLAUDE_CODE_MESSAGING_SOCKET` and `CLAUDE_CODE_MESSAGING_TOKEN`, which it exports itself. Ignoring the socket variable requires Claude Code v2.1.224 or later, and ignoring the token requires v2.1.228 or later",
-      "description_source": "docs",
+      "description": "Environment variables to set for Claude Code sessions",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -8721,7 +8728,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Custom headers to add to requests (`Name: Value` format, newline-separated for multiple headers). If a name or value contains a character an HTTP header can't carry, such as a curly quote or a zero-width space, Claude Code fails the request with an error that identifies the pair by position. Requires Claude Code v2.1.227 or later. Invalid request header value lists the exact character set and where the check runs",
+      "description": "Custom headers to add to requests (`Name: Value` format, newline-separated for multiple headers). If a name or value contains a character an HTTP header can't carry, such as a curly quote or a zero-width space, Claude Code fails the request with an error that identifies the pair by position.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -11241,7 +11248,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to strip Anthropic-specific `anthropic-beta` request headers and beta tool-schema fields (such as `defer_loading` and `eager_input_streaming`) from API requests. Use this when a proxy gateway rejects requests with errors like \"Unexpected value(s) for the `anthropic-beta` header\" or \"Extra inputs are not permitted\". Standard fields (`name`, `description`, `input_schema`, `cache_control`) are preserved. MCP tool search is disabled and all MCP tools load upfront, even when you set `ENABLE_TOOL_SEARCH`. On Claude Code v2.1.227 or later, managed settings can keep tool search on. Disable pre-release capabilities covers where the override applies",
+      "description": "Set to `1` to strip Anthropic-specific `anthropic-beta` request headers and beta tool-schema fields (such as `defer_loading` and `eager_input_streaming`) from API requests. Use this when a proxy gateway rejects requests with errors like \"Unexpected value(s) for the `anthropic-beta` header\" or \"Extra inputs are not permitted\". Standard fields (`name`, `description`, `input_schema`, `cache_control`) are preserved. MCP tool search is disabled and all MCP tools load upfront, even when you set `ENABLE_TOOL_SEARCH`.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -14820,8 +14827,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to download your enabled claude.ai skills into `~/.claude/skills/synced/` and resync every 10 minutes. Before it runs the first query, Claude Code waits up to `CLAUDE_CODE_SYNC_SKILLS_WAIT_TIMEOUT_MS` for the list of your skills. The downloads themselves finish in the background, and Claude waits for a skill's download when it invokes that skill. The `synced` folder name is reserved for this download. Before v2.1.227, the skills downloaded into `~/.claude/skills/` directly. Applies only in non-interactive mode with the `-p` flag. Requires claude.ai authentication. Claude Code on the web sessions receive your enabled claude.ai skills automatically; you don't need to set this there. Claude Code applies extra rules to the downloaded skills, such as not running their `!` commands on your machine",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
