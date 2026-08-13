@@ -16,6 +16,7 @@ describe('scopesFor', () => {
       'auth status',
       'plugin eval',
       'plugin list',
+      'plugin marketplace list',
       'ultrareview',
     ]);
     expect(scopesFor('cli_flag', '--all')).toEqual(['agents', 'plugin disable', 'project purge']);
@@ -44,10 +45,41 @@ describe('scopesFor', () => {
       'plugin disable',
       'plugin enable',
       'plugin install',
+      'plugin marketplace add',
+      'plugin marketplace remove',
       'plugin prune',
       'plugin uninstall',
       'plugin update',
     ]);
+  });
+
+  it('reaches depth three, where the first capture stopped at two', () => {
+    // `plugin eval init` and `plugin marketplace {add,list,remove,update}` are the
+    // only depth-three invocations at 2.1.226, and a depth-two sweep saw none of
+    // them. Three flags therefore shipped an INCOMPLETE list, which under this
+    // field's completeness contract is a false "no" on a real invocation:
+    //   claude plugin eval init --interactive
+    //   claude plugin marketplace list --json
+    //   claude plugin marketplace add --scope
+    expect(scopesFor('cli_flag', '--interactive')).toEqual(['plugin eval init', 'project purge']);
+    expect(scopesFor('cli_flag', '--json')).toContain('plugin marketplace list');
+    expect(scopesFor('cli_flag', '--scope')).toContain('plugin marketplace add');
+    expect(scopesFor('cli_flag', '--scope')).toContain('plugin marketplace remove');
+    // `--sparse` was missed entirely rather than recorded incompletely.
+    expect(scopesFor('cli_flag', '--sparse')).toEqual(['plugin marketplace add']);
+  });
+
+  it('leaves a HIDDEN top-level flag unscoped, however a subcommand reuses the name', () => {
+    // The sweep excludes what bare `claude --help` accepts, but a `.hideHelp()`
+    // flag never appears there and so is never excluded. `--remote` is hidden
+    // top-level since 1.0.68 as a deprecated alias for `--cloud`, yet
+    // `claude plugin tag --remote <name>` exists — so it was published as
+    // `['plugin tag']`, asserting `claude --remote` is invalid. It is not:
+    // 2.1.226 tests `t === '--cloud' || … || t === '--remote'` in top-level argv.
+    expect(scopesFor('cli_flag', '--remote')).toBeUndefined();
+    // `--interview` is the same hidden shape without the harm — hidden ON the
+    // subcommand it belongs to, so its scope is real.
+    expect(scopesFor('cli_flag', '--interview')).toEqual(['plugin eval init']);
   });
 
   it('scopes the one runner flag the changelog publishes', () => {

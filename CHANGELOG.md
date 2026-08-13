@@ -16,6 +16,43 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-08-13
+
+### Fixed
+
+- **Four `scopes` lists said a flag was invalid where it is accepted.** `scopes` is
+  the COMPLETE set of subcommands a flag works under, so a non-empty list also
+  asserts "not accepted on bare `claude`" — which makes an incomplete list a false
+  no, not merely a partial yes. Two independent holes in the curated sweep produced
+  four of them.
+
+  The sweep stopped at depth two, so it never read the five depth-three invocations
+  `claude` accepts at 2.1.226 — `plugin eval init` and
+  `plugin marketplace {add,list,remove,update}`:
+
+  | flag            | was                    | now                                                |
+  | --------------- | ---------------------- | -------------------------------------------------- |
+  | `--interactive` | `project purge`        | + `plugin eval init`                               |
+  | `--json`        | 5 invocations          | + `plugin marketplace list`                        |
+  | `--scope`       | 10 invocations         | + `plugin marketplace add`, `… marketplace remove` |
+  | `--sparse`      | _(no scopes recorded)_ | `plugin marketplace add`                           |
+
+  Separately, `--remote` published as `["plugin tag"]` and so claimed
+  `claude --remote` is invalid. It is not: `--remote` is a hidden top-level
+  deprecated alias for `--cloud`, documented that way on the official CLI reference
+  page and handled in the 2.1.226 bundle's top-level argv. Being hidden is exactly
+  why the sweep mis-scoped it — the rule excludes what bare `claude --help` accepts,
+  and a hidden flag never appears there. **`--remote` now carries no `scopes` at
+  all**, which reads as "no scope information" rather than a false restriction.
+
+### Added
+
+- **`--interview` is scoped to `plugin eval init`.** Hidden on the subcommand it
+  belongs to, so the help sweep missed it, but nothing false had shipped — it simply
+  had no scope before.
+
+---
+
 ## 2026-08-12
 
 ### Fixed
