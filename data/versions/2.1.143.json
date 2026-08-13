@@ -946,6 +946,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
+        "plugin eval init",
         "project purge"
       ]
     },
@@ -966,6 +967,7 @@
         "auth status",
         "plugin eval",
         "plugin list",
+        "plugin marketplace list",
         "ultrareview"
       ]
     },
@@ -1032,8 +1034,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Maximum dollar amount to spend on API calls before stopping (print mode only). Spend from subagents counts toward the cap. Once spend reaches the cap, spawning another subagent fails with `Budget limit reached`, and Claude Code stops background subagents that are still running; the cap-enforcement behaviors require Claude Code v2.1.217 or later",
-      "description_source": "docs",
+      "description": "Maximum dollar amount to spend on API calls (only works with --print)",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -1084,8 +1086,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Load MCP servers from JSON files or strings (space-separated). When you pass this flag with `-p`, Claude Code waits for still-pending servers to connect before running the first turn, up to the `MCP_TIMEOUT` startup timeout, 30 seconds by default; a server with a cached tool list skips the wait and connects on first use. The wait requires Claude Code v2.1.221 or later",
-      "description_source": "docs",
+      "description": "Load MCP servers from JSON files or strings (space-separated)",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -1220,8 +1222,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Begin in a specified permission mode. Accepts `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`, or `manual` as an alias for `default`. The `manual` alias selects the mode the UI labels Manual and requires Claude Code v2.1.200 or later; `claude --help` lists it in place of `default`, and both values work. Overrides `defaultMode` from settings files",
-      "description_source": "docs",
+      "description": "Permission mode to use for the session",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -1233,8 +1235,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Specify an MCP tool to handle permission prompts in non-interactive mode. Claude Code waits for that tool's MCP server to connect before running the first turn, up to the `MCP_TIMEOUT` startup timeout, 30 seconds by default. <br /><br />The prompt tool can't approve an MCP tool marked as requiring user interaction: Claude Code converts an `allow` result for one to a deny. This restriction requires Claude Code v2.1.199 or later",
-      "description_source": "docs",
+      "description": "MCP tool to use for permission prompts (only works with --print)",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli-internal"
     },
@@ -1395,13 +1397,10 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Deprecated alias for `--cloud`, including the existing-session form",
-      "description_source": "docs",
+      "description": "Create a remote session with the given description, or attach to an existing one by session ID or claude.ai/code URL",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli-internal",
-      "scopes": [
-        "plugin tag"
-      ]
+      "category": "cli-internal"
     },
     {
       "symbol": "--remote-control",
@@ -1452,8 +1451,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Resume a specific session by ID or name, or show an interactive picker to choose a session. The picker and name search include sessions that added this directory with `/add-dir`. When you pass a session ID, Claude Code searches the current project directory and its git worktrees, then every other project on this machine. Before v2.1.223, the ID search covered only the current project directory and its git worktrees. Background sessions appear in the picker marked with `bg`",
-      "description_source": "docs",
+      "description": "Resume a conversation by session ID, or open interactive picker with optional search term",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -1531,6 +1530,8 @@
         "plugin disable",
         "plugin enable",
         "plugin install",
+        "plugin marketplace add",
+        "plugin marketplace remove",
         "plugin prune",
         "plugin uninstall",
         "plugin update"
@@ -1625,7 +1626,10 @@
       "description": "Limit checkout to specific directories via git sparse-checkout (for monorepos). Example: --sparse .claude-plugin plugins",
       "source_url": null,
       "category": "cli",
-      "description_source": "binary"
+      "description_source": "binary",
+      "scopes": [
+        "plugin marketplace add"
+      ]
     },
     {
       "symbol": "--spawn",
@@ -2073,8 +2077,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Create a branch of the current conversation at this point, so you can try a different direction without losing the conversation as it stands. Switches you into the branch and preserves the original, which you can return to with `/resume`. To run a copy as a separate background session instead of switching into it, use `/fork`; to hand a side task to a subagent that reports back into this conversation, use `/subtask`",
-      "description_source": "docs",
+      "description": "Create a branch of the current conversation at this point",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2112,8 +2116,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Ask a side question about the current session without adding to the conversation. If you run `/btw` without a question, Claude Code shows your most recent side question so you can browse earlier answers; if you haven't asked one yet, Claude Code prints a usage line. Before v2.1.212, `/btw` required a question",
-      "description_source": "docs",
+      "description": "Ask a quick side question without interrupting the main conversation",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2165,7 +2169,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "**Skill.** Load Claude API and Managed Agents reference material for your project's language. Also activates automatically when your code imports `anthropic` or `@anthropic-ai/sdk`. Run `migrate` to upgrade existing Claude API code to a newer model, `managed-agents-onboard` for a walkthrough that creates a new Managed Agent, or `prompt-audit` to flag instructions written for older models in your prompts, skills, and tool descriptions and propose fixes as a diff. The `prompt-audit` subcommand requires Claude Code v2.1.221 or later",
+      "description": "**Skill.** Load Claude API and Managed Agents reference material for your project's language. Also activates automatically when your code imports `anthropic` or `@anthropic-ai/sdk`. Run `migrate` to upgrade existing Claude API code to a newer model, `managed-agents-onboard` for a walkthrough that creates a new Managed Agent, or `prompt-audit` to flag instructions written for older models in your prompts, skills, and tool descriptions and propose fixes as a diff.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2204,8 +2208,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the prompt bar color for the current session. Available colors: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan`. Use `default` to reset, or run with no argument to pick a random color. When Remote Control is connected, the color syncs to claude.ai/code. Also available in non-interactive mode (`-p`); requires Claude Code v2.1.205 or later",
-      "description_source": "docs",
+      "description": "Set the prompt bar color for this session",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2349,8 +2353,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open an interactive diff viewer showing uncommitted changes and per-turn diffs. Use left/right arrows to switch between the current git diff and individual Claude turns, and up/down to browse files. Press Enter to open the selected file's diff, scroll it with up/down or PageUp/PageDown, and press Esc to return to the file list. Claude Code computes these diffs from raw git blob content, so diff drivers and `textconv` filters configured in `.gitattributes` or git config don't apply. Before v2.1.222, workspace-configured drivers and filters could rewrite the viewer's output. The open viewer also refreshes automatically when the repository's git state changes outside the session, such as a branch switch or commit in another terminal; the auto-refresh requires Claude Code v2.1.198 or later",
-      "description_source": "docs",
+      "description": "View uncommitted changes and per-turn diffs",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2389,8 +2393,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Set the model effort level. Accepts `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`; available levels depend on the model, and `max` and `ultracode` are session-only. `auto` resets to the model default. Without an argument, opens an interactive slider. Takes effect immediately without waiting for the current response to finish. Also available in non-interactive mode (`-p`) with a level argument, where it applies to the current session only; requires Claude Code v2.1.205 or later. While the model-default effort hold is in force, a non-interactive `/effort` reports `Not applied`, so pass `--effort` at launch instead",
-      "description_source": "docs",
+      "description": "Set effort level for model usage",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2454,7 +2458,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Toggle fast mode on or off. In non-interactive mode (`-p`), `/fast` works only in a session launched with fast mode in its `--settings` value, for example `claude -p --settings '{\"fastMode\": true}'`; the toggle then applies to the current session only and isn't saved as your default, and in any other non-interactive session the command reports that fast mode isn't available. Requires Claude Code v2.1.205 or later",
+      "description": "Toggle fast mode on or off. In non-interactive mode (`-p`), `/fast` works only in a session launched with fast mode in its `--settings` value, for example `claude -p --settings '{\"fastMode\": true}'`; the toggle then applies to the current session only and isn't saved as your default, and in any other non-interactive session the command reports that fast mode isn't available.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2494,8 +2498,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Copy the current conversation into a new background session and keep working here. Pass a prompt and the copy starts working on it immediately; without one it waits in agent view for its first prompt. Except when the copy edits in place, Claude Code instructs it to create a worktree of its own before making code changes; the isolation instruction requires Claude Code v2.1.221 or later. To hand a side task to a subagent whose result comes back into this conversation, use `/subtask`; to switch into a copy yourself, use `/branch`. Requires Claude Code v2.1.212 or later; on v2.1.161 through v2.1.211, and whenever agent view is turned off, `/fork` starts a forked subagent instead",
-      "description_source": "docs",
+      "description": "Spawn a background agent that inherits the full conversation",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2572,8 +2576,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Initialize project with a `CLAUDE.md` guide. Set `CLAUDE_CODE_NEW_INIT=1` for an interactive flow that also walks through skills, hooks, and personal memory files. If `/init` finds configuration from a coding agent that `/import` supports, it offers to carry it over with `/import`",
-      "description_source": "docs",
+      "description": "Initialize a new CLAUDE.md file with codebase documentation",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2728,8 +2732,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Manage MCP server connections and OAuth authentication. Run with no argument to open the interactive list, pass `reconnect <server>` to reconnect one disconnected server, or pass `enable`/`disable` with a server name or `all` to change connection state without opening the dialog. Also available in non-interactive mode (`-p`), where running it with no argument prints a text summary of server status instead of opening the list; requires Claude Code v2.1.205 or later",
-      "description_source": "docs",
+      "description": "Manage MCP servers",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2779,8 +2783,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Switch the AI model and save it as your default for new sessions. For models that support it, use left/right arrows to adjust effort level. With no argument, opens a picker; press `s` on a row to switch for the current session only. The picker asks for confirmation when the conversation has prior output, since the next response re-reads the full history without cached context. Once confirmed, the change applies without waiting for the current response to finish. Also available in non-interactive mode (`-p`) with a model argument instead of the picker, where it applies to the current session only and isn't saved as your default; requires Claude Code v2.1.205 or later",
-      "description_source": "docs",
+      "description": "Set the AI model for Claude Code",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3014,8 +3018,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Make this session available for Remote Control from claude.ai. Running it while signed out prints that Remote Control requires a claude.ai subscription and tells you how to sign in; before v2.1.206 it reported `Unknown command: /remote-control`. Alias: `/rc`",
-      "description_source": "docs",
+      "description": "Control this session from your phone or claude.ai/code",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3040,8 +3044,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Rename the current session and show the name on the prompt bar. Without a name, auto-generates one from conversation history. Also available in non-interactive mode (`-p`); requires Claude Code v2.1.205 or later. From every rename surface, including claude.ai and the desktop app, Claude Code replaces control and invisible characters in the new name with spaces and caps the name at 200 characters. If the name is empty once invisible characters are removed, Claude Code rejects it and shows `That name is empty once invisible characters are removed. Usage: /rename <name>`. The character replacement and length cap require Claude Code v2.1.221 or later",
-      "description_source": "docs",
+      "description": "Rename the current conversation",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3196,7 +3200,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "**Skill.** Review the changed code for cleanup opportunities and apply the fixes. Four review agents run in parallel, covering reuse of existing helpers, simplification, efficiency, and whether the change is at the right level of abstraction. From v2.1.154, the review doesn't look for correctness bugs. Use `/code-review` to find bugs. On earlier versions, `/simplify` is equivalent to `/code-review --fix`. Pass a path or PR reference to review a specific target",
+      "description": "**Skill.** Review the changed code for cleanup opportunities and apply the fixes. Four review agents run in parallel, covering reuse of existing helpers, simplification, efficiency, and whether the change is at the right level of abstraction.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3235,8 +3239,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open the Settings interface on the Status tab, showing version, model, account, and connectivity. A `Session kind` row reads `background job · attached` or `background job · unattended` in a background session, depending on whether a terminal is attached, and `interactive` in any other session. Before v2.1.221, `/status` didn't show this row. Works while Claude is responding",
-      "description_source": "docs",
+      "description": "Show Claude Code status including version, model, account, API connectivity, and tool statuses",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3716,8 +3720,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "How full the context window gets before Claude Code compacts automatically, in tokens from `100000` to `1000000`. When unset, Claude Code uses a window tuned for your model. Set it with the `/autocompact` command, which writes this key to user settings; the `--autocompact` flag and the `CLAUDE_CODE_AUTO_COMPACT_WINDOW` environment variable can override it. Set the auto-compact window covers how they interact",
-      "description_source": "docs",
+      "description": "Auto-compact window size",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -3768,8 +3772,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Customize what the auto mode classifier blocks and allows. Contains `environment`, `allow`, `soft_deny`, and `hard_deny` arrays of prose rules. Include the literal string `\"$defaults\"` in an array to inherit the built-in rules at that position. See Configure auto mode. Read from user settings, the `--settings` flag, and managed settings only. Ignored in project `.claude/settings.json` and local `.claude/settings.local.json`. Before v2.1.207, `.claude/settings.local.json` was also read",
-      "description_source": "docs",
+      "description": "Auto mode classifier prompt customization",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -3872,8 +3876,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Restrict which models users can select for the main session, subagents, skills, and the advisor. Does not affect the Default option unless `enforceAvailableModels` is also set. See Restrict model selection",
-      "description_source": "docs",
+      "description": "Allowlist of models that users can select. Accepts family aliases (\"opus\" allows any opus version), version prefixes (\"opus-4-5\" allows only that version), and full model IDs. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -4184,8 +4188,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Automatically approve all MCP servers defined in project `.mcp.json` files. As of v2.1.196, `claude mcp list` and `claude mcp get` honor this key in an untrusted folder only from settings files that aren't checked into the repository",
-      "description_source": "docs",
+      "description": "Whether to automatically approve all MCP servers in the project",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -4197,8 +4201,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List of specific MCP servers from `.mcp.json` files to approve. As of v2.1.196, `claude mcp list` and `claude mcp get` honor this key in an untrusted folder only from settings files that aren't checked into the repository",
-      "description_source": "docs",
+      "description": "List of approved MCP servers from .mcp.json",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -4223,8 +4227,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Environment variables applied to every session and to subprocesses Claude Code spawns from it. Set a variable to `\"\"` to override a shell export with an empty string, which Claude Code treats as unset for provider selection. Subprocesses still inherit the empty value. `NO_COLOR` and `FORCE_COLOR` set here reach only subprocesses; to change Claude Code's own interface colors, set them in your shell before launching `claude`. Claude Code ignores identity variables set here that its hosting environments own, such as `CLAUDE_CODE_REMOTE` and `CLAUDE_CODE_ACCOUNT_UUID`. It also ignores `CLAUDE_CODE_MESSAGING_SOCKET` and `CLAUDE_CODE_MESSAGING_TOKEN`, which it exports itself. Ignoring the socket variable requires Claude Code v2.1.224 or later, and ignoring the token requires v2.1.228 or later",
-      "description_source": "docs",
+      "description": "Environment variables to set for Claude Code sessions",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -4455,8 +4459,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Require your explicit approval before Claude's `SendMessage` reaches one of your sessions beyond this machine; see cross-session messaging. The approval prompt appears even in `bypassPermissions` mode. A `true` from any settings scope applies, so a checked-in project file can turn the requirement on but not off. The cross-machine `SendMessage` approval requires Claude Code v2.1.224 or later",
-      "description_source": "docs",
+      "description": "Require explicit approval before SendMessage can reach a peer session on another machine via Remote Control",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -4468,8 +4472,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Configure Claude's preferred response language (e.g., `\"japanese\"`, `\"spanish\"`, `\"french\"`). Claude will respond in this language by default. Also sets the language for voice dictation and auto-generated session titles. As of v2.1.176, when not set, session titles match the language of your conversation",
-      "description_source": "docs",
+      "description": "Preferred language for Claude responses and voice dictation (e.g., \"japanese\", \"spanish\")",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -4481,8 +4485,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Floor that prevents background auto-updates and `claude update` from installing a version below this one. Switching from the `\"latest\"` channel to `\"stable\"` via `/config` prompts you to stay on the current version or allow the downgrade. Choosing to stay sets this value. Also useful in managed settings to pin an organization-wide minimum. For a hard floor that blocks startup entirely, see `requiredMinimumVersion`",
-      "description_source": "docs",
+      "description": "Minimum version to stay on - prevents downgrades when switching to stable channel",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -4650,8 +4654,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `\"disable\"` to prevent `bypassPermissions` mode from being activated. This disables the `--dangerously-skip-permissions` command-line flag, and Claude Code ignores an agent definition's `permissionMode: bypassPermissions`, so the subagent runs with the parent session's mode. Before v2.1.223, Claude Code applied the frontmatter mode even with bypass disabled. Typically placed in managed settings to enforce organizational policy, but works from any scope",
-      "description_source": "docs",
+      "description": "Disable the ability to bypass permission prompts",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -5208,8 +5212,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Experimental. Terminate TLS inside the sandbox proxy so it can read the contents of HTTPS requests. Required for `mask` credential substitution. Set `{}` to generate an ephemeral certificate authority for the session, or set `caCertPath` and `caKeyPath` to use your own. Only honored from user, managed, or CLI `--settings` settings, not from `.claude/settings.json` or `.claude/settings.local.json`. Requires Claude Code v2.1.199 or later.",
-      "description_source": "docs",
+      "description": "[EXPERIMENTAL] Enable in-process TLS termination so the per-request filter can see HTTPS request bodies. Provide a CA cert+key, or omit both to have sandbox-runtime generate an ephemeral one for the session.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -5883,8 +5887,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Isolation mode for background sessions. `\"worktree\"` (default) blocks `Edit`/`Write` in the main checkout until `EnterWorktree` is called. Outside a git repository, a `WorktreeCreate` hook that fails releases the block so the session can edit the working directory in place; requires Claude Code v2.1.203 or later. `\"none\"` lets background jobs edit the working copy directly. Requires Claude Code v2.1.143 or later",
-      "description_source": "docs",
+      "description": "Isolation mode for background sessions in this repo. 'worktree' (default) blocks Edit/Write in the main checkout until EnterWorktree is called. 'none' lets background jobs edit the working copy directly.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -6037,7 +6041,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Override the API endpoint to route requests through a proxy or gateway. When set to a non-first-party host, MCP tool search is disabled by default. Set `ENABLE_TOOL_SEARCH=true` if your proxy forwards `tool_reference` blocks. As of v2.1.196, Remote Control is disabled when this points at a host other than `api.anthropic.com`, matching its behavior on Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry",
+      "description": "Override the API endpoint to route requests through a proxy or gateway. When set to a non-first-party host, MCP tool search is disabled by default. Set `ENABLE_TOOL_SEARCH=true` if your proxy forwards `tool_reference` blocks.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -6115,7 +6119,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Custom headers to add to requests (`Name: Value` format, newline-separated for multiple headers). If a name or value contains a character an HTTP header can't carry, such as a curly quote or a zero-width space, Claude Code fails the request with an error that identifies the pair by position. Requires Claude Code v2.1.227 or later. Invalid request header value lists the exact character set and where the check runs",
+      "description": "Custom headers to add to requests (`Name: Value` format, newline-separated for multiple headers). If a name or value contains a character an HTTP header can't carry, such as a curly quote or a zero-width space, Claude Code fails the request with an error that identifies the pair by position.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -6464,7 +6468,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override the 5-minute body idle timeout that aborts a streaming model response when no bytes arrive. Set to `0` to turn the timeout off, for example when a slow gateway or local model pauses longer than 5 minutes between chunks, or `1` to keep it on for every provider. When unset, the timeout is active on providers other than the direct Anthropic API and Claude Platform on AWS. The stream watchdogs run independently of it and abort a long silent pause even when you set `0` here. Requires Claude Code v2.1.169 or later",
+      "description": "Override the 5-minute body idle timeout that aborts a streaming model response when no bytes arrive. Set to `0` to turn the timeout off, for example when a slow gateway or local model pauses longer than 5 minutes between chunks, or `1` to keep it on for every provider. When unset, the timeout is active on providers other than the direct Anthropic API and Claude Platform on AWS. The stream watchdogs run independently of it and abort a long silent pause even when you set `0` here.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -6687,7 +6691,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` in subprocesses Claude Code spawns (Bash and PowerShell tools, tmux sessions, hook commands, status line commands, stdio MCP server subprocesses). IDE extensions also set this in their integrated terminals. Use to detect when a script is running inside a subprocess spawned by Claude Code. To check whether the current process was spawned directly by a tool call or hook, rather than inside a stdio MCP server that Claude Code started, use `CLAUDE_CODE_CHILD_SESSION` instead",
+      "description": "Set to `1` in subprocesses Claude Code spawns (Bash and PowerShell tools, tmux sessions, hook commands, status line commands, stdio MCP server subprocesses). IDE extensions also set this in their integrated terminals. Use to detect when a script is running inside a subprocess spawned by Claude Code.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -6860,7 +6864,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to force-enable automatic backgrounding of long-running agent tasks. When enabled, subagents are moved to the background after running for approximately two minutes. Also enables automatic backgrounding of long MCP tool calls in non-interactive mode on Claude Code v2.1.212 or later",
+      "description": "Set to `1` to force-enable automatic backgrounding of long-running agent tasks. When enabled, subagents are moved to the background after running for approximately two minutes.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -7180,8 +7184,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `0` to omit the attribution block, which carries the client version and a prompt fingerprint, from the start of the system prompt. Caching on a direct connection to the Anthropic API is unaffected either way. Before v2.1.181 the block included a per-request token on custom base URLs and Microsoft Foundry connections, so on those versions set it to `0` when your LLM gateway caches on the request body or forwards requests to a third-party provider, or when you connect to Microsoft Foundry directly",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -7193,7 +7196,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set the auto-compact window in tokens, from `100000` to `1000000`. Accepts a plain integer such as `500000` only: a value like `500k` reads as `500` and clamps to the 100K minimum. Takes precedence over the `/autocompact` command, the `--autocompact` flag, and the `autoCompactWindow` setting. The status line's `used_percentage` always measures against the model's full context window, so once this variable is set, that percentage no longer indicates when compaction will run",
+      "description": "Set the auto-compact window in tokens, from `100000` to `1000000`. Accepts a plain integer such as `500000` only: a value like `500k` reads as `500` and clamps to the 100K minimum.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -7667,7 +7670,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to strip Anthropic-specific `anthropic-beta` request headers and beta tool-schema fields (such as `defer_loading` and `eager_input_streaming`) from API requests. Use this when a proxy gateway rejects requests with errors like \"Unexpected value(s) for the `anthropic-beta` header\" or \"Extra inputs are not permitted\". Standard fields (`name`, `description`, `input_schema`, `cache_control`) are preserved. MCP tool search is disabled and all MCP tools load upfront, even when you set `ENABLE_TOOL_SEARCH`. On Claude Code v2.1.227 or later, managed settings can keep tool search on. Disable pre-release capabilities covers where the override applies",
+      "description": "Set to `1` to strip Anthropic-specific `anthropic-beta` request headers and beta tool-schema fields (such as `defer_loading` and `eager_input_streaming`) from API requests. Use this when a proxy gateway rejects requests with errors like \"Unexpected value(s) for the `anthropic-beta` header\" or \"Extra inputs are not permitted\". Standard fields (`name`, `description`, `input_schema`, `cache_control`) are preserved. MCP tool search is disabled and all MCP tools load upfront, even when you set `ENABLE_TOOL_SEARCH`.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -7922,7 +7925,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to enable appending extra text to the end of every subagent's system prompt. The `--append-subagent-system-prompt` flag supplies the appended text and sets this variable automatically, so you don't need to set it yourself. Requires Claude Code v2.1.205 or later",
+      "description": "Set to `1` to enable appending extra text to the end of every subagent's system prompt.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -8210,8 +8213,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "JSON object to merge into the top level of every API request body. Useful for passing provider-specific parameters that Claude Code doesn't expose directly. A value exported in your shell also applies to the background sessions you dispatch with `claude agents` or `--bg`. Before v2.1.206, background sessions ignored a shell-exported value and used whatever copy the background supervisor process inherited",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -8285,7 +8287,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to let Claude spawn forked subagents, or `0` to disable them, overriding any server-side rollout. When enabled, Claude can request the `fork` subagent type to spawn a fork, a subagent that inherits the full conversation context instead of starting fresh. When Claude doesn't request a subagent type, it still gets the general-purpose subagent, and every subagent runs in the background. The explicit `/subtask` command, named `/fork` on v2.1.161 through v2.1.211, works without this variable; on v2.1.117 through v2.1.160, `/fork` is the forked-subagent command only when this variable is set to `1` or a server-side rollout enabled it. Works in interactive mode and via the SDK or `claude -p`. When agent view is turned off, `/subtask` isn't available and the command stays `/fork`",
+      "description": "Set to `1` to let Claude spawn forked subagents, or `0` to disable them, overriding any server-side rollout. When enabled, Claude can request the `fork` subagent type to spawn a fork, a subagent that inherits the full conversation context instead of starting fresh. When Claude doesn't request a subagent type, it still gets the general-purpose subagent, and every subagent runs in the background.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -8322,8 +8324,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Windows only: path to the Git Bash executable (`bash.exe`). Use when Git Bash is installed but not in your PATH. If the path doesn't exist or the file isn't named `bash.exe`, `sh.exe`, `bash`, or `sh`, Claude Code ignores the variable and auto-detects Git Bash as if it were unset, logging a warning visible with `--debug`. Before v2.1.219, Claude Code exited at startup when the path didn't exist, and used any existing file as the shell without checking that it was bash or sh. See Windows setup",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -8535,7 +8536,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Override the context window size Claude Code assumes for the active model. As of v2.1.193, how it applies depends on how Claude Code resolves the model ID; see Correct the window for a gateway or custom model ID. Use this when routing to a model through `ANTHROPIC_BASE_URL` whose context window does not match the built-in size for its name",
+      "description": "Override the context window size Claude Code assumes for the active model.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -8561,7 +8562,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Override the number of times to retry failed API requests (default: 10). Capped at 15 as of v2.1.186; as of v2.1.199, `CLAUDE_CODE_RETRY_WATCHDOG` raises the default and removes the cap. For unattended sessions that need to wait through longer outages, set `CLAUDE_CODE_RETRY_WATCHDOG` instead",
+      "description": "Override the number of times to retry failed API requests (default: 10).",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -8753,8 +8754,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Removed in v2.1.160 and now a no-op. Previously pinned fast mode to Claude Opus 4.6 instead of the current default. Opus 4.6 no longer supports fast mode",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code",
       "deprecated_in": "2.1.154"
@@ -9056,7 +9056,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set by host platforms that embed Claude Code and manage model provider routing on its behalf. When set, Claude Code ignores provider-selection, endpoint, and authentication variables such as `CLAUDE_CODE_USE_BEDROCK`, `ANTHROPIC_BASE_URL`, and `ANTHROPIC_API_KEY` in settings files, so user settings can't override the host's routing. Claude Code also ignores model-selection keys such as `model`, `fallbackModel`, and `modelOverrides` in managed settings, whichever managed source delivers them, so the host's model configuration takes precedence over an out-of-date managed model pin; an `availableModels` allowlist in managed settings still applies unless the host supplies its own. Claude Code also skips the automatic telemetry opt-out for Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry, so telemetry follows the standard `DISABLE_TELEMETRY` opt-out. See Default behaviors by API provider",
+      "description": "Set by host platforms that embed Claude Code and manage model provider routing on its behalf. When set, Claude Code ignores provider-selection, endpoint, and authentication variables such as `CLAUDE_CODE_USE_BEDROCK`, `ANTHROPIC_BASE_URL`, and `ANTHROPIC_API_KEY` in settings files, so user settings can't override the host's routing.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -9228,8 +9228,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to automatically resume if the previous session ended mid-turn. Used in SDK mode so the model continues without requiring the SDK to re-send the prompt. To turn this off, unset the variable or set it to `0`. Before v2.1.221, Claude Code ignored `0` and other falsy values, so setting `0` still triggered the resume in non-interactive mode and unsetting the variable was the only way to turn it off",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
@@ -9278,7 +9277,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` for unattended sessions such as eval harnesses, CI jobs, or remote workers. Retries `429` and `529` capacity errors indefinitely instead of failing after `CLAUDE_CODE_MAX_RETRIES` attempts. The watchdog backs off up to 5 minutes between attempts, or until the limit resets when the response carries a rate-limit reset time, so a session that hits a usage limit waits out the remaining window. As of v2.1.199 it also raises the default retry count for other transient errors, such as server errors, timeouts, and dropped connections, to 300, roughly three hours of backoff, and removes the cap of 15 on `CLAUDE_CODE_MAX_RETRIES` if you set that variable explicitly. Requires Claude Code v2.1.186 or later",
+      "description": "Set to `1` for unattended sessions such as eval harnesses, CI jobs, or remote workers. Retries `429` and `529` capacity errors indefinitely instead of failing after `CLAUDE_CODE_MAX_RETRIES` attempts. The watchdog backs off up to 5 minutes between attempts, or until the limit resets when the response carries a rate-limit reset time, so a session that hits a usage limit waits out the remaining window.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -9532,7 +9531,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Skip Azure authentication for Microsoft Foundry, for a proxy or gateway that injects its own `Authorization` header. Claude Code sends requests without an Azure credential and preserves the `Authorization` header you supply, for example through `ANTHROPIC_CUSTOM_HEADERS`. Ignored when `ANTHROPIC_FOUNDRY_API_KEY` or `ANTHROPIC_FOUNDRY_AUTH_TOKEN` is set. Before v2.1.203, this variable left the Microsoft Foundry client unable to send requests unless an API key was also set",
+      "description": "Skip Azure authentication for Microsoft Foundry, for a proxy or gateway that injects its own `Authorization` header. Claude Code sends requests without an Azure credential and preserves the `Authorization` header you supply, for example through `ANTHROPIC_CUSTOM_HEADERS`.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -9634,8 +9633,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "The model Claude Code uses for all subagents, agent teams, and agents in a workflow. Accepts an alias such as `haiku` or a full model name, and takes precedence over the per-invocation `model` parameter and the subagent definition's `model` frontmatter. See Model configuration. Setting it to `inherit` is the same as leaving it unset; before v2.1.196, `inherit` was an override that forced every subagent onto the main conversation's model",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -9808,7 +9806,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Override the temp directory used for internal temp files. Claude Code appends `/claude-{uid}/` on Unix or `/claude/` on Windows to this path. Default: `/tmp` on macOS, `os.tmpdir()` on Linux and Windows. As of v2.1.161, on macOS and Linux, sandboxed Bash subprocesses receive a short fallback `$TMPDIR` under the system default when your override is a long path, since some tools fail when temp paths get too long. Unsandboxed Bash commands inherit your shell's `$TMPDIR` unchanged. Claude Code's own temp files always use your override",
+      "description": "Override the temp directory used for internal temp files. Claude Code appends `/claude-{uid}/` on Unix or `/claude/` on Windows to this path. Default: `/tmp` on macOS, `os.tmpdir()` on Linux and Windows.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -10179,8 +10177,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to force-enable the byte-level streaming idle watchdog, or set to `0` to force-disable it. When unset, the watchdog is enabled by default for direct Anthropic API and Claude Platform on AWS connections, and for streaming responses on gateway connections reached through `ANTHROPIC_BASE_URL` or `ANTHROPIC_AWS_BASE_URL`; before v2.1.222 it didn't run on those gateway connections, so the event-level watchdog could report a stall there even while keep-alive pings were arriving. For timeouts and how the timers interact, see Streaming idle watchdogs",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
@@ -10205,8 +10202,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `0` to force-disable the event-level streaming idle watchdog, or set to `1` to force-enable it. When unset, the watchdog is on by default for all providers. Before v2.1.196, the unset default was server-controlled on the direct Anthropic API and off on other providers. Configure the timeout with `CLAUDE_STREAM_IDLE_TIMEOUT_MS`; for the other stall timers that run alongside this one, see Streaming idle watchdogs",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
@@ -10392,7 +10388,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Timeout in milliseconds before the event- and byte-level streaming idle watchdogs close a stalled connection. When you set this variable explicitly, the minimum is `300000` (5 minutes); lower values are silently clamped to absorb extended thinking pauses and proxy buffering, and the byte-level watchdog caps the value at 30 minutes. `CLAUDE_BYTE_STREAM_IDLE_TIMEOUT_MS` takes precedence over this variable for the byte-level watchdog. For the per-watchdog unset defaults, see Streaming idle watchdogs",
+      "description": "Timeout in milliseconds before the event- and byte-level streaming idle watchdogs close a stalled connection. When you set this variable explicitly, the minimum is `300000` (5 minutes); lower values are silently clamped to absorb extended thinking pauses and proxy buffering, and the byte-level watchdog caps the value at 30 minutes.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -10579,8 +10575,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to hide the `/doctor` setup checkup skill and its `/checkup` alias. Useful for managed deployments where users shouldn't run setup diagnostics from a session. Doesn't affect the `claude doctor` terminal command. Before v2.1.205, this variable hid the `/doctor` diagnostics screen command",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
     },
@@ -10618,8 +10613,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable the `/feedback` command. Also disables `/bug` and `/share`, which report through the same path; before v2.1.212 they were aliases of `/feedback`, so the command was disabled under every name. The older name `DISABLE_BUG_COMMAND` is also accepted",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
     },
@@ -10837,7 +10831,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `false` to disable claude.ai MCP servers in Claude Code. Enabled by default for logged-in users. To disable per-project or per-org, set `disableClaudeAiConnectors` in settings instead",
+      "description": "Set to `false` to disable claude.ai MCP servers in Claude Code. Enabled by default for logged-in users.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -10924,8 +10918,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls MCP tool search. Unset, Claude Code defers all MCP tools by default. It still loads them upfront on Google Cloud's Agent Platform models earlier than the Claude 4.5 generation, on a Microsoft Foundry deployment hosted on Azure, and when `ANTHROPIC_BASE_URL` points to a non-first-party host. `true` always defers and sends the beta header, except on those same Agent Platform models and Microsoft Foundry deployments; requests fail on proxies that don't support `tool_reference`. `auto` loads upfront when tool definitions fit within 10% of context. `auto:N` sets a custom threshold, such as `auto:5` for 5%. `false` loads all tools upfront. A value you set yourself is ignored when `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` is set. Before v2.1.221, Claude Code disabled tool search for all models on Google Cloud's Agent Platform unless you set this variable to `true`",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
@@ -10937,7 +10930,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to make every model stop retrying with a repeated-overload error when no fallback model is configured. **Setting it to `0` or `false` still enables this**, unlike most on/off variables; unset the variable to restore the default retry behavior. Without it, models Claude Code recognizes as Opus, Fable 5, or Mythos models stop retrying this way when you authenticate with an API key or a third-party provider rather than a Claude subscription. As of v2.1.160, a configured fallback model chain triggers on repeated overload errors for any primary model, so this variable does not affect switching to a fallback model",
+      "description": "Set to any non-empty value, such as `1`, to make every model stop retrying with a repeated-overload error when no fallback model is configured. **Setting it to `0` or `false` still enables this**, unlike most on/off variables; unset the variable to restore the default retry behavior. Without it, models Claude Code recognizes as Opus, Fable 5, or Mythos models stop retrying this way when you authenticate with an API key or a third-party provider rather than a Claude subscription.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -11243,7 +11236,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Timeout in milliseconds for MCP tool execution (default: 100000000, about 28 hours). For an HTTP, SSE, or claude.ai connector server, each request also times out after 60 seconds by default; set this variable, or the per-server `timeout`, above 60000 to raise that per-request limit. A lower value still shortens the overall tool-execution timeout but leaves the per-request limit at 60 seconds. Stdio and WebSocket servers have no per-request timer. A per-server `timeout` field in `.mcp.json` overrides this for that server. A per-server `timeout` of at least 1000 also sets the minimum idle window for that server's tool calls, so `CLAUDE_CODE_MCP_TOOL_IDLE_TIMEOUT` never aborts them sooner; this floor requires Claude Code v2.1.203 or later. For the env variable, values below 1000 are floored to one second; for the per-server field, values below 1000 are ignored",
+      "description": "Timeout in milliseconds for MCP tool execution (default: 100000000, about 28 hours). For an HTTP, SSE, or claude.ai connector server, each request also times out after 60 seconds by default; set this variable, or the per-server `timeout`, above 60000 to raise that per-request limit. A lower value still shortens the overall tool-execution timeout but leaves the per-request limit at 60 seconds. Stdio and WebSocket servers have no per-request timer. A per-server `timeout` field in `.mcp.json` overrides this for that server.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -11355,7 +11348,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Emit Anthropic Messages API request and response JSON as `api_request_body` / `api_response_body` log events. Set to `1` for inline bodies truncated at the content limit, or `file:<dir>` to write untruncated bodies to disk and emit a `body_ref` path instead. `CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH` configures the content limit, 60 KB by default. Disabled by default; bodies include the entire conversation history. See Monitoring",
+      "description": "Emit Anthropic Messages API request and response JSON as `api_request_body` / `api_response_body` log events. Set to `1` for inline bodies truncated at the content limit, or `file:<dir>` to write untruncated bodies to disk and emit a `body_ref` path instead.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"

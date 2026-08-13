@@ -1551,6 +1551,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
+        "plugin eval init",
         "project purge"
       ]
     },
@@ -1565,7 +1566,10 @@
       "description": "Alias for --interactive",
       "description_source": "binary",
       "source_url": null,
-      "category": "cli-internal"
+      "category": "cli-internal",
+      "scopes": [
+        "plugin eval init"
+      ]
     },
     {
       "symbol": "--json",
@@ -1584,6 +1588,7 @@
         "auth status",
         "plugin eval",
         "plugin list",
+        "plugin marketplace list",
         "ultrareview"
       ]
     },
@@ -2465,10 +2470,7 @@
       "description": "Deprecated alias for `--cloud`, including the existing-session form",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli-internal",
-      "scopes": [
-        "plugin tag"
-      ]
+      "category": "cli-internal"
     },
     {
       "symbol": "--remote-control",
@@ -2793,6 +2795,8 @@
         "plugin disable",
         "plugin enable",
         "plugin install",
+        "plugin marketplace add",
+        "plugin marketplace remove",
         "plugin prune",
         "plugin uninstall",
         "plugin update"
@@ -2930,7 +2934,10 @@
       "description": "Limit checkout to specific directories via git sparse-checkout (for monorepos). Example: --sparse .claude-plugin plugins",
       "source_url": null,
       "category": "cli",
-      "description_source": "binary"
+      "description_source": "binary",
+      "scopes": [
+        "plugin marketplace add"
+      ]
     },
     {
       "symbol": "--spawn",
@@ -6498,8 +6505,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Environment variables applied to every session and to subprocesses Claude Code spawns from it. Set a variable to `\"\"` to override a shell export with an empty string, which Claude Code treats as unset for provider selection. Subprocesses still inherit the empty value. `NO_COLOR` and `FORCE_COLOR` set here reach only subprocesses; to change Claude Code's own interface colors, set them in your shell before launching `claude`. Claude Code ignores identity variables set here that its hosting environments own, such as `CLAUDE_CODE_REMOTE` and `CLAUDE_CODE_ACCOUNT_UUID`. It also ignores `CLAUDE_CODE_MESSAGING_SOCKET` and `CLAUDE_CODE_MESSAGING_TOKEN`, which it exports itself. Ignoring the socket variable requires Claude Code v2.1.224 or later, and ignoring the token requires v2.1.228 or later",
-      "description_source": "docs",
+      "description": "Environment variables to set for Claude Code sessions",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },

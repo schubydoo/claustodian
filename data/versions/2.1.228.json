@@ -1551,6 +1551,7 @@
       "source_url": null,
       "category": "cli",
       "scopes": [
+        "plugin eval init",
         "project purge"
       ]
     },
@@ -1565,7 +1566,10 @@
       "description": "Alias for --interactive",
       "description_source": "binary",
       "source_url": null,
-      "category": "cli-internal"
+      "category": "cli-internal",
+      "scopes": [
+        "plugin eval init"
+      ]
     },
     {
       "symbol": "--json",
@@ -1584,6 +1588,7 @@
         "auth status",
         "plugin eval",
         "plugin list",
+        "plugin marketplace list",
         "ultrareview"
       ]
     },
@@ -2465,10 +2470,7 @@
       "description": "Deprecated alias for `--cloud`, including the existing-session form",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli-internal",
-      "scopes": [
-        "plugin tag"
-      ]
+      "category": "cli-internal"
     },
     {
       "symbol": "--remote-control",
@@ -2793,6 +2795,8 @@
         "plugin disable",
         "plugin enable",
         "plugin install",
+        "plugin marketplace add",
+        "plugin marketplace remove",
         "plugin prune",
         "plugin uninstall",
         "plugin update"
@@ -2930,7 +2934,10 @@
       "description": "Limit checkout to specific directories via git sparse-checkout (for monorepos). Example: --sparse .claude-plugin plugins",
       "source_url": null,
       "category": "cli",
-      "description_source": "binary"
+      "description_source": "binary",
+      "scopes": [
+        "plugin marketplace add"
+      ]
     },
     {
       "symbol": "--spawn",
