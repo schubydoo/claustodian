@@ -375,42 +375,67 @@ export function isIntroducingBullet(bullet: string): boolean {
 
 /**
  * A bullet that documents support for a *subprocess tool's own* flags (git's,
- * etc.), listing them as examples — those flags belong to that tool, not Claude
- * Code, so they must not be extracted as `cli_flag` symbols. The tell is a tool
- * name + "flags" + an "(e.g., …)" example list, e.g. the 2.1.30 bullet "Added
- * support for additional `git log` and `git show` flags in read-only mode (e.g.,
- * `--topo-order`, `--cherry-pick`, `--format`, `--raw`)" — which wrongly seeded
- * `--topo-order`/`--cherry-pick`/`--format`/`--raw` (confirmed via the binary
- * lane, which never observes them). Deliberately narrow so it can't suppress a
- * genuine "Added a `--foo` flag for git integration"-style bullet.
+ * docker's, etc.), listing them as examples — those flags belong to that tool,
+ * not Claude Code, so they must not be extracted as `cli_flag` symbols. The tell
+ * is a tool name + "flags" + a parenthesised example list, which the changelog
+ * writes either with an "e.g.," lead-in or as a bare list opening straight off
+ * the word "flags":
+ *
+ *  - 2.1.30 — "Added support for additional `git log` and `git show` flags in
+ *    read-only mode (e.g., `--topo-order`, `--cherry-pick`, `--format`, `--raw`)"
+ *  - 2.1.214 — "Added permission prompts for `docker` commands … carrying
+ *    daemon-redirect flags (`--url`, `--connection`, `--identity`, …)"
+ *  - 2.1.229 — "Changed `/commit-push-pr` so git/gh commands with dangerous
+ *    flags (`--force`, `--amend`, `--no-verify`, etc.) are no longer
+ *    auto-approved"
+ *
+ * Every flag those three clauses list belongs to git, gh or docker; the binary
+ * lane never observes any of them as a Claude Code flag. Still deliberately
+ * narrow — the clause has to open off the word "flags" (or carry "e.g.,") AND
+ * contain at least one flag token — so it cannot suppress a genuine "Added a
+ * `--foo` flag for git integration"-style bullet, nor fire on a bullet whose
+ * only parenthetical is an issue link.
  */
 const SUBPROCESS_FLAG_BULLET =
-  /\b(?:git|gh|npm|node|docker|ripgrep|rg)\b[^.]*\bflags?\b[^.]*\(e\.g\.,/i;
+  /\b(?:git|gh|npm|node|docker|ripgrep|rg)\b[^.]*\bflags?\b(?:[^.]*\(e\.g\.,|\s*\()/i;
+
+/**
+ * The parenthesised example clause of a subprocess-flag bullet, bounded to its
+ * closing ")" so only the example flags are captured — a real first-party flag
+ * before OR after the parenthetical is left for normal extraction. Null when the
+ * bullet has no such clause.
+ */
+function subprocessExampleClause(bullet: string): string | null {
+  const match = SUBPROCESS_FLAG_BULLET.exec(bullet);
+  if (match === null) {
+    return null;
+  }
+  // The match ends at the clause opener — either "(e.g.," or a bare "(" — so the
+  // last "(" inside the match is that opener.
+  const open = bullet.lastIndexOf('(', match.index + match[0].length - 1);
+  if (open === -1) {
+    return null;
+  }
+  const close = bullet.indexOf(')', open);
+  return bullet.slice(open, close === -1 ? undefined : close + 1);
+}
 
 export function isSubprocessFlagBullet(bullet: string): boolean {
-  return SUBPROCESS_FLAG_BULLET.test(bullet);
+  return subprocessFlagExamples(bullet).size > 0;
 }
 
 /**
- * The `--flag` tokens a subprocess-flag bullet lists inside its trailing
- * "(e.g., …)" example clause — the subprocess tool's own flags, which must not
- * be extracted as Claude Code `cli_flag` symbols. Scoped to just that
- * parenthetical (not the whole bullet), so a genuine first-party flag appearing
- * elsewhere in the same bullet — e.g. "Added `--foo` for Claude Code and more
- * `git` flags (e.g., `--topo-order`)" — is still recorded. Empty set for any
- * bullet that isn't a subprocess-flag bullet.
+ * The `--flag` tokens a subprocess-flag bullet lists inside its example clause —
+ * the subprocess tool's own flags, which must not be extracted as Claude Code
+ * `cli_flag` symbols. Empty set for any bullet that isn't a subprocess-flag
+ * bullet.
  */
 export function subprocessFlagExamples(bullet: string): ReadonlySet<string> {
   const flags = new Set<string>();
-  if (!isSubprocessFlagBullet(bullet)) {
+  const clause = subprocessExampleClause(bullet);
+  if (clause === null) {
     return flags;
   }
-  // isSubprocessFlagBullet guarantees an "(e.g., …)" clause. Bound the clause to
-  // its closing ")" so only the example flags are captured — a real first-party
-  // flag before OR after the parenthetical is left for normal extraction.
-  const start = bullet.toLowerCase().indexOf('(e.g.,');
-  const close = bullet.indexOf(')', start);
-  const clause = bullet.slice(start, close === -1 ? undefined : close + 1);
   for (const { symbol, type } of extractSymbols(clause)) {
     if (type === 'cli_flag') {
       flags.add(symbol);
