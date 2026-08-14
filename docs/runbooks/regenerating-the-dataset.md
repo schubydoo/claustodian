@@ -21,15 +21,21 @@ paragraph with the number.
 
 ---
 
-## Before you start: reconcile the three version sets
+## Before you start: reconcile the four version sets
 
 They disagree, and the disagreement is silent.
 
 | Set                   | What it is                          |
 | --------------------- | ----------------------------------- |
+| npm packument         | every release Anthropic published   |
 | `scratch/binaries/`   | the local archive (maintainer-only) |
 | `binary-cache/*.json` | committed per-version extractions   |
 | changelog `## X.Y.Z`  | announced releases                  |
+
+**The npm set is what makes the other three checkable.** They can only report
+disagreement with each other, so a release missing from all of them raises nothing:
+2.1.232 was published, archived nowhere, extracted nowhere and had no changelog
+heading, and the check reported `OK`.
 
 **`reextract-binaries` reads only the archive, and clears the cache first** — see
 `clearCache()` in `scripts/reextract-binaries.ts`. A version present in

@@ -67,7 +67,9 @@ Full detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
   cannot get it. Code PR first, data PR second.
 - **IMPORTANT: `reextract-binaries` reads only the archive and clears `binary-cache/`
   first.** A version present in the cache but not the archive is destroyed by a run
-  that reports success. Reconcile the three version sets first:
+  that reports success. Reconcile the four version sets first — the npm packument
+  is what makes the local three checkable, since they can only disagree with each
+  other and a release absent from all three raises nothing:
   `bash scripts/check-version-sets.sh`.
 - **YOU MUST assert a symbol only on positive evidence.** When a construct is
   unrecognised, throw — a silent skip reads downstream as a removal.
