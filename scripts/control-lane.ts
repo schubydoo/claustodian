@@ -595,8 +595,6 @@ function collectUnions(
   const unions: Union[] = [];
   for (const { node, ancestors } of arrays) {
     const elements = node.elements as unknown[];
-    /* v8 ignore next -- collectCandidates retains only arrays with two or more elements; kept so this function stands alone if that filter moves */
-    if (elements.length === 0) continue;
     const members = new Set<string>();
     for (const element of elements) {
       const reference = referencedName(element);

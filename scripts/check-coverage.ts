@@ -27,7 +27,7 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import { isMain, loadChangelog } from './lib.js';
+import { runCli, loadChangelog } from './lib.js';
 import { CONFIRMED_REMOVALS } from './removals.js';
 import { collectChangelogSymbols, parseChangelog } from './scrape-changelog.js';
 import type { SymbolRecord } from './scrape-changelog.js';
@@ -153,15 +153,4 @@ export async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/check-coverage.ts` or `npm run coverage`), not when it's imported
 // by tests or other modules.
-/* v8 ignore start -- CLI entry guard: false by construction when imported by tests */
-if (isMain(import.meta.url)) {
-  main()
-    .then((code) => {
-      process.exitCode = code;
-    })
-    .catch((err: unknown) => {
-      console.error('Unexpected error while checking coverage:', err);
-      process.exitCode = 1;
-    });
-}
-/* v8 ignore stop */
+runCli(import.meta.url, 'checking coverage', main);

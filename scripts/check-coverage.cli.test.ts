@@ -148,6 +148,10 @@ describe('check-coverage main()', () => {
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('First missing symbol'));
   });
 
+  // Records parseArgs's current behaviour rather than endorsing it: a trailing
+  // --changelog/--dataset is silently ignored where generate-exports throws for
+  // the same mistake. If that divergence is ever fixed, this test should start
+  // asserting the error instead.
   it('falls back to fetching the changelog when a trailing --changelog has no value', async () => {
     tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
     const datasetPath = join(tmpDir, 'dataset.json');

@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { compareVersionsAsc, isMain, loadChangelog } from './lib.js';
+import { compareVersionsAsc, isMain, loadChangelog, runCli } from './lib.js';
 
 describe('isMain', () => {
   it('is true when the given URL matches the process entry point', () => {
@@ -38,6 +38,52 @@ describe('isMain', () => {
     } finally {
       process.argv = originalArgv;
     }
+  });
+});
+
+describe('runCli', () => {
+  // The URL isMain treats as "invoked directly" under the test runner.
+  const entrypointUrl = pathToFileURL(process.argv[1] ?? '').href;
+
+  afterEach(() => {
+    process.exitCode = 0;
+    vi.restoreAllMocks();
+  });
+
+  const flushMicrotasks = () => new Promise((resolve) => setImmediate(resolve));
+
+  it('does not run main when the module is merely imported', () => {
+    const run = vi.fn(async () => 0);
+    runCli(`${entrypointUrl}.not-the-entrypoint`, 'testing', run);
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  it('runs main with the CLI argv and records its exit code when the module is the entrypoint', async () => {
+    const run = vi.fn(async () => 3);
+    runCli(entrypointUrl, 'testing', run);
+    await flushMicrotasks();
+    expect(run).toHaveBeenCalledWith(process.argv.slice(2));
+    expect(process.exitCode).toBe(3);
+  });
+
+  it('treats a void resolution as success', async () => {
+    process.exitCode = 7;
+    runCli(entrypointUrl, 'testing', async () => undefined);
+    await flushMicrotasks();
+    expect(process.exitCode).toBe(0);
+  });
+
+  it('reports a rejection under the label and exits 1', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    runCli(entrypointUrl, 'doing the thing', async () => {
+      throw new Error('boom');
+    });
+    await flushMicrotasks();
+    expect(process.exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(
+      'Unexpected error while doing the thing:',
+      expect.objectContaining({ message: 'boom' })
+    );
   });
 });
 

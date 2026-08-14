@@ -37,7 +37,7 @@ import {
   type BinaryObservations,
   type DescriptionEra,
 } from './binary-lane.js';
-import { compareVersionsAsc, type ExtractedSymbolType, isMain } from './lib.js';
+import { compareVersionsAsc, type ExtractedSymbolType, runCli } from './lib.js';
 import type { ControlObservation, Era } from './binary-lane.js';
 import { CACHE_INCOMPLETE_MARKER } from './reextract-binaries.js';
 
@@ -530,15 +530,4 @@ export async function main(argv: string[]): Promise<number> {
   return 0;
 }
 
-/* v8 ignore start -- CLI entry guard: false by construction when imported by tests */
-if (isMain(import.meta.url)) {
-  main(process.argv.slice(2))
-    .then((code) => {
-      process.exitCode = code;
-    })
-    .catch((error: unknown) => {
-      console.error('Unexpected error while distilling binary observations:', error);
-      process.exitCode = 1;
-    });
-}
-/* v8 ignore stop */
+runCli(import.meta.url, 'distilling binary observations', main);

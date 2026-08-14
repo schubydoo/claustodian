@@ -29,7 +29,7 @@ import { join } from 'node:path';
 
 import { glob } from 'tinyglobby';
 
-import { compareVersionsAsc, isMain } from './lib.js';
+import { compareVersionsAsc, runCli } from './lib.js';
 
 interface Snapshot {
   claudeCodeVersion: string;
@@ -112,15 +112,4 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<numb
 }
 
 // Only run the CLI when executed directly, not when imported by tests.
-/* v8 ignore start -- CLI entry guard: false by construction when imported by tests */
-if (isMain(import.meta.url)) {
-  main()
-    .then((code) => {
-      process.exitCode = code;
-    })
-    .catch((err: unknown) => {
-      console.error('Unexpected error while building the catalog:', err);
-      process.exitCode = 1;
-    });
-}
-/* v8 ignore stop */
+runCli(import.meta.url, 'building the catalog', main);

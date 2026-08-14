@@ -58,7 +58,7 @@ import {
 } from './binary-lane.js';
 import { assertOfficialDocs, DOCS_BASE, type DocsIndex } from './fetch-docs.js';
 import { applyChangelogDeprecations, applyChangelogRemovals } from './removals.js';
-import { compareVersionsAsc, type ExtractedSymbolType, isMain, loadChangelog } from './lib.js';
+import { compareVersionsAsc, type ExtractedSymbolType, runCli, loadChangelog } from './lib.js';
 import { scopesFor } from './symbol-scopes.js';
 
 // Re-exported from lib for existing importers (tests, extract-bundle, etc.).
@@ -1687,15 +1687,4 @@ export async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/scrape-changelog.ts` or `npm run scrape`), not when it's imported
 // by tests or other modules.
-/* v8 ignore start -- CLI entry guard: false by construction when imported by tests */
-if (isMain(import.meta.url)) {
-  main()
-    .then((code) => {
-      process.exitCode = code;
-    })
-    .catch((err: unknown) => {
-      console.error('Unexpected error while scraping the changelog:', err);
-      process.exitCode = 1;
-    });
-}
-/* v8 ignore stop */
+runCli(import.meta.url, 'scraping the changelog', main);

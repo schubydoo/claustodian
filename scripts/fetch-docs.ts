@@ -17,7 +17,7 @@
  * fixture markdown with no network.
  */
 import { readFile, writeFile } from 'node:fs/promises';
-import { isMain } from './lib.js';
+import { runCli } from './lib.js';
 
 export const DOCS_BASE = 'https://code.claude.com/docs/en/';
 
@@ -556,11 +556,4 @@ export async function main(argv: string[]): Promise<void> {
   );
 }
 
-/* v8 ignore start -- CLI entry guard: false by construction when imported by tests */
-if (isMain(import.meta.url)) {
-  main(process.argv.slice(2)).catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
-}
-/* v8 ignore stop */
+runCli(import.meta.url, 'fetching docs', main);

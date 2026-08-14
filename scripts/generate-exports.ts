@@ -26,7 +26,7 @@ import { dump } from 'js-yaml';
 import { stringify } from 'smol-toml';
 import { glob } from 'tinyglobby';
 
-import { isMain } from './lib.js';
+import { runCli } from './lib.js';
 
 /**
  * Serializes a value to YAML via `js-yaml`'s `dump`. YAML has a native null
@@ -135,15 +135,4 @@ export async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/generate-exports.ts` or `npm run generate-exports`), not when it's
 // imported by tests or other modules.
-/* v8 ignore start -- CLI entry guard: false by construction when imported by tests */
-if (isMain(import.meta.url)) {
-  main()
-    .then((code) => {
-      process.exitCode = code;
-    })
-    .catch((err: unknown) => {
-      console.error('Unexpected error while generating exports:', err);
-      process.exitCode = 1;
-    });
-}
-/* v8 ignore stop */
+runCli(import.meta.url, 'generating exports', main);

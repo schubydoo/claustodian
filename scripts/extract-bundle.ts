@@ -402,8 +402,8 @@ export function extractFlagDescriptions(
     const description = cleanDescription(m[4], m[3]);
     if (!description) continue;
     if (/^-{1,2}[a-z]/.test(description)) continue; // a flag, not a description
-    // FLAG_SPEC_DESC group 2 is non-optional (it can match empty, never
-    // undefined). The ?? [] IS reachable: a short-only spec has no long token.
+    // FLAG_SPEC_DESC group 2 is non-optional, so a match always populates it.
+    // The ?? [] IS reachable: a short-only spec has no long token.
     for (const long of m[2]!.match(FLAG_TOKEN) ?? []) {
       if (!FLAG_GRAMMAR.test(long) || !flags.has(long)) continue;
       let set = seen.get(long);
