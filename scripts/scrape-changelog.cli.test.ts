@@ -43,6 +43,7 @@ describe('scrape-changelog main()', () => {
 
   afterEach(async () => {
     logSpy?.mockRestore();
+    delete process.env.CLAUSTODIAN_CONTROL_OBSERVATIONS_PATH;
     if (tmpDir) {
       await rm(tmpDir, { recursive: true, force: true });
       tmpDir = undefined;
@@ -213,46 +214,85 @@ describe('scrape-changelog main()', () => {
     expect(exitCode).toBe(0);
   });
 
+  // A prior latest.json that published one control_message record. The guard's job is
+  // to notice when the observation file that produced it has gone missing.
+  const priorWithControl = JSON.stringify({
+    claudeCodeVersion: '2.1.9',
+    schemaVersion: 1,
+    symbols: [
+      {
+        symbol: 'hook_callback',
+        type: 'control_message',
+        family: 'control_request',
+        direction: null,
+        first_seen: '2.1.63',
+        removed_in: null,
+        status: 'active',
+        provenance: 'binary',
+        confidence: 'medium',
+        description: '',
+        source_url: null,
+        category: 'control-protocol',
+        first_seen_estimated: true,
+      },
+    ],
+  });
+
   it('refuses to scrape when a prior dataset published control records and the file is gone', async () => {
-    // The regression guard firing end to end, not just the helper. The prior latest.json
-    // published a control_message record; the committed data/control-observations.json is
-    // absent (it is opt-in and not committed on this branch), so regenerating now would
-    // drop every control record. main must throw rather than silently ship the removal.
+    // The regression guard firing end to end, not just the helper. The observation path
+    // is pointed at a temp location that does not exist — so this holds whether or not
+    // data/control-observations.json is committed, which is the point of the override.
     tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-scrape-'));
     const changelogPath = join(tmpDir, 'CHANGELOG.md');
     const outDir = join(tmpDir, 'out');
     await mkdir(outDir, { recursive: true });
     await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
-    await writeFile(
-      join(outDir, 'latest.json'),
-      JSON.stringify({
-        claudeCodeVersion: '2.1.9',
-        schemaVersion: 1,
-        symbols: [
-          {
-            symbol: 'hook_callback',
-            type: 'control_message',
-            family: 'control_request',
-            direction: null,
-            first_seen: '2.1.63',
-            removed_in: null,
-            status: 'active',
-            provenance: 'binary',
-            confidence: 'medium',
-            description: '',
-            source_url: null,
-            category: 'control-protocol',
-            first_seen_estimated: true,
-          },
-        ],
-      }),
-      'utf-8'
-    );
+    await writeFile(join(outDir, 'latest.json'), priorWithControl, 'utf-8');
+    process.env.CLAUSTODIAN_CONTROL_OBSERVATIONS_PATH = join(tmpDir, 'control-observations.json');
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     await expect(withArgv(['--changelog', changelogPath, '--out', outDir], main)).rejects.toThrow(
       /is (missing|empty), but the previous dataset published control_message/
     );
+  });
+
+  it('scrapes cleanly when the prior published control records and the file is present', async () => {
+    // The steady state after publication: the file exists and carries records, so the
+    // guard must NOT fire. Pairs with the test above so the guard is pinned in both
+    // directions, independent of whether the file is committed in this checkout.
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-scrape-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    const outDir = join(tmpDir, 'out');
+    await mkdir(outDir, { recursive: true });
+    await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
+    await writeFile(join(outDir, 'latest.json'), priorWithControl, 'utf-8');
+    const controlPath = join(tmpDir, 'control-observations.json');
+    await writeFile(
+      controlPath,
+      JSON.stringify({
+        $generated_by: 'scripts/backfill-binary.ts',
+        source: 'binary',
+        symbols: [
+          {
+            symbol: 'hook_callback',
+            family: 'control_request',
+            first_seen: '2.1.63',
+            last_seen: '2.1.226',
+            removed_in: null,
+            direction_eras: [{ from: '2.1.63', value: null }],
+            description_eras: [{ from: '2.1.63', value: '' }],
+            evidence_eras: [{ from: '2.1.63', value: 'schema' }],
+            admitted_at_first_seen: 'both',
+          },
+        ],
+      }),
+      'utf-8'
+    );
+    process.env.CLAUSTODIAN_CONTROL_OBSERVATIONS_PATH = controlPath;
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await withArgv(['--changelog', changelogPath, '--out', outDir], main);
+    expect(exitCode).toBe(0);
   });
 });
 
