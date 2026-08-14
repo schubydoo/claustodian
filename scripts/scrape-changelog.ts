@@ -284,8 +284,10 @@ export const SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
  * these when the bundle reads `process.env.X` (a factual record) and filters them
  * at publication via `isPublishableBinaryEnv`'s claude-code whitelist. Suppressing
  * them in the shared denylist would erase those observations with no coverage
- * failure to catch it, so the two lanes agree on what PUBLISHES while the binary
- * lane keeps the raw evidence.
+ * failure to catch it. For these tokens the two lanes then agree on what
+ * PUBLISHES, while the binary lane keeps the raw evidence. (The lanes do NOT
+ * agree in general — the kept vars below, e.g. NO_COLOR, publish from the
+ * changelog while the binary lane withholds them.)
  */
 export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   // git's own redirection primitives, from the 2.1.216 bugfix bullet "Fixed

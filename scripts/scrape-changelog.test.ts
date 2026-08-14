@@ -189,8 +189,13 @@ describe('extractSymbols', () => {
       'DIRSTACK',
       'XDG_DATA_HOME',
     ];
+    // Membership: these particular tokens must be present, so the list is explicit.
     for (const token of changelogOnly) {
       expect(CHANGELOG_SYMBOL_DENYLIST.has(token)).toBe(true);
+    }
+    // Leakage: iterate the SET itself, so a token added to CHANGELOG_SYMBOL_DENYLIST
+    // later cannot escape the check by not being copied into the list above.
+    for (const token of CHANGELOG_SYMBOL_DENYLIST) {
       expect(SYMBOL_DENYLIST.has(token)).toBe(false);
     }
   });
