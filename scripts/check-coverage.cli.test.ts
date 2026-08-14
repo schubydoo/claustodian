@@ -123,13 +123,60 @@ describe('check-coverage main()', () => {
     );
   });
 
-  it('ignores unknown args and a trailing --dataset, falling back to the default dataset path', async () => {
+  it('ignores an unrecognized positional argument', async () => {
     tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
     const changelogPath = join(tmpDir, 'CHANGELOG.md');
-    // This test runs against the repo's real data/latest.json, so the fixture
-    // symbols must be names that can never appear in it — the shared fixture's
-    // plausible-looking flags would couple the exit code to future dataset
-    // regenerations.
+    const datasetPath = join(tmpDir, 'dataset.json');
+    // Fixture symbol that can never appear in the dataset, so the exit code is
+    // deterministic regardless of the real data.
+    await writeFile(
+      changelogPath,
+      '# Changelog\n\n## 2.1.10\n\n- Added `--claustodian-test-fixture` flag.\n',
+      'utf-8'
+    );
+    await writeFile(datasetPath, JSON.stringify({ symbols: [] }), 'utf-8');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    // 'stray' matches no flag and is a positional, not a valueless option, so it
+    // is skipped rather than throwing.
+    const exitCode = await withArgv(
+      ['stray', '--changelog', changelogPath, '--dataset', datasetPath],
+      main
+    );
+
+    expect(exitCode).toBe(1);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('First missing symbol'));
+  });
+
+  it('throws when a trailing --dataset has no value', async () => {
+    await expect(withArgv(['--dataset'], main)).rejects.toThrow(
+      '--dataset requires a path argument'
+    );
+  });
+
+  it('throws when a trailing --changelog has no value', async () => {
+    // The valueless flag fails loudly rather than falling through to fetching the
+    // changelog from the network — matching generate-exports, which throws
+    // '--data requires a directory argument' for the same mistake.
+    await expect(withArgv(['--changelog'], main)).rejects.toThrow(
+      '--changelog requires a path argument'
+    );
+  });
+
+  it('throws when a flag value is itself another flag', async () => {
+    // `--changelog --dataset x` must not swallow --dataset as the changelog path;
+    // a flag-shaped value is rejected the same as a missing one.
+    await expect(withArgv(['--changelog', '--dataset', 'x.json'], main)).rejects.toThrow(
+      '--changelog requires a path argument'
+    );
+  });
+
+  it('uses data/latest.json when --dataset is omitted', async () => {
+    // Pins the datasetPath default: a never-matching fixture symbol keeps the
+    // exit code deterministic while --dataset is absent, so the default path is
+    // what gets read and named.
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
     await writeFile(
       changelogPath,
       '# Changelog\n\n## 2.1.10\n\n- Added `--claustodian-test-fixture` flag.\n',
@@ -137,22 +184,14 @@ describe('check-coverage main()', () => {
     );
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    // 'stray' matches no flag, and the trailing --dataset has no value, so the
-    // default data/latest.json (the repo's own) must be used.
-    const exitCode = await withArgv(['stray', '--changelog', changelogPath, '--dataset'], main);
+    const exitCode = await withArgv(['--changelog', changelogPath], main);
 
     expect(exitCode).toBe(1);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('data/latest.json'));
-    // Proves the exit code came from the missing fixture symbol, not from the
-    // default dataset failing to load (both paths return 1).
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('First missing symbol'));
   });
 
-  // Records parseArgs's current behaviour rather than endorsing it: a trailing
-  // --changelog/--dataset is silently ignored where generate-exports throws for
-  // the same mistake. If that divergence is ever fixed, this test should start
-  // asserting the error instead.
-  it('falls back to fetching the changelog when a trailing --changelog has no value', async () => {
+  it('fetches the changelog from the network when --changelog is omitted', async () => {
     tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
     const datasetPath = join(tmpDir, 'dataset.json');
     await writeFile(
@@ -167,7 +206,7 @@ describe('check-coverage main()', () => {
     ) as unknown as typeof fetch;
     globalThis.fetch = fetchSpy;
     try {
-      const exitCode = await withArgv(['--dataset', datasetPath, '--changelog'], main);
+      const exitCode = await withArgv(['--dataset', datasetPath], main);
       expect(exitCode).toBe(1);
       expect(fetchSpy).toHaveBeenCalled();
     } finally {

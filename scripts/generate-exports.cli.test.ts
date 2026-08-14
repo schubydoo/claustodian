@@ -92,4 +92,10 @@ describe('generate-exports main()', () => {
       '--data requires a directory argument'
     );
   });
+
+  it('rejects a flag-shaped value rather than swallowing the next flag', async () => {
+    await expect(withArgv(['--data', '--other'], main)).rejects.toThrow(
+      '--data requires a directory argument'
+    );
+  });
 });
