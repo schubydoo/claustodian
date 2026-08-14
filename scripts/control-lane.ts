@@ -673,7 +673,7 @@ function directionsFrom(unions: Union[]): Map<string, ControlDirection> {
  * a dispatch comparison proves only that the CLI handles the message.
  */
 export function controlMessageConfidence(
-  observation: ControlMessageObservation
+  observation: Pick<ControlMessageObservation, 'evidence' | 'description'>
 ): 'high' | 'medium' | 'low' {
   if (observation.evidence === 'dispatch') return 'low';
   if (observation.evidence === 'schema' && observation.description !== '') return 'high';

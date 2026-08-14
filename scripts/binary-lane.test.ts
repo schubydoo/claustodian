@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
+import { controlMessageConfidence, type ControlEvidence } from './control-lane.js';
 import {
   assertBinaryObservations,
+  assertControlObservations,
+  type ControlObservationsFile,
   binaryEnvCategory,
   binaryFlagCategory,
   hiddenAt,
@@ -188,6 +191,76 @@ describe('computeBinaryRemoval', () => {
 
   it('returns null for a symbol never observed', () => {
     expect(computeBinaryRemoval([], OBSERVED)).toBeNull();
+  });
+});
+
+describe('assertControlObservations', () => {
+  const entry = (over: Record<string, unknown> = {}) => ({
+    symbol: 'hook_callback',
+    family: 'control_request',
+    first_seen: '2.1.63',
+    last_seen: '2.1.226',
+    removed_in: null,
+    direction_eras: [{ from: '2.1.63', value: null }],
+    description_eras: [{ from: '2.1.63', value: '' }],
+    evidence_eras: [{ from: '2.1.63', value: 'schema' }],
+    admitted_at_first_seen: 'both',
+    ...over,
+  });
+  const envelope = (over: Record<string, unknown> = {}): ControlObservationsFile =>
+    ({
+      $generated_by: 'scripts/backfill-binary.ts',
+      source: 'binary',
+      symbols: [entry()],
+      ...over,
+    }) as ControlObservationsFile;
+
+  it('accepts a backfill output', () => {
+    expect(() => assertControlObservations(envelope(), 'p')).not.toThrow();
+  });
+
+  it('refuses a file that is not a backfill output', () => {
+    // The point of the guard: `controlRecordsFor` stamps every record
+    // `provenance: "binary"`, so a hand-edited file would publish dates no extraction
+    // produced. `npm run validate` routes this file to no schema, so nothing else asks.
+    expect(() => assertControlObservations(envelope({ $generated_by: 'hand' }), 'p')).toThrow(
+      /not a scripts\/backfill-binary\.ts output/
+    );
+    expect(() => assertControlObservations(envelope({ source: 'docs' }), 'p')).toThrow(
+      /not a scripts\/backfill-binary\.ts output/
+    );
+  });
+
+  it.each(['direction_eras', 'description_eras', 'evidence_eras'] as const)(
+    'names the entry and the field when %s is missing',
+    (field) => {
+      // Without this, a truncated entry reaches eraValueAt and dies on a bare
+      // "eras is not iterable" mid-scrape, naming neither the file nor the subtype.
+      // Each field is checked so the loop's throw fires past its first iteration too.
+      const broken = envelope({ symbols: [entry({ [field]: undefined })] });
+      expect(() => assertControlObservations(broken, 'p')).toThrow(/hook_callback/);
+      expect(() => assertControlObservations(broken, 'p')).toThrow(new RegExp(field));
+    }
+  );
+
+  it('accepts an empty symbol list, which the caller refuses separately', () => {
+    // Emptiness is the regression guard's business (controlRegressionRefusal), not
+    // this one's — an empty file is well-formed, it just must not silently publish.
+    expect(() => assertControlObservations(envelope({ symbols: [] }), 'p')).not.toThrow();
+  });
+
+  it('names the entry when admitted_at_first_seen is missing', () => {
+    // The one field whose absence un-flags an upper bound silently, so the guard must
+    // catch it as loudly as the era arrays.
+    const broken = envelope({ symbols: [entry({ admitted_at_first_seen: undefined })] });
+    expect(() => assertControlObservations(broken, 'p')).toThrow(/hook_callback/);
+    expect(() => assertControlObservations(broken, 'p')).toThrow(/admitted_at_first_seen/);
+  });
+
+  it('tolerates an absent symbol list on a provenance-valid envelope', () => {
+    // The loader guards `Array.isArray(symbols)` before calling this, so the `?? []`
+    // is purely defensive for a direct caller — exercise it so it cannot rot.
+    expect(() => assertControlObservations(envelope({ symbols: undefined }), 'p')).not.toThrow();
   });
 });
 
@@ -380,4 +453,189 @@ describe('binaryFlagCategory', () => {
     expect(isPublishableBinaryFlag(hidden)).toBe(true);
     expect(mayRedateFromBinary(hidden)).toBe(true);
   });
+});
+
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import {
+  controlRecordDating,
+  eraValueAt,
+  loadControlObservations,
+  type ControlObservation,
+} from './binary-lane.js';
+
+describe('control record dating', () => {
+  const obs = (
+    admitted: ControlObservation['admitted_at_first_seen'],
+    evidence: 'schema' | 'call_site' | 'dispatch',
+    description: string
+  ): ControlObservation => ({
+    symbol: 'hook_callback',
+    family: 'control_request',
+    first_seen: '2.1.63',
+    last_seen: '2.1.226',
+    removed_in: null,
+    direction_eras: [{ from: '2.1.63', value: null }],
+    description_eras: [{ from: '2.1.63', value: description }],
+    evidence_eras: [{ from: '2.1.63', value: evidence }],
+    admitted_at_first_seen: admitted,
+  });
+
+  it('caps a union-only admission at medium even with the strongest evidence', () => {
+    // The case the whole policy exists for. On evidence alone this grades `high`; its
+    // date is an upper bound, and the contract forbids `high` with estimated set, so
+    // the record would FAIL VALIDATION if evidence were allowed to win.
+    expect(
+      controlRecordDating(obs('union', 'schema', 'Delivers a hook callback.'), '2.1.226')
+    ).toEqual({ first_seen_estimated: true, confidence: 'medium' });
+  });
+
+  it('leaves a dispatched admission ungraded down', () => {
+    expect(
+      controlRecordDating(obs('both', 'schema', 'Delivers a hook callback.'), '2.1.226')
+    ).toEqual({ first_seen_estimated: false, confidence: 'high' });
+  });
+
+  it('does not raise weak evidence just because the date is sound', () => {
+    // Dating certainty only ever LOWERS the grade; it cannot promote a bare dispatch.
+    expect(controlRecordDating(obs('dispatch', 'dispatch', ''), '2.1.226')).toEqual({
+      first_seen_estimated: false,
+      confidence: 'low',
+    });
+  });
+
+  it('grades a described schema by the description in force at THAT version', () => {
+    // Descriptions do not exist before 2.1.63 and can be reworded after, so grading by
+    // the latest one would stamp today's answer on an older snapshot.
+    const o: ControlObservation = {
+      ...obs('both', 'schema', ''),
+      description_eras: [
+        { from: '2.1.63', value: '' },
+        { from: '2.1.100', value: 'Delivers a hook callback.' },
+      ],
+    };
+    expect(controlRecordDating(o, '2.1.63').confidence).toBe('medium');
+    expect(controlRecordDating(o, '2.1.100').confidence).toBe('high');
+  });
+});
+
+describe('eraValueAt', () => {
+  it('returns the fallback before the first era, then each era in force', () => {
+    const eras = [
+      { from: '2.1.63', value: 'a' },
+      { from: '2.1.133', value: 'b' },
+    ];
+    expect(eraValueAt(eras, '2.1.0', 'seed')).toBe('seed');
+    expect(eraValueAt(eras, '2.1.63', 'seed')).toBe('a');
+    expect(eraValueAt(eras, '2.1.132', 'seed')).toBe('a');
+    expect(eraValueAt(eras, '2.1.226', 'seed')).toBe('b');
+  });
+});
+
+describe('loadControlObservations', () => {
+  it('reports absence rather than throwing, because absence is legitimate once', async () => {
+    // Before the first re-extract with the control lane, backfill-binary writes no
+    // file. The CALLER decides whether that is acceptable, by checking the prior
+    // dataset — this only reports which case it is.
+    const result = await loadControlObservations('/tmp/claustodian-no-such-control.json');
+    expect(result).toMatchObject({ observations: [], present: false });
+  });
+
+  it('refuses a malformed file rather than reading it as no control messages', async () => {
+    const path = join(tmpdir(), `claustodian-bad-control-${process.pid}.json`);
+    await writeFile(path, JSON.stringify({ note: 'no symbols array here' }));
+    await expect(loadControlObservations(path)).rejects.toThrow(/Refusing to treat a malformed/);
+    await rm(path, { force: true });
+  });
+
+  it('reports absence only for a MISSING file, not for any read error', async () => {
+    // A directory at the path fails readFile with EISDIR, not ENOENT — a real failure
+    // that must throw rather than be read as "no control records", which downstream
+    // would ship as a mass removal.
+    const dir = join(tmpdir(), `claustodian-control-dir-${process.pid}`);
+    await mkdir(dir, { recursive: true });
+    await expect(loadControlObservations(dir)).rejects.toThrow(/Cannot read control observations/);
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it('refuses a syntactically broken file rather than reading it as an absence', async () => {
+    // Distinct from the missing-`symbols` case above: this dies in JSON.parse, and the
+    // guard turns a bare SyntaxError into an actionable message naming the file.
+    const path = join(tmpdir(), `claustodian-torn-control-${process.pid}.json`);
+    await writeFile(path, '{ "symbols": [ '); // truncated mid-write
+    await expect(loadControlObservations(path)).rejects.toThrow(/is not valid JSON/);
+    await rm(path, { force: true });
+  });
+
+  it('reads a backfill output', async () => {
+    const path = join(tmpdir(), `claustodian-good-control-${process.pid}.json`);
+    await writeFile(
+      path,
+      JSON.stringify({
+        $generated_by: 'scripts/backfill-binary.ts',
+        source: 'binary',
+        symbols: [
+          {
+            symbol: 'hook_callback',
+            family: 'control_request',
+            first_seen: '2.1.63',
+            last_seen: '2.1.226',
+            removed_in: null,
+            direction_eras: [{ from: '2.1.63', value: null }],
+            description_eras: [{ from: '2.1.63', value: '' }],
+            evidence_eras: [{ from: '2.1.63', value: 'schema' }],
+            admitted_at_first_seen: 'both',
+          },
+        ],
+      })
+    );
+    const result = await loadControlObservations(path);
+    expect(result.present).toBe(true);
+    expect(result.observations).toHaveLength(1);
+    await rm(path, { force: true });
+  });
+
+  it('refuses a hand-edited file, which would publish dates no extraction produced', async () => {
+    // The integrity check runs INSIDE the loader, so it cannot be left off at a call
+    // site. `npm run validate` routes this file to no schema, so nothing else asks.
+    const path = join(tmpdir(), `claustodian-handedited-control-${process.pid}.json`);
+    await writeFile(path, JSON.stringify({ source: 'binary', symbols: [] }));
+    await expect(loadControlObservations(path)).rejects.toThrow(
+      /not a scripts\/backfill-binary\.ts output/
+    );
+    await rm(path, { force: true });
+  });
+});
+describe('controlRecordDating — ceiling agrees with the extractor', () => {
+  // `controlRecordDating` restates `controlMessageConfidence` rather than importing it,
+  // because control-lane.ts pulls in the native oxc-parser and binary-lane.ts is on the
+  // scrape path. Every `ControlEvidence` value below is crossed with a described and an
+  // undescribed subtype. The list is hand-written — `ControlEvidence` is a bare union
+  // with no runtime companion — so a fourth member would type-check here and go
+  // untested; add it to EVIDENCE when you add it to the union.
+  const EVIDENCE: ControlEvidence[] = ['schema', 'call_site', 'dispatch'];
+
+  for (const evidence of EVIDENCE) {
+    for (const description of ['', 'Delivers a hook callback.']) {
+      it(`agrees for evidence=${evidence}, description=${description === '' ? 'none' : 'set'}`, () => {
+        const observation: ControlObservation = {
+          symbol: 'hook_callback',
+          family: 'control_request',
+          first_seen: '2.1.63',
+          last_seen: '2.1.226',
+          removed_in: null,
+          direction_eras: [{ from: '2.1.63', value: null }],
+          description_eras: [{ from: '2.1.63', value: description }],
+          evidence_eras: [{ from: '2.1.63', value: evidence }],
+          // `both` keeps the date anchored, so confidence is the ceiling untouched —
+          // which is what makes this a comparison of the ceiling rule alone.
+          admitted_at_first_seen: 'both',
+        };
+        expect(controlRecordDating(observation, '2.1.226').confidence).toBe(
+          controlMessageConfidence({ evidence, description })
+        );
+      });
+    }
+  }
 });

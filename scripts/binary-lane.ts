@@ -35,6 +35,106 @@ export interface HiddenEra {
   hidden: boolean;
 }
 
+/** A change point in a value that moves between versions: holds until the next. */
+export interface Era<T> {
+  from: string;
+  value: T;
+}
+
+/**
+ * A control_request subtype's observation window, plus the fields of it that move.
+ *
+ * `direction` and `description` are TIMELINES rather than single values because both
+ * change: direction is null everywhere until the CLI began declaring the two
+ * directional unions at 2.1.133, and descriptions do not exist before 2.1.63 and can
+ * be reworded after. One latest-state value would stamp today's answer on every
+ * historical snapshot, which is the invariant AGENTS.md states for any field that can
+ * vary by version.
+ */
+export interface ControlObservation {
+  symbol: string;
+  family: 'control_request';
+  first_seen: string;
+  last_seen: string;
+  removed_in: string | null;
+  direction_eras: ReadonlyArray<Era<'host_to_cli' | 'cli_to_host' | null>>;
+  description_eras: ReadonlyArray<Era<string>>;
+  /**
+   * How strongly the bundle evidenced the subtype, per version. An era for the same
+   * reason as the two above: evidence strengthens — a subtype proved only by a
+   * dispatch in one release can carry a described schema in the next — and the
+   * published record grades confidence off it, so a latest-state value would grade
+   * every historical snapshot by today's evidence.
+   */
+  evidence_eras: ReadonlyArray<Era<'schema' | 'call_site' | 'dispatch'>>;
+  /**
+   * Which signal admitted the subtype AT `first_seen` — not at the newest version.
+   *
+   * ⚠️ This is what makes `first_seen` datable, and reading the CURRENT version's
+   * value instead silently un-flags most of the affected set: a subtype that starts
+   * as `union` usually becomes `both` in a later release, once the CLI starts
+   * dispatching it.
+   *
+   * `'union'` WITNESSES an upper-bound date — the subtype may have been declared
+   * earlier and been invisible until its union became provable. It is a witness, not
+   * a test: `'both'` does not prove the date is sound. See control-lane.ts.
+   */
+  admitted_at_first_seen: 'union' | 'dispatch' | 'both';
+}
+
+/**
+ * What a control_message record says at `version`: its date, how sure we are of that
+ * date, and how strongly the bundle evidenced it.
+ *
+ * ⚠️ Evidence sets a ceiling and dating certainty lowers it, never the reverse. The
+ * record contract forbids `first_seen_estimated: true` alongside `high`, so a
+ * union-only admission carrying a described schema grades `medium`, not `high`.
+ *
+ * `admitted_at_first_seen === 'union'` is a WITNESS of an upper bound, not a test for
+ * one: `'both'` does not prove the date is sound, because a subtype declared in a
+ * not-yet-routed union and dispatched in the same release is admitted by both signals
+ * at once. Nothing in a single bundle can tell that apart, so it is not claimed.
+ */
+export function controlRecordDating(
+  observation: ControlObservation,
+  version: string
+): {
+  first_seen_estimated: boolean;
+  confidence: 'high' | 'medium' | 'low';
+} {
+  const evidence = eraValueAt(observation.evidence_eras, version, 'dispatch');
+  const description = eraValueAt(observation.description_eras, version, '');
+
+  // Evidence sets the ceiling: a described schema is the strongest the bundle offers,
+  // a bare dispatch the weakest.
+  //
+  // This restates `controlMessageConfidence` (control-lane.ts) rather than calling it,
+  // deliberately. That module imports the native `oxc-parser`, and this one is on the
+  // scrape path — importing it here would load a parser on every scrape for a
+  // three-line rule. `binary-lane.test.ts` pins the two equivalent across the whole
+  // input space instead, so they cannot drift silently.
+  const ceiling: 'high' | 'medium' | 'low' =
+    evidence === 'dispatch'
+      ? 'low'
+      : evidence === 'schema' && description !== ''
+        ? 'high'
+        : 'medium';
+
+  const estimated = observation.admitted_at_first_seen === 'union';
+  if (!estimated) return { first_seen_estimated: false, confidence: ceiling };
+  return { first_seen_estimated: true, confidence: ceiling === 'high' ? 'medium' : ceiling };
+}
+
+/** The value in force at `version` — the last era at or before it. */
+export function eraValueAt<T>(eras: ReadonlyArray<Era<T>>, version: string, fallback: T): T {
+  let value = fallback;
+  for (const era of eras) {
+    if (compareVersionsAsc(era.from, version) > 0) break;
+    value = era.value;
+  }
+  return value;
+}
+
 /** A symbol's observation window across the archived binaries. */
 export interface BinaryObservation {
   symbol: string;
@@ -1102,6 +1202,14 @@ export function promotionFor(type: string, symbol: string): BinaryPromotion | un
  * with no real deletions — see scratch/audit-buckets.md), so binary ABSENCE at or
  * after this version is not trustworthy. Removal detection only trusts absence in
  * the reliable era strictly before this ceiling.
+ *
+ * ⚠️ Control observations pass through `computeBinaryRemoval` too, and this ceiling is
+ * INHERITED there rather than calibrated for that lane. The regression it describes is
+ * the regex extractor's; the AST lane throws on a zero rather than under-reporting. The
+ * consequence is one-sided — a control subtype retired at or after this version can
+ * never be marked `removed_in`, so it keeps publishing as `active` — which errs toward
+ * never claiming a removal, the safe direction here. Recalibrate before relying on
+ * control removals; do not assume this bound was measured for them.
  */
 export const RELIABLE_EXTRACTION_CEILING = '2.1.160';
 
@@ -1150,6 +1258,116 @@ export function computeBinaryRemoval(
   if (!solidlyPresent) return null;
 
   return asc.find((v) => compareVersionsAsc(v, lastSeen) > 0) ?? null;
+}
+
+/** The committed control-observations envelope, as `backfill-binary` writes it. */
+export interface ControlObservationsFile {
+  $generated_by?: string;
+  source?: string;
+  symbols?: ControlObservation[];
+}
+
+/**
+ * Control observations, plus a `present` flag saying whether the file existed at all.
+ * Both are always returned; the caller branches on `present`, never on an empty array.
+ *
+ * Absence is legitimate before the records are published: `backfill-binary` writes
+ * this file only when asked to (`--control`) or when it is already there, so that the
+ * release bot cannot publish the control surface on its own. It is NOT legitimate
+ * once the file has been committed — losing it would drop every control record from
+ * the next dataset, which reads downstream as a mass removal. The caller checks that
+ * against the prior dataset; this only reports which case it is.
+ */
+export async function loadControlObservations(
+  path: string
+): Promise<{ observations: ControlObservation[]; present: boolean }> {
+  let raw: string;
+  try {
+    raw = await readFile(path, 'utf-8');
+  } catch (error) {
+    // ONLY a missing file is a legitimate absence — the opt-in state before the records
+    // are published. A permission or I/O error is a real failure that must not be read
+    // as "no control records", which downstream would ship as a mass removal.
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return { observations: [], present: false };
+    }
+    throw new Error(
+      `Cannot read control observations at ${path}: ${(error as Error).message}. ` +
+        `Refusing to treat an unreadable file as an absence of control messages.`,
+      { cause: error }
+    );
+  }
+  let parsed: ControlObservationsFile;
+  try {
+    parsed = JSON.parse(raw) as ControlObservationsFile;
+  } catch (error) {
+    // Both failure modes are loud, but only one was actionable: a syntactically broken
+    // file threw a bare SyntaxError while the missing-array case got guidance.
+    throw new Error(
+      `${path} exists but is not valid JSON. Refusing to treat an unreadable ` +
+        `observation file as an absence of control messages — regenerate it with ` +
+        `"npm run backfill-binary -- --control".`,
+      { cause: error }
+    );
+  }
+  if (!Array.isArray(parsed.symbols)) {
+    throw new Error(
+      `${path} exists but has no \`symbols\` array. Refusing to treat a malformed ` +
+        `observation file as an absence of control messages — regenerate it with ` +
+        `"npm run backfill-binary".`
+    );
+  }
+  // Checked HERE rather than at the call site, unlike the sibling evidence files.
+  // Those are asserted in `main` because they have several readers; this has one, and
+  // a guard the only caller can forget is a guard that gets forgotten — dropping such
+  // a call passed the whole suite when it was written that way.
+  assertControlObservations(parsed, path);
+  return { observations: parsed.symbols, present: true };
+}
+
+/**
+ * Refuses a control-observations file that is not a `backfill-binary` output.
+ *
+ * `controlRecordsFor` stamps every record it emits `provenance: "binary"`, so a
+ * hand-edited or partially restored file would publish dates no extraction produced —
+ * a symbol asserted without positive evidence, which is the one thing this project
+ * will not ship. The sibling evidence files carry the same check; `npm run validate`
+ * routes none of the three to a schema, so this is the only gate they have.
+ *
+ * Each entry's timelines are walked here too, so a malformed one fails with an
+ * actionable message rather than dying later inside `eraValueAt`'s iteration.
+ */
+export function assertControlObservations(file: ControlObservationsFile, path: string): void {
+  if (file.$generated_by !== GENERATED_BY || file.source !== SOURCE) {
+    throw new Error(
+      `Control observations ${path} is not a scripts/backfill-binary.ts output ` +
+        `(got $generated_by=${JSON.stringify(file.$generated_by)}, source=${JSON.stringify(file.source)}); ` +
+        `refusing to publish it as provenance:"binary". Regenerate with ` +
+        `"npm run backfill-binary -- --control".`
+    );
+  }
+  for (const entry of file.symbols ?? []) {
+    for (const field of ['direction_eras', 'description_eras', 'evidence_eras'] as const) {
+      if (!Array.isArray(entry[field])) {
+        throw new Error(
+          `Control observations ${path} is malformed: ${JSON.stringify(entry.symbol)} has no ` +
+            `"${field}" array (the file was likely truncated or hand-edited). Regenerate with ` +
+            `"npm run backfill-binary -- --control".`
+        );
+      }
+    }
+    // `admitted_at_first_seen` is the one field whose absence fails SILENTLY rather
+    // than loudly: `controlRecordDating` reads `=== 'union'`, so a missing value is
+    // falsy and anchors a date that should be an upper bound. Checked here, where the
+    // three era arrays are, because that is exactly what a truncation would drop.
+    if (entry.admitted_at_first_seen === undefined) {
+      throw new Error(
+        `Control observations ${path} is malformed: ${JSON.stringify(entry.symbol)} has no ` +
+          `"admitted_at_first_seen" (the file was likely truncated or hand-edited). Regenerate ` +
+          `with "npm run backfill-binary -- --control".`
+      );
+    }
+  }
 }
 
 /**
