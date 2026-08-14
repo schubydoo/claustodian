@@ -174,6 +174,15 @@ one thing that cannot get it.
 
 Regeneration is ~24 minutes. Review is worth more than the 24 minutes.
 
+⚠️ **If the regeneration introduces a `type` the site has never published, ship the
+site row first.** `scripts/site-types.test.ts` runs on every PR and fails when a type
+in `data/latest.json` lacks a `TYPE_LABELS` row, a legend chip, or a `.t-<type>`
+colour (plus a review-page colour if the type can be `needs_review`). The only
+in-place fix is a `site/index.html` edit — a code change, forbidden inside a data PR.
+The site tolerates an unlabelled type (`typeLabel` falls back to the raw value), so
+land the site rows in the code PR **before** regenerating, with no visible effect
+until the records arrive.
+
 ---
 
 ## Verifying an extractor change

@@ -1529,10 +1529,11 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       // still present; otherwise falls back to "all".
       function refreshTypeControl() {
         const prev = $type.value;
+        const types = orderedTypesIn(activeSource());
         const opts = [optionEl('all', 'All types')];
-        for (const t of orderedTypesIn(activeSource())) opts.push(optionEl(t, typeLabel(t)));
+        for (const t of types) opts.push(optionEl(t, typeLabel(t)));
         $type.replaceChildren(...opts);
-        $type.value = prev === 'all' || activeSource().some((s) => s.type === prev) ? prev : 'all';
+        $type.value = prev === 'all' || types.includes(prev) ? prev : 'all';
       }
 
       // Category applies only to env vars (for flags/commands it just mirrors the
@@ -1624,9 +1625,9 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           const nodes = [];
           for (const t of orderedTypesIn(matches)) {
             // Header count is the total across ALL pages, not this page's share —
-            // "CLI flags · 12" under a 240-flag filter would be a lie.
+            // "CLI flags · 12" under a 240-flag filter would be a lie. orderedTypesIn
+            // derives t from matches, so total is always >= 1.
             const total = matches.filter((s) => s.type === t).length;
-            if (!total) continue;
             const onPage = slice.filter((s) => s.type === t);
             nodes.push(groupHeader(t, typeLabel(t), total));
             for (const s of onPage) nodes.push(resultCard(s));
