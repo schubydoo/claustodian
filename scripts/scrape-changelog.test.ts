@@ -119,6 +119,27 @@ describe('extractSymbols', () => {
     expect(symbols).toEqual([{ symbol: '--turbo', type: 'cli_flag' }]);
   });
 
+  it('reads an env var from its `NAME=value` assignment form', () => {
+    // The changelog documents many env vars this way, e.g. 2.1.233's
+    // "set `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` to bring them back". Without the
+    // suffix handling these fall to the binary lane and land needs_review.
+    const symbols = extractSymbols('set `CLAUDE_CODE_ENABLE_TODO_TOOLS=1` to bring them back');
+    expect(symbols).toEqual([{ symbol: 'CLAUDE_CODE_ENABLE_TODO_TOOLS', type: 'env_var' }]);
+  });
+
+  it('dedupes an env var named both bare and in assignment form', () => {
+    const symbols = extractSymbols(
+      '`OTEL_METRICS_EXPORTER` — e.g. `OTEL_METRICS_EXPORTER=prometheus`.'
+    );
+    expect(symbols).toEqual([{ symbol: 'OTEL_METRICS_EXPORTER', type: 'env_var' }]);
+  });
+
+  it('still denylists an OS/shell var written in assignment form', () => {
+    // The suffix handling must not resurrect a denylisted name: `PATH=…` in prose
+    // still resolves to PATH, which CHANGELOG_SYMBOL_DENYLIST drops.
+    expect(extractSymbols('export `PATH=/usr/bin` before running')).toEqual([]);
+  });
+
   it('orders results by first appearance across all three patterns', () => {
     const symbols = extractSymbols('First `/compact`, then `--turbo`, then `OTEL_LOG_LEVEL`.');
     expect(symbols.map((s) => s.symbol)).toEqual(['/compact', '--turbo', 'OTEL_LOG_LEVEL']);
