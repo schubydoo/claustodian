@@ -127,9 +127,12 @@ describe('extractSymbols', () => {
     expect(symbols).toEqual([{ symbol: 'CLAUDE_CODE_ENABLE_TODO_TOOLS', type: 'env_var' }]);
   });
 
-  it('dedupes an env var named both bare and in assignment form', () => {
+  it('dedupes an env var named twice in assignment form', () => {
+    // Two assignment-form mentions, so without the suffix handling NEITHER is
+    // caught (result empty) — this fails red without the fix, unlike a bare +
+    // assignment pair where the bare span matches either way.
     const symbols = extractSymbols(
-      '`OTEL_METRICS_EXPORTER` — e.g. `OTEL_METRICS_EXPORTER=prometheus`.'
+      'Set `OTEL_METRICS_EXPORTER=prometheus` or `OTEL_METRICS_EXPORTER=otlp`.'
     );
     expect(symbols).toEqual([{ symbol: 'OTEL_METRICS_EXPORTER', type: 'env_var' }]);
   });
