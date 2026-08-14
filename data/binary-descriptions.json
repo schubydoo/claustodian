@@ -1237,6 +1237,12 @@
         "description": "Override verbose mode setting from config"
       }
     ],
+    "cli_flag:--watch-artifact": [
+      {
+        "from": "2.1.233",
+        "description": "Watch a Claude artifact (id or URL) in this session and hear about new versions and comments"
+      }
+    ],
     "cli_flag:--workload": [
       {
         "from": "2.1.71",
@@ -3897,6 +3903,10 @@
       {
         "from": "2.1.202",
         "description": "@internal When true, emit the totalTokensReminder block after each regular user prompt and (for 'padded-countdown') re-anchor the task budget to the full configured value at the start of each user turn. When false, the reminder appears only in the system prompt and after each tool-result batch, and 'padded-countdown' counts down over the whole session. Defaults to off. Env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER_AFTER_USER_TURN overrides; server-controlled via GrowthBook tengu_lapis_anchor_user_turn."
+      },
+      {
+        "from": "2.1.233",
+        "description": "@internal When true, emit the totalTokensReminder block after each regular user prompt and (for 'padded-countdown') re-anchor the task budget to the full configured value at the start of each user turn. When false, the reminder appears only in the system prompt and after each tool-result batch, and 'padded-countdown' counts down over the whole session. Defaults to on. Env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER_AFTER_USER_TURN overrides; server-controlled via GrowthBook tengu_lapis_anchor_user_turn."
       }
     ],
     "config_key:totalTokensReminderBudget": [

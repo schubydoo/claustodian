@@ -39,7 +39,7 @@
     {
       "symbol": "--agents",
       "type": "cli_flag",
-      "description": "Define custom subagents dynamically via JSON. Uses the same field names as subagent frontmatter, plus a `prompt` field for the agent's instructions",
+      "description": "Define custom subagents dynamically via JSON. Accepts the fields listed for CLI-defined subagents",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -74,7 +74,7 @@
     {
       "symbol": "--append-subagent-system-prompt",
       "type": "cli_flag",
-      "description": "Append custom text to the end of every subagent's system prompt, including nested subagents. Only applies in non-interactive mode with `-p`. Requires Claude Code v2.1.205 or later",
+      "description": "Append custom text to the end of every subagent's system prompt, nested subagents included, apart from a forked subagent, which reuses the conversation's own prompt. Only applies in non-interactive mode with `-p`. Requires Claude Code v2.1.205 or later",
       "doc_min_version": "2.1.205",
       "doc_page": "cli-reference"
     },
@@ -438,7 +438,7 @@
     {
       "symbol": "--name",
       "type": "cli_flag",
-      "description": "Set a display name for the session, shown in `/resume` and the terminal title. You can resume a named session with `claude --resume <name>`. <br /><br />`/rename` changes the name mid-session and also shows it on the prompt bar",
+      "description": "Set a display name for the session, shown in `/resume` and the terminal title. You can resume a named session with `claude --resume <name>`. In an interactive session, if another live session on this machine already uses the name, Claude Code applies a variant of it instead. <br /><br />`/rename` changes the name mid-session and also shows it on the prompt bar",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -970,7 +970,7 @@
     {
       "symbol": "/goal",
       "type": "command",
-      "description": "Set a goal: Claude keeps working across turns until the condition is met. With no argument, shows the current or most recently achieved goal. `clear`, `stop`, `off`, `reset`, `none`, or `cancel` removes an active goal early",
+      "description": "Set a goal: Claude keeps working across turns until the condition is met or judged impossible. With no argument, shows the current or most recently achieved goal. `clear`, `stop`, `off`, `reset`, `none`, or `cancel` removes an active goal early",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1201,7 +1201,7 @@
     {
       "symbol": "/rename",
       "type": "command",
-      "description": "Rename the current session and show the name on the prompt bar. Without a name, auto-generates one from conversation history. Also available in non-interactive mode (`-p`); requires Claude Code v2.1.205 or later. From every rename surface, including claude.ai and the desktop app, Claude Code replaces control and invisible characters in the new name with spaces and caps the name at 200 characters. If the name is empty once invisible characters are removed, Claude Code rejects it and shows `That name is empty once invisible characters are removed. Usage: /rename <name>`. The character replacement and length cap require Claude Code v2.1.221 or later",
+      "description": "Rename the current session and show the name on the prompt bar. Without a name, auto-generates one from conversation history. Also available in non-interactive mode (`-p`); requires Claude Code v2.1.205 or later. From every rename surface, including claude.ai and the desktop app, Claude Code replaces control and invisible characters in the new name with spaces and caps the name at 200 characters. If the name is empty once invisible characters are removed, Claude Code rejects it and shows `That name is empty once invisible characters are removed. Usage: /rename <name>`. The character replacement and length cap require Claude Code v2.1.221 or later. If another live session on this machine already uses a name you pass, Claude Code applies a variant of it instead",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1728,7 +1728,7 @@
     {
       "symbol": "crossSessionInbound",
       "type": "config_key",
-      "description": "How this session treats inbound cross-session messages from your other Claude Code sessions: `\"accept\"` delivers them to Claude, `\"hold\"` shows a notice for each message without delivering it, and `\"refuse\"` drops them. When no value applies, Claude Code decides per message from the two sessions' permission-mode classes; see Control inbound messages for the rules. Claude Code reads managed settings first, then the `--settings` flag, then user settings, and applies the first value found; a value in project or local settings applies only when it's stricter, on the `accept` < `hold` < `refuse` ladder, than the value those trusted sources give. When none of the trusted sources sets a value, a project or local `hold` or `refuse` still applies, replacing the per-message default. Requires Claude Code v2.1.224 or later",
+      "description": "How this session treats inbound cross-session messages from your other Claude Code sessions: `\"accept\"` delivers them to Claude, `\"hold\"` shows a notice for each message without delivering it, and `\"refuse\"` drops them. When no value applies, Claude Code decides per message from the two sessions' permission-mode classes; see Control inbound messages for the rules. Claude Code reads managed settings first, then the `--settings` flag, then user settings, and applies the first value found; a value in project or local settings applies only when it's stricter, on the `accept` < `hold` < `refuse` ladder, than the value those trusted sources give. When none of the trusted sources sets a value, a project or local `hold` or `refuse` still applies, replacing the per-message default. Requires Claude Code v2.1.224 or later. In sessions with cross-session messaging, appears in `/config` as **Messages from your other sessions**, which writes this key to user settings. The row requires Claude Code v2.1.232 or later, and Claude Code hides it while the `--settings` flag or managed settings set the key",
       "doc_min_version": "2.1.224",
       "doc_page": "settings"
     },
@@ -1749,7 +1749,7 @@
     {
       "symbol": "dialogExpiry",
       "type": "config_key",
-      "description": "**Default**: `\"5m\"`. Deadline for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, and for the approval dialog for a held cross-session message. When no answer arrives before the deadline, Claude Code cancels the dialog and continues with its no-action default. Permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by this deadline. Accepts `\"60s\"`, `\"5m\"`, `\"10m\"`, or `\"never\"`, which disables the deadline. The `CLAUDE_CODE_USER_DIALOG_TIMEOUT_MS` environment variable overrides this setting. Read from user, managed, and `--settings` sources only. Requires Claude Code v2.1.224 or later",
+      "description": "**Default**: `\"5m\"`. Deadline for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, and for the approval dialog for a held cross-session message. When no answer arrives before the deadline, Claude Code cancels the dialog and continues with its no-action default. Permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by this deadline. Accepts `\"60s\"`, `\"5m\"`, `\"10m\"`, or `\"never\"`, which disables the deadline. The `CLAUDE_CODE_USER_DIALOG_TIMEOUT_MS` environment variable overrides this setting. Read from user, managed, and `--settings` sources only. Requires Claude Code v2.1.224 or later. Appears in `/config` as **Dialog expiry**, which writes this key to user settings. The row requires Claude Code v2.1.232 or later, and Claude Code hides it while the `--settings` flag or managed settings set the key",
       "doc_min_version": "2.1.224",
       "doc_page": "settings"
     },
@@ -3529,6 +3529,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_MTLS_RELOAD_ON_STALE_CONNECTION",
+      "type": "env_var",
+      "description": "Set to `1` to stop Claude Code from re-reading the mTLS client certificate and key when an API request fails with a connection-level error, such as a connection reset or a TLS handshake error. With the reload disabled, Claude Code loads rotated files only when it next applies settings or at the next startup. Requires Claude Code v2.1.232 or later",
+      "doc_min_version": "2.1.232",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
       "type": "env_var",
       "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
@@ -3608,7 +3615,7 @@
     {
       "symbol": "CLAUDE_CODE_ENABLE_APPEND_SUBAGENT_PROMPT",
       "type": "env_var",
-      "description": "Set to `1` to enable appending extra text to the end of every subagent's system prompt. The `--append-subagent-system-prompt` flag supplies the appended text and sets this variable automatically, so you don't need to set it yourself. Requires Claude Code v2.1.205 or later",
+      "description": "Set to `1` to enable appending extra text to the end of the system prompt of every subagent other than a forked subagent. The `--append-subagent-system-prompt` flag supplies the appended text and sets this variable automatically, so you don't need to set it yourself. Requires Claude Code v2.1.205 or later",
       "doc_min_version": "2.1.205",
       "doc_page": "env-vars"
     },
@@ -3671,7 +3678,7 @@
     {
       "symbol": "CLAUDE_CODE_ENABLE_TASKS",
       "type": "env_var",
-      "description": "Controls whether sessions use the structured Task tools (`TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList`) or the legacy `TodoWrite` tool. As of Claude Code v2.1.142, Task tools are the default in all modes. Set to `0` to revert to `TodoWrite`. See Task list and Migrate to Task tools",
+      "description": "Controls whether sessions use the structured Task tools (`TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList`) or the legacy `TodoWrite` tool. Task tools are the default in all modes. Set to `0` to use `TodoWrite`. See Task list and Migrate to Task tools",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4784,7 +4791,7 @@
     {
       "symbol": "MCP_CONNECTION_NONBLOCKING",
       "type": "env_var",
-      "description": "Controls whether startup waits for MCP servers to connect before the first query. MCP startup is non-blocking by default: servers connect in the background and their tools become available as they finish; before v2.1.142, the blocking wait was the default. Set to `0` to restore the blocking 5-second connection wait. Servers configured with `alwaysLoad: true` still make startup wait regardless, except when served from the discovery cache, since their tools must be present when the first prompt is built. In non-interactive mode (`-p`), Claude Code also waits for still-pending servers before the first turn regardless of this variable, with a longer deadline when you pass `--mcp-config` explicitly; see that flag's entry for the cached-server exception",
+      "description": "Controls whether startup waits for MCP servers to connect before the first query. MCP startup is non-blocking by default: servers connect in the background and their tools become available as they finish. Set to `0` to make Claude Code wait for servers to connect before the first query. Servers configured with `alwaysLoad: true` still make startup wait regardless, except when served from the discovery cache, since their tools must be present when the first prompt is built. In non-interactive mode (`-p`), Claude Code also waits for still-pending servers before the first turn regardless of this variable, with a longer deadline when you pass `--mcp-config` explicitly; see that flag's entry for the cached-server exception",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },

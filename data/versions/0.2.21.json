@@ -476,18 +476,6 @@
       "category": "other"
     },
     {
-      "symbol": "HOME",
-      "type": "env_var",
-      "first_seen": "0.2.9",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
       "symbol": "NO_PROXY",
       "type": "env_var",
       "first_seen": "0.2.9",
@@ -499,18 +487,6 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "network"
-    },
-    {
-      "symbol": "PATH",
-      "type": "env_var",
-      "first_seen": "0.2.9",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
     },
     {
       "symbol": "THINK_TOOL",
