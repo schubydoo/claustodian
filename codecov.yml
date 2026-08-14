@@ -1,6 +1,6 @@
 # Codecov config. Coverage is REPORTED here for visibility (PR comment + trend
 # graphs + per-component breakdown); the enforced floor is the Vitest coverage
-# threshold in vitest.config.ts (statements >= 85), run in CI by the
+# threshold in vitest.config.ts (statements >= 95), run in CI by the
 # `test:coverage` step in .github/workflows/validate-pr.yml on the single Ubuntu
 # cell. The `project` status mirrors that floor and stays `informational: true`
 # (nudge, never block — vitest is the source of truth). The `patch` status is a
@@ -36,10 +36,11 @@ coverage:
         informational: true # nudge, never block — vitest.config.ts is the source of truth
     patch:
       default:
-        # New-code (diff) coverage gate. 80% sits above the 85% project floor's
-        # intent for new code without being chronically red; the CLI plumbing is
-        # already covered, so new logic should land well-tested.
-        target: 80%
+        # New-code (diff) coverage gate. 90% sits just under the 95% project
+        # floor: new code lands well-tested without one genuinely hard-to-cover
+        # diff line chronically reddening the check. Matches the branches floor
+        # in vitest.config.ts and carries the same headroom-below-100 logic.
+        target: 90%
         threshold: 0% # no slack — new code meets the target or the status goes red
         informational: false # a real pass/fail traffic light (still a non-required check)
         if_not_found: success # docs/data-only PRs upload no diff → don't block them
