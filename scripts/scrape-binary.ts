@@ -260,6 +260,7 @@ export async function main(argv: string[]): Promise<number> {
   return 0;
 }
 
+/* v8 ignore start -- CLI entry guard: false by construction when imported by tests */
 if (isMain(import.meta.url)) {
   main(process.argv.slice(2))
     .then((code) => {
@@ -270,3 +271,4 @@ if (isMain(import.meta.url)) {
       process.exitCode = 1;
     });
 }
+/* v8 ignore stop */

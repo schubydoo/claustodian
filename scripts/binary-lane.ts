@@ -1257,6 +1257,7 @@ export function computeBinaryRemoval(
     lastThreeBefore.length >= 2 && lastThreeBefore.filter((v) => present.has(v)).length >= 2;
   if (!solidlyPresent) return null;
 
+  /* v8 ignore next -- reliableAfter was proven non-empty above and is a subset of the versions this find scans, so it always matches; the ?? null arm exists only for find's type */
   return asc.find((v) => compareVersionsAsc(v, lastSeen) > 0) ?? null;
 }
 

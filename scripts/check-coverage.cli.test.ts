@@ -123,6 +123,76 @@ describe('check-coverage main()', () => {
     );
   });
 
+  it('ignores unknown args and a trailing --dataset, falling back to the default dataset path', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    // This test runs against the repo's real data/latest.json, so the fixture
+    // symbols must be names that can never appear in it — the shared fixture's
+    // plausible-looking flags would couple the exit code to future dataset
+    // regenerations.
+    await writeFile(
+      changelogPath,
+      '# Changelog\n\n## 2.1.10\n\n- Added `--claustodian-test-fixture` flag.\n',
+      'utf-8'
+    );
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    // 'stray' matches no flag, and the trailing --dataset has no value, so the
+    // default data/latest.json (the repo's own) must be used.
+    const exitCode = await withArgv(['stray', '--changelog', changelogPath, '--dataset'], main);
+
+    expect(exitCode).toBe(1);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('data/latest.json'));
+  });
+
+  it('falls back to fetching the changelog when a trailing --changelog has no value', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
+    const datasetPath = join(tmpDir, 'dataset.json');
+    await writeFile(
+      datasetPath,
+      JSON.stringify({ symbols: [makeSymbol({ symbol: '--safe-mode', type: 'cli_flag' })] }),
+      'utf-8'
+    );
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const realFetch = globalThis.fetch;
+    const fetchSpy = vi.fn(
+      async () => new Response(FIXTURE_CHANGELOG, { status: 200 })
+    ) as unknown as typeof fetch;
+    globalThis.fetch = fetchSpy;
+    try {
+      const exitCode = await withArgv(['--dataset', datasetPath, '--changelog'], main);
+      expect(exitCode).toBe(1);
+      expect(fetchSpy).toHaveBeenCalled();
+    } finally {
+      globalThis.fetch = realFetch;
+    }
+  });
+
+  it('stringifies a non-Error throw when reporting a load failure', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    const datasetPath = join(tmpDir, 'dataset.json');
+    await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
+    await writeFile(datasetPath, JSON.stringify({ symbols: [] }), 'utf-8');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const parseSpy = vi.spyOn(JSON, 'parse').mockImplementationOnce(() => {
+      throw 'dataset parse blew up as a plain string';
+    });
+    try {
+      const exitCode = await withArgv(
+        ['--changelog', changelogPath, '--dataset', datasetPath],
+        main
+      );
+      expect(exitCode).toBe(1);
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('dataset parse blew up as a plain string')
+      );
+    } finally {
+      parseSpy.mockRestore();
+    }
+  });
+
   it('returns 1 when the dataset file does not look like a snapshot (missing symbols array)', async () => {
     tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
     const changelogPath = join(tmpDir, 'CHANGELOG.md');

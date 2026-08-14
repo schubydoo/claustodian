@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { isMain, loadChangelog } from './lib.js';
+import { compareVersionsAsc, isMain, loadChangelog } from './lib.js';
 
 describe('isMain', () => {
   it('is true when the given URL matches the process entry point', () => {
@@ -38,6 +38,16 @@ describe('isMain', () => {
     } finally {
       process.argv = originalArgv;
     }
+  });
+});
+
+describe('compareVersionsAsc', () => {
+  it('treats a missing segment as zero, so a short version compares numerically', () => {
+    // The changelog has headed releases as `2` and `2.1` before; a short string
+    // must not sort as text or crash the comparator.
+    expect(compareVersionsAsc('2', '2.0.0')).toBe(0);
+    expect(compareVersionsAsc('2.1', '2.1.1')).toBeLessThan(0);
+    expect(compareVersionsAsc('2.1.1', '2.1')).toBeGreaterThan(0);
   });
 });
 

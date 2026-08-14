@@ -152,6 +152,7 @@ export function parseChangelog(md: string): ChangelogBlock[] {
     const headingMatch = VERSION_HEADING_RE.exec(rawLine);
     if (headingMatch) {
       const version = headingMatch[1];
+      /* v8 ignore next 3 -- TS narrowing only: the regex's capture group is non-optional, so a successful exec always populates it */
       if (version === undefined) {
         continue;
       }
@@ -304,6 +305,7 @@ export function extractSymbols(text: string): ExtractedSymbol[] {
   for (const [pattern, type] of SYMBOL_PATTERNS) {
     for (const match of text.matchAll(pattern)) {
       const symbol = match[1];
+      /* v8 ignore next 3 -- TS narrowing only: every SYMBOL_PATTERNS capture group is non-optional, and matchAll always sets match.index */
       if (symbol === undefined || match.index === undefined) {
         continue;
       }
@@ -448,6 +450,7 @@ function subprocessExampleClause(bullet: string): string | null {
   // The match ends at the clause opener — either "(e.g.," or a bare "(" — so the
   // last "(" inside the match is that opener.
   const open = bullet.lastIndexOf('(', match.index + match[0].length - 1);
+  /* v8 ignore next 3 -- unreachable: both SUBPROCESS_FLAG_BULLET alternatives end in a literal "(", so the matched text always contains one for lastIndexOf to find */
   if (open === -1) {
     return null;
   }
@@ -1684,6 +1687,7 @@ export async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/scrape-changelog.ts` or `npm run scrape`), not when it's imported
 // by tests or other modules.
+/* v8 ignore start -- CLI entry guard: false by construction when imported by tests */
 if (isMain(import.meta.url)) {
   main()
     .then((code) => {
@@ -1694,3 +1698,4 @@ if (isMain(import.meta.url)) {
       process.exitCode = 1;
     });
 }
+/* v8 ignore stop */

@@ -109,6 +109,22 @@ describe('scrape-changelog main()', () => {
     await expect(readFile(join(outDir, 'versions', '2.0.5.json'), 'utf-8')).rejects.toThrow();
   });
 
+  it('ignores an argument it does not recognize and still writes the output', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-scrape-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    const outDir = join(tmpDir, 'out');
+    await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await withArgv(
+      ['--changelog', changelogPath, '--out', outDir, '--unknown-flag'],
+      main
+    );
+
+    expect(exitCode).toBe(0);
+    await expect(readFile(join(outDir, 'latest.json'), 'utf-8')).resolves.toBeTruthy();
+  });
+
   it('writes no latest.json when the changelog has no version headings', async () => {
     tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-scrape-'));
     const changelogPath = join(tmpDir, 'CHANGELOG.md');

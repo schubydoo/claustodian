@@ -135,6 +135,7 @@ export async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/generate-exports.ts` or `npm run generate-exports`), not when it's
 // imported by tests or other modules.
+/* v8 ignore start -- CLI entry guard: false by construction when imported by tests */
 if (isMain(import.meta.url)) {
   main()
     .then((code) => {
@@ -145,3 +146,4 @@ if (isMain(import.meta.url)) {
       process.exitCode = 1;
     });
 }
+/* v8 ignore stop */

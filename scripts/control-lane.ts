@@ -284,6 +284,7 @@ function propertyName(p: unknown): string | undefined {
 }
 
 function findProperty(obj: unknown, name: string): Node | undefined {
+  /* v8 ignore next -- the sole caller dispatches here only for a node it has already proved is an ObjectExpression */
   if (!isNode(obj) || obj.type !== 'ObjectExpression') return undefined;
   const props = obj.properties as unknown[];
   return props.find((p) => propertyName(p) === name) as Node | undefined;
@@ -387,6 +388,7 @@ function parse(source: string): Node {
     if (!best || attempt.errors.length < best.errors.length) best = attempt;
   }
   throw new Error(
+    /* v8 ignore next -- both parse attempts run before the throw and a failed attempt always assigns `best`, so the ?? 0 arm exists only for the optional chain's type */
     `control lane: failed to parse the bundle (${best?.errors.length ?? 0} error(s)). ` +
       'Refusing to continue — an unparsed bundle would report zero symbols, which ' +
       'is indistinguishable from a protocol that vanished.'
@@ -593,6 +595,7 @@ function collectUnions(
   const unions: Union[] = [];
   for (const { node, ancestors } of arrays) {
     const elements = node.elements as unknown[];
+    /* v8 ignore next -- collectCandidates retains only arrays with two or more elements; kept so this function stands alone if that filter moves */
     if (elements.length === 0) continue;
     const members = new Set<string>();
     for (const element of elements) {

@@ -48,6 +48,23 @@ describe('diffSnapshots', () => {
     expect(diff.changed).toEqual([]);
   });
 
+  it('sorts multiple removed symbols by their type:symbol key', () => {
+    const prev = {
+      symbols: [
+        makeSymbol({ symbol: '--keep' }),
+        makeSymbol({ symbol: '--aa' }),
+        makeSymbol({ symbol: 'ZZ_VAR', type: 'env_var' }),
+      ],
+    };
+    const next = { symbols: [makeSymbol({ symbol: '--keep' })] };
+
+    const diff = diffSnapshots(prev, next);
+    expect(diff.removed.map((s) => `${s.type}:${s.symbol}`)).toEqual([
+      'cli_flag:--aa',
+      'env_var:ZZ_VAR',
+    ]);
+  });
+
   it('detects removed-only symbols', () => {
     const prev = {
       symbols: [makeSymbol({ symbol: '--foo' }), makeSymbol({ symbol: '--bar' })],

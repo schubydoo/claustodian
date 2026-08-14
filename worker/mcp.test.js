@@ -111,6 +111,10 @@ describe('isValidVersion', () => {
 });
 
 describe('decodeHeaderValue', () => {
+  it('passes a non-string (absent header) through untouched', () => {
+    expect(decodeHeaderValue(null)).toBe(null);
+  });
+
   it('passes plain values through', () => {
     expect(decodeHeaderValue('get_symbol')).toBe('get_symbol');
   });
@@ -139,6 +143,26 @@ describe('validateRequestHeaders', () => {
   it('rejects a missing protocol version header', () => {
     const headers = new Headers({ 'Mcp-Method': 'tools/call', 'Mcp-Name': 'get_symbol' });
     expect(validateRequestHeaders(headers, body)?.code).toBe(ERROR.HEADER_MISMATCH);
+  });
+
+  it('rejects a missing Mcp-Method header', () => {
+    const headers = new Headers({
+      'MCP-Protocol-Version': PROTOCOL_VERSION,
+      'Mcp-Name': 'get_symbol',
+    });
+    const result = validateRequestHeaders(headers, body);
+    expect(result?.code).toBe(ERROR.HEADER_MISMATCH);
+    expect(result?.message).toContain('Missing required Mcp-Method header');
+  });
+
+  it('rejects a tools/call without an Mcp-Name header', () => {
+    const headers = new Headers({
+      'MCP-Protocol-Version': PROTOCOL_VERSION,
+      'Mcp-Method': 'tools/call',
+    });
+    const result = validateRequestHeaders(headers, body);
+    expect(result?.code).toBe(ERROR.HEADER_MISMATCH);
+    expect(result?.message).toContain('Missing required Mcp-Name header for tools/call');
   });
 
   it('rejects a method header that disagrees with the body', () => {
@@ -415,6 +439,40 @@ describe('dataset fetching without an injected stub', () => {
     const r = await handleRpc(rpc('tools/call', { name: 'list_versions', arguments: {} }));
     expect(r.isError).toBe(false);
     expect(seen[0]).toBe('https://claustodian.dev/data/index.json');
+  });
+
+  it('loads a snapshot through the real data URL when no fetchJson stub is injected', async () => {
+    globalThis.fetch = vi.fn(async (url) => {
+      const path = new URL(url).pathname;
+      return new Response(JSON.stringify(path.startsWith('/data/versions/') ? SNAPSHOT : INDEX), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    const r = await handleRpc(
+      rpc('tools/call', {
+        name: 'get_symbol',
+        arguments: { symbol: '--add-dir', version: '2.1.225' },
+      })
+    );
+    expect(r.isError).toBe(false);
+    expect(r.content[0].text).toContain('--add-dir');
+  });
+
+  it('reports "unknown" when the failure carries no message at all', async () => {
+    const throwingDeps = {
+      fetchJson: async () => {
+        // A bare string, so err.message is undefined in the transport catch.
+        throw 'kaput';
+      },
+    };
+    const res = await handleMcp(
+      post(rpc('tools/call', { name: 'list_versions', arguments: {} })),
+      throwingDeps
+    );
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error.message).toBe('Server error: unknown');
   });
 
   it('surfaces a dataset fetch failure as a 500 rather than a silent wrong answer', async () => {

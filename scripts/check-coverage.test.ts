@@ -60,6 +60,17 @@ describe('findMissingCoverage', () => {
     ]);
   });
 
+  it('sorts the missing symbols deterministically by type:symbol key', () => {
+    // Changelog appearance order is cli/env/cli/command; the result must come
+    // back re-sorted by the type:symbol key, not in appearance order.
+    expect(findMissingCoverage(FAKE_CHANGELOG, [])).toEqual([
+      { symbol: '--safe-mode', type: 'cli_flag' },
+      { symbol: '--turbo', type: 'cli_flag' },
+      { symbol: '/rename', type: 'command' },
+      { symbol: 'CLAUDE_CODE_TURBO', type: 'env_var' },
+    ]);
+  });
+
   it('returns an empty array for an empty changelog regardless of dataset contents', () => {
     expect(findMissingCoverage('# Changelog\n', [])).toEqual([]);
   });

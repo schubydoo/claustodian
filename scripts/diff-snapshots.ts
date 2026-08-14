@@ -48,6 +48,7 @@ function keyFor(record: SymbolRecord): string {
 }
 
 function compareKeys(a: string, b: string): number {
+  /* v8 ignore next -- comparator inputs come from Maps keyed by type:symbol, so two equal keys cannot occur */
   if (a === b) return 0;
   return a < b ? -1 : 1;
 }
@@ -177,6 +178,7 @@ export async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/diff-snapshots.ts` or `npm run diff`), not when it's imported by
 // tests or other modules.
+/* v8 ignore start -- CLI entry guard: false by construction when imported by tests */
 if (isMain(import.meta.url)) {
   main()
     .then((code) => {
@@ -187,3 +189,4 @@ if (isMain(import.meta.url)) {
       process.exitCode = 1;
     });
 }
+/* v8 ignore stop */

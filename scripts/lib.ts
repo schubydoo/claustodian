@@ -50,7 +50,13 @@ export function isMain(importMetaUrl: string): boolean {
 
 function parseVersionParts(version: string): [number, number, number] {
   const parts = version.split('.').map((part) => Number(part));
-  return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0];
+  return [
+    /* v8 ignore start -- split never returns an empty array, so the first element exists; its ?? satisfies noUncheckedIndexedAccess */
+    parts[0] ?? 0,
+    /* v8 ignore stop */
+    parts[1] ?? 0,
+    parts[2] ?? 0,
+  ];
 }
 
 /** Numeric semver comparison (2.1.9 < 2.1.10), ascending. */
