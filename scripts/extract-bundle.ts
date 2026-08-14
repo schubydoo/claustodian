@@ -631,15 +631,11 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
       ...(key.description ? { description: key.description } : {}),
     });
   }
-  return symbols.sort((a, b) =>
-    a.type !== b.type
-      ? a.type < b.type
-        ? -1
-        : 1
-      : a.symbol < b.symbol
-        ? -1
-        : a.symbol > b.symbol
-          ? 1
-          : /* v8 ignore next -- unreachable: every producing loop dedupes, so no two symbols share (type, symbol) and the comparator never sees an equal pair */ 0
-  );
+  return symbols.sort((a, b) => {
+    if (a.type !== b.type) return a.type < b.type ? -1 : 1;
+    if (a.symbol < b.symbol) return -1;
+    /* v8 ignore next -- every producing loop dedupes, so no two symbols share (type, symbol) and equality cannot occur */
+    if (a.symbol === b.symbol) return 0;
+    return 1;
+  });
 }
