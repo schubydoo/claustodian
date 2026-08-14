@@ -1,11 +1,13 @@
 // Copyright 2026 Schuby
 // SPDX-License-Identifier: Apache-2.0
 
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  distillControlObservations,
   distillDescriptions,
   distillObservations,
   loadCacheFiles,
@@ -452,5 +454,379 @@ describe('loadCacheFiles', () => {
 
     const files = await loadCacheFiles(root);
     expect(files.map((f) => f.version)).toEqual(['2.1.0']);
+  });
+});
+
+const SCANNED_CACHE_ENTRY = {
+  version: '2.1.63',
+  symbols: [],
+  controlMessages: [
+    {
+      symbol: 'hook_callback',
+      family: 'control_request',
+      direction: null,
+      description: '',
+      evidence: 'schema',
+      admittedBy: 'union',
+    },
+  ],
+};
+
+describe('control observations output', () => {
+  let root: string | undefined;
+  afterEach(async () => {
+    if (root) await rm(root, { recursive: true, force: true });
+    root = undefined;
+  });
+
+  it('writes no file at all when no cache entry has been scanned for control messages', async () => {
+    // A cache predating the control lane has no `controlMessages` key, which is not
+    // the same as one that carries the key and found nothing. `symbols: []` would
+    // publish an absence as evidence — a consumer could not tell "the protocol has no
+    // subtypes" from "this cache is older than the lane".
+    root = await mkdtemp(join(tmpdir(), 'claustodian-control-out-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(join(cache, '2.1.0.json'), JSON.stringify({ version: '2.1.0', symbols: [] }));
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await main([
+      '--cache',
+      cache,
+      '--out',
+      join(root, 'binary-observations.json'),
+      '--control',
+    ]);
+
+    expect(existsSync(join(root, 'control-observations.json'))).toBe(false);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('carry no control-lane output'));
+    // Non-zero because --control was PASSED and could not be honoured. A scripted data
+    // PR has no other signal: every gate after this one passes on a control-free dataset.
+    expect(exitCode).toBe(1);
+    logSpy.mockRestore();
+  });
+
+  it('does NOT write the file on a plain backfill, which is what the release bot runs', async () => {
+    // The finding this gate exists for. The committed cache is fully scanned, so a
+    // scanned-only gate would let the bot create this file on its next dispatch,
+    // `scrape` attach the records, and the whole control surface land in an
+    // auto-mergeable chore(data) PR — a regeneration arriving from a code change.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-control-optin-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(join(cache, '2.1.63.json'), JSON.stringify(SCANNED_CACHE_ENTRY));
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await main([
+      '--cache',
+      cache,
+      '--out',
+      join(root, 'binary-observations.json'),
+    ]);
+
+    expect(existsSync(join(root, 'control-observations.json'))).toBe(false);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('opt-in'));
+    // Zero: this is the release bot's normal path, not a failure.
+    expect(exitCode).toBe(0);
+    logSpy.mockRestore();
+  });
+
+  it('fails loudly when a committed file can no longer be refreshed', async () => {
+    // The steady state going wrong. The file is committed, so publishing is on without
+    // the flag — and a cache that stopped being fully scanned means the committed
+    // observations have silently drifted from it. Exit 0 here would let the bot open a
+    // chore(data) PR carrying stale control records with every gate green.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-control-drift-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(join(cache, '2.1.63.json'), JSON.stringify(SCANNED_CACHE_ENTRY));
+    await writeFile(join(cache, '2.1.64.json'), JSON.stringify({ version: '2.1.64', symbols: [] }));
+    await writeFile(join(root, 'control-observations.json'), '{"symbols":[]}');
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await main([
+      '--cache',
+      cache,
+      '--out',
+      join(root, 'binary-observations.json'),
+    ]);
+
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('carry no control-lane output'));
+    expect(exitCode).toBe(1);
+    logSpy.mockRestore();
+  });
+
+  it('keeps refreshing the file once it exists, without the flag', async () => {
+    // The steady state after the data PR commits it. The workflow re-distils on every
+    // run so committed evidence never drifts from the cache; the opt-in must not turn
+    // that off, or the file goes stale the moment it is published.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-control-steady-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(join(cache, '2.1.63.json'), JSON.stringify(SCANNED_CACHE_ENTRY));
+    await writeFile(join(root, 'control-observations.json'), '{"symbols":[]}');
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await main(['--cache', cache, '--out', join(root, 'binary-observations.json')]);
+
+    const written = JSON.parse(
+      await readFile(join(root, 'control-observations.json'), 'utf-8')
+    ) as { symbols: unknown[] };
+    expect(written.symbols).toHaveLength(1);
+    logSpy.mockRestore();
+  });
+
+  it('refuses a PARTIALLY scanned cache, which would date every subtype from the tip', async () => {
+    // The failure this gate exists for. `distillControlObservations` dates a subtype
+    // from the entries that carry control output, so one scanned version alongside
+    // unscanned ones dates the whole surface to that version — anchored, and wrong.
+    // `some` would have accepted this; `every` is what rejects it.
+    root = await mkdtemp(join(tmpdir(), 'claustodian-control-partial-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(
+      join(cache, '2.1.63.json'),
+      JSON.stringify({ version: '2.1.63', symbols: [] }) // pre-control-lane: no key
+    );
+    await writeFile(
+      join(cache, '2.1.226.json'),
+      JSON.stringify({
+        version: '2.1.226',
+        symbols: [],
+        controlMessages: [
+          {
+            symbol: 'hook_callback',
+            family: 'control_request',
+            direction: null,
+            description: '',
+            evidence: 'schema',
+            admittedBy: 'both',
+          },
+        ],
+      })
+    );
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await main([
+      '--cache',
+      cache,
+      '--out',
+      join(root, 'binary-observations.json'),
+      '--control',
+    ]);
+
+    expect(existsSync(join(root, 'control-observations.json'))).toBe(false);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('carry no control-lane output'));
+    // Non-zero because --control was PASSED and could not be honoured. A scripted data
+    // PR has no other signal: every gate after this one passes on a control-free dataset.
+    expect(exitCode).toBe(1);
+    logSpy.mockRestore();
+  });
+
+  it('writes the file once every cache entry carries control-lane output', async () => {
+    root = await mkdtemp(join(tmpdir(), 'claustodian-control-out2-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(
+      join(cache, '2.1.63.json'),
+      JSON.stringify({
+        version: '2.1.63',
+        symbols: [],
+        controlMessages: [
+          {
+            symbol: 'hook_callback',
+            family: 'control_request',
+            direction: null,
+            description: '',
+            evidence: 'schema',
+            admittedBy: 'union',
+          },
+        ],
+      })
+    );
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await main(['--cache', cache, '--out', join(root, 'binary-observations.json'), '--control']);
+
+    const written = JSON.parse(
+      await readFile(join(root, 'control-observations.json'), 'utf-8')
+    ) as { symbols: Array<{ symbol: string; admitted_at_first_seen: string }> };
+    expect(written.symbols).toHaveLength(1);
+    expect(written.symbols[0]?.admitted_at_first_seen).toBe('union');
+    logSpy.mockRestore();
+  });
+});
+
+describe('distillControlObservations', () => {
+  /** A cache file carrying one subtype's per-version state. */
+  const file = (
+    version: string,
+    direction: 'host_to_cli' | 'cli_to_host' | null,
+    description: string,
+    admittedBy: 'union' | 'dispatch' | 'both'
+  ): BinaryCacheFile => ({
+    version,
+    symbols: [],
+    controlMessages: [
+      {
+        symbol: 'hook_callback',
+        family: 'control_request',
+        direction,
+        description,
+        evidence: 'schema',
+        admittedBy,
+      },
+    ],
+  });
+
+  it('reads admittedBy at first_seen, not at the newest version', () => {
+    // The trap the whole dating policy turns on: a flagged subtype usually starts as
+    // `union` and becomes `both` once the CLI dispatches it, so taking the latest value
+    // silently un-flags it.
+    const [obs] = distillControlObservations([
+      file('2.1.63', null, 'Delivers a hook callback.', 'union'),
+      file('2.1.226', 'cli_to_host', 'Delivers a hook callback.', 'both'),
+    ]);
+
+    expect(obs?.first_seen).toBe('2.1.63');
+    expect(obs?.admitted_at_first_seen).toBe('union');
+  });
+
+  it('emits an era at the first version even when the value is null', () => {
+    // Without a seed era the resolver's fallback would be doing the work silently,
+    // and a subtype whose direction is null from the start would have no record of it.
+    const [obs] = distillControlObservations([
+      file('2.1.63', null, '', 'union'),
+      file('2.1.133', 'cli_to_host', '', 'union'),
+    ]);
+
+    expect(obs?.direction_eras).toEqual([
+      { from: '2.1.63', value: null },
+      { from: '2.1.133', value: 'cli_to_host' },
+    ]);
+  });
+
+  it('records change points only, not one era per version', () => {
+    const [obs] = distillControlObservations([
+      file('2.1.63', null, 'First.', 'union'),
+      file('2.1.64', null, 'First.', 'union'),
+      file('2.1.65', null, 'Reworded.', 'union'),
+    ]);
+
+    expect(obs?.description_eras).toEqual([
+      { from: '2.1.63', value: 'First.' },
+      { from: '2.1.65', value: 'Reworded.' },
+    ]);
+  });
+
+  it('dates a subtype that disappeared, using the same removal rule as the flag lane', () => {
+    // `rewind_code` is the real one: present 2.0.43-2.0.62, gone at 2.0.63. The rule is
+    // deliberately conservative and this fixture has to satisfy it rather than the
+    // other way round — REMOVAL_ABSENCE_MARGIN of 3 absent versions after, and the
+    // symbol solidly present in at least two of the three before.
+    const absent = (version: string): BinaryCacheFile => ({
+      version,
+      symbols: [],
+      controlMessages: [],
+    });
+    const [obs] = distillControlObservations([
+      file('2.0.43', null, '', 'dispatch'),
+      file('2.0.61', null, '', 'dispatch'),
+      file('2.0.62', null, '', 'dispatch'),
+      absent('2.0.63'),
+      absent('2.0.64'),
+      absent('2.0.65'),
+    ]);
+
+    expect(obs?.last_seen).toBe('2.0.62');
+    expect(obs?.removed_in).toBe('2.0.63');
+  });
+
+  it('ignores a cache file written before the control lane existed', () => {
+    // `controlMessages` is absent in a cache entry predating the control lane; this must
+    // not throw. Distilling cannot tell that apart from a scanned version with no
+    // subtypes — `main`'s unscanned gate is what refuses the mixed cache, and that has
+    // its own tests.
+    const obs = distillControlObservations([
+      { version: '2.1.63', symbols: [] },
+      file('2.1.64', null, '', 'union'),
+    ]);
+
+    expect(obs).toHaveLength(1);
+    expect(obs[0]?.first_seen).toBe('2.1.64');
+  });
+
+  it('carries family from the cache entry rather than hardcoding it', () => {
+    // A raw cache file with a synthetic family, cast past the single-literal type, so a
+    // regression to a hardcoded value would surface as the wrong label here.
+    const raw = (family: string): BinaryCacheFile =>
+      ({
+        version: '2.1.63',
+        symbols: [],
+        controlMessages: [
+          {
+            symbol: 'hook_callback',
+            family,
+            direction: null,
+            description: '',
+            evidence: 'schema',
+            admittedBy: 'union',
+          },
+        ],
+      }) as unknown as BinaryCacheFile;
+    const [obs] = distillControlObservations([raw('some_other_family')]);
+    expect(obs?.family).toBe('some_other_family');
+  });
+
+  it('throws when a subtype changes family across versions', () => {
+    // Family is identity-ish: a subtype that reports two families is a corrupt cache,
+    // not a value with an era. Refuse rather than silently pick first_seen's.
+    const at = (version: string, family: string): BinaryCacheFile =>
+      ({
+        version,
+        symbols: [],
+        controlMessages: [
+          {
+            symbol: 'hook_callback',
+            family,
+            direction: null,
+            description: '',
+            evidence: 'schema',
+            admittedBy: 'union',
+          },
+        ],
+      }) as unknown as BinaryCacheFile;
+    expect(() =>
+      distillControlObservations([at('2.1.63', 'control_request'), at('2.1.64', 'other')])
+    ).toThrow(/must not change family/);
+  });
+
+  it('returns subtypes sorted by symbol', () => {
+    // One subtype per input leaves the sort comparator unexercised; two in reverse
+    // order pin that the output is ordered, not insertion-ordered.
+    const twoSubtypes = (version: string): BinaryCacheFile => ({
+      version,
+      symbols: [],
+      controlMessages: [
+        {
+          symbol: 'set_color',
+          family: 'control_request',
+          direction: null,
+          description: '',
+          evidence: 'schema',
+          admittedBy: 'both',
+        },
+        {
+          symbol: 'add_directory',
+          family: 'control_request',
+          direction: null,
+          description: '',
+          evidence: 'schema',
+          admittedBy: 'both',
+        },
+      ],
+    });
+    const obs = distillControlObservations([twoSubtypes('2.1.63')]);
+    expect(obs.map((o) => o.symbol)).toEqual(['add_directory', 'set_color']);
   });
 });

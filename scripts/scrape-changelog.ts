@@ -49,6 +49,10 @@ import {
   isPublishableBinaryFlag,
   mayRedateFromBinary,
   loadBinaryDescriptions,
+  controlRecordDating,
+  eraValueAt,
+  loadControlObservations,
+  type ControlObservation,
   loadBinaryObservations,
   promotionFor,
 } from './binary-lane.js';
@@ -75,15 +79,26 @@ export interface ExtractedSymbol {
 }
 
 /**
- * The shape this pipeline assembles. A SUBSET of schema/symbol.schema.json, not a
- * mirror of it: the schema's `type` enum also allows `control_message`, and those
- * records carry `family` and `direction`, none of which any lane here emits. Keep
- * this narrower than the contract rather than in step with it — widening it would
- * add fields nothing populates.
+ * The shape this pipeline assembles. Still a SUBSET of schema/symbol.schema.json, not
+ * a mirror: `internal_config_flag` is in the schema's `type` enum and no lane emits
+ * it. `control_message` used to be in that same category and no longer is —
+ * `controlRecordsFor` assembles those records, so the union carries it and the two
+ * fields the schema requires on it.
+ *
+ * The rule the exclusion came from still stands: widen this only when something
+ * populates what the widening adds.
  */
 export interface SymbolRecord {
   symbol: string;
-  type: 'cli_flag' | 'env_var' | 'command' | 'config_key' | 'internal_config_flag';
+  type:
+    'cli_flag' | 'env_var' | 'command' | 'config_key' | 'internal_config_flag' | 'control_message';
+  /**
+   * Carried by control_message records and by no other type — the schema REQUIRES both
+   * there and FORBIDS both elsewhere, so a stray one fails validation as surely as a
+   * missing one.
+   */
+  family?: 'control_request';
+  direction?: 'host_to_cli' | 'cli_to_host' | null;
   first_seen: string;
   first_seen_estimated?: boolean;
   removed_in: string | null;
@@ -1023,6 +1038,12 @@ function finalizeRecord(input: SymbolRecord & { first_seen_estimated: boolean })
     ...(input.description_source ? { description_source: input.description_source } : {}),
     source_url: input.source_url,
     category: input.category,
+    // ⚠️ This function REBUILDS the record field by field, so anything not named here
+    // is dropped — silently, since the input is already a SymbolRecord. `direction` is
+    // spread on its own because `null` is a MEANING (not observable at this version),
+    // not an absence, and `?? {}` on a nullish check would delete it.
+    ...(input.family ? { family: input.family } : {}),
+    ...(input.direction !== undefined ? { direction: input.direction } : {}),
   };
 }
 
@@ -1212,13 +1233,54 @@ export function enrichWithBinary(
 }
 
 /**
- * Production snapshots: changelog symbols enriched with the official docs lane,
- * then overlaid with the binary lane when `binary` observations are supplied,
- * then retired per the curated changelog-removal list. The binary overlay is
- * optional so the changelog+docs contract (and its tests) stays exercisable on
- * its own; production always supplies it. Removals apply last so a confirmed
- * retirement wins over whatever lane last touched the record's `removed_in`.
+ * The control_message records a snapshot at `version` should carry.
+ *
+ * Every value that moves is resolved AT that version rather than taken from the
+ * observation's latest state — direction, description and the evidence the grade is
+ * built from all change across the archive, and reading the newest value would stamp
+ * today's answer on an older snapshot.
+ *
+ * Availability is presence in the window: the lane observed the subtype at or before
+ * this version and had not seen it disappear. `removed_in` is the version it was first
+ * absent from, so a snapshot AT that version no longer carries it.
  */
+export function controlRecordsFor(
+  version: string,
+  observations: readonly ControlObservation[]
+): SymbolRecord[] {
+  const records: SymbolRecord[] = [];
+  for (const observation of observations) {
+    if (compareVersionsAsc(observation.first_seen, version) > 0) continue;
+    if (observation.removed_in !== null && compareVersionsAsc(observation.removed_in, version) <= 0)
+      continue;
+
+    const dating = controlRecordDating(observation, version);
+    const description = eraValueAt(observation.description_eras, version, '');
+    records.push(
+      finalizeRecord({
+        symbol: observation.symbol,
+        type: 'control_message',
+        family: observation.family,
+        direction: eraValueAt(observation.direction_eras, version, null),
+        first_seen: observation.first_seen,
+        first_seen_estimated: dating.first_seen_estimated,
+        removed_in: observation.removed_in,
+        status: 'active',
+        provenance: 'binary',
+        confidence: dating.confidence,
+        description,
+        // Omitted rather than set empty when there is no description at this version:
+        // `description_source` names the lane that SUPPLIED one, so carrying it beside
+        // an empty string would credit a lane for text it did not provide.
+        ...(description === '' ? {} : { description_source: 'binary' as const }),
+        source_url: null,
+        category: 'control-protocol',
+      })
+    );
+  }
+  return records;
+}
+
 /**
  * Freezes a floating first_seen ESTIMATE against the prior dataset. A docs-only
  * symbol with no date evidence gets `latestVersion` as its upper bound, which
@@ -1242,12 +1304,21 @@ export function freezeEstimatedFirstSeen(
   });
 }
 
+/**
+ * Production snapshots: changelog symbols enriched with the official docs lane,
+ * then overlaid with the binary lane when `binary` observations are supplied,
+ * then retired per the curated changelog-removal list. The binary overlay is
+ * optional so the changelog+docs contract (and its tests) stays exercisable on
+ * its own; production always supplies it. Removals apply last so a confirmed
+ * retirement wins over whatever lane last touched the record's `removed_in`.
+ */
 export function buildEnrichedSnapshots(
   blocks: ChangelogBlock[],
   docs: DocsIndex,
   binary?: BinaryObservations,
   priorFirstSeen?: ReadonlyMap<string, string>,
-  binaryDescriptions?: BinaryDescriptions['descriptions']
+  binaryDescriptions?: BinaryDescriptions['descriptions'],
+  control?: readonly ControlObservation[]
 ): VersionSnapshot[] {
   const collected = collectChangelogSymbols(blocks);
   const latest =
@@ -1259,7 +1330,7 @@ export function buildEnrichedSnapshots(
   const frozen = priorFirstSeen
     ? freezeEstimatedFirstSeen(withDeprecations, priorFirstSeen)
     : withDeprecations;
-  return assembleSnapshots(
+  const snapshots = assembleSnapshots(
     frozen,
     blocks,
     binaryDescriptions,
@@ -1267,6 +1338,17 @@ export function buildEnrichedSnapshots(
     binaryHiddenMap(binary),
     binary?.observedVersions
   );
+
+  // Control records join at SNAPSHOT level, not in the flat record list the other
+  // lanes share. They have to: direction, description and confidence are all resolved
+  // per version, so one record cannot stand for every snapshot the way a flag's does.
+  if (!control || control.length === 0) return snapshots;
+  return snapshots.map((snapshot) => ({
+    ...snapshot,
+    symbols: [...snapshot.symbols, ...controlRecordsFor(snapshot.version, control)].sort(
+      compareSymbolRecords
+    ),
+  }));
 }
 
 /**
@@ -1369,6 +1451,8 @@ async function writeJson(filePath: string, data: unknown): Promise<void> {
 const DOCS_PATH = 'data/docs.json';
 /** The committed binary lane — the distilled binary evidence; not CLI-overridable. */
 const BINARY_OBSERVATIONS_PATH = 'data/binary-observations.json';
+/** The committed control-request observations; written only by an opt-in backfill. */
+const CONTROL_OBSERVATIONS_PATH = 'data/control-observations.json';
 /** The committed per-version description timeline; not CLI-overridable. */
 const BINARY_DESCRIPTIONS_PATH = 'data/binary-descriptions.json';
 /** The committed data directory; regenerating it must use canonical sources. */
@@ -1406,6 +1490,64 @@ async function loadPriorFirstSeen(latestPath: string): Promise<Map<string, strin
     return new Map(); // malformed prior snapshot — degrade to no freeze, don't crash
   }
   return map;
+}
+
+/**
+ * The reason to refuse a scrape that would drop every control record, or null.
+ *
+ * Two shapes of the same regression, and both must be checked. A MISSING observation
+ * file is the obvious one. An EMPTY one is the same loss wearing a different shape:
+ * `present` is true, `buildEnrichedSnapshots` attaches nothing, and the records
+ * disappear with no error at all.
+ *
+ * Split out from `main` so it is reachable from a test without reaching through a
+ * module-level path constant.
+ */
+export function controlRegressionRefusal(
+  control: { present: boolean; observations: readonly ControlObservation[] },
+  priorHadControl: boolean
+): string | null {
+  if (!priorHadControl) return null;
+  if (control.present && control.observations.length > 0) return null;
+  return (
+    `${CONTROL_OBSERVATIONS_PATH} is ${control.present ? 'empty' : 'missing'}, but the ` +
+    `previous dataset published control_message records. Regenerating now would drop ` +
+    `every one of them, which downstream reads as a mass removal. Re-run ` +
+    `"npm run backfill-binary" (after a re-extract, which is what writes it) before ` +
+    `scraping.`
+  );
+}
+
+/**
+ * Did the previous dataset publish any `control_message` record?
+ *
+ * NOT read off `loadPriorFirstSeen`'s map, which keeps only records carrying
+ * `first_seen_estimated: true` — a strictly narrower question that answers no once a
+ * date is anchored. A missing prior snapshot is a genuine no; a malformed one is not,
+ * hence the warning at the catch.
+ */
+export async function priorDatasetHasControlRecords(latestPath: string): Promise<boolean> {
+  let raw: string;
+  try {
+    raw = await readFile(latestPath, 'utf-8');
+  } catch {
+    return false;
+  }
+  let snapshot: { symbols?: Array<Partial<SymbolRecord>> };
+  try {
+    snapshot = JSON.parse(raw) as { symbols?: Array<Partial<SymbolRecord>> };
+  } catch {
+    // Degrades to "no", matching `loadPriorFirstSeen` — a corrupt prior snapshot must
+    // not fail the scrape that would replace it. That does disable the guard, so say
+    // so out loud: silent is the property worth removing here, not the tolerance.
+    console.warn(
+      `${latestPath} is not readable JSON, so the control-record regression guard ` +
+        `cannot consult it. If a re-extract has already run, verify the next dataset ` +
+        `still carries control_message records before publishing it.`
+    );
+    return false;
+  }
+  return (snapshot.symbols ?? []).some((s) => s.type === 'control_message');
 }
 
 interface CliOptions {
@@ -1479,12 +1621,28 @@ export async function main(): Promise<number> {
   // Freeze floating first_seen estimates against the snapshot already at the
   // output location (the committed latest.json when regenerating data/).
   const priorFirstSeen = await loadPriorFirstSeen(join(options.outDir, 'latest.json'));
+
+  // Absence is legitimate exactly once — before the first re-extract that runs the
+  // control lane, `backfill-binary` writes no observation file. After that it is a
+  // regression: losing the file would remove every control record from the next
+  // dataset, and downstream a vanished symbol reads as a removal. The prior dataset
+  // is the only thing that can tell the two apart, so it decides.
+  //
+  // An emptied file is the same failure wearing a different shape: `present` is true,
+  // `buildEnrichedSnapshots` attaches nothing, and every record disappears without an
+  // error. Both arms are checked, so neither can pass as the legitimate first run.
+  const control = await loadControlObservations(CONTROL_OBSERVATIONS_PATH);
+  const priorHadControl = await priorDatasetHasControlRecords(join(options.outDir, 'latest.json'));
+  const refusal = controlRegressionRefusal(control, priorHadControl);
+  if (refusal) throw new Error(refusal);
+
   const snapshots = buildEnrichedSnapshots(
     blocks,
     docs,
     binary,
     priorFirstSeen,
-    binaryDescriptions.descriptions
+    binaryDescriptions.descriptions,
+    control.observations
   );
   const index = buildIndex(snapshots);
 

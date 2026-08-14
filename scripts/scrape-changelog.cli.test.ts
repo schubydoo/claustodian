@@ -7,7 +7,11 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { buildAjv, getValidator } from './validate-schema.js';
-import { main } from './scrape-changelog.js';
+import {
+  controlRegressionRefusal,
+  main,
+  priorDatasetHasControlRecords,
+} from './scrape-changelog.js';
 
 const FIXTURE_CHANGELOG = `# Changelog
 
@@ -207,5 +211,126 @@ describe('scrape-changelog main()', () => {
 
     const exitCode = await withArgv(['--changelog', changelogPath, '--out', outDir], main);
     expect(exitCode).toBe(0);
+  });
+
+  it('refuses to scrape when a prior dataset published control records and the file is gone', async () => {
+    // The regression guard firing end to end, not just the helper. The prior latest.json
+    // published a control_message record; the committed data/control-observations.json is
+    // absent (it is opt-in and not committed on this branch), so regenerating now would
+    // drop every control record. main must throw rather than silently ship the removal.
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-scrape-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    const outDir = join(tmpDir, 'out');
+    await mkdir(outDir, { recursive: true });
+    await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
+    await writeFile(
+      join(outDir, 'latest.json'),
+      JSON.stringify({
+        claudeCodeVersion: '2.1.9',
+        schemaVersion: 1,
+        symbols: [
+          {
+            symbol: 'hook_callback',
+            type: 'control_message',
+            family: 'control_request',
+            direction: null,
+            first_seen: '2.1.63',
+            removed_in: null,
+            status: 'active',
+            provenance: 'binary',
+            confidence: 'medium',
+            description: '',
+            source_url: null,
+            category: 'control-protocol',
+            first_seen_estimated: true,
+          },
+        ],
+      }),
+      'utf-8'
+    );
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await expect(withArgv(['--changelog', changelogPath, '--out', outDir], main)).rejects.toThrow(
+      /is (missing|empty), but the previous dataset published control_message/
+    );
+  });
+});
+
+describe('priorDatasetHasControlRecords', () => {
+  let dir: string;
+
+  afterEach(async () => {
+    if (dir) await rm(dir, { recursive: true, force: true });
+  });
+
+  const write = async (body: unknown): Promise<string> => {
+    dir = await mkdtemp(join(tmpdir(), 'claustodian-prior-'));
+    const path = join(dir, 'latest.json');
+    await writeFile(path, typeof body === 'string' ? body : JSON.stringify(body), 'utf-8');
+    return path;
+  };
+
+  it('sees a control record whose first_seen is ANCHORED, not only an estimated one', async () => {
+    // The defect this function exists to avoid. The guard used to read the freeze map,
+    // which keeps only `first_seen_estimated: true` records — so an anchored control
+    // record answered "no", and a later archive fill that turns a union admission into
+    // `both` would silently disarm the guard by dating the record exactly.
+    const path = await write({
+      symbols: [
+        { type: 'control_message', symbol: 'hook_callback', first_seen: '2.1.63' },
+        { type: 'cli_flag', symbol: '--print', first_seen: '1.0.0', first_seen_estimated: true },
+      ],
+    });
+    expect(await priorDatasetHasControlRecords(path)).toBe(true);
+  });
+
+  it('answers no when the prior dataset published no control record', async () => {
+    const path = await write({
+      symbols: [{ type: 'cli_flag', symbol: '--print', first_seen: '1.0.0' }],
+    });
+    expect(await priorDatasetHasControlRecords(path)).toBe(false);
+  });
+
+  it('answers no for a fresh output directory, which has published nothing', async () => {
+    dir = await mkdtemp(join(tmpdir(), 'claustodian-prior-'));
+    expect(await priorDatasetHasControlRecords(join(dir, 'latest.json'))).toBe(false);
+  });
+
+  it('warns rather than throwing when the prior snapshot is malformed', async () => {
+    // The freeze must never fail the scrape that would replace a corrupt snapshot, and
+    // this reader inherits that. The warning is the part under test: degrading is
+    // tolerated, degrading SILENTLY is not.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const path = await write('{ not valid json');
+    expect(await priorDatasetHasControlRecords(path)).toBe(false);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('regression guard'));
+    warn.mockRestore();
+  });
+});
+
+describe('controlRegressionRefusal', () => {
+  const some = [{ symbol: 'hook_callback' }] as never;
+  const none = [] as never;
+
+  it('refuses when the observation file is missing and the prior dataset had records', () => {
+    expect(controlRegressionRefusal({ present: false, observations: none }, true)).toContain(
+      'missing'
+    );
+  });
+
+  it('refuses an EMPTY observation file, which drops the records just as silently', () => {
+    // `present` is true, so a presence-only check passes here and every control record
+    // disappears with no error. This is the arm that check would miss.
+    expect(controlRegressionRefusal({ present: true, observations: none }, true)).toContain(
+      'empty'
+    );
+  });
+
+  it('allows the legitimate first run — no prior records, so nothing can be lost', () => {
+    expect(controlRegressionRefusal({ present: false, observations: none }, false)).toBeNull();
+  });
+
+  it('allows the steady state', () => {
+    expect(controlRegressionRefusal({ present: true, observations: some }, true)).toBeNull();
   });
 });

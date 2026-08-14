@@ -1,6 +1,7 @@
 // Copyright 2026 Schuby
 // SPDX-License-Identifier: Apache-2.0
 
+import type { ControlObservation } from './binary-lane.js';
 import { describe, expect, it } from 'vitest';
 
 import { buildAjv, getValidator } from './validate-schema.js';
@@ -16,6 +17,7 @@ import {
   describesFutureState,
   truncateToVersion,
   categorize,
+  controlRecordsFor,
   CHANGELOG_SYMBOL_DENYLIST,
   collectChangelogSymbols,
   SYMBOL_DENYLIST,
@@ -1905,5 +1907,131 @@ describe('assembleSnapshots — a docs description never backfills onto history'
     const snaps = assembleSnapshots([review(clean)], blocks);
     for (const v of ['2.1.150', '2.1.200', '2.1.230'])
       expect(at(snaps, v)?.description).toBe(clean);
+  });
+});
+
+describe('controlRecordsFor', () => {
+  const obs = (over: Partial<ControlObservation> = {}): ControlObservation => ({
+    symbol: 'hook_callback',
+    family: 'control_request',
+    first_seen: '2.1.63',
+    last_seen: '2.1.226',
+    removed_in: null,
+    direction_eras: [
+      { from: '2.1.63', value: null },
+      { from: '2.1.133', value: 'cli_to_host' },
+    ],
+    description_eras: [{ from: '2.1.63', value: 'Delivers a hook callback.' }],
+    evidence_eras: [{ from: '2.1.63', value: 'schema' }],
+    admitted_at_first_seen: 'union',
+    ...over,
+  });
+
+  it('resolves direction at the snapshot version, not from the latest era', () => {
+    // The whole reason direction is a timeline. 2.1.132 predates the split the CLI
+    // began declaring at 2.1.133, so null is the honest answer there — reading the
+    // newest era would backfill an answer that version could not have given.
+    expect(controlRecordsFor('2.1.132', [obs()])[0]?.direction).toBeNull();
+    expect(controlRecordsFor('2.1.226', [obs()])[0]?.direction).toBe('cli_to_host');
+  });
+
+  it('carries family and direction through finalizeRecord', () => {
+    // finalizeRecord rebuilds the record field by field, so a field it does not name
+    // is dropped with no type error. The schema REQUIRES both on this type.
+    const [record] = controlRecordsFor('2.1.226', [obs()]);
+    expect(record).toMatchObject({ type: 'control_message', family: 'control_request' });
+    expect(Object.keys(record ?? {})).toContain('direction');
+  });
+
+  it('marks a union-only admission estimated and caps its confidence', () => {
+    const [record] = controlRecordsFor('2.1.226', [obs()]);
+    expect(record?.first_seen_estimated).toBe(true);
+    expect(record?.confidence).toBe('medium');
+  });
+
+  it('omits a subtype before it was first seen and from the version it was removed in', () => {
+    const retired = obs({ symbol: 'rewind_code', first_seen: '2.0.43', removed_in: '2.0.63' });
+    expect(controlRecordsFor('2.0.42', [retired])).toHaveLength(0);
+    expect(controlRecordsFor('2.0.62', [retired])).toHaveLength(1);
+    expect(controlRecordsFor('2.0.63', [retired])).toHaveLength(0);
+  });
+
+  it('emits records the record contract accepts', () => {
+    // The bar that matters: the schema requires family and direction on this type and
+    // forbids them elsewhere, so a shape error here fails `npm run validate` across
+    // the whole dataset rather than in one test.
+    const validate = buildAjv().getSchema('https://claustodian.dev/schema/symbol.schema.json');
+    for (const version of ['2.1.63', '2.1.132', '2.1.226']) {
+      for (const record of controlRecordsFor(version, [obs()])) {
+        expect(validate?.(record), `${version}: ${JSON.stringify(validate?.errors)}`).toBe(true);
+      }
+    }
+  });
+});
+
+describe('buildEnrichedSnapshots — control attach', () => {
+  const obs = {
+    symbol: 'hook_callback',
+    family: 'control_request' as const,
+    first_seen: '2.0.5',
+    last_seen: '2.1.10',
+    removed_in: null,
+    direction_eras: [{ from: '2.0.5', value: null }],
+    description_eras: [{ from: '2.0.5', value: 'Delivers a hook callback.' }],
+    evidence_eras: [{ from: '2.0.5', value: 'schema' as const }],
+    admitted_at_first_seen: 'both' as const,
+  };
+
+  // The env var is load-bearing for the ordering test below: `cli_flag` sorts BEFORE
+  // `control_message` and `env_var` AFTER it, so a control record appended at the end
+  // is only detectable when a type that outranks it is present.
+  const blocks = [
+    {
+      version: '2.0.5',
+      bullets: [
+        '- Added `--safe-mode` flag for troubleshooting.',
+        '- Added `CLAUDE_CODE_SAFE_MODE` environment variable equivalent.',
+      ],
+    },
+    { version: '2.1.10', bullets: ['- Added `--turbo` flag for faster runs.'] },
+  ];
+  const docs = docsIndex([]);
+
+  it('merges the records into each snapshot rather than returning them alongside', () => {
+    // `controlRecordsFor` is tested directly elsewhere; what is untested without this
+    // is the WIRING — that the records reach a snapshot at all.
+    const snaps = buildEnrichedSnapshots(blocks, docs, undefined, undefined, undefined, [obs]);
+    for (const snap of snaps) {
+      const control = snap.symbols.filter((r) => r.type === 'control_message');
+      expect(control, `${snap.version} carries no control record`).toHaveLength(1);
+      expect(control[0]?.symbol).toBe('hook_callback');
+    }
+  });
+
+  it('re-sorts the merged list rather than appending the records at the end', () => {
+    // Snapshots publish by (type, symbol). Appending would leave the control record
+    // after the env var, which sorts after it — so this fails if the sort is dropped.
+    const snaps = buildEnrichedSnapshots(blocks, docs, undefined, undefined, undefined, [obs]);
+    for (const snap of snaps) {
+      const keys = snap.symbols.map((r) => `${r.type}\u0000${r.symbol}`);
+      expect(keys, `${snap.version} is not in published order`).toEqual([...keys].sort());
+    }
+    expect(snaps.some((s) => s.symbols.some((r) => r.type === 'env_var'))).toBe(true);
+  });
+
+  it('leaves snapshots untouched when no observation is supplied', () => {
+    // The state of the pipeline TODAY: the observation file does not exist yet, so the
+    // control argument is absent and nothing about the existing dataset may move.
+    const withControl = buildEnrichedSnapshots(blocks, docs, undefined, undefined, undefined, []);
+    const without = buildEnrichedSnapshots(blocks, docs);
+    expect(withControl).toEqual(without);
+  });
+
+  it('omits a subtype from a snapshot older than its first_seen', () => {
+    const later = { ...obs, first_seen: '2.1.10' };
+    const snaps = buildEnrichedSnapshots(blocks, docs, undefined, undefined, undefined, [later]);
+    const at = (v: string) => snaps.find((s) => s.version === v);
+    expect(at('2.0.5')?.symbols.some((r) => r.type === 'control_message')).toBe(false);
+    expect(at('2.1.10')?.symbols.some((r) => r.type === 'control_message')).toBe(true);
   });
 });

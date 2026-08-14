@@ -67,8 +67,8 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
   "symbol": "--output-format",
   "type": "cli_flag", // schema enum: cli_flag | command | env_var | config_key | internal_config_flag | control_message (the first four are populated)
   // control_message records ALSO carry "family" and "direction", which are
-  // required on that type and forbidden on every other one. Nothing emits them
-  // yet; see schema/symbol.schema.json for the conditional.
+  // required on that type and forbidden on every other one. The dataset carries no
+  // such record yet; see schema/symbol.schema.json for the conditional.
   "first_seen": "0.2.66", // earliest version OBSERVED (semver string)
   "removed_in": null, // version it vanished, or null if still present
   // "deprecated_in": "2.1.73",  OPTIONAL, and rare — only 2 records carry it
@@ -77,7 +77,9 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
   "status": "active", // "active" | "deprecated" | "removed" | "needs_review"
   "scopes": ["remote-control"], // optional; FULL invocation paths, e.g. "plugin eval"
   "provenance": "changelog", // "changelog" | "docs" | "binary" — which lane proved existence
-  "confidence": "high", // "high" | "medium" ("low" is in the schema but unused)
+  "confidence": "high", // "high" | "medium" | "low" ("low" is reserved for
+  //   control_message records evidenced only by a dispatch, which the dataset does
+  //   not carry yet)
   "first_seen_estimated": true, // OPTIONAL: first_seen is an UPPER BOUND, not exact
   "description": "Output format…",
   "description_source": "docs", // OPTIONAL: "docs" | "changelog" | "binary" | "help"
@@ -107,8 +109,9 @@ to `"deprecated"` at `deprecated_in`. It may later be removed too — the states
 - `provenance: docs`/`changelog` + `confidence: high` → authoritative for existence and description.
 - `status: needs_review` → the symbol **provably exists** (seen in a release binary) but isn't
   human-curated; description may be terse or empty. Treat it as real, not "maybe."
-- `first_seen_estimated: true` (or `confidence: medium`) → `first_seen` is an **upper bound**;
-  don't claim "introduced exactly in X."
+- `first_seen_estimated: true` → `first_seen` is an **upper bound**; don't claim "introduced
+  exactly in X." Read the flag, not `confidence` — on `control_message` the two do not track
+  each other.
 - `source_url: null` is normal for binary-only symbols.
 
 ## Description-at-version

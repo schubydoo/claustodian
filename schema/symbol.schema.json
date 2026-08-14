@@ -57,7 +57,7 @@
     "confidence": {
       "type": "string",
       "enum": ["high", "medium", "low"],
-      "description": "Confidence in the accuracy of this record. \"high\" when first_seen is anchored (an introducing changelog bullet or an official docs min-version); \"medium\" when first_seen is an estimate (see first_seen_estimated)."
+      "description": "Confidence in the accuracy of this record. For the changelog and docs lanes this tracks the date: \"high\" when first_seen is anchored (an introducing changelog bullet or an official docs min-version), \"medium\" when it is an estimate (see first_seen_estimated). control_message records are graded by EVIDENCE STRENGTH instead, then capped: \"high\" for a described schema declaration, \"low\" for a subtype evidenced only by a dispatch, and any \"high\" is lowered to \"medium\" when first_seen is an upper bound. So a \"low\" control record may still be exactly dated \u2014 read first_seen_estimated for the date, not confidence."
     },
     "description": {
       "type": "string",
@@ -70,7 +70,7 @@
     },
     "first_seen_estimated": {
       "type": "boolean",
-      "description": "True when `first_seen` is an upper bound (the symbol was observed by that version but its true introduction is unconfirmed), e.g. a symbol only ever named incidentally in the changelog or documented without a min-version. Corrected by the binary lane. Absent means false."
+      "description": "True when `first_seen` is an upper bound (the symbol was observed by that version but its true introduction is unconfirmed), e.g. a symbol only ever named incidentally in the changelog or documented without a min-version. Corrected by the binary lane for those; SET by it for a control_message subtype that was declared before extraction could prove it. Absent means false."
     },
     "source_url": {
       "oneOf": [
