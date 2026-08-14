@@ -1134,6 +1134,20 @@
       "category": "settings"
     },
     {
+      "symbol": "interrupt",
+      "type": "control_message",
+      "first_seen": "1.0.45",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "low",
+      "description": "",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": null
+    },
+    {
       "symbol": "ANTHROPIC_API_KEY",
       "type": "env_var",
       "first_seen": "0.2.54",
