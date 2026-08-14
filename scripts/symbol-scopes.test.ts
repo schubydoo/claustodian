@@ -170,7 +170,7 @@ describe('SYMBOL_SCOPES table', () => {
     // The counterexample the invariant above must not be read as forbidding.
     //
     // This is the REAL one: `--hooks-dir` has no curated entry, so `scopesFor`
-    // returns the binary scopes verbatim without reaching the union, and
+    // returns the binary scopes sorted, without reaching the union, and
     // `data/binary-observations.json` records exactly these three — a path and two
     // descendants. It is what `data/latest.json` publishes.
     expect(

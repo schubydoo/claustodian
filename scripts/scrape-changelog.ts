@@ -405,9 +405,13 @@ export function isIntroducingBullet(bullet: string): boolean {
  * than by position, so a flag named inside and outside the clause vanishes
  * entirely.
  *
- * The lookarounds remove only spurious matches: all three real bullets still match
- * (`` `git log` `` has a backtick before and a space after, `git/gh commands` a
- * space and a slash, `` `docker` `` backticks). Requiring the clause to "look like
+ * The three real bullets still match (`` `git log` `` has a backtick before and a
+ * space after, `git/gh commands` a space and a slash, `` `docker` `` backticks) —
+ * but those three are an illustration, not the check. `(?<![\w-])` is strictly
+ * narrower than `\b`, so it can only ever remove matches; regenerating the whole
+ * changelog after the change came back zero-diff, which is what says the matches
+ * it removed were spurious across every bullet rather than just these. Re-run that
+ * if you widen the rule. Requiring the clause to "look like
  * a list" instead was considered and rejected — it shrinks suppression on bullets
  * whose tool word is genuine, which trades a withheld record for an ASSERTED one,
  * and this project ranks a missing record above a wrong one.
