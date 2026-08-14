@@ -100,7 +100,7 @@ CI already enforces these on every PR, and paying a reviewer to re-find them is 
 - Formatting, lint, unused names — `eslint`, `prettier --check`
 - Type errors — `tsc --noEmit`
 - Schema conformance of `data/` — `npm run validate`
-- Missing coverage as a bare observation — the **85%** statements threshold in
+- Missing coverage as a bare observation — the **95%** statements threshold in
   `vitest.config.ts` and Codecov patch coverage report it precisely
 - Hardcoded-secret shapes — `gitleaks`
 - Known-CVE dependencies — Trivy, `dependency-review`, OSV-Scanner
