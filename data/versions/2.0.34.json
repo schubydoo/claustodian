@@ -23,7 +23,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Define custom subagents dynamically via JSON. Uses the same field names as subagent frontmatter, plus a `prompt` field for the agent's instructions",
+      "description": "Define custom subagents dynamically via JSON. Accepts the fields listed for CLI-defined subagents",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -3490,18 +3490,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "HOME",
-      "type": "env_var",
-      "first_seen": "0.2.9",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
       "symbol": "HTTPS_PROXY",
       "type": "env_var",
       "first_seen": "0.2.32",
@@ -3727,18 +3715,6 @@
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
-    },
-    {
-      "symbol": "PATH",
-      "type": "env_var",
-      "first_seen": "0.2.9",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
     },
     {
       "symbol": "RIPGREP_NODE_PATH",
@@ -3988,18 +3964,6 @@
       "description": "Override region for Claude Haiku 4.5 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "other"
-    },
-    {
-      "symbol": "XDG_DATA_HOME",
-      "type": "env_var",
-      "first_seen": "1.0.22",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     }
   ]

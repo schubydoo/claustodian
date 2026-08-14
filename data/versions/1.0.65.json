@@ -2213,18 +2213,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "HOME",
-      "type": "env_var",
-      "first_seen": "0.2.9",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
       "symbol": "HTTPS_PROXY",
       "type": "env_var",
       "first_seen": "0.2.32",
@@ -2427,18 +2415,6 @@
       "category": "telemetry"
     },
     {
-      "symbol": "PATH",
-      "type": "env_var",
-      "first_seen": "0.2.9",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
       "symbol": "USE_BUILTIN_RIPGREP",
       "type": "env_var",
       "first_seen": "0.2.9",
@@ -2526,18 +2502,6 @@
       "description": "Override region for Claude 4.0 Sonnet when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "other"
-    },
-    {
-      "symbol": "XDG_DATA_HOME",
-      "type": "env_var",
-      "first_seen": "1.0.22",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     }
   ]

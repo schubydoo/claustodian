@@ -36,7 +36,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Define custom subagents dynamically via JSON. Uses the same field names as subagent frontmatter, plus a `prompt` field for the agent's instructions",
+      "description": "Define custom subagents dynamically via JSON. Accepts the fields listed for CLI-defined subagents",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -4701,18 +4701,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "HOME",
-      "type": "env_var",
-      "first_seen": "0.2.9",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
       "symbol": "HTTPS_PROXY",
       "type": "env_var",
       "first_seen": "0.2.32",
@@ -4810,7 +4798,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "",
+      "description": "Controls whether startup waits for MCP servers to connect before the first query. MCP startup is non-blocking by default: servers connect in the background and their tools become available as they finish. Set to `0` to make Claude Code wait for servers to connect before the first query. Servers configured with `alwaysLoad: true` still make startup wait regardless, except when served from the discovery cache, since their tools must be present when the first prompt is built. In non-interactive mode (`-p`), Claude Code also waits for still-pending servers before the first turn regardless of this variable, with a longer deadline when you pass `--mcp-config` explicitly; see that flag's entry for the cached-server exception",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
     },
@@ -4988,18 +4977,6 @@
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
-    },
-    {
-      "symbol": "PATH",
-      "type": "env_var",
-      "first_seen": "0.2.9",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
     },
     {
       "symbol": "PERMISSION_EXPLAINER_ENABLED",
@@ -5274,18 +5251,6 @@
       "description": "Override region for Claude Haiku 4.5 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "other"
-    },
-    {
-      "symbol": "XDG_DATA_HOME",
-      "type": "env_var",
-      "first_seen": "1.0.22",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     }
   ]

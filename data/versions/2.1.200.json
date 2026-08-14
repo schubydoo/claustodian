@@ -129,7 +129,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Define custom subagents dynamically via JSON. Uses the same field names as subagent frontmatter, plus a `prompt` field for the agent's instructions",
+      "description": "Define custom subagents dynamically via JSON. Accepts the fields listed for CLI-defined subagents",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1397,7 +1397,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set a display name for the session, shown in `/resume` and the terminal title. You can resume a named session with `claude --resume <name>`. <br /><br />`/rename` changes the name mid-session and also shows it on the prompt bar",
+      "description": "Set a display name for the session, shown in `/resume` and the terminal title. You can resume a named session with `claude --resume <name>`. In an interactive session, if another live session on this machine already uses the name, Claude Code applies a variant of it instead. <br /><br />`/rename` changes the name mid-session and also shows it on the prompt bar",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -3156,7 +3156,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set a goal: Claude keeps working across turns until the condition is met. With no argument, shows the current or most recently achieved goal. `clear`, `stop`, `off`, `reset`, `none`, or `cancel` removes an active goal early",
+      "description": "Set a goal: Claude keeps working across turns until the condition is met or judged impossible. With no argument, shows the current or most recently achieved goal. `clear`, `stop`, `off`, `reset`, `none`, or `cancel` removes an active goal early",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -10874,7 +10874,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to enable appending extra text to the end of every subagent's system prompt.",
+      "description": "Set to `1` to enable appending extra text to the end of the system prompt of every subagent other than a forked subagent.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -11099,7 +11099,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls whether sessions use the structured Task tools (`TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList`) or the legacy `TodoWrite` tool. As of Claude Code v2.1.142, Task tools are the default in all modes. Set to `0` to revert to `TodoWrite`. See Task list and Migrate to Task tools",
+      "description": "Controls whether sessions use the structured Task tools (`TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList`) or the legacy `TodoWrite` tool. Task tools are the default in all modes. Set to `0` to use `TodoWrite`. See Task list and Migrate to Task tools",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -14859,19 +14859,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "COLUMNS",
-      "type": "env_var",
-      "first_seen": "2.1.153",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
       "symbol": "COMPUTER_USE_SWIFT_NODE_PATH",
       "type": "env_var",
       "first_seen": "2.1.84",
@@ -14931,19 +14918,6 @@
       "description": "",
       "source_url": null,
       "category": "claude-code"
-    },
-    {
-      "symbol": "DIRSTACK",
-      "type": "env_var",
-      "first_seen": "2.1.149",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
     },
     {
       "symbol": "DISABLE_AUTOUPDATER",
@@ -15491,18 +15465,6 @@
       "category": "other"
     },
     {
-      "symbol": "HOME",
-      "type": "env_var",
-      "first_seen": "0.2.9",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
       "symbol": "HTTPS_PROXY",
       "type": "env_var",
       "first_seen": "0.2.32",
@@ -15563,31 +15525,6 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
-      "category": "other"
-    },
-    {
-      "symbol": "LANG",
-      "type": "env_var",
-      "first_seen": "2.1.81",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
-      "symbol": "LINES",
-      "type": "env_var",
-      "first_seen": "2.1.153",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -15662,7 +15599,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Controls whether startup waits for MCP servers to connect before the first query. MCP startup is non-blocking by default: servers connect in the background and their tools become available as they finish; before v2.1.142, the blocking wait was the default. Set to `0` to restore the blocking 5-second connection wait. Servers configured with `alwaysLoad: true` still make startup wait regardless, except when served from the discovery cache, since their tools must be present when the first prompt is built. In non-interactive mode (`-p`), Claude Code also waits for still-pending servers before the first turn regardless of this variable, with a longer deadline when you pass `--mcp-config` explicitly; see that flag's entry for the cached-server exception",
+      "description": "Controls whether startup waits for MCP servers to connect before the first query. MCP startup is non-blocking by default: servers connect in the background and their tools become available as they finish. Set to `0` to make Claude Code wait for servers to connect before the first query. Servers configured with `alwaysLoad: true` still make startup wait regardless, except when served from the discovery cache, since their tools must be present when the first prompt is built. In non-interactive mode (`-p`), Claude Code also waits for still-pending servers before the first turn regardless of this variable, with a longer deadline when you pass `--mcp-config` explicitly; see that flag's entry for the cached-server exception",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -15833,19 +15770,6 @@
       "category": "network"
     },
     {
-      "symbol": "OLDPWD",
-      "type": "env_var",
-      "first_seen": "2.1.149",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
       "symbol": "OTEL_EXPORTER_OTLP_ENDPOINT",
       "type": "env_var",
       "first_seen": "0.2.76",
@@ -15969,18 +15893,6 @@
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
-    },
-    {
-      "symbol": "PATH",
-      "type": "env_var",
-      "first_seen": "0.2.9",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
     },
     {
       "symbol": "SCREENSHOT_DIR",
@@ -16329,18 +16241,6 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
-      "category": "other"
-    },
-    {
-      "symbol": "XDG_DATA_HOME",
-      "type": "env_var",
-      "first_seen": "1.0.22",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     }
   ]
