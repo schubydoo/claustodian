@@ -1,6 +1,6 @@
 # Claustodian
 
-> A static, versioned, machine-queryable dataset of the Claude Code surface. It answers: does a symbol — a CLI flag, environment variable, slash command, or settings key — exist in a specific Claude Code version, and what did it do at that version? Use it to make agent features version-accurate for a specific user's Claude Code version instead of assuming "latest." All data is derived only from official public Anthropic artifacts (changelog, docs, release binaries).
+> A static, versioned, machine-queryable dataset of the Claude Code surface. It answers: does a symbol — a CLI flag, environment variable, slash command, settings key, or stream-json control message — exist in a specific Claude Code version, and what did it do at that version? Use it to make agent features version-accurate for a specific user's Claude Code version instead of assuming "latest." All data is derived only from official public Anthropic artifacts (changelog, docs, release binaries).
 
 The data is static JSON on GitHub Pages under a stable base URL — no API, no auth, no install. Fetch a URL and read it. Each version is a full snapshot of every symbol; each symbol record carries `first_seen`, `removed_in`, `deprecated_in`, `status`, `provenance`, `confidence`, and `description`.
 

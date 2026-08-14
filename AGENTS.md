@@ -12,7 +12,8 @@ equivalent and repeats the parts an agent needs in-context.
 ## The project
 
 A static, versioned dataset of the Claude Code surface — every CLI flag, environment
-variable, command and settings key, tagged with the version it was first observed in.
+variable, command, settings key and stream-json control message, tagged with the
+version it was first observed in.
 Three lanes (changelog, docs, release binaries) produce one JSON snapshot per release,
 published to <https://claustodian.dev>.
 

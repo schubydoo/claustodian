@@ -11,8 +11,9 @@ specific user's Claude Code version.
 
 Claustodian answers one question:
 
-> Does a Claude Code **symbol** — a CLI flag, environment variable, slash command, or
-> settings key — exist in a specific **version**, and what did it do at that version?
+> Does a Claude Code **symbol** — a CLI flag, environment variable, slash command,
+> settings key, or stream-json control message — exist in a specific **version**, and
+> what did it do at that version?
 
 The data is static JSON on GitHub Pages (also YAML/TOML). There's nothing to install:
 fetch a URL and read it. Three tiny reference clients live next to this file:
