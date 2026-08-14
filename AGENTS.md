@@ -38,6 +38,9 @@ npm run fetch-docs           # 3. docs pages   -> data/docs.json
 npm run scrape -- --all      # 4. everything   -> data/versions/, index, latest
 ```
 
+⚠️ Publishing `control_message` records is opt-in and is its own data PR — step 2
+needs `--control` the first time. The runbook has the reasoning.
+
 `fetch-docs` resolves settings key paths against `data/binary-observations.json`, so
 the binary lane must land first or the docs lane resolves against a stale schema.
 **Read [the runbook](docs/runbooks/regenerating-the-dataset.md) before running any of
@@ -45,17 +48,17 @@ this** — there is a reconciliation step that has to happen first.
 
 ## Architecture map
 
-| Path                          | What                                                     |
-| ----------------------------- | -------------------------------------------------------- |
-| `scripts/extract-bundle.ts`   | positive-evidence extraction from a release bundle       |
-| `scripts/control-lane.ts`     | AST extraction of the stream-json control protocol       |
-| `scripts/binary-lane.ts`      | policy: what publishes, how it is categorised, re-dating |
-| `scripts/backfill-binary.ts`  | observations → `data/binary-observations.json`           |
-| `scripts/fetch-docs.ts`       | official docs pages → `data/docs.json`                   |
-| `scripts/scrape-changelog.ts` | changelog + all lanes → `data/versions/*.json`           |
-| `schema/symbol.schema.json`   | the record contract                                      |
-| `data/`                       | **generated** — never hand-edit                          |
-| `site/index.html`             | the whole site, hand-written, no build step              |
+| Path                          | What                                                           |
+| ----------------------------- | -------------------------------------------------------------- |
+| `scripts/extract-bundle.ts`   | positive-evidence extraction from a release bundle             |
+| `scripts/control-lane.ts`     | AST extraction of the stream-json control protocol             |
+| `scripts/binary-lane.ts`      | policy: what publishes, how it is categorised, re-dating       |
+| `scripts/backfill-binary.ts`  | observations → `data/binary-observations.json` (+ `--control`) |
+| `scripts/fetch-docs.ts`       | official docs pages → `data/docs.json`                         |
+| `scripts/scrape-changelog.ts` | changelog + all lanes → `data/versions/*.json`                 |
+| `schema/symbol.schema.json`   | the record contract                                            |
+| `data/`                       | **generated** — never hand-edit                                |
+| `site/index.html`             | the whole site, hand-written, no build step                    |
 
 Full detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 

@@ -20,8 +20,8 @@ lane that proved it.
 | **docs**      | `code.claude.com/docs` pages          | descriptions, and an anchored `first_seen` when a page states a `min-version` |
 | **binary**    | published release binaries            | undocumented symbols, earlier `first_seen`, cliff-aware removals              |
 
-Binary finds land as `status: needs_review` until a first-party description confirms
-them. That is a curation state, not a doubt about existence — the binary proved the
+Binary flag, env-var, command and settings-key finds land as `status: needs_review`
+until a first-party description confirms them. That is a curation state, not a doubt about existence — the binary proved the
 symbol is there.
 
 ## Script map
@@ -29,26 +29,26 @@ symbol is there.
 Pipeline scripts live in `scripts/`. Each is a module with a `main` guard, so they are
 importable in tests and runnable via the matching npm script.
 
-| Script                  | Lane      | Reads                           | Writes                                                                          |
-| ----------------------- | --------- | ------------------------------- | ------------------------------------------------------------------------------- |
-| `scrape-binary.ts`      | binary    | one release from the CDN        | `binary-cache/<version>.json`                                                   |
-| `reextract-binaries.ts` | binary    | the local archive               | `binary-cache/` (rebuilt)                                                       |
-| `extract-bundle.ts`     | binary    | one bundle's source text        | — (library)                                                                     |
-| `slice-bundle.ts`       | binary    | one release artifact's bytes    | — (library)                                                                     |
-| `settings-schema.ts`    | binary    | the embedded zod schema         | — (library)                                                                     |
-| `env-registry.ts`       | binary    | the typed env registry          | — (library)                                                                     |
-| `argv-scopes.ts`        | binary    | esbuild module headers          | — (library)                                                                     |
-| `backfill-binary.ts`    | binary    | `binary-cache/`                 | `data/binary-observations.json`                                                 |
-| `binary-lane.ts`        | binary    | observations                    | — (policy)                                                                      |
-| `fetch-docs.ts`         | docs      | docs pages + observations       | `data/docs.json`                                                                |
-| `scrape-changelog.ts`   | changelog | changelog + observations + docs | `data/versions/*.json`, `index.json`, `latest.json`, `binary-descriptions.json` |
-| `build-catalog.ts`      | —         | `data/versions/*.json`          | `data/catalog.json`                                                             |
-| `generate-exports.ts`   | —         | `data/**/*.json`                | sibling `.yaml` / `.toml`                                                       |
-| `validate-schema.ts`    | —         | `data/**/*.json`                | — (gate)                                                                        |
-| `check-coverage.ts`     | —         | changelog vs data               | — (gate)                                                                        |
-| `diff-snapshots.ts`     | —         | two snapshots                   | — (tool)                                                                        |
-| `find-removals.ts`      | changelog | changelog prose                 | — (proposes)                                                                    |
-| `removals.ts`           | changelog | curated retirement lists        | — (policy)                                                                      |
+| Script                  | Lane      | Reads                                                           | Writes                                                                                                                                           |
+| ----------------------- | --------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `scrape-binary.ts`      | binary    | one release from the CDN                                        | `binary-cache/<version>.json`                                                                                                                    |
+| `reextract-binaries.ts` | binary    | the local archive                                               | `binary-cache/` (rebuilt)                                                                                                                        |
+| `extract-bundle.ts`     | binary    | one bundle's source text                                        | — (library)                                                                                                                                      |
+| `slice-bundle.ts`       | binary    | one release artifact's bytes                                    | — (library)                                                                                                                                      |
+| `settings-schema.ts`    | binary    | the embedded zod schema                                         | — (library)                                                                                                                                      |
+| `env-registry.ts`       | binary    | the typed env registry                                          | — (library)                                                                                                                                      |
+| `argv-scopes.ts`        | binary    | esbuild module headers                                          | — (library)                                                                                                                                      |
+| `backfill-binary.ts`    | binary    | `binary-cache/`                                                 | `data/binary-observations.json`, `binary-descriptions.json`, and — only with `--control` or when it already exists — `control-observations.json` |
+| `binary-lane.ts`        | binary    | observations                                                    | — (policy)                                                                                                                                       |
+| `fetch-docs.ts`         | docs      | docs pages + observations                                       | `data/docs.json`                                                                                                                                 |
+| `scrape-changelog.ts`   | changelog | changelog + observations (binary, control, descriptions) + docs | `data/versions/*.json`, `index.json`, `latest.json`                                                                                              |
+| `build-catalog.ts`      | —         | `data/versions/*.json`                                          | `data/catalog.json`                                                                                                                              |
+| `generate-exports.ts`   | —         | `data/**/*.json`                                                | sibling `.yaml` / `.toml`                                                                                                                        |
+| `validate-schema.ts`    | —         | `data/**/*.json`                                                | — (gate)                                                                                                                                         |
+| `check-coverage.ts`     | —         | changelog vs data                                               | — (gate)                                                                                                                                         |
+| `diff-snapshots.ts`     | —         | two snapshots                                                   | — (tool)                                                                                                                                         |
+| `find-removals.ts`      | changelog | changelog prose                                                 | — (proposes)                                                                                                                                     |
+| `removals.ts`           | changelog | curated retirement lists                                        | — (policy)                                                                                                                                       |
 
 `scrape-changelog.ts` is where the lanes converge: it reads the changelog, folds in
 `data/docs.json` and `data/binary-observations.json`, and assembles every snapshot.
@@ -140,10 +140,15 @@ not rebuild on a custom-domain change, which has already caused one outage.
 - **No API.** Static files only: cacheable, vendorable, and readable offline.
 - **No `internal_config_flag` records.** The type is in the schema enum and unused;
   internal-ness is a `category`, per the identity invariant above.
-- **No `control_message` records yet.** The extractor now runs in the extraction
-  loop and its output is cached per version, but nothing assembles those
-  observations into records and the site cannot filter them. The PR that emits them
-  follows separately, and the dataset regeneration after that.
+- **No `control_message` records yet.** The extractor runs in the extraction loop,
+  its output is cached per version, and `controlRecordsFor` assembles the records —
+  but `data/` carries none, because assembly reads `data/control-observations.json`
+  and that file is not committed. Writing it is opt-in: `backfill-binary` creates it
+  only when passed `--control`, or when it is already there. The committed cache is
+  fully scanned, so without that gate the release bot would produce it on its next
+  run and publish the whole control surface through an auto-mergeable data PR.
+  Publishing is therefore a deliberate act, in its own PR. The site cannot filter
+  them yet either.
 - **No LLM-authored content in the dataset.** Descriptions come from the docs, the
   changelog, or the binary's own text. A generated summary would be an unverified
   artifact in a dataset whose whole value is that claims are checkable.

@@ -114,6 +114,7 @@
         --cmd: #e8590c;
         --warn: #b8860b;
         --config: #9c36b5;
+        --control: #0c8599;
         --noise: #868e96;
       }
       @media (prefers-color-scheme: dark) {
@@ -129,6 +130,7 @@
           --cmd: #ffa94d;
           --warn: #ffd43b;
           --config: #da77f2;
+          --control: #3bc9db;
           --noise: #868e96;
         }
       }
@@ -322,6 +324,12 @@
       .t-config_key,
       .t-internal_config_flag {
         background: var(--config);
+      }
+      /* The badge base sets `color: #fff`, so a type with no rule here renders white
+         on the card background — invisible, not merely unstyled. Any new member of the
+         schema's `type` enum needs a colour, whether or not the site can filter it. */
+      .t-control_message {
+        background: var(--control);
       }
       /* A flag that only works under a subcommand. Muted like .cat — this is
          classification, not a warning. */
@@ -1220,7 +1228,7 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
               Env vars use topic categories instead (<span class="cat">network</span>,
               <span class="cat">telemetry</span>, …). An estimated <code>first_seen</code> comes
               from an incidental changelog mention or a docs page with no stated introduction
-              version; the binary lane pins it later. Scopes are full invocation paths, so
+              version; the binary lane can pin it later. Scopes are full invocation paths, so
               <span class="scope">under plugin eval</span> means
               <code>claude plugin --scaffold</code> fails too — the flag belongs to
               <code>plugin eval</code>, not to <code>plugin</code>. Descriptions come from

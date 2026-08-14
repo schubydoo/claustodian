@@ -119,6 +119,15 @@ npm run fetch-docs           # 3. docs pages   -> data/docs.json
 npm run scrape -- --all      # 4. everything   -> data/versions/, index, latest
 ```
 
+⚠️ Step 2 writes `data/control-observations.json` only when that file already exists,
+or when you pass `--control`. The release bot runs step 2 on every dispatch, so
+without that gate it would publish the whole control surface through an
+auto-mergeable data PR. **Publishing those records the first time is its own data
+PR**: `npm run backfill-binary -- --control`. Once the file is committed the flag is
+no longer needed — its presence is the opt-in, and the plain command keeps it in step
+with the cache. A run that skips it leaves every gate downstream
+green on a dataset with no control records.
+
 Step 3 must come after step 2. `fetch-docs` resolves settings-page key paths against
 `data/binary-observations.json`, because the docs group keys by topic rather than by
 JSON nesting — a "Permission settings" table can list a key the schema holds flat.

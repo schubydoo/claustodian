@@ -17,13 +17,13 @@
 export const DEFAULT_BASE = 'https://claustodian.dev/data';
 
 // All six values the schema's `type` enum allows. cli_flag, command, env_var and
-// config_key are all populated. Two are not: internal_config_flag is reserved by the
-// schema and deliberately unused — internal-ness is carried by `category`
-// (`settings-internal`), because typing off a description would churn a record's
-// identity every time Anthropic edits the text — and control_message is accepted by
-// the schema but not yet emitted by any lane. Widening this union ahead of the data
-// keeps a consumer that adopts it from failing to compile the first time a
-// control_message record appears in a snapshot.
+// config_key are populated. internal_config_flag is reserved by the schema and
+// deliberately unused — internal-ness is carried by `category` (`settings-internal`),
+// because typing off a description would churn a record's identity every time
+// Anthropic edits the text. control_message is assembled by the pipeline but is not
+// in the published dataset yet; widening this union ahead of the data keeps a
+// consumer that adopts it from failing to compile the first time a control_message
+// record appears in a snapshot.
 export type SymbolType =
   'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag' | 'control_message';
 export type Status = 'active' | 'deprecated' | 'removed' | 'needs_review';
