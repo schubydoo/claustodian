@@ -1451,8 +1451,16 @@ async function writeJson(filePath: string, data: unknown): Promise<void> {
 const DOCS_PATH = 'data/docs.json';
 /** The committed binary lane — the distilled binary evidence; not CLI-overridable. */
 const BINARY_OBSERVATIONS_PATH = 'data/binary-observations.json';
-/** The committed control-request observations; written only by an opt-in backfill. */
-const CONTROL_OBSERVATIONS_PATH = 'data/control-observations.json';
+/**
+ * The committed control-request observations; written only by an opt-in backfill.
+ *
+ * Overridable via `CLAUSTODIAN_CONTROL_OBSERVATIONS_PATH` for tests ONLY. Once the file
+ * is committed it is always present, so the regression guard's file-absent and
+ * file-empty arms are otherwise unreachable from a test that drives `main()` — the seam
+ * lets a test point at a temp path it controls rather than the committed one.
+ */
+const controlObservationsPath = (): string =>
+  process.env.CLAUSTODIAN_CONTROL_OBSERVATIONS_PATH ?? 'data/control-observations.json';
 /** The committed per-version description timeline; not CLI-overridable. */
 const BINARY_DESCRIPTIONS_PATH = 'data/binary-descriptions.json';
 /** The committed data directory; regenerating it must use canonical sources. */
@@ -1510,7 +1518,7 @@ export function controlRegressionRefusal(
   if (!priorHadControl) return null;
   if (control.present && control.observations.length > 0) return null;
   return (
-    `${CONTROL_OBSERVATIONS_PATH} is ${control.present ? 'empty' : 'missing'}, but the ` +
+    `${controlObservationsPath()} is ${control.present ? 'empty' : 'missing'}, but the ` +
     `previous dataset published control_message records. Regenerating now would drop ` +
     `every one of them, which downstream reads as a mass removal. Re-run ` +
     `"npm run backfill-binary" (after a re-extract, which is what writes it) before ` +
@@ -1631,7 +1639,8 @@ export async function main(): Promise<number> {
   // An emptied file is the same failure wearing a different shape: `present` is true,
   // `buildEnrichedSnapshots` attaches nothing, and every record disappears without an
   // error. Both arms are checked, so neither can pass as the legitimate first run.
-  const control = await loadControlObservations(CONTROL_OBSERVATIONS_PATH);
+  const controlObsPath = controlObservationsPath();
+  const control = await loadControlObservations(controlObsPath);
   const priorHadControl = await priorDatasetHasControlRecords(join(options.outDir, 'latest.json'));
   const refusal = controlRegressionRefusal(control, priorHadControl);
   if (refusal) throw new Error(refusal);
