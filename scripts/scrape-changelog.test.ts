@@ -130,9 +130,33 @@ describe('extractSymbols', () => {
 
   it('filters denylisted false positives (errno codes, acronyms) but keeps real vars', () => {
     const symbols = extractSymbols(
-      'Fixed `EADDRINUSE` and `JSON` parsing; respects `HOME` and `CLAUDE_CODE_SAFE_MODE`.'
+      'Fixed `EADDRINUSE` and `JSON` parsing; respects `NO_COLOR` and `CLAUDE_CODE_SAFE_MODE`.'
     );
-    expect(symbols.map((s) => s.symbol)).toEqual(['HOME', 'CLAUDE_CODE_SAFE_MODE']);
+    expect(symbols.map((s) => s.symbol)).toEqual(['NO_COLOR', 'CLAUDE_CODE_SAFE_MODE']);
+  });
+
+  it('drops OS/shell env vars Claude Code reads but does not own', () => {
+    // Named incidentally in changelog prose, not first-party symbols. The binary
+    // lane still observes them and filters at publication (isPublishableBinaryEnv),
+    // so this suppression is changelog-only via CHANGELOG_SYMBOL_DENYLIST.
+    const symbols = extractSymbols(
+      'Now respects `PATH`, `HOME`, `LANG`, `COLUMNS`, `LINES`, `OLDPWD`, `DIRSTACK`, and `XDG_DATA_HOME`.'
+    );
+    expect(symbols).toEqual([]);
+  });
+
+  it('keeps env vars Claude Code genuinely honors (NO_COLOR, OTEL context)', () => {
+    // The denylist is targeted, not a sweep of OS-ish names: respected and
+    // telemetry-context vars stay first-party symbols.
+    const symbols = extractSymbols(
+      'Honors `NO_COLOR`, `FORCE_COLOR`, `TRACEPARENT`, `TRACESTATE`.'
+    );
+    expect(symbols.map((s) => s.symbol)).toEqual([
+      'NO_COLOR',
+      'FORCE_COLOR',
+      'TRACEPARENT',
+      'TRACESTATE',
+    ]);
   });
 
   it("drops git's own redirection flags/env-vars named in a bugfix bullet", () => {
@@ -146,12 +170,26 @@ describe('extractSymbols', () => {
     expect(symbols).toEqual([]);
   });
 
-  it('scopes the git suppression to the changelog lane, leaving the binary denylist clean', () => {
-    // The suppression must NOT leak into the shared SYMBOL_DENYLIST that
-    // extract-bundle consults: a shipped binary that genuinely reads
-    // `process.env.GIT_DIR`/`GIT_WORK_TREE` is real first-party evidence the
-    // binary lane must stay free to record.
-    for (const token of ['--git-dir', 'GIT_DIR', 'GIT_WORK_TREE']) {
+  it('scopes the changelog-only suppression, leaving the binary denylist clean', () => {
+    // Neither the git primitives nor the OS/shell env vars may leak into the
+    // shared SYMBOL_DENYLIST that extract-bundle consults: the binary lane must
+    // stay free to OBSERVE a bundle that reads `process.env.X` (it filters them
+    // at publication via isPublishableBinaryEnv). Suppressing them there would
+    // erase that record with no coverage failure to catch it.
+    const changelogOnly = [
+      '--git-dir',
+      'GIT_DIR',
+      'GIT_WORK_TREE',
+      'PATH',
+      'HOME',
+      'LANG',
+      'COLUMNS',
+      'LINES',
+      'OLDPWD',
+      'DIRSTACK',
+      'XDG_DATA_HOME',
+    ];
+    for (const token of changelogOnly) {
       expect(CHANGELOG_SYMBOL_DENYLIST.has(token)).toBe(true);
       expect(SYMBOL_DENYLIST.has(token)).toBe(false);
     }

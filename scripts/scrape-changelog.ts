@@ -189,8 +189,10 @@ const SYMBOL_PATTERNS: Array<[RegExp, ExtractedSymbolType]> = [
  * Tokens that match the broad env_var pattern but are NOT Claude Code symbols —
  * mostly Node/libuv error codes and generic acronyms that appear in changelog
  * prose in backticks. Curated denylist; extend as new false positives surface.
- * Real env vars (HOME, PATH, EDITOR, DISABLE_*, ...) are intentionally kept —
- * they are genuine, just categorized as third-party noise downstream.
+ * Shared with extract-bundle, so only put here what is noise in BOTH lanes.
+ * OS/shell env vars Claude Code reads but does not own (PATH, HOME, ...) are
+ * suppressed for the changelog lane only — see CHANGELOG_SYMBOL_DENYLIST — so the
+ * binary lane keeps observing them.
  */
 export const SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   // Node/libuv errno codes
@@ -274,23 +276,37 @@ export const SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
 
 /**
  * Tokens the CHANGELOG names incidentally in prose but which are a subprocess
- * tool's own primitives (git's, here) — not Claude Code's — so they must not be
- * seeded as symbols from changelog text. Seeded by the 2.1.216 bugfix bullet
- * "Fixed worktree-isolated subagents redirecting git into the shared checkout
- * via `git -C`, `--git-dir`, or `GIT_DIR`/`GIT_WORK_TREE`" (`git -C` is already
- * safe — the space excludes it from the token patterns).
+ * tool's or the OS's own primitives — not Claude Code's — so they must not be
+ * seeded as symbols from changelog text.
  *
  * Deliberately scoped to the changelog lane, NOT folded into the shared
- * SYMBOL_DENYLIST: extract-bundle consults that denylist too, and a shipped
- * binary that genuinely reads `process.env.GIT_DIR`/`GIT_WORK_TREE` (plausible —
- * the fix above is precisely about Claude Code inspecting these) would be real
- * first-party evidence. Suppressing it there would silently drop the symbol from
- * binary evidence with no coverage failure to catch it.
+ * SYMBOL_DENYLIST that extract-bundle also consults. The binary lane OBSERVES
+ * these when the bundle reads `process.env.X` (a factual record) and filters them
+ * at publication via `isPublishableBinaryEnv`'s claude-code whitelist. Suppressing
+ * them in the shared denylist would erase those observations with no coverage
+ * failure to catch it, so the two lanes agree on what PUBLISHES while the binary
+ * lane keeps the raw evidence.
  */
 export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
+  // git's own redirection primitives, from the 2.1.216 bugfix bullet "Fixed
+  // worktree-isolated subagents redirecting git into the shared checkout via
+  // `git -C`, `--git-dir`, or `GIT_DIR`/`GIT_WORK_TREE`" (`git -C` is already
+  // safe — the space excludes it from the token patterns).
   '--git-dir',
   'GIT_DIR',
   'GIT_WORK_TREE',
+  // OS/shell environment variables Claude Code reads but does not own; the
+  // changelog names them incidentally ("a stale `PATH`"). NO_COLOR / FORCE_COLOR
+  // (genuinely respected) and TRACEPARENT / TRACESTATE (OTEL context) stay
+  // published; AI_AGENT is ambiguous and left as-is.
+  'PATH',
+  'HOME',
+  'LANG',
+  'COLUMNS',
+  'LINES',
+  'OLDPWD',
+  'DIRSTACK',
+  'XDG_DATA_HOME',
 ]);
 
 /**
