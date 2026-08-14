@@ -1097,12 +1097,11 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         </div>
         <div>
           <label for="type">Type</label>
+          <!-- Options past "All types" are built from the data at load time by
+               refreshTypeControl(); see TYPE_LABELS. Do not hardcode types here —
+               that is how control_message shipped unfilterable. -->
           <select id="type" aria-label="Symbol type">
             <option value="all">All types</option>
-            <option value="cli_flag">CLI flags</option>
-            <option value="command">Commands</option>
-            <option value="env_var">Env vars</option>
-            <option value="config_key">Config keys</option>
           </select>
         </div>
         <div id="category-wrap" hidden>
@@ -1174,6 +1173,12 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
 
               <dt><span class="badge t-config_key">config key</span></dt>
               <dd>A settings key, e.g. <code>worktree.baseRef</code>.</dd>
+
+              <dt><span class="badge t-control_message">control message</span></dt>
+              <dd>
+                A stream-json control-protocol request Claude Code exchanges with its host, e.g.
+                <code>can_use_tool</code>.
+              </dd>
 
               <dt><span class="cat">cli</span></dt>
               <dd>A flag meant for you — it appears in <code>claude --help</code>.</dd>
@@ -1283,6 +1288,29 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       // Cross-version catalog (every symbol ever, with lifecycle + last_seen), lazily
       // fetched the first time "Search all versions" is enabled. null until loaded.
       let catalog = null;
+
+      // Display labels and canonical order for symbol types. The Type dropdown and
+      // the grouped view both read this. A type NOT listed here still renders —
+      // labelled by its raw value — so a newly published lane can never silently
+      // vanish from the UI; adding a row here only gives it a friendlier label and
+      // a fixed position. (scripts/site-types.test.ts fails if a live type here is
+      // missing a legend badge, so the legend stays in step too.)
+      const TYPE_LABELS = new Map([
+        ['cli_flag', 'CLI flags'],
+        ['command', 'Commands'],
+        ['env_var', 'Env vars'],
+        ['config_key', 'Config keys'],
+        ['control_message', 'Control messages'],
+      ]);
+      const typeLabel = (t) => TYPE_LABELS.get(t) ?? t;
+      // The types present in a source, ordered: known types in TYPE_LABELS order,
+      // then any unknown type appended in sort order.
+      function orderedTypesIn(symbols) {
+        const present = new Set(symbols.map((s) => s.type));
+        const known = [...TYPE_LABELS.keys()].filter((t) => present.has(t));
+        const unknown = [...present].filter((t) => !TYPE_LABELS.has(t)).sort();
+        return [...known, ...unknown];
+      }
 
       async function getJSON(path) {
         const res = await fetch(path, { cache: 'no-cache' });
@@ -1495,6 +1523,18 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         return li;
       }
 
+      // Rebuild the Type dropdown from the types actually present in the active
+      // source, so a newly published type is selectable without editing the markup.
+      // Keeps the leading "All types" option and the current selection when it is
+      // still present; otherwise falls back to "all".
+      function refreshTypeControl() {
+        const prev = $type.value;
+        const opts = [optionEl('all', 'All types')];
+        for (const t of orderedTypesIn(activeSource())) opts.push(optionEl(t, typeLabel(t)));
+        $type.replaceChildren(...opts);
+        $type.value = prev === 'all' || activeSource().some((s) => s.type === prev) ? prev : 'all';
+      }
+
       // Category applies only to env vars (for flags/commands it just mirrors the
       // type), so the control is shown only when Type = Env vars, with its options
       // rebuilt from the active source's env-var categories. Selection is kept if
@@ -1581,25 +1621,14 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           // Group by type: sections in a fixed type order, with the chosen sort
           // applied within each (matches is already sorted, and bucketing preserves
           // that order). Any unlisted type is appended so nothing is ever dropped.
-          const TYPE_GROUPS = [
-            ['cli_flag', 'CLI flags'],
-            ['command', 'Commands'],
-            ['env_var', 'Env vars'],
-            ['config_key', 'Config keys'],
-          ];
-          const known = new Set(TYPE_GROUPS.map(([t]) => t));
-          const extra = [...new Set(matches.map((s) => s.type))]
-            .filter((t) => !known.has(t))
-            .sort()
-            .map((t) => [t, t]);
           const nodes = [];
-          for (const [t, label] of [...TYPE_GROUPS, ...extra]) {
+          for (const t of orderedTypesIn(matches)) {
             // Header count is the total across ALL pages, not this page's share —
             // "CLI flags · 12" under a 240-flag filter would be a lie.
             const total = matches.filter((s) => s.type === t).length;
             if (!total) continue;
             const onPage = slice.filter((s) => s.type === t);
-            nodes.push(groupHeader(t, label, total));
+            nodes.push(groupHeader(t, typeLabel(t), total));
             for (const s of onPage) nodes.push(resultCard(s));
           }
           $results.replaceChildren(...nodes);
@@ -1724,6 +1753,9 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         try {
           snapshot = await getJSON(`${DATA}/versions/${v}.json`);
           $status.textContent = '';
+          // A version may add or drop a whole type, so rebuild the Type dropdown
+          // before the category control (which reads $type.value).
+          refreshTypeControl();
           refreshCategoryControl();
           // A different version is a different result set — back to page 1.
           rerender();
@@ -1804,6 +1836,9 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             }
             // The version picker doesn't apply to a cross-version search.
             $version.disabled = $allVersions.checked;
+            // The catalog can carry a type no single snapshot has (a removed one),
+            // so rebuild the Type dropdown when the source switches.
+            refreshTypeControl();
             refreshCategoryControl();
             rerender();
           });
