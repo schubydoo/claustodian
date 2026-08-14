@@ -129,19 +129,66 @@ describe('SYMBOL_SCOPES table', () => {
     }
   });
 
-  it('never lists a path together with a strict prefix of it', () => {
-    // `['plugin', 'plugin eval']` would be self-contradictory: the bare parent
-    // claims the flag works at `claude plugin`, which is what the sub-path
-    // denies. Catches a half-applied refinement.
+  it('never lists a path together with a strict prefix of it, unless both are evidenced', () => {
+    // Catches a half-applied refinement: recording `['plugin', 'plugin eval']`
+    // when only the child was re-derived leaves the parent asserting a scope
+    // `claude plugin --scaffold` rejects.
+    //
+    // ⚠️ A parent and its child TOGETHER is not self-contradictory in general, and
+    // the earlier wording here said it was. `--hooks-dir` publishes
+    // `["daemon", "self-hosted-runner", "self-hosted-runner orchestrator"]` — the
+    // binary lane proved each of those parsers accepts it (scripts/argv-scopes.ts),
+    // and listing fewer would be the false claim. It has no entry in THIS map, which
+    // is why this test never saw it.
+    //
+    // So the rule is a curation guard, not a truth about scopes. When a curated
+    // flag is genuinely accepted at both a path and its child — an ordinary
+    // commander shape for a parent command with its own action — add it here with
+    // the evidence rather than deleting a true scope to get green.
+    // Keyed by `flag|parent|child`, not by flag: exempting a whole flag would also
+    // wave through a second, unrelated prefix pair on it.
+    const EVIDENCED_PARENT_AND_CHILD = new Set<string>([]);
     for (const [flag, scopes] of SYMBOL_SCOPES) {
       for (const a of scopes) {
         for (const b of scopes) {
           if (a !== b && b.startsWith(`${a} `)) {
-            throw new Error(`${flag}: "${a}" is a strict prefix of "${b}"`);
+            if (EVIDENCED_PARENT_AND_CHILD.has(`${flag}|${a}|${b}`)) continue;
+            throw new Error(
+              `${flag}: "${a}" is a strict prefix of "${b}". Usually the parent is a ` +
+                `stale coarse path left by a half-applied refinement — drop it. If BOTH ` +
+                `are real, add "${flag}|${a}|${b}" to EVIDENCED_PARENT_AND_CHILD. ` +
+                `Note \`--help\` cannot settle a hidden or argv-dispatched surface: ` +
+                `read the registration in the bundle, as scripts/argv-scopes.ts does.`
+            );
           }
         }
       }
     }
+  });
+
+  it('publishes a parent and its child together when both are evidenced', () => {
+    // The counterexample the invariant above must not be read as forbidding.
+    //
+    // This is the REAL one: `--hooks-dir` has no curated entry, so `scopesFor`
+    // returns the binary scopes verbatim without reaching the union, and
+    // `data/binary-observations.json` records exactly these three — a path and two
+    // descendants. It is what `data/latest.json` publishes.
+    expect(
+      scopesFor('cli_flag', '--hooks-dir', [
+        'daemon',
+        'self-hosted-runner',
+        'self-hosted-runner orchestrator',
+      ])
+    ).toEqual(['daemon', 'self-hosted-runner', 'self-hosted-runner orchestrator']);
+
+    // And the union can produce the same shape from two halves. Synthetic on
+    // purpose: no flag today unions into a prefix pair — the curated table and the
+    // binary lane happen to agree on `--base-dir` (`self-hosted-runner` from both).
+    // The invariant must still not forbid it if a future capture splits that way.
+    expect(scopesFor('cli_flag', '--base-dir', ['self-hosted-runner orchestrator'])).toEqual([
+      'self-hosted-runner',
+      'self-hosted-runner orchestrator',
+    ]);
   });
 
   it('only holds long flags', () => {

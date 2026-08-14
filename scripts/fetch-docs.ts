@@ -139,9 +139,14 @@ function minVersion(cell: string): string | null {
 }
 
 /**
- * The trackable symbol named by a table's first cell, or null. Recognises a
- * `--flag`, a `/command`, or an `ALL_CAPS` environment variable inside the
- * cell's first backtick span; skips `claude sub command` rows and prose.
+ * The trackable symbol named by ONE backtick span, or null. Tests in order: a
+ * `/command` anchored at the start, then a `--flag`, then an `ALL_CAPS`
+ * environment variable. Skips `claude sub command` rows and prose.
+ *
+ * The order is load-bearing and is the whole point of the anchor test below —
+ * scanning for a flag first took `--force` out of `` `/reload-plugins [--force]` ``
+ * and lost the command. The caller (`symbolsFromCell`) tries every span and takes
+ * the first that resolves, so this is not necessarily the cell's first span.
  */
 function symbolFromInner(inner: string): { symbol: string; type: DocSymbolType } | null {
   // A slash command names the WHOLE cell (`/compact`, optionally `/compact <arg>`)

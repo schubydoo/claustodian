@@ -114,7 +114,7 @@
       },
       "minItems": 1,
       "uniqueItems": true,
-      "description": "Subcommands this flag is accepted under, e.g. [\"remote-control\"] or [\"agents\",\"plugin\"]. COMPLETE when present, so a non-empty list also means the flag is NOT accepted on bare `claude`. Absent means no scope information \u2014 not \"top-level\". Only cli_flag records carry it."
+      "description": "Subcommands this flag is accepted under, e.g. [\"remote-control\"] or [\"mcp add\",\"plugin install\"]. Values are FULL invocation paths after `claude`. A bare parent is only correct when that invocation really accepts the flag: commander rejects a sub-subcommand's flag at its parent, so [\"plugin\"] alone is a false claim for a `plugin eval` flag \u2014 but a parent AND its child can both appear when both accept it, as `--hooks-dir` does. COMPLETE when present, so a non-empty list also means the flag is NOT accepted on bare `claude`. Absent means no scope information \u2014 not \"top-level\". Only cli_flag records carry it."
     }
   },
   "required": [

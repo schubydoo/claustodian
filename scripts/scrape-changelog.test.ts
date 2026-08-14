@@ -358,14 +358,61 @@ describe('isSubprocessFlagBullet', () => {
   });
 
   it('keeps a first-party flag when the bare clause follows an unrelated tool word', () => {
-    // The clause must open off "flags"; a first-party flag introduced elsewhere
-    // in the bullet survives.
+    // No "flag"/"flags" token at all, so the rule never engages. Kept as a cheap
+    // negative control, NOT as the over-broadness guard — it passes against the
+    // pre-fix regex too, which is what the test below exists to catch.
     const firstParty = '- Added `--git-notes` for git integration (writes a note per commit)';
     expect(isSubprocessFlagBullet(firstParty)).toBe(false);
     const keys = [
       ...collectChangelogSymbols([{ version: '2.1.41', bullets: [firstParty] }]).keys(),
     ];
     expect(keys).toContain('cli_flag:--git-notes');
+  });
+
+  it('keeps a first-party flag when the parenthetical is an alias aside, not a list', () => {
+    // The arrangement that actually reaches the bare-paren branch: the word "flag"
+    // is present, the tool-word match lands INSIDE `--git-notes` because `-` is a
+    // non-word character, and a parenthetical follows. With `\b` on the left this
+    // suppressed `--no-git-notes` — a first-party flag introduced by the very
+    // bullet announcing it.
+    const alias = '- Added a `--git-notes` flag (`--no-git-notes` disables it)';
+    expect(isSubprocessFlagBullet(alias)).toBe(false);
+    const keys = [...collectChangelogSymbols([{ version: '2.1.41', bullets: [alias] }]).keys()];
+    expect(keys).toContain('cli_flag:--git-notes');
+    expect(keys).toContain('cli_flag:--no-git-notes');
+  });
+
+  it('keeps BOTH flags of an alias pair the bullet introduces', () => {
+    // One token wider than the case above, and the reason the fix is a lookaround
+    // rather than a "looks like a list" threshold: `collectChangelogSymbols` skips
+    // by symbol NAME, not position, so a flag named inside AND outside the clause
+    // vanished too. A two-flag count cannot tell this from a real example list.
+    const pair =
+      '- Added a `--git-sign` flag (`--git-sign` enables signing, `--no-git-sign` disables it)';
+    expect(isSubprocessFlagBullet(pair)).toBe(false);
+    const keys = [...collectChangelogSymbols([{ version: '2.1.41', bullets: [pair] }]).keys()];
+    expect(keys).toContain('cli_flag:--git-sign');
+    expect(keys).toContain('cli_flag:--no-git-sign');
+  });
+
+  it('still suppresses a hyphenated tool name', () => {
+    // The boundary is asymmetric on purpose: a lookbehind that also excluded `-`
+    // on the RIGHT would stop matching `docker-compose` and `git-lfs`, losing real
+    // suppression. Only the left side needs it, since the defect is a tool word
+    // sitting inside `--flag-name`.
+    const hyphenated =
+      '- Added prompts for `docker-compose` commands carrying flags (`--url`, `--connection`)';
+    expect(isSubprocessFlagBullet(hyphenated)).toBe(true);
+    expect(subprocessFlagExamples(hyphenated).has('--url')).toBe(true);
+  });
+
+  it('still suppresses a genuine subprocess clause naming ONE flag', () => {
+    // A pin for the direction that must NOT loosen: the tool word is genuine, so
+    // the clause is suppressed however few flags it lists. Passes against the old
+    // regex too; the alias-aside and alias-pair tests are what bind the change.
+    const one = '- Allowed `git log` flags (e.g., `--raw`) in read-only mode';
+    expect(isSubprocessFlagBullet(one)).toBe(true);
+    expect(subprocessFlagExamples(one).has('--raw')).toBe(true);
   });
 
   it('collectChangelogSymbols keeps a first-party flag that trails the example clause', () => {
