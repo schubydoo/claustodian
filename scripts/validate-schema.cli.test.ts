@@ -89,6 +89,48 @@ describe('validate-schema main()', () => {
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('FAIL'));
   });
 
+  it('reports the nested instancePath when a record field deep in the file fails', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-validate-'));
+    const badSnapshot = validSnapshot({ symbols: [validSymbol({ first_seen: 123 })] });
+    await writeFile(join(tmpDir, 'latest.json'), JSON.stringify(badSnapshot), 'utf-8');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await withArgv([`${tmpDir}/*.json`], main);
+
+    expect(exitCode).toBe(1);
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining('instancePath=/symbols/0/first_seen')
+    );
+  });
+
+  it('stringifies a non-Error throw when a file cannot be read/parsed', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-validate-'));
+    await writeFile(
+      join(tmpDir, 'latest.json'),
+      JSON.stringify({ ...validSnapshot(), __marker: 'poison-parse' }),
+      'utf-8'
+    );
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    // Conditional on the file's own content rather than call ordering, so an
+    // unrelated JSON.parse inside main() cannot absorb the throw.
+    const realParse = JSON.parse.bind(JSON);
+    const parseSpy = vi.spyOn(JSON, 'parse').mockImplementation((text, reviver) => {
+      if (typeof text === 'string' && text.includes('poison-parse')) {
+        throw 'file parse blew up as a plain string';
+      }
+      return realParse(text, reviver);
+    });
+    try {
+      const exitCode = await withArgv([`${tmpDir}/*.json`], main);
+      expect(exitCode).toBe(1);
+      expect(logSpy).toHaveBeenCalledWith(
+        expect.stringContaining('file parse blew up as a plain string')
+      );
+    } finally {
+      parseSpy.mockRestore();
+    }
+  });
+
   it('returns 0 and logs a notice when the pattern matches nothing', async () => {
     tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-validate-'));
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});

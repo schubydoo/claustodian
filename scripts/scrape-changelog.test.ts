@@ -280,6 +280,11 @@ describe('isIntroducingBullet', () => {
     expect(isIntroducingBullet('- Fixed a crash when using `--foo`')).toBe(false);
     expect(isIntroducingBullet('- Improved `--foo` output')).toBe(false);
   });
+
+  it('accepts a description already stripped of its "- " prefix', () => {
+    expect(isIntroducingBullet('Added `--foo` flag')).toBe(true);
+    expect(isIntroducingBullet('Fixed a crash when using `--foo`')).toBe(false);
+  });
 });
 
 describe('isSubprocessFlagBullet', () => {
@@ -549,6 +554,26 @@ describe('enrichSymbols', () => {
   it('pulls first_seen earlier from an authoritative docs min-version', () => {
     const r = m.get('--anchored');
     expect(r).toMatchObject({ first_seen: '1.0.0', confidence: 'high' });
+    expect(r?.first_seen_estimated).toBeUndefined();
+  });
+
+  it('keeps the earlier changelog observation when the docs min-version is later', () => {
+    // Earliest evidence wins in both directions: a doc min-version AFTER the
+    // changelog sighting must not push first_seen forward, but it still settles
+    // the estimate (the doc anchors the symbol, so the bound is no longer open).
+    const laterDocs = docsIndex([
+      {
+        symbol: '--incident',
+        type: 'cli_flag',
+        description: 'Incident',
+        doc_min_version: '2.1.0',
+        doc_page: 'cli-reference',
+      },
+    ]);
+    const r = enrichSymbols(collectChangelogSymbols(blocks), laterDocs, '2.1.0').find(
+      (x) => x.symbol === '--incident'
+    );
+    expect(r).toMatchObject({ first_seen: '2.0.0', confidence: 'high' });
     expect(r?.first_seen_estimated).toBeUndefined();
   });
 

@@ -392,6 +392,53 @@ describe('extractControlMessages', () => {
       expect(found.get('initialize')?.direction).toBeNull();
       expect(found.get('set_model')?.direction).toBeNull();
     });
+
+    it('leaves a schema unbound when no binding site is in reach of the walk', () => {
+      // A schema built inline under a deep call chain has no binding of its own.
+      // The walk is bounded; running out of hops must leave the schema unbound
+      // rather than latch onto whatever encloses the whole expression.
+      const deep = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var ALL=Ee(()=>fs([A1(),A2()]));',
+        'w1(w2(w3(w4(w5(w6(w7(w8(w9(w10(w11(Se({subtype:xt("hook_callback")}))))))))))));',
+        'function h(e){' +
+          'if(e.request.subtype==="initialize")return 1;' +
+          'else if(e.request.subtype==="set_model")return 2;' +
+          'return 0}',
+      ].join('\n');
+      const found = bySymbol(extractControlMessages(deep, '2.1.132'));
+
+      // hook_callback is declared but never routed, so an unbound schema is all
+      // it has — and that admits nothing.
+      expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
+    });
+
+    it('lets no unrouted union vote a direction, whatever its prose claims', () => {
+      // A system-message union whose describe() happens to contain a direction
+      // anchor. Its members are not routed as control requests, so it owns no
+      // vote — even over a routed subtype it drags in as a minority member.
+      const src = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var N1=Ee(()=>Se({subtype:xt("status")}));',
+        'var N2=Ee(()=>Se({subtype:xt("away_summary")}));',
+        'var ALL=Ee(()=>fs([A1(),A2()]));',
+        'var SYS=Ee(()=>fs([N1(),N2(),A1()]).describe(' +
+          '"Control requests the agent loop originates and needs a reply to."));',
+        'function h(e){' +
+          'if(e.request.subtype==="initialize")return 1;' +
+          'else if(e.request.subtype==="set_model")return 2;' +
+          'return 0}',
+      ].join('\n');
+      const found = bySymbol(extractControlMessages(src, '2.1.132'));
+
+      expect(found.get('initialize')?.direction).toBeNull();
+      expect(found.has('status')).toBe(false);
+      expect(found.has('away_summary')).toBe(false);
+    });
   });
 
   describe('each failure mode has its own guard', () => {

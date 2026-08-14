@@ -23,7 +23,7 @@ import { basename } from 'node:path';
 import type { ErrorObject, ValidateFunction } from 'ajv';
 import { glob } from 'tinyglobby';
 
-import { isMain } from './lib.js';
+import { runCli } from './lib.js';
 import symbolSchema from '../schema/symbol.schema.json' with { type: 'json' };
 import snapshotSchema from '../schema/snapshot.schema.json' with { type: 'json' };
 import indexSchema from '../schema/index.schema.json' with { type: 'json' };
@@ -96,12 +96,15 @@ export function getValidator(
 }
 
 function formatErrors(errors: ErrorObject[] | null | undefined): string[] {
+  /* v8 ignore next 3 -- ajv populates a non-empty .errors array whenever a compiled validator returns false, so this guard cannot fire; it exists to satisfy ajv's nullable .errors type */
   if (!errors || errors.length === 0) {
     return ['(no error details available)'];
   }
   return errors.map((err) => {
     const path = err.instancePath === '' ? '(root)' : err.instancePath;
-    return `  instancePath=${path} message=${err.message ?? '(no message)'}`;
+    // ajv is built with default messages enabled, so every ErrorObject
+    // carries a message.
+    return `  instancePath=${path} message=${err.message!}`;
   });
 }
 
@@ -170,13 +173,4 @@ export async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/validate-schema.ts` or `npm run validate`), not when it's imported
 // by tests or other modules.
-if (isMain(import.meta.url)) {
-  main()
-    .then((code) => {
-      process.exitCode = code;
-    })
-    .catch((err: unknown) => {
-      console.error('Unexpected error while validating schemas:', err);
-      process.exitCode = 1;
-    });
-}
+runCli(import.meta.url, 'validating schemas', main);

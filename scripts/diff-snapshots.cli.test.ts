@@ -81,6 +81,52 @@ describe('diff-snapshots main()', () => {
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Removed symbols'));
   });
 
+  it('prints only the counts when the snapshots are identical', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-diff-'));
+    const prevPath = join(tmpDir, 'prev.json');
+    const nextPath = join(tmpDir, 'next.json');
+    const snapshot = JSON.stringify({ symbols: [makeSymbol({ symbol: '--foo' })] });
+    await writeFile(prevPath, snapshot, 'utf-8');
+    await writeFile(nextPath, snapshot, 'utf-8');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await withArgv([prevPath, nextPath], main);
+
+    expect(exitCode).toBe(0);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('added:   0'));
+    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('Added symbols'));
+    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('Removed symbols'));
+    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('Changed symbols'));
+  });
+
+  it('stringifies a non-Error throw when reporting a read/parse failure', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-diff-'));
+    const prevPath = join(tmpDir, 'prev.json');
+    const nextPath = join(tmpDir, 'next.json');
+    const snapshot = JSON.stringify({ symbols: [makeSymbol({ symbol: '--foo' })] });
+    await writeFile(prevPath, JSON.stringify({ symbols: [], __marker: 'poison-parse' }), 'utf-8');
+    await writeFile(nextPath, snapshot, 'utf-8');
+    errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    // Conditional on the file's own content rather than call ordering, so an
+    // unrelated JSON.parse inside main() cannot absorb the throw.
+    const realParse = JSON.parse.bind(JSON);
+    const parseSpy = vi.spyOn(JSON, 'parse').mockImplementation((text, reviver) => {
+      if (typeof text === 'string' && text.includes('poison-parse')) {
+        throw 'snapshot parse blew up as a plain string';
+      }
+      return realParse(text, reviver);
+    });
+    try {
+      const exitCode = await withArgv([prevPath, nextPath], main);
+      expect(exitCode).toBe(1);
+      expect(errorSpy).toHaveBeenCalledWith(
+        expect.stringContaining('snapshot parse blew up as a plain string')
+      );
+    } finally {
+      parseSpy.mockRestore();
+    }
+  });
+
   it('returns 1 and prints usage when fewer than two paths are given', async () => {
     errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 

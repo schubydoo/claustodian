@@ -58,7 +58,7 @@ import {
 } from './binary-lane.js';
 import { assertOfficialDocs, DOCS_BASE, type DocsIndex } from './fetch-docs.js';
 import { applyChangelogDeprecations, applyChangelogRemovals } from './removals.js';
-import { compareVersionsAsc, type ExtractedSymbolType, isMain, loadChangelog } from './lib.js';
+import { compareVersionsAsc, type ExtractedSymbolType, runCli, loadChangelog } from './lib.js';
 import { scopesFor } from './symbol-scopes.js';
 
 // Re-exported from lib for existing importers (tests, extract-bundle, etc.).
@@ -152,6 +152,7 @@ export function parseChangelog(md: string): ChangelogBlock[] {
     const headingMatch = VERSION_HEADING_RE.exec(rawLine);
     if (headingMatch) {
       const version = headingMatch[1];
+      /* v8 ignore next 3 -- TS narrowing only: the regex's capture group is non-optional, so a successful exec always populates it */
       if (version === undefined) {
         continue;
       }
@@ -304,6 +305,7 @@ export function extractSymbols(text: string): ExtractedSymbol[] {
   for (const [pattern, type] of SYMBOL_PATTERNS) {
     for (const match of text.matchAll(pattern)) {
       const symbol = match[1];
+      /* v8 ignore next 3 -- TS narrowing only: every SYMBOL_PATTERNS capture group is non-optional, and matchAll always sets match.index */
       if (symbol === undefined || match.index === undefined) {
         continue;
       }
@@ -336,10 +338,10 @@ function compareSymbolRecords(a: SymbolRecord, b: SymbolRecord): number {
   if (a.type !== b.type) {
     return a.type < b.type ? -1 : 1;
   }
-  if (a.symbol !== b.symbol) {
-    return a.symbol < b.symbol ? -1 : 1;
-  }
-  return 0;
+  if (a.symbol < b.symbol) return -1;
+  /* v8 ignore next -- identity is type:symbol and every lane dedupes on it, so equality cannot occur */
+  if (a.symbol === b.symbol) return 0;
+  return 1;
 }
 
 /**
@@ -448,6 +450,7 @@ function subprocessExampleClause(bullet: string): string | null {
   // The match ends at the clause opener — either "(e.g.," or a bare "(" — so the
   // last "(" inside the match is that opener.
   const open = bullet.lastIndexOf('(', match.index + match[0].length - 1);
+  /* v8 ignore next 3 -- unreachable: both SUBPROCESS_FLAG_BULLET alternatives end in a literal "(", so the matched text always contains one for lastIndexOf to find */
   if (open === -1) {
     return null;
   }
@@ -1684,13 +1687,4 @@ export async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/scrape-changelog.ts` or `npm run scrape`), not when it's imported
 // by tests or other modules.
-if (isMain(import.meta.url)) {
-  main()
-    .then((code) => {
-      process.exitCode = code;
-    })
-    .catch((err: unknown) => {
-      console.error('Unexpected error while scraping the changelog:', err);
-      process.exitCode = 1;
-    });
-}
+runCli(import.meta.url, 'scraping the changelog', main);

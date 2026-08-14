@@ -1257,7 +1257,9 @@ export function computeBinaryRemoval(
     lastThreeBefore.length >= 2 && lastThreeBefore.filter((v) => present.has(v)).length >= 2;
   if (!solidlyPresent) return null;
 
-  return asc.find((v) => compareVersionsAsc(v, lastSeen) > 0) ?? null;
+  // The find always matches: reliableAfter was proven non-empty above and is a
+  // subset of the versions this scans.
+  return asc.find((v) => compareVersionsAsc(v, lastSeen) > 0)!;
 }
 
 /** The committed control-observations envelope, as `backfill-binary` writes it. */

@@ -31,7 +31,7 @@ import { join } from 'node:path';
 import { extractControlMessages, type ControlMessageObservation } from './control-lane.js';
 import { sliceEmbeddedBundle } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
-import { isMain } from './lib.js';
+import { runCli } from './lib.js';
 
 /** The platform whose embedded bundle the extractor reads (matches reextract). */
 const PLATFORM = 'linux-x64';
@@ -260,13 +260,4 @@ export async function main(argv: string[]): Promise<number> {
   return 0;
 }
 
-if (isMain(import.meta.url)) {
-  main(process.argv.slice(2))
-    .then((code) => {
-      process.exitCode = code;
-    })
-    .catch((error: unknown) => {
-      console.error('scrape-binary failed:', error instanceof Error ? error.message : error);
-      process.exitCode = 1;
-    });
-}
+runCli(import.meta.url, 'scraping a binary', main);

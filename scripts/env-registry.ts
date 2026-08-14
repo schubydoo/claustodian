@@ -191,13 +191,14 @@ function typedBindings(src: string, builders: Map<string, Builder[]>): Map<numbe
   for (const m of src.matchAll(builderCallRe([...builders.keys()]))) {
     const [, callee, method] = m as unknown as [string, string, string];
     const defs = builders.get(callee);
+    /* v8 ignore next -- the callee alternation is built from builders.keys(), so every match's callee is a map key; the guard only narrows the TS type */
     if (!defs) continue;
     const nearest = defs.filter((d) => d.at < m.index).at(-1);
     if (!nearest || !nearest.methods.has(method)) continue;
     const from = Math.max(0, m.index - ASSIGN_LOOKBACK);
     const assign = ASSIGN_BEFORE.exec(src.slice(from, m.index));
     if (!assign) continue;
-    out.set(from + (assign.index ?? 0), method);
+    out.set(from + assign.index, method);
   }
   return out;
 }
@@ -259,6 +260,7 @@ export function extractRegistryEnvVars(src: string): Map<string, string> {
   const byName = new Map<string, number[]>();
   for (const at of bindings.keys()) {
     const nameMatch = /^([A-Za-z_$][\w$]*)/.exec(src.slice(at));
+    /* v8 ignore next -- `at` is where ASSIGN_BEFORE matched an identifier, so the slice always starts with one; the guard only narrows the TS type */
     if (!nameMatch) continue;
     const n = nameMatch[1] as string;
     if (!byName.has(n)) byName.set(n, []);
@@ -279,8 +281,9 @@ export function extractRegistryEnvVars(src: string): Map<string, string> {
     );
     if (Math.abs(at - m.index) > MAX_BINDING_DISTANCE) continue;
     if (hasInterveningAssignment(src, ref, m.index, at, at)) continue;
-    const declaredType = bindings.get(at);
-    if (declaredType) out.set(name, declaredType);
+    // `at` comes from byName, whose positions are all bindings keys, so the
+    // lookup always yields a type.
+    out.set(name, bindings.get(at)!);
   }
   return out;
 }

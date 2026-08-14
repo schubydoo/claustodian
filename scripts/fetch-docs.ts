@@ -17,7 +17,7 @@
  * fixture markdown with no network.
  */
 import { readFile, writeFile } from 'node:fs/promises';
-import { isMain } from './lib.js';
+import { runCli } from './lib.js';
 
 export const DOCS_BASE = 'https://code.claude.com/docs/en/';
 
@@ -200,7 +200,8 @@ export function symbolsFromCell(cell: string): Array<{ symbol: string; type: Doc
   // `--allowed-tools`), and anchoring on span 0 would drop the whole row — losing
   // the valid alias along with the rejected one.
   const firstIndex = resolved.findIndex((sym) => sym !== null);
-  const first = firstIndex === -1 ? null : (resolved[firstIndex] ?? null);
+  // findIndex just proved resolved[firstIndex] is non-null.
+  const first = firstIndex === -1 ? null : resolved[firstIndex]!;
   if (!first) return [];
 
   // Multi-emit only for an alias/pair cell: >1 span and the text outside every
@@ -555,9 +556,4 @@ export async function main(argv: string[]): Promise<void> {
   );
 }
 
-if (isMain(import.meta.url)) {
-  main(process.argv.slice(2)).catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
-}
+runCli(import.meta.url, 'fetching docs', main);

@@ -2,8 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { readFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import { glob } from 'tinyglobby';
+
+// Same createRequire workaround as validate-schema.ts: ajv ships CJS with a
+// plain ES default export, which mis-resolves under a NodeNext default import.
+const require = createRequire(import.meta.url);
+const { Ajv2020 } = require('ajv/dist/2020.js') as typeof import('ajv/dist/2020.js');
 
 import { buildAjv, getValidator, schemaKindFor } from './validate-schema.js';
 
@@ -45,6 +51,13 @@ function validIndex(overrides: Record<string, unknown> = {}): Record<string, unk
     ...overrides,
   };
 }
+
+describe('getValidator', () => {
+  it('throws when the ajv instance has no compiled schema for the kind', () => {
+    const bareAjv = new Ajv2020();
+    expect(() => getValidator(bareAjv, 'symbol')).toThrow(/No compiled validator/);
+  });
+});
 
 describe('symbol schema', () => {
   const ajv = buildAjv();

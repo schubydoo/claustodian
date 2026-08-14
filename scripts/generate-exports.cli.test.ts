@@ -77,6 +77,16 @@ describe('generate-exports main()', () => {
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('nothing to generate'));
   });
 
+  it('ignores arguments other than --data', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-genexports-'));
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await withArgv(['stray', '--data', tmpDir], main);
+
+    expect(exitCode).toBe(0);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('nothing to generate'));
+  });
+
   it('rejects when --data is given with no following directory argument', async () => {
     await expect(withArgv(['--data'], main)).rejects.toThrow(
       '--data requires a directory argument'

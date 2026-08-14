@@ -21,7 +21,7 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import { isMain } from './lib.js';
+import { runCli } from './lib.js';
 import type { SymbolRecord } from './scrape-changelog.js';
 
 export type { SymbolRecord };
@@ -48,6 +48,7 @@ function keyFor(record: SymbolRecord): string {
 }
 
 function compareKeys(a: string, b: string): number {
+  /* v8 ignore next -- comparator inputs come from Maps keyed by type:symbol, so two equal keys cannot occur */
   if (a === b) return 0;
   return a < b ? -1 : 1;
 }
@@ -177,13 +178,4 @@ export async function main(): Promise<number> {
 // Only run the CLI when this file is executed directly (e.g. via `tsx
 // scripts/diff-snapshots.ts` or `npm run diff`), not when it's imported by
 // tests or other modules.
-if (isMain(import.meta.url)) {
-  main()
-    .then((code) => {
-      process.exitCode = code;
-    })
-    .catch((err: unknown) => {
-      console.error('Unexpected error while diffing snapshots:', err);
-      process.exitCode = 1;
-    });
-}
+runCli(import.meta.url, 'diffing snapshots', main);

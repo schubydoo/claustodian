@@ -93,13 +93,13 @@ function moduleIndexAt(headers: readonly number[], offset: number): number {
 export function extractSwitchCaseScopes(src: string): Map<string, string[]> {
   const headers: number[] = [];
   for (const m of src.matchAll(MODULE_HEADER)) {
-    if (m.index !== undefined) headers.push(m.index);
+    headers.push(m.index);
   }
 
   const bannersByModule = new Map<number, Set<string>>();
   for (const m of src.matchAll(USAGE_BANNER)) {
-    const path = m[1];
-    if (m.index === undefined || path === undefined) continue;
+    // USAGE_BANNER group 1 is non-optional, so a match always populates it.
+    const path = m[1]!;
     const mod = moduleIndexAt(headers, m.index);
     let set = bannersByModule.get(mod);
     if (!set) bannersByModule.set(mod, (set = new Set()));
@@ -108,8 +108,8 @@ export function extractSwitchCaseScopes(src: string): Map<string, string[]> {
 
   const modulesByFlag = new Map<string, Set<number>>();
   for (const m of src.matchAll(CASE_LABEL)) {
-    const flag = m[2];
-    if (m.index === undefined || flag === undefined) continue;
+    // CASE_LABEL group 2 is non-optional, so a match always populates it.
+    const flag = m[2]!;
     let set = modulesByFlag.get(flag);
     if (!set) modulesByFlag.set(flag, (set = new Set()));
     set.add(moduleIndexAt(headers, m.index));

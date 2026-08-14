@@ -48,9 +48,37 @@ export function isMain(importMetaUrl: string): boolean {
   return importMetaUrl === pathToFileURL(process.argv[1] ?? '').href;
 }
 
+/**
+ * Standard CLI entry: run `main` when (and only when) this module is the file
+ * Node was invoked with, so a test import never triggers it. Records the
+ * resolved code (void counts as success) and reports a rejection under
+ * "Unexpected error while <label>".
+ */
+export function runCli(
+  importMetaUrl: string,
+  label: string,
+  run: (argv: string[]) => Promise<number | void>
+): void {
+  if (!isMain(importMetaUrl)) return;
+  run(process.argv.slice(2))
+    .then((code) => {
+      process.exitCode = code ?? 0;
+    })
+    .catch((error: unknown) => {
+      console.error(`Unexpected error while ${label}:`, error);
+      process.exitCode = 1;
+    });
+}
+
 function parseVersionParts(version: string): [number, number, number] {
   const parts = version.split('.').map((part) => Number(part));
-  return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0];
+  return [
+    /* v8 ignore start -- split never returns an empty array, so the first element exists; its ?? satisfies noUncheckedIndexedAccess */
+    parts[0] ?? 0,
+    /* v8 ignore stop */
+    parts[1] ?? 0,
+    parts[2] ?? 0,
+  ];
 }
 
 /** Numeric semver comparison (2.1.9 < 2.1.10), ascending. */

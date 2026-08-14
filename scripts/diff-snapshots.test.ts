@@ -48,6 +48,29 @@ describe('diffSnapshots', () => {
     expect(diff.changed).toEqual([]);
   });
 
+  it('sorts multiple removed symbols by their type:symbol key', () => {
+    // prev deliberately lists the removals out of sorted order (--zz before
+    // --aa, ZZ_VAR last), so the assertion fails if the sort is dropped rather
+    // than riding insertion order, and the comparator resolves in both
+    // directions.
+    const prev = {
+      symbols: [
+        makeSymbol({ symbol: '--zz' }),
+        makeSymbol({ symbol: '--keep' }),
+        makeSymbol({ symbol: '--aa' }),
+        makeSymbol({ symbol: 'ZZ_VAR', type: 'env_var' }),
+      ],
+    };
+    const next = { symbols: [makeSymbol({ symbol: '--keep' })] };
+
+    const diff = diffSnapshots(prev, next);
+    expect(diff.removed.map((s) => `${s.type}:${s.symbol}`)).toEqual([
+      'cli_flag:--aa',
+      'cli_flag:--zz',
+      'env_var:ZZ_VAR',
+    ]);
+  });
+
   it('detects removed-only symbols', () => {
     const prev = {
       symbols: [makeSymbol({ symbol: '--foo' }), makeSymbol({ symbol: '--bar' })],

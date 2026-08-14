@@ -486,6 +486,37 @@ describe('extractCommands — registry objects', () => {
       '{type:"local",name:"dup",description:"filled in"}';
     expect(extractCommands(src).get('/dup')).toBe('filled in');
   });
+
+  it('keeps the FIRST description when a later duplicate carries a different one', () => {
+    // first definition wins; the backfill path only fills a hole, never rewrites.
+    const src =
+      '{type:"local",name:"dup",description:"original"}' +
+      'x'.repeat(600) +
+      '{type:"local",name:"dup",description:"revised"}';
+    const cmds = extractCommands(src);
+    expect(cmds.get('/dup')).toBe('original');
+    expect(cmds.size).toBe(1);
+  });
+
+  it('leaves a duplicate command undescribed when neither definition has a description', () => {
+    const src = '{type:"local",name:"dup"}' + 'x'.repeat(600) + '{type:"local",name:"dup"}';
+    const cmds = extractCommands(src);
+    expect(cmds.has('/dup')).toBe(true);
+    expect(cmds.get('/dup')).toBeUndefined();
+    expect(cmds.size).toBe(1);
+  });
+
+  it('still reads an object whose closing brace is missing (truncated tail)', () => {
+    // No `}` within the forward cap: the window falls back to the cap instead of
+    // scanning to the end of the bundle, and the fields already seen are kept.
+    expect(extractCommands('{type:"local",name:"cut",description:"d"').get('/cut')).toBe('d');
+  });
+
+  it('still reads a type-last object with no opening brace before it', () => {
+    // No `{` within the back window: the backward scan bottoms out at its floor
+    // rather than failing, and the preceding fields are still read.
+    expect(extractCommands('name:"pre",description:"d",type:"local"}').get('/pre')).toBe('d');
+  });
 });
 
 describe('extractSkillCommands — skill/menu registry', () => {
@@ -545,6 +576,25 @@ describe('extractSkillCommands — skill/menu registry', () => {
   it('skips a namespaced name with a colon (grammar parity with the other lanes)', () => {
     expect(extractSkillCommands('Fc({name:"ns:cmd",menuDescription:"m"})').size).toBe(0);
   });
+
+  it('keeps the FIRST description when a later duplicate carries a different one', () => {
+    const src =
+      'Fc({name:"loop",menuDescription:"original"})' +
+      'y'.repeat(600) +
+      'Fc({name:"loop",menuDescription:"revised"})';
+    const cmds = extractSkillCommands(src);
+    expect(cmds.get('/loop')).toBe('original');
+    expect(cmds.size).toBe(1);
+  });
+
+  it('leaves a duplicate skill undescribed when neither definition has a description', () => {
+    const src =
+      'H2({name:"loop",whenToUse:"x"})' + 'y'.repeat(600) + 'H2({name:"loop",whenToUse:"x"})';
+    const cmds = extractSkillCommands(src);
+    expect(cmds.has('/loop')).toBe(true);
+    expect(cmds.get('/loop')).toBeUndefined();
+    expect(cmds.size).toBe(1);
+  });
 });
 
 describe('extractBundleSymbols — settings keys', () => {
@@ -566,6 +616,13 @@ describe('extractBundleSymbols — settings keys', () => {
       type: 'config_key',
       category: 'settings-internal',
     });
+  });
+
+  it('omits the description field for a settings key the schema leaves undescribed', () => {
+    const src = 'Q=v.object({apiKeyHelper:v.string()})';
+    const key = extractBundleSymbols(src).find((s) => s.symbol === 'apiKeyHelper');
+    expect(key).toMatchObject({ type: 'config_key', evidence: 'settings-schema' });
+    expect(key?.description).toBeUndefined();
   });
 
   it('fails the whole extraction when the schema is present but unwalkable', () => {
@@ -621,6 +678,38 @@ describe('extractBundleSymbols', () => {
     ]);
   });
 
+  it('emits a typed-registry env var, letting a direct process.env read outrank it', () => {
+    // CLAUDE_CODE_A is both read inline and declared in the registry: the read
+    // wins and the symbol is not duplicated. CLAUDE_CODE_B is registry-only and
+    // carries the declared type as observed evidence.
+    const src =
+      '$e={str:()=>a(),bool:()=>b(),int:()=>c()};olg=$e.bool(),nxt=$e.str();' +
+      'X={CLAUDE_CODE_A:()=>olg,CLAUDE_CODE_B:()=>nxt};process.env.CLAUDE_CODE_A;';
+    const syms = extractBundleSymbols(src);
+    expect(syms.filter((s) => s.symbol === 'CLAUDE_CODE_A')).toHaveLength(1);
+    expect(syms.find((s) => s.symbol === 'CLAUDE_CODE_A')?.evidence).toBe('process-env');
+    expect(syms.find((s) => s.symbol === 'CLAUDE_CODE_B')).toMatchObject({
+      type: 'env_var',
+      category: 'claude-code',
+      evidence: 'env-registry',
+      declaredType: 'str',
+    });
+  });
+
+  it('attaches scopes to a switch-case flag whose parser module prints one banner', () => {
+    const src =
+      'var A5h={};ut(A5h,{main:()=>x});' +
+      'console.log(`Usage: claude self-hosted-runner [options]`);' +
+      'switch(n){case"--capacity":t.c=i;break;}';
+    const sym = extractBundleSymbols(src).find((s) => s.symbol === '--capacity');
+    expect(sym).toMatchObject({
+      type: 'cli_flag',
+      evidence: 'argv-switch',
+      scopes: ['self-hosted-runner'],
+    });
+    expect(sym?.description).toBeUndefined();
+  });
+
   it('adds a skill-registry command the built-in registry misses', () => {
     const out = extractBundleSymbols(
       'Fc({name:"claude-in-chrome",menuDescription:"Let Claude use Chrome"})'
@@ -633,6 +722,13 @@ describe('extractBundleSymbols', () => {
         evidence: 'skill-registry',
         description: 'Let Claude use Chrome',
       },
+    ]);
+  });
+
+  it('omits the description field for a skill-registry command that has none', () => {
+    const out = extractBundleSymbols('Fc({name:"bare",whenToUse:"x"})');
+    expect(out).toEqual([
+      { symbol: '/bare', type: 'command', category: 'command', evidence: 'skill-registry' },
     ]);
   });
 
@@ -695,6 +791,19 @@ describe('extractHiddenFlags', () => {
     // One arg placeholder, at the end — the shape OPTION_SPEC accepts.
     const src = 'x.addOption(new sd("-w, --workload, --work-tag <tag>","Workload tag").hideHelp())';
     expect([...extractHiddenFlags(src)].sort()).toEqual(['--work-tag', '--workload']);
+  });
+
+  it('records nothing for a hidden short-only spec (no long flag to key on)', () => {
+    // `-v` is a valid spec but declares no long flag; the lane's grammar is
+    // long-flag-only, so the spec is accepted and contributes zero symbols.
+    expect(extractHiddenFlags('x.addOption(new sd("-v","Verbose output").hideHelp())').size).toBe(
+      0
+    );
+  });
+
+  it('rejects a hidden camelCase flag whole rather than truncating it', () => {
+    const src = 'x.addOption(new sd("--dryRun <x>","Dry run").hideHelp())';
+    expect(extractHiddenFlags(src).size).toBe(0);
   });
 
   it('marks the flag on the extracted symbol', () => {

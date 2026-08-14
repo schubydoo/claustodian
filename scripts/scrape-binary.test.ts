@@ -129,6 +129,14 @@ describe('resolveVersion', () => {
   it('rejects a malformed version', () => {
     expect(() => resolveVersion('v2.1')).toThrow(/No valid version/);
   });
+
+  it('reports "<none>" when neither an explicit version nor index.json latest exists', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
+    const indexPath = join(dir, 'index.json');
+    await writeFile(indexPath, JSON.stringify({}));
+    expect(() => resolveVersion(undefined, indexPath)).toThrow(/<none>/);
+    await rm(dir, { recursive: true, force: true });
+  });
 });
 
 describe('buildCacheRecord', () => {

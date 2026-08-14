@@ -150,6 +150,52 @@ describe('extractRegistryEnvVars', () => {
     expect(extractRegistryEnvVars('process.env.CLAUDE_CODE_X;let a=1;').size).toBe(0);
   });
 
+  it('reads past a nested object inside a constructor body', () => {
+    // `str:()=>({a:1})` puts an inner `{…}` in the builder body; the depth-aware
+    // read must not end the object at the inner `}`.
+    const src = '$e={str:()=>({a:1}),bool:()=>b(),int:()=>c()};x=$e.str();X={NESTED_OK:()=>x}';
+    expect(extractRegistryEnvVars(src).get('NESTED_OK')).toBe('str');
+  });
+
+  it('does not treat a nested str:( key as a second builder', () => {
+    // The inner `{str:(` anchor walks back past its own (non-assignment) brace to
+    // the outer `NAME={`, which is already recorded — one builder, not two.
+    const src =
+      '$e={str:(e)=>({str:(x)=>1}),bool:()=>b(),int:()=>c()};x=$e.bool();X={INNER_ANCHOR:()=>x}';
+    const env = extractRegistryEnvVars(src);
+    expect(env.get('INNER_ANCHOR')).toBe('bool');
+    expect(env.size).toBe(1);
+  });
+
+  it('keeps both definitions when the same name is bound to two real builders', () => {
+    // Each binding must resolve against its own nearest preceding definition,
+    // not whichever one was recorded first for the name.
+    const src =
+      '$e={str:()=>a(),bool:()=>b(),int:()=>c()};p=$e.bool();' +
+      '$e={str:()=>d(),bool:()=>e(),int:()=>f()};q=$e.int();' +
+      'X={FIRST_VAR:()=>p,SECOND_VAR:()=>q}';
+    const env = extractRegistryEnvVars(src);
+    expect(env.get('FIRST_VAR')).toBe('bool');
+    expect(env.get('SECOND_VAR')).toBe('int');
+  });
+
+  it('ignores a builder call whose result is not assigned to anything', () => {
+    // `f($e.bool())` has no `X=` target, so it can never back a getter — it must
+    // be skipped without disturbing the assigned binding beside it.
+    const src = `${BUILDER}f($e.bool());x=$e.str();X={ASSIGNED_ONLY:()=>x}`;
+    const env = extractRegistryEnvVars(src);
+    expect(env.get('ASSIGNED_ONLY')).toBe('str');
+    expect(env.size).toBe(1);
+  });
+
+  it('picks the closest binding when it FOLLOWS a farther one in source order', () => {
+    // The mirror of the closest-binding test above: here the near binding is
+    // last, so "closest" and "first one wins" give different answers.
+    const src =
+      `${BUILDER}tag=$e.str();` + 'z;'.repeat(2000) + 'Y={LATE_NEAR:()=>tag};tag=$e.int();';
+    expect(extractRegistryEnvVars(src).get('LATE_NEAR')).toBe('int');
+  });
+
   it('does not treat a lowercase or short key as a registry entry', () => {
     const src = `${BUILDER}a=$e.str();X={lower:()=>a,AB:()=>a}`;
     expect(extractRegistryEnvVars(src).size).toBe(0);

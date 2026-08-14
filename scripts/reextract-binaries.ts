@@ -33,7 +33,7 @@ import { join } from 'node:path';
 import { extractControlMessages } from './control-lane.js';
 import { sliceEmbeddedBundle } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
-import { compareVersionsAsc, isMain } from './lib.js';
+import { compareVersionsAsc, runCli } from './lib.js';
 import type { ControlMessageObservation } from './control-lane.js';
 
 const DEFAULT_ARCHIVE_DIR = 'scratch/binaries';
@@ -332,13 +332,4 @@ export async function main(argv: string[]): Promise<number> {
   return 0;
 }
 
-if (isMain(import.meta.url)) {
-  main(process.argv.slice(2))
-    .then((code) => {
-      process.exitCode = code;
-    })
-    .catch((error: unknown) => {
-      console.error('Unexpected error while re-extracting binaries:', error);
-      process.exitCode = 1;
-    });
-}
+runCli(import.meta.url, 're-extracting binaries', main);

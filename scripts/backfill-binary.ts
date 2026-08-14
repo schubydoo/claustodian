@@ -37,7 +37,7 @@ import {
   type BinaryObservations,
   type DescriptionEra,
 } from './binary-lane.js';
-import { compareVersionsAsc, type ExtractedSymbolType, isMain } from './lib.js';
+import { compareVersionsAsc, type ExtractedSymbolType, runCli } from './lib.js';
 import type { ControlObservation, Era } from './binary-lane.js';
 import { CACHE_INCOMPLETE_MARKER } from './reextract-binaries.js';
 
@@ -96,7 +96,10 @@ const DEFAULT_OUT_PATH = 'data/binary-observations.json';
 /** Sorts symbols deterministically by type then symbol name (matches other lanes). */
 function compareObservations(a: BinaryObservation, b: BinaryObservation): number {
   if (a.type !== b.type) return a.type < b.type ? -1 : 1;
-  return a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0;
+  if (a.symbol < b.symbol) return -1;
+  /* v8 ignore next -- observations are unique per type:symbol key, so equality cannot occur */
+  if (a.symbol === b.symbol) return 0;
+  return 1;
 }
 
 /**
@@ -527,13 +530,4 @@ export async function main(argv: string[]): Promise<number> {
   return 0;
 }
 
-if (isMain(import.meta.url)) {
-  main(process.argv.slice(2))
-    .then((code) => {
-      process.exitCode = code;
-    })
-    .catch((error: unknown) => {
-      console.error('Unexpected error while distilling binary observations:', error);
-      process.exitCode = 1;
-    });
-}
+runCli(import.meta.url, 'distilling binary observations', main);

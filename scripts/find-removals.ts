@@ -13,7 +13,7 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import { isMain, loadChangelog } from './lib.js';
+import { runCli, loadChangelog } from './lib.js';
 import {
   CONFIRMED_DEPRECATIONS,
   CONFIRMED_REMOVALS,
@@ -81,11 +81,4 @@ export async function main(argv: string[]): Promise<number> {
   return 0;
 }
 
-if (isMain(import.meta.url)) {
-  main(process.argv.slice(2))
-    .then((code) => process.exit(code))
-    .catch((error) => {
-      console.error(error);
-      process.exit(1);
-    });
-}
+runCli(import.meta.url, 'finding removals', main);

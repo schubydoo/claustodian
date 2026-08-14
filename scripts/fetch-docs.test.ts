@@ -1,7 +1,7 @@
 // Copyright 2026 Schuby
 // SPDX-License-Identifier: Apache-2.0
 
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -168,6 +168,14 @@ describe('parseDocPage', () => {
     expect(flags.map((e) => e.symbol)).toEqual(['--continue', '--advisor']);
   });
 
+  it('skips a table row with a single cell', () => {
+    const entries = parseDocPage(
+      'cli-reference',
+      '| `--lonely` |\n| `--kept` | A flag with a real description |'
+    );
+    expect(entries.map((e) => e.symbol)).toEqual(['--kept']);
+  });
+
   it('captures a min-version and strips MDX comments from the description', () => {
     const advisor = parseDocPage('cli-reference', md).find((e) => e.symbol === '--advisor');
     expect(advisor?.doc_min_version).toBe('2.1.98');
@@ -329,6 +337,30 @@ describe('main (mocked fetch)', () => {
     await rm(out, { force: true });
   });
 
+  it('defaults both paths when called with no argv', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({ ok: true, text: async () => '| `--mock` | A mocked flag |' }))
+    );
+    const dir = await mkdtemp(join(tmpdir(), 'claustodian-docs-main-'));
+    await mkdir(join(dir, 'data'));
+    await writeFile(
+      join(dir, 'data', 'binary-observations.json'),
+      JSON.stringify({ symbols: [{ type: 'config_key', symbol: 'advisorModel' }] }),
+      'utf-8'
+    );
+    const prev = process.cwd();
+    process.chdir(dir);
+    try {
+      await main([]);
+      const index = JSON.parse(await readFile(join(dir, 'data', 'docs.json'), 'utf8'));
+      expect(index.symbols.some((s: { symbol: string }) => s.symbol === '--mock')).toBe(true);
+    } finally {
+      process.chdir(prev);
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it('throws on a non-ok response', async () => {
     vi.stubGlobal(
       'fetch',
@@ -485,6 +517,32 @@ describe('parseDocPage — settings page', () => {
     const md =
       '### Permission settings\n\n| Keys | Description |\n| :-- | :-- |\n| `allow` | Rules |\n';
     expect(() => parseDocPage('settings', md)).toThrow(/Refusing to guess a key path/);
+  });
+
+  it('skips a settings row with a single cell', () => {
+    const md =
+      '### Available settings\n\n| Key | Description |\n| :-- | :-- |\n' +
+      '| `advisorModel` |\n' +
+      '| `permissions.allow` | Rules to allow tool use |\n';
+    expect(page(md).map((e) => e.symbol)).toEqual(['permissions.allow']);
+  });
+
+  it('skips a settings row whose description is too short to be one', () => {
+    const md =
+      '### Available settings\n\n| Key | Description |\n| :-- | :-- |\n| `advisorModel` | ok |\n';
+    expect(page(md)).toEqual([]);
+  });
+
+  it('falls back to column 1 when a row is shorter than the header description column', () => {
+    // The header promises a Description in column 2, but this row only has two
+    // cells; the parser must read the second cell rather than drop the row.
+    const md =
+      '### Available settings\n\n| Key | Type | Description |\n| :-- | :-- | :-- |\n' +
+      '| `advisorModel` | Model for the advisor tool |\n';
+    expect(page(md)[0]).toMatchObject({
+      symbol: 'advisorModel',
+      description: 'Model for the advisor tool',
+    });
   });
 
   it('reads the description column from the header, not by position', () => {

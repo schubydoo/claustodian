@@ -159,6 +159,7 @@ const FLAG_CTOR_HIDDEN =
 export function extractHiddenFlags(src: string): Set<string> {
   const hidden = new Set<string>();
   for (const m of src.matchAll(FLAG_CTOR_HIDDEN)) {
+    /* v8 ignore next -- FLAG_CTOR_HIDDEN group 2 is non-optional (it can match empty, never undefined); the ?? only narrows the TS type */
     const spec = m[2] ?? '';
     if (!OPTION_SPEC.test(spec)) continue;
     for (const flag of spec.match(FLAG_TOKEN) ?? []) {
@@ -341,6 +342,7 @@ export function extractFlags(src: string): Map<string, Evidence> {
   // from the spec, so the look-back below cannot see it (the 2.1.84 `--cowork`
   // refactor). Registration is also the stronger label, so it should win.
   for (const m of src.matchAll(FLAG_CTOR_SPEC)) {
+    /* v8 ignore next -- FLAG_CTOR_SPEC group 2 is non-optional (it can match empty, never undefined); the ?? only narrows the TS type */
     const spec = m[2] ?? '';
     if (!OPTION_SPEC.test(spec)) continue;
     for (const flag of spec.match(FLAG_TOKEN) ?? []) {
@@ -400,7 +402,9 @@ export function extractFlagDescriptions(
     const description = cleanDescription(m[4], m[3]);
     if (!description) continue;
     if (/^-{1,2}[a-z]/.test(description)) continue; // a flag, not a description
-    for (const long of (m[2] ?? '').match(FLAG_TOKEN) ?? []) {
+    // FLAG_SPEC_DESC group 2 is non-optional, so a match always populates it.
+    // The ?? [] IS reachable: a short-only spec has no long token.
+    for (const long of m[2]!.match(FLAG_TOKEN) ?? []) {
       if (!FLAG_GRAMMAR.test(long) || !flags.has(long)) continue;
       let set = seen.get(long);
       if (!set) seen.set(long, (set = new Set()));
@@ -464,6 +468,7 @@ export function extractCommands(src: string): Map<string, string | undefined> {
   const out = new Map<string, string | undefined>(); // "/name" -> description
   for (const anchor of src.matchAll(COMMAND_TYPE)) {
     const t = anchor.index;
+    /* v8 ignore next -- a matchAll match always carries a defined .index; the guard only narrows the TS type */
     if (t === undefined) continue;
 
     // Forward: from the marker to this object's own closing brace (capped),
@@ -510,12 +515,14 @@ export function extractSkillCommands(src: string): Map<string, string | undefine
   const anchors = [...src.matchAll(SKILL_NAME)];
   for (let i = 0; i < anchors.length; i++) {
     const anchor = anchors[i];
+    /* v8 ignore next -- anchors[i] exists for every i < length and a matchAll match always carries a defined .index; the guard only narrows the TS types */
     if (!anchor || anchor.index === undefined) continue;
     const start = anchor.index;
     const bound = Math.min(anchors[i + 1]?.index ?? src.length, start + SKILL_FWD);
     const object = src.slice(start, bound);
     if (!SKILL_MARKER.test(object)) continue;
     const name = anchor[1];
+    /* v8 ignore next -- SKILL_NAME group 1 is non-optional and its grammar cannot match an empty string; the guard only narrows the TS type */
     if (!name) continue;
     const key = `/${name}`;
     const mm = object.match(SKILL_MENU_DESC);
@@ -596,8 +603,10 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
   for (const [symbol, description] of extractSkillCommands(src)) {
     if (commands.has(symbol)) {
       if (commands.get(symbol) === undefined && description) {
-        const existing = symbols.find((s) => s.type === 'command' && s.symbol === symbol);
-        if (existing) existing.description = description;
+        // Every key of `commands` was pushed into `symbols` as a command by the
+        // loop just above, so the find always succeeds.
+        const existing = symbols.find((s) => s.type === 'command' && s.symbol === symbol)!;
+        existing.description = description;
       }
       continue;
     }
@@ -622,15 +631,11 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
       ...(key.description ? { description: key.description } : {}),
     });
   }
-  return symbols.sort((a, b) =>
-    a.type !== b.type
-      ? a.type < b.type
-        ? -1
-        : 1
-      : a.symbol < b.symbol
-        ? -1
-        : a.symbol > b.symbol
-          ? 1
-          : 0
-  );
+  return symbols.sort((a, b) => {
+    if (a.type !== b.type) return a.type < b.type ? -1 : 1;
+    if (a.symbol < b.symbol) return -1;
+    /* v8 ignore next -- every producing loop dedupes, so no two symbols share (type, symbol) and equality cannot occur */
+    if (a.symbol === b.symbol) return 0;
+    return 1;
+  });
 }

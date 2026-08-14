@@ -189,7 +189,17 @@ function scanLevel(
     }
     if (depth === 0) {
       const m = /^([A-Za-z_$][\w$]*)\s*:/.exec(src.slice(i, i + 60));
-      if (m && (i === start || src[i - 1] === ',' || src[i - 1] === '{')) {
+      if (
+        m &&
+        (i === start ||
+          src[i - 1] === ',' ||
+          // Shadowed operand: every call site starts the scan just past a `{`,
+          // and any later `{` the loop passes raises `depth`, so no key match
+          // can follow one mid-scan — `i === start` has already answered.
+          /* v8 ignore start -- unreachable; see the comment above */
+          src[i - 1] === '{')
+        /* v8 ignore stop */
+      ) {
         const valueStart = i + m[0].length;
         let j = valueStart;
         let d = 0;
@@ -416,7 +426,8 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
   const anchorMatch = ANCHOR_RE.exec(src);
   if (!anchorMatch) return []; // no settings schema in this era — legitimately empty
 
-  const anchorKey = (anchorMatch[0].split(':')[0] ?? '') as string;
+  // String.prototype.split never returns an empty array.
+  const anchorKey = anchorMatch[0].split(':')[0]!;
   const anchorValueAt = anchorMatch.index + anchorKey.length + 1;
   const root = schemaRootStart(src, anchorMatch.index, anchorKey, anchorValueAt);
   if (root === -1) {
@@ -501,6 +512,7 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
   // always yields at least that one. Kept — and deliberately untestable — because
   // it is the last thing standing between a future change in root-finding and
   // silently publishing "this version has no settings".
+  /* v8 ignore next 5 -- deliberately untestable, per the invariant-guard comment above: schemaRootStart only accepts a root that declares the anchor key */
   if (keys.length === 0) {
     throw new SettingsSchemaError(
       'settings schema: reached the root but read zero keys. Refusing to report an empty schema.'
