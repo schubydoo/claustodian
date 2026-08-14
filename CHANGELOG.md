@@ -44,6 +44,15 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   `control_message` records confidence grades evidence strength instead, so a `low`
   record can still be exactly dated.
 
+### Removed
+
+- **The OS/shell environment variables `PATH`, `HOME`, `LANG`, `COLUMNS`, `LINES`,
+  `OLDPWD`, `DIRSTACK`, and `XDG_DATA_HOME` are no longer published.** The changelog
+  lane seeded them from incidental prose — a bullet mentioning a stale `PATH` was
+  enough — but Claude Code reads these without owning them; they belong to the OS and
+  shell. The variables it genuinely honors (`NO_COLOR`, `FORCE_COLOR`) and the
+  OpenTelemetry context it propagates (`TRACEPARENT`, `TRACESTATE`) are unaffected.
+
 ### Fixed
 
 - **A documentation description no longer backfills onto older snapshots.**
