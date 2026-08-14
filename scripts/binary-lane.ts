@@ -775,8 +775,13 @@ export const PROMOTED_BINARY_SYMBOLS: ReadonlyMap<string, BinaryPromotion> = new
   // Four the ORIGINAL sweep missed for the same reason the scope map was wrong:
   // it read only `claude <subcommand> --help`, so `plugin eval` and
   // `auto-mode defaults` were never opened. Same 'help' evidence, just one level
-  // deeper. Re-checking every remaining needs_review flag against the full
-  // depth-two corpus turned up these and nothing else.
+  // deeper. Re-checking every remaining needs_review flag against the depth-two
+  // corpus turned up these.
+  //
+  // ⚠️ NOT exhaustive, though it once claimed to be. The binary goes to depth
+  // THREE — `plugin eval init` and `plugin marketplace {add,list,remove,update}`
+  // — and those `Options:` blocks were never read for descriptions either. See
+  // scripts/symbol-scopes.ts, where the same gap cost four scope entries.
   [
     'cli_flag:--label',
     {

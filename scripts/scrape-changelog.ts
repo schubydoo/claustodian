@@ -390,14 +390,34 @@ export function isIntroducingBullet(bullet: string): boolean {
  *    auto-approved"
  *
  * Every flag those three clauses list belongs to git, gh or docker; the binary
- * lane never observes any of them as a Claude Code flag. Still deliberately
- * narrow — the clause has to open off the word "flags" (or carry "e.g.,") AND
- * contain at least one flag token — so it cannot suppress a genuine "Added a
- * `--foo` flag for git integration"-style bullet, nor fire on a bullet whose
- * only parenthetical is an issue link.
+ * lane never observes any of them as a Claude Code flag. Deliberately narrow — the
+ * clause has to open off the word "flags" (or carry "e.g.,") AND contain at least
+ * one flag token — so it cannot fire on a bullet whose only parenthetical is an
+ * issue link.
+ *
+ * ⚠️ The tool word opens with `(?<![\w-])`, not `\b`, because `-` is a non-word
+ * character: `\bgit\b` matches inside `--git-notes`. It CLOSES with `\b`, so
+ * `docker-compose` and `git-lfs` still match. With `\b` on both sides,
+ * `` - Added a `--git-notes` flag (`--no-git-notes` disables it) `` matched
+ * this rule and suppressed a first-party flag introduced by the very bullet
+ * announcing it — this rule's own failure, inverted. It also swallowed both flags
+ * of an alias pair, since `collectChangelogSymbols` skips by symbol NAME rather
+ * than by position, so a flag named inside and outside the clause vanishes
+ * entirely.
+ *
+ * The three real bullets still match (`` `git log` `` has a backtick before and a
+ * space after, `git/gh commands` a space and a slash, `` `docker` `` backticks) —
+ * but those three are an illustration, not the check. `(?<![\w-])` is strictly
+ * narrower than `\b`, so it can only ever remove matches; regenerating the whole
+ * changelog after the change came back zero-diff, which is what says the matches
+ * it removed were spurious across every bullet rather than just these. Re-run that
+ * if you widen the rule. Requiring the clause to "look like
+ * a list" instead was considered and rejected — it shrinks suppression on bullets
+ * whose tool word is genuine, which trades a withheld record for an ASSERTED one,
+ * and this project ranks a missing record above a wrong one.
  */
 const SUBPROCESS_FLAG_BULLET =
-  /\b(?:git|gh|npm|node|docker|ripgrep|rg)\b[^.]*\bflags?\b(?:[^.]*\(e\.g\.,|\s*\()/i;
+  /(?<![\w-])(?:git|gh|npm|node|docker|ripgrep|rg)\b[^.]*\bflags?\b(?:[^.]*\(e\.g\.,|\s*\()/i;
 
 /**
  * The parenthesised example clause of a subprocess-flag bullet, bounded to its

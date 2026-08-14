@@ -63,7 +63,11 @@
  * an eligible account — and `--base-dir` from `self-hosted-runner`, which is
  * argv-dispatched and hidden from `claude --help` so it is never enumerated. The
  * binary lane reaches that surface instead (scripts/argv-scopes.ts) and its
- * scopes UNION with this table; where both speak they agree.
+ * scopes UNION with this table, because either half can hold a path the other
+ * cannot reach. `--capacity` is the case that proves it: this table has
+ * `remote-control` alone, from the docs page named above, while the binary lane
+ * proves `self-hosted-runner` and never sees a commander registration. They can
+ * also simply agree — both record `--base-dir` as `self-hosted-runner`.
  *
  * POINT IN TIME. Like the help-sourced descriptions, this is a capture, not
  * something CI re-derives, and it is applied to every version. Scope changes
