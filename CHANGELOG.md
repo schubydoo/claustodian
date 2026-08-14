@@ -18,6 +18,32 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ## 2026-08-14
 
+### Added
+
+- **`control_message` records — the stream-json control protocol's request
+  subtypes.** Each is extracted from the release binary's own schema declarations, so
+  every snapshot from the protocol's floor onward now carries the subtypes live at that
+  version. They add two fields that appear on no other type and are required here:
+  `family` (currently always `control_request`) and `direction`
+  (`host_to_cli`, `cli_to_host`, or `null`). A `direction` of `null` means the CLI had
+  not yet declared the message's direction at that version — it is a value, not a
+  missing field.
+
+### Changed
+
+- **`confidence: "low"` is now a value you can observe.** It marks a control subtype
+  the binary only ever _dispatches_ — the CLI handles the message, but no schema in the
+  bundle describes it. Every other lane grades `high` or `medium`.
+- **A `provenance: "binary"` record can now carry `status: "active"`.** Until now every
+  binary-sourced record stayed `needs_review` until a human confirmed it.
+  `control_message` records are exempt: the lane reads the subtype's name off the CLI's
+  own declaration rather than inferring it from free text, so existence is established
+  by the artifact.
+- **Read `first_seen_estimated`, not `confidence`, to tell whether a date is exact.**
+  On other lanes `confidence: medium` travels with an estimated `first_seen`; on
+  `control_message` records confidence grades evidence strength instead, so a `low`
+  record can still be exactly dated.
+
 ### Fixed
 
 - **A documentation description no longer backfills onto older snapshots.**
