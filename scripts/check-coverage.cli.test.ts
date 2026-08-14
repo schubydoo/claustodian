@@ -163,6 +163,34 @@ describe('check-coverage main()', () => {
     );
   });
 
+  it('throws when a flag value is itself another flag', async () => {
+    // `--changelog --dataset x` must not swallow --dataset as the changelog path;
+    // a flag-shaped value is rejected the same as a missing one.
+    await expect(withArgv(['--changelog', '--dataset', 'x.json'], main)).rejects.toThrow(
+      '--changelog requires a path argument'
+    );
+  });
+
+  it('uses data/latest.json when --dataset is omitted', async () => {
+    // Pins the datasetPath default: a never-matching fixture symbol keeps the
+    // exit code deterministic while --dataset is absent, so the default path is
+    // what gets read and named.
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    await writeFile(
+      changelogPath,
+      '# Changelog\n\n## 2.1.10\n\n- Added `--claustodian-test-fixture` flag.\n',
+      'utf-8'
+    );
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await withArgv(['--changelog', changelogPath], main);
+
+    expect(exitCode).toBe(1);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('data/latest.json'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('First missing symbol'));
+  });
+
   it('fetches the changelog from the network when --changelog is omitted', async () => {
     tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
     const datasetPath = join(tmpDir, 'dataset.json');

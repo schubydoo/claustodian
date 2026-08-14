@@ -98,7 +98,7 @@ function parseArgs(argv: string[]): { dataDir: string } {
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--data') {
       const next = argv[i + 1];
-      if (!next) {
+      if (!next || next.startsWith('--')) {
         throw new Error('--data requires a directory argument');
       }
       dataDir = next;

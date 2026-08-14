@@ -93,14 +93,14 @@ function parseArgs(argv: string[]): CliOptions {
     const arg = argv[i];
     if (arg === '--changelog') {
       const value = argv[i + 1];
-      if (!value) {
+      if (!value || value.startsWith('--')) {
         throw new Error('--changelog requires a path argument');
       }
       options.changelogPath = value;
       i++;
     } else if (arg === '--dataset') {
       const value = argv[i + 1];
-      if (!value) {
+      if (!value || value.startsWith('--')) {
         throw new Error('--dataset requires a path argument');
       }
       options.datasetPath = value;
