@@ -4166,7 +4166,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Custom directory for auto memory storage. Accepts an absolute path or a `~/`-prefixed path. From project or local settings, this is honored only after you accept the workspace trust dialog, since a cloned repository can supply this file",
+      "description": "Custom directory for auto memory storage. Accepts an absolute path or a `~/`-prefixed path. From project or local settings, Claude Code honors it under the same workspace trust rule as hooks, since a cloned repository can supply this file",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -9619,7 +9619,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to let Claude spawn forked subagents, or `0` to disable them, overriding any server-side rollout. When enabled, Claude can request the `fork` subagent type to spawn a fork, a subagent that inherits the full conversation context instead of starting fresh. When Claude doesn't request a subagent type, it still gets the general-purpose subagent, and every subagent runs in the background.",
+      "description": "Controls fork mode, which lets Claude spawn forked subagents itself and is on by default in interactive sessions only. Set to `1` to turn it on in `claude -p` and the Agent SDK as well, or `0` to turn it off in every kind of session.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -10277,7 +10277,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "OAuth access token for Claude.ai authentication. Alternative to `/login` for SDK and automated environments. Takes precedence over keychain-stored credentials. Generate one with `claude setup-token`. Claude Code uses the token you set for the whole session. To replace an expired token, generate a new one and restart",
+      "description": "OAuth access token for claude.ai authentication. Alternative to `/login` for SDK and automated environments. Takes precedence over keychain-stored credentials. Generate one with `claude setup-token`. Unless you run `/login`, Claude Code uses the token you set for the whole session. To replace an expired token, generate a new one and restart",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"

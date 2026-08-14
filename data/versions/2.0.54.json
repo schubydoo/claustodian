@@ -2989,7 +2989,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "OAuth access token for Claude.ai authentication. Alternative to `/login` for SDK and automated environments. Takes precedence over keychain-stored credentials. Generate one with `claude setup-token`. Claude Code uses the token you set for the whole session. To replace an expired token, generate a new one and restart",
+      "description": "OAuth access token for claude.ai authentication. Alternative to `/login` for SDK and automated environments. Takes precedence over keychain-stored credentials. Generate one with `claude setup-token`. Unless you run `/login`, Claude Code uses the token you set for the whole session. To replace an expired token, generate a new one and restart",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
