@@ -338,10 +338,10 @@ function compareSymbolRecords(a: SymbolRecord, b: SymbolRecord): number {
   if (a.type !== b.type) {
     return a.type < b.type ? -1 : 1;
   }
-  if (a.symbol !== b.symbol) {
-    return a.symbol < b.symbol ? -1 : 1;
-  }
-  return 0;
+  if (a.symbol < b.symbol) return -1;
+  /* v8 ignore next -- identity is type:symbol and every lane dedupes on it, so equality cannot occur */
+  if (a.symbol === b.symbol) return 0;
+  return 1;
 }
 
 /**

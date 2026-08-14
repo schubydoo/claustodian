@@ -200,8 +200,8 @@ export function symbolsFromCell(cell: string): Array<{ symbol: string; type: Doc
   // `--allowed-tools`), and anchoring on span 0 would drop the whole row — losing
   // the valid alias along with the rejected one.
   const firstIndex = resolved.findIndex((sym) => sym !== null);
-  /* v8 ignore next -- the `??` fallback cannot fire: findIndex just proved resolved[firstIndex] is non-null, so the `??` only satisfies noUncheckedIndexedAccess */
-  const first = firstIndex === -1 ? null : (resolved[firstIndex] ?? null);
+  // findIndex just proved resolved[firstIndex] is non-null.
+  const first = firstIndex === -1 ? null : resolved[firstIndex]!;
   if (!first) return [];
 
   // Multi-emit only for an alias/pair cell: >1 span and the text outside every

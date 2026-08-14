@@ -27,11 +27,11 @@ codecov:
 coverage:
   precision: 2
   round: down # a strict floor rounds down, matching the vitest threshold gate
-  range: '80...95' # red->green band tuned to a project that sits ~92%
+  range: '85...100' # red->green band tuned to a project that sits at 100%
   status:
     project:
       default:
-        target: 85% # mirror the vitest statements threshold
+        target: 95% # mirror the vitest statements threshold
         threshold: 1% # tolerate sub-1% drift before flagging
         informational: true # nudge, never block — vitest.config.ts is the source of truth
     patch:

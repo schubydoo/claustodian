@@ -102,8 +102,9 @@ function formatErrors(errors: ErrorObject[] | null | undefined): string[] {
   }
   return errors.map((err) => {
     const path = err.instancePath === '' ? '(root)' : err.instancePath;
-    /* v8 ignore next -- ajv is built with default messages enabled, so every ErrorObject carries a message; the ?? satisfies its optional .message type */
-    return `  instancePath=${path} message=${err.message ?? '(no message)'}`;
+    // ajv is built with default messages enabled, so every ErrorObject
+    // carries a message.
+    return `  instancePath=${path} message=${err.message!}`;
   });
 }
 

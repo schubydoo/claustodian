@@ -96,8 +96,10 @@ const DEFAULT_OUT_PATH = 'data/binary-observations.json';
 /** Sorts symbols deterministically by type then symbol name (matches other lanes). */
 function compareObservations(a: BinaryObservation, b: BinaryObservation): number {
   if (a.type !== b.type) return a.type < b.type ? -1 : 1;
-  /* v8 ignore next -- observations are unique per type:symbol key, so the final equal-keys 0 cannot be reached */
-  return a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0;
+  if (a.symbol < b.symbol) return -1;
+  /* v8 ignore next -- observations are unique per type:symbol key, so equality cannot occur */
+  if (a.symbol === b.symbol) return 0;
+  return 1;
 }
 
 /**

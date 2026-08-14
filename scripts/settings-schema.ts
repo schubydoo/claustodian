@@ -426,8 +426,8 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
   const anchorMatch = ANCHOR_RE.exec(src);
   if (!anchorMatch) return []; // no settings schema in this era — legitimately empty
 
-  /* v8 ignore next -- String.prototype.split never returns an empty array, so the ?? '' arm exists only for noUncheckedIndexedAccess */
-  const anchorKey = (anchorMatch[0].split(':')[0] ?? '') as string;
+  // String.prototype.split never returns an empty array.
+  const anchorKey = anchorMatch[0].split(':')[0]!;
   const anchorValueAt = anchorMatch.index + anchorKey.length + 1;
   const root = schemaRootStart(src, anchorMatch.index, anchorKey, anchorValueAt);
   if (root === -1) {

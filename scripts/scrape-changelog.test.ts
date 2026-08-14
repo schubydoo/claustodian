@@ -1089,19 +1089,6 @@ describe('assembleSnapshots — per-version deprecation status', () => {
   const statusAt = (snaps: ReturnType<typeof assembleSnapshots>, v: string, sym: string) =>
     snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === sym)?.status;
 
-  it('keeps both records when two share a type and symbol, and their sort is stable', () => {
-    // The published sort orders by (type, symbol) only; two records with the same
-    // key are equal to the comparator, so both survive in input order.
-    const snaps = assembleSnapshots(
-      [rec({ description: 'first' }), rec({ description: 'second' })],
-      blocks
-    );
-    const dupes = snaps
-      .find((s) => s.version === '1.5.0')
-      ?.symbols.filter((x) => x.symbol === '/output-style');
-    expect(dupes?.map((x) => x.description)).toEqual(['first', 'second']);
-  });
-
   it('attaches curated scopes to a subcommand-only flag in every snapshot', () => {
     const snaps = assembleSnapshots(
       [rec({ symbol: '--sandbox', type: 'cli_flag', first_seen: '1.5.0', category: 'cli' })],

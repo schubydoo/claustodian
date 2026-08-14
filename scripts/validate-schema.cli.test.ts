@@ -105,10 +105,20 @@ describe('validate-schema main()', () => {
 
   it('stringifies a non-Error throw when a file cannot be read/parsed', async () => {
     tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-validate-'));
-    await writeFile(join(tmpDir, 'latest.json'), JSON.stringify(validSnapshot()), 'utf-8');
+    await writeFile(
+      join(tmpDir, 'latest.json'),
+      JSON.stringify({ ...validSnapshot(), __marker: 'poison-parse' }),
+      'utf-8'
+    );
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    const parseSpy = vi.spyOn(JSON, 'parse').mockImplementationOnce(() => {
-      throw 'file parse blew up as a plain string';
+    // Conditional on the file's own content rather than call ordering, so an
+    // unrelated JSON.parse inside main() cannot absorb the throw.
+    const realParse = JSON.parse.bind(JSON);
+    const parseSpy = vi.spyOn(JSON, 'parse').mockImplementation((text, reviver) => {
+      if (typeof text === 'string' && text.includes('poison-parse')) {
+        throw 'file parse blew up as a plain string';
+      }
+      return realParse(text, reviver);
     });
     try {
       const exitCode = await withArgv([`${tmpDir}/*.json`], main);

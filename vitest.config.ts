@@ -27,12 +27,14 @@ export default defineConfig({
       include: ['scripts/**/*.ts', 'worker/**/*.js'],
       exclude: ['scripts/**/*.test.ts', 'worker/**/*.test.js'],
       // Enforced floor (the source of truth codecov.yml's project status mirrors).
-      // Set below current (~92/80/82/93) with headroom to catch regressions.
+      // Actual coverage is 100 on every metric; the floor stays below it so a
+      // future PR with a legitimately hard-to-cover line degrades gracefully
+      // instead of failing CI outright.
       thresholds: {
-        statements: 85,
-        branches: 70,
-        functions: 75,
-        lines: 85,
+        statements: 95,
+        branches: 90,
+        functions: 95,
+        lines: 95,
       },
     },
   },

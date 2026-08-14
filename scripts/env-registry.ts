@@ -198,8 +198,7 @@ function typedBindings(src: string, builders: Map<string, Builder[]>): Map<numbe
     const from = Math.max(0, m.index - ASSIGN_LOOKBACK);
     const assign = ASSIGN_BEFORE.exec(src.slice(from, m.index));
     if (!assign) continue;
-    /* v8 ignore next -- a successful exec always carries a defined .index; the ?? only narrows the TS type */
-    out.set(from + (assign.index ?? 0), method);
+    out.set(from + assign.index, method);
   }
   return out;
 }
@@ -282,9 +281,9 @@ export function extractRegistryEnvVars(src: string): Map<string, string> {
     );
     if (Math.abs(at - m.index) > MAX_BINDING_DISTANCE) continue;
     if (hasInterveningAssignment(src, ref, m.index, at, at)) continue;
-    const declaredType = bindings.get(at);
-    /* v8 ignore next -- `at` comes from byName, whose positions are all bindings keys, so the lookup always yields a type; the guard only narrows the TS type */
-    if (declaredType) out.set(name, declaredType);
+    // `at` comes from byName, whose positions are all bindings keys, so the
+    // lookup always yields a type.
+    out.set(name, bindings.get(at)!);
   }
   return out;
 }

@@ -104,11 +104,17 @@ describe('diff-snapshots main()', () => {
     const prevPath = join(tmpDir, 'prev.json');
     const nextPath = join(tmpDir, 'next.json');
     const snapshot = JSON.stringify({ symbols: [makeSymbol({ symbol: '--foo' })] });
-    await writeFile(prevPath, snapshot, 'utf-8');
+    await writeFile(prevPath, JSON.stringify({ symbols: [], __marker: 'poison-parse' }), 'utf-8');
     await writeFile(nextPath, snapshot, 'utf-8');
     errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const parseSpy = vi.spyOn(JSON, 'parse').mockImplementationOnce(() => {
-      throw 'snapshot parse blew up as a plain string';
+    // Conditional on the file's own content rather than call ordering, so an
+    // unrelated JSON.parse inside main() cannot absorb the throw.
+    const realParse = JSON.parse.bind(JSON);
+    const parseSpy = vi.spyOn(JSON, 'parse').mockImplementation((text, reviver) => {
+      if (typeof text === 'string' && text.includes('poison-parse')) {
+        throw 'snapshot parse blew up as a plain string';
+      }
+      return realParse(text, reviver);
     });
     try {
       const exitCode = await withArgv([prevPath, nextPath], main);

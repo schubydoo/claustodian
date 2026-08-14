@@ -143,6 +143,9 @@ describe('check-coverage main()', () => {
 
     expect(exitCode).toBe(1);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('data/latest.json'));
+    // Proves the exit code came from the missing fixture symbol, not from the
+    // default dataset failing to load (both paths return 1).
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('First missing symbol'));
   });
 
   it('falls back to fetching the changelog when a trailing --changelog has no value', async () => {
@@ -173,11 +176,21 @@ describe('check-coverage main()', () => {
     const changelogPath = join(tmpDir, 'CHANGELOG.md');
     const datasetPath = join(tmpDir, 'dataset.json');
     await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
-    await writeFile(datasetPath, JSON.stringify({ symbols: [] }), 'utf-8');
+    await writeFile(
+      datasetPath,
+      JSON.stringify({ symbols: [], __marker: 'poison-parse' }),
+      'utf-8'
+    );
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const parseSpy = vi.spyOn(JSON, 'parse').mockImplementationOnce(() => {
-      throw 'dataset parse blew up as a plain string';
+    // Conditional on the file's own content rather than call ordering, so an
+    // unrelated JSON.parse inside main() cannot absorb the throw.
+    const realParse = JSON.parse.bind(JSON);
+    const parseSpy = vi.spyOn(JSON, 'parse').mockImplementation((text, reviver) => {
+      if (typeof text === 'string' && text.includes('poison-parse')) {
+        throw 'dataset parse blew up as a plain string';
+      }
+      return realParse(text, reviver);
     });
     try {
       const exitCode = await withArgv(

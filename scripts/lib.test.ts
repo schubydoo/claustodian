@@ -43,8 +43,9 @@ describe('isMain', () => {
 
 describe('compareVersionsAsc', () => {
   it('treats a missing segment as zero, so a short version compares numerically', () => {
-    // The changelog has headed releases as `2` and `2.1` before; a short string
-    // must not sort as text or crash the comparator.
+    // The changelog heading regex only ever yields X.Y.Z, but the comparator is
+    // exported and fed version strings from other sources (npm, CLI args); a
+    // short string must not sort as text or crash it.
     expect(compareVersionsAsc('2', '2.0.0')).toBe(0);
     expect(compareVersionsAsc('2.1', '2.1.1')).toBeLessThan(0);
     expect(compareVersionsAsc('2.1.1', '2.1')).toBeGreaterThan(0);

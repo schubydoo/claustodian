@@ -402,8 +402,9 @@ export function extractFlagDescriptions(
     const description = cleanDescription(m[4], m[3]);
     if (!description) continue;
     if (/^-{1,2}[a-z]/.test(description)) continue; // a flag, not a description
-    /* v8 ignore next -- FLAG_SPEC_DESC group 2 is non-optional (it can match empty, never undefined); the first ?? only narrows the TS type. The second ?? IS reachable (a short-only spec has no long token) and is tested */
-    for (const long of (m[2] ?? '').match(FLAG_TOKEN) ?? []) {
+    // FLAG_SPEC_DESC group 2 is non-optional (it can match empty, never
+    // undefined). The ?? [] IS reachable: a short-only spec has no long token.
+    for (const long of m[2]!.match(FLAG_TOKEN) ?? []) {
       if (!FLAG_GRAMMAR.test(long) || !flags.has(long)) continue;
       let set = seen.get(long);
       if (!set) seen.set(long, (set = new Set()));
@@ -602,9 +603,10 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
   for (const [symbol, description] of extractSkillCommands(src)) {
     if (commands.has(symbol)) {
       if (commands.get(symbol) === undefined && description) {
-        const existing = symbols.find((s) => s.type === 'command' && s.symbol === symbol);
-        /* v8 ignore next -- every key of `commands` was pushed into `symbols` as a command by the loop just above, so the find always succeeds; the guard only narrows the TS type */
-        if (existing) existing.description = description;
+        // Every key of `commands` was pushed into `symbols` as a command by the
+        // loop just above, so the find always succeeds.
+        const existing = symbols.find((s) => s.type === 'command' && s.symbol === symbol)!;
+        existing.description = description;
       }
       continue;
     }
