@@ -2,6 +2,7 @@ node_modules/
 dist/
 scratch/
 .claude/
+.lean-ctx/
 # Generated data. Prettier must not touch any of it: binary-cache is written as
 # single-line JSON and data/ snapshots are written by JSON.stringify, so
 # formatting them would be undone by the next regeneration — permanent churn,
