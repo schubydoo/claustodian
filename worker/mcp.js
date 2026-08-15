@@ -39,7 +39,18 @@ export const ERROR = {
 const VERSION_RE = /^\d+\.\d+\.\d+$/;
 export const isValidVersion = (v) => typeof v === 'string' && VERSION_RE.test(v);
 
-const SYMBOL_TYPES = ['cli_flag', 'command', 'config_key', 'env_var'];
+// Every symbol type in schema/symbol.schema.json's `type` enum — including
+// control_message and the declared-but-unpublished internal_config_flag. A type
+// missing here is rejected by the tool validator below and hidden from its enum,
+// so worker/mcp.test.js pins this to the schema to stop it drifting again.
+export const SYMBOL_TYPES = [
+  'cli_flag',
+  'env_var',
+  'command',
+  'config_key',
+  'internal_config_flag',
+  'control_message',
+];
 
 /**
  * Header values may arrive Base64-wrapped in the spec's sentinel when the raw
@@ -126,7 +137,7 @@ export const TOOLS = [
     name: 'get_symbol',
     title: 'Look up a symbol at a version',
     description:
-      'Whether a CLI flag, slash command, settings key or environment variable exists in a given Claude Code version, and its full record if so. A version snapshot contains only what was available at that version, so presence is availability — no first_seen arithmetic needed. Omit version to use the newest tracked release. A symbol name can exist as more than one type, so every match is returned.',
+      'Whether a CLI flag, environment variable, slash command, settings key, or stream-json control message exists in a given Claude Code version, and its full record if so. A version snapshot contains only what was available at that version, so presence is availability — no first_seen arithmetic needed. Omit version to use the newest tracked release. A symbol name can exist as more than one type, so every match is returned.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -352,7 +363,7 @@ export async function handleRpc(body, deps = {}) {
         capabilities: { tools: {} },
         _meta: { 'io.modelcontextprotocol/serverInfo': SERVER_INFO },
         instructions:
-          'Answers whether a Claude Code CLI flag, slash command, settings key or environment variable existed at a specific version. Presence in a version snapshot IS availability at that version. Every record traces to an official Anthropic artifact.',
+          'Answers whether a Claude Code CLI flag, environment variable, slash command, settings key, or stream-json control message existed at a specific version. Presence in a version snapshot IS availability at that version. Every record traces to an official Anthropic artifact.',
         ttlMs: 3600000,
         cacheScope: 'public',
       };
