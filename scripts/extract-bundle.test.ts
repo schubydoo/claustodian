@@ -883,4 +883,18 @@ describe('extractParamEnvVars — env vars read through a param bound to process
   it('does not crash on an unbalanced call (unmatched bracket)', () => {
     expect(names('f(process.env')).toEqual([]);
   });
+
+  it('drops the call form when the callee name is defined more than once (ambiguous)', () => {
+    // Two functions named `e`; a minified name reuse. One is called with
+    // process.env, but the call cannot be bound to a specific definition, so
+    // NEITHER is mined — no risk of stamping process.env onto the wrong param.
+    const src = 'function e(x){return x.CLAUDE_CODE_AMBIG}function e(y){return y.z}e(process.env);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('does not treat a trailing member read (process.env.HOME) as the env object', () => {
+    // `process.env.HOME` is a scalar value, not the env object — `g` is not bound.
+    const src = 'function g(a){return a.CLAUDE_CODE_TRAILING}g(process.env.HOME);';
+    expect(names(src)).toEqual([]);
+  });
 });

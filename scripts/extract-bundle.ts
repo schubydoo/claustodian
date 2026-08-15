@@ -333,9 +333,10 @@ export function extractAccessorEnvVars(src: string): Map<string, string> {
 /**
  * From an opening bracket at `open`, the index of its match — tracking (), [], {}
  * depth and skipping string literals. A backtick runs to the next unescaped
- * backtick (template `${}` nesting is ignored, which is safe for the call- and
- * parameter-lists this reads: a comma inside a template there is vanishingly rare,
- * and a mis-parse can only drop a candidate, never invent one). -1 if unmatched.
+ * backtick; a nested template (`` `a${`b`}c` ``) is therefore mis-scanned. That is
+ * vanishingly rare in the call- and parameter-lists this reads, and the worst it
+ * does is misalign one call's argument indices — which the uniqueness guard and
+ * the first-party name gate keep from asserting a spurious symbol. -1 if unmatched.
  */
 function matchBracket(src: string, open: number): number {
   const close: Record<string, string> = { '(': ')', '[': ']', '{': '}' };
@@ -385,11 +386,12 @@ function splitTopLevel(s: string): string[] {
 }
 
 /**
- * `process.env` as the global — at a token boundary or a `...` spread
- * (`{...process.env}`), but NOT a member access like `foo.process.env` (a single
- * leading dot) and not `process.envX`.
+ * `process.env` as the global object — at a token boundary or a `...` spread
+ * (`{...process.env}`), but NOT a member access on either side: `foo.process.env`
+ * (a leading dot) or `process.env.HOME` (a trailing dot, a scalar value read, not
+ * the object), and not `process.envX`.
  */
-const PROCESS_ENV_ARG = /(?:^|\.\.\.|[^.\w$])process\.env\b/;
+const PROCESS_ENV_ARG = /(?:^|\.\.\.|[^.\w$])process\.env(?![.\w$])/;
 
 /**
  * The bound name of a parameter, and whether it is defaulted to `process.env`.
@@ -399,7 +401,7 @@ const PROCESS_ENV_ARG = /(?:^|\.\.\.|[^.\w$])process\.env\b/;
  */
 function paramBinding(p: string): { name: string; envDefault: boolean } | null {
   const t = p.trim();
-  const def = /([A-Za-z_$][\w$]*)\s*=\s*process\.env\b/.exec(t);
+  const def = /([A-Za-z_$][\w$]*)\s*=\s*process\.env(?![.\w$])/.exec(t);
   if (def) return { name: def[1] as string, envDefault: true };
   const id = /^([A-Za-z_$][\w$]*)\s*(?:=|$)/.exec(t);
   return id ? { name: id[1] as string, envDefault: false } : null;
@@ -412,8 +414,13 @@ function paramBinding(p: string): { name: string; envDefault: boolean } | null {
  *   1. Call form — `f(process.env)` / `f({...process.env})` where `f`'s body reads
  *      `param.NAME`. The process.env argument's POSITION is matched to the
  *      parameter's position, so `f("linux",process.env)` binds the second param.
+ *      Trusted ONLY when the callee name has exactly one `function NAME(`
+ *      definition: a minified name reused for two functions is ambiguous — a call
+ *      to one must not bind `process.env` onto the other's param — so it is
+ *      dropped rather than risk a wrong provenance.
  *   2. Default-param — `function(...,{env:n=process.env}){ n.NAME }` (or a plain
- *      `n=process.env` default). Its evidence is local; no call site needed.
+ *      `n=process.env` default). Its evidence is local; no call site needed, and
+ *      the uniqueness rule does not apply.
  *
  * A name is admitted only when `isAccessorEvidenceEnv` rates it first-party (the
  * CLAUDE_/ANTHROPIC_ convention the accessor-map path also uses), so a caller that
@@ -436,6 +443,11 @@ export function extractParamEnvVars(src: string): Map<string, string> {
       }
     });
   }
+  // Definitions per name — the call form trusts only a uniquely-defined callee.
+  const defCount = new Map<string, number>();
+  for (const m of src.matchAll(/\bfunction\s+([A-Za-z_$][\w$]*)\s*\(/g)) {
+    defCount.set(m[1] as string, (defCount.get(m[1] as string) ?? 0) + 1);
+  }
   // Pass 2: function definitions -> `param.NAME` reads where the param is env-bound.
   const out = new Map<string, string>();
   for (const m of src.matchAll(/\bfunction\s*([A-Za-z_$][\w$]*)?\s*\(/g)) {
@@ -452,7 +464,9 @@ export function extractParamEnvVars(src: string): Map<string, string> {
     splitTopLevel(src.slice(popen + 1, pend)).forEach((p, i) => {
       const bind = paramBinding(p);
       if (!bind || !/^[A-Za-z_$][\w$]*$/.test(bind.name)) return;
-      if (!bind.envDefault && !(fname && envArg.get(fname)?.has(i))) return;
+      const callBound =
+        fname !== undefined && defCount.get(fname) === 1 && (envArg.get(fname)?.has(i) ?? false);
+      if (!bind.envDefault && !callBound) return;
       // `param.NAME` reads only — a following `=` (not `==`/`===`) is a WRITE.
       const re = new RegExp('\\b' + bind.name + '\\.([A-Z][A-Z0-9_]{2,})\\b(?!\\s*=(?!=))', 'g');
       for (const r of body.matchAll(re)) {
