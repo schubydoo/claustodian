@@ -440,8 +440,9 @@ export function parseDocPage(
   for (const line of markdown.split('\n')) {
     const heading = /^#{2,4}\s+(.*)$/.exec(line);
     if (heading) {
-      // Any heading (any depth) resets the scope. A non-command subsection nested
-      // under a subcommand — `### Options` inside `## plugin init` — therefore
+      // Any h2–h4 heading (the depths this regex matches) resets the scope. A
+      // non-command subsection under a subcommand — `### Options` in `## plugin
+      // init` — therefore
       // clears `plugin init` and per-scope capture is skipped for that table. That
       // fails SAFE (no wrong data, the feature just does not fire); the official
       // plugins-reference puts each flag table directly under its `### plugin <x>`
