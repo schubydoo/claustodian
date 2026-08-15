@@ -16,6 +16,21 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-08-15
+
+### Added
+
+- **`scope_descriptions` on `cli_flag` records — per-subcommand description
+  overrides.** A flag whose official docs describe it differently under different
+  subcommands now carries a `scope_descriptions` map: for example `--force` reads
+  "Overwrite an existing `.claude-plugin/` at the target" under `plugin init` but
+  "Create the tag even if the working tree is dirty or the tag already exists"
+  under `plugin tag`. Keys are a subset of `scopes`; resolve a scope's text as
+  `scope_descriptions[scope] ?? description`. A scope the docs do not describe
+  separately (the flag's `install` scope, say) is absent rather than given a wrong
+  description. Optional and additive — a consumer that ignores it still gets a
+  correct primary `description`, so `schemaVersion` stays `1.0.0`.
+
 ## 2026-08-14
 
 ### Added

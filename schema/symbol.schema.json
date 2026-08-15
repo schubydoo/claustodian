@@ -115,6 +115,19 @@
       "minItems": 1,
       "uniqueItems": true,
       "description": "Subcommands this flag is accepted under, e.g. [\"remote-control\"] or [\"mcp add\",\"plugin install\"]. Values are FULL invocation paths after `claude`. A bare parent is only correct when that invocation really accepts the flag: commander rejects a sub-subcommand's flag at its parent, so [\"plugin\"] alone is a false claim for a `plugin eval` flag \u2014 but a parent AND its child can both appear when both accept it, as `--hooks-dir` does. COMPLETE when present, so a non-empty list also means the flag is NOT accepted on bare `claude`. Absent means no scope information \u2014 not \"top-level\". Only cli_flag records carry it."
+    },
+    "scope_descriptions": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Per-scope description overrides for a flag whose meaning differs by subcommand. Each key is an invocation path that MUST also appear in `scopes`; its value is the flag's description under that scope. The top-level `description` is the primary/default, returned for any scope not present here. Only cli_flag records carry it, and only when the official docs document the flag differently under different subcommands \u2014 e.g. `--force` means \"overwrite an existing .claude-plugin directory\" under `plugin init` but \"create the tag even if the working tree is dirty\" under `plugin tag`. A scope with no documented override (e.g. `install`) is deliberately absent rather than given a wrong description. Additive and optional: a consumer that ignores it still gets a correct primary description."
     }
   },
   "required": [
@@ -156,6 +169,24 @@
           "family": false,
           "direction": false
         }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "scope_descriptions": {
+            "type": "object"
+          }
+        },
+        "required": ["scope_descriptions"]
+      },
+      "then": {
+        "properties": {
+          "scopes": {
+            "$ref": "#/properties/scopes"
+          }
+        },
+        "required": ["scopes"]
       }
     }
   ],

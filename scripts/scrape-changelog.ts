@@ -121,6 +121,13 @@ export interface SymbolRecord {
    * means no scope information. See scripts/symbol-scopes.ts.
    */
   scopes?: readonly string[];
+  /**
+   * Per-scope description overrides for a flag whose docs text differs by
+   * subcommand (see schema/symbol.schema.json). Keys are a SUBSET of `scopes`; a
+   * scope absent here uses the primary `description`. Sourced from docs and
+   * filtered per version in withScopes against the scopes live at that version.
+   */
+  scope_descriptions?: Readonly<Record<string, string>>;
 }
 
 export interface VersionSnapshot {
@@ -879,7 +886,26 @@ export function assembleSnapshots(
     const proved =
       observed && compareVersionsAsc(version, observed.from) >= 0 ? observed.scopes : undefined;
     const scopes = scopesFor(record.type, record.symbol, proved);
-    return scopes ? { ...record, scopes } : record;
+    if (!scopes) {
+      // No scopes at this version. A scope_descriptions map cannot be validated
+      // against an absent `scopes` (the schema requires scopes when it is present),
+      // so drop it rather than emit an orphan.
+      if (!record.scope_descriptions) return record;
+      const rest = { ...record };
+      delete rest.scope_descriptions;
+      return rest;
+    }
+    const next: SymbolRecord = { ...record, scopes };
+    if (record.scope_descriptions) {
+      // Keep only overrides whose scope is live at THIS version — the same
+      // point-in-time discipline the scopes themselves follow above.
+      const filtered = Object.fromEntries(
+        Object.entries(record.scope_descriptions).filter(([scope]) => scopes.includes(scope))
+      );
+      if (Object.keys(filtered).length > 0) next.scope_descriptions = filtered;
+      else delete next.scope_descriptions;
+    }
+    return next;
   };
 
   /** Same record unless the category actually differs — keeps snapshots stable. */
@@ -1071,6 +1097,7 @@ function finalizeRecord(input: SymbolRecord & { first_seen_estimated: boolean })
     // not an absence, and `?? {}` on a nullish check would delete it.
     ...(input.family ? { family: input.family } : {}),
     ...(input.direction !== undefined ? { direction: input.direction } : {}),
+    ...(input.scope_descriptions ? { scope_descriptions: input.scope_descriptions } : {}),
   };
 }
 
@@ -1119,6 +1146,7 @@ export function enrichSymbols(
         description_source: doc ? 'docs' : description ? 'changelog' : undefined,
         source_url: record.source_url,
         category: record.category,
+        ...(doc?.scope_descriptions ? { scope_descriptions: doc.scope_descriptions } : {}),
       })
     );
   }
@@ -1147,6 +1175,7 @@ export function enrichSymbols(
         // differ only by which file reads them, which is a fact the page states
         // and the name never carries.
         category: entry.category ?? categorize(entry.symbol, entry.type),
+        ...(entry.scope_descriptions ? { scope_descriptions: entry.scope_descriptions } : {}),
       })
     );
   }

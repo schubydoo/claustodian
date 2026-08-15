@@ -109,6 +109,31 @@ describe('symbol schema', () => {
     expect(validate(validSymbol({ extra_field: 'not allowed' }))).toBe(false);
   });
 
+  it('accepts scope_descriptions alongside scopes', () => {
+    expect(
+      validate(
+        validSymbol({
+          scopes: ['plugin init', 'plugin tag'],
+          scope_descriptions: { 'plugin init': 'Overwrite the dir', 'plugin tag': 'Tag anyway' },
+        })
+      )
+    ).toBe(true);
+  });
+
+  it('fails scope_descriptions without scopes (the map needs a scopes list to key into)', () => {
+    expect(validate(validSymbol({ scope_descriptions: { 'plugin init': 'x' } }))).toBe(false);
+  });
+
+  it('fails an empty scope_descriptions map', () => {
+    expect(validate(validSymbol({ scopes: ['plugin init'], scope_descriptions: {} }))).toBe(false);
+  });
+
+  it('fails scope_descriptions with a non-string value', () => {
+    expect(
+      validate(validSymbol({ scopes: ['plugin init'], scope_descriptions: { 'plugin init': 5 } }))
+    ).toBe(false);
+  });
+
   // The control_message contract's NEGATIVE half. `npm run validate` now sees the
   // committed control_message records, so it exercises the valid (family/direction
   // present) path — but committed data is all valid, so only this test checks that

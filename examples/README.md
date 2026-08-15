@@ -77,6 +77,11 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
   //   2.1.154). --output-format itself is NOT deprecated.
   "status": "active", // "active" | "deprecated" | "removed" | "needs_review"
   "scopes": ["remote-control"], // optional; FULL invocation paths, e.g. "plugin eval"
+  // "scope_descriptions": { "plugin init": "…", "plugin tag": "…" },  OPTIONAL,
+  //   cli_flag only: per-scope description overrides for a flag whose docs text
+  //   differs by subcommand (e.g. `--force`). Keys are a subset of `scopes`; read
+  //   scope_descriptions[scope] ?? description. Absent means the one `description`
+  //   applies to every scope.
   "provenance": "changelog", // "changelog" | "docs" | "binary" — which lane proved existence
   "confidence": "high", // "high" | "medium" | "low" ("low" is reserved for
   //   control_message records evidenced only by a dispatch, which the dataset does
