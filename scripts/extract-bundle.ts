@@ -331,6 +331,143 @@ export function extractAccessorEnvVars(src: string): Map<string, string> {
 }
 
 /**
+ * From an opening bracket at `open`, the index of its match — tracking (), [], {}
+ * depth and skipping string literals. A backtick runs to the next unescaped
+ * backtick (template `${}` nesting is ignored, which is safe for the call- and
+ * parameter-lists this reads: a comma inside a template there is vanishingly rare,
+ * and a mis-parse can only drop a candidate, never invent one). -1 if unmatched.
+ */
+function matchBracket(src: string, open: number): number {
+  const close: Record<string, string> = { '(': ')', '[': ']', '{': '}' };
+  const stack: string[] = [close[src[open] as string] as string];
+  for (let i = open + 1; i < src.length; i++) {
+    const c = src[i] as string;
+    if (c === '"' || c === "'" || c === '`') {
+      for (i++; i < src.length; i++) {
+        if (src[i] === '\\') i++;
+        else if (src[i] === c) break;
+      }
+      continue;
+    }
+    if (c === '(' || c === '[' || c === '{') stack.push(close[c] as string);
+    else if (c === ')' || c === ']' || c === '}') {
+      if (stack[stack.length - 1] !== c) return -1;
+      stack.pop();
+      if (stack.length === 0) return i;
+    }
+  }
+  return -1;
+}
+
+/** Split a bracket interior on TOP-LEVEL commas (same nesting/string rules). */
+function splitTopLevel(s: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i] as string;
+    if (c === '"' || c === "'" || c === '`') {
+      for (i++; i < s.length; i++) {
+        if (s[i] === '\\') i++;
+        else if (s[i] === c) break;
+      }
+      continue;
+    }
+    if (c === '(' || c === '[' || c === '{') depth++;
+    else if (c === ')' || c === ']' || c === '}') depth--;
+    else if (c === ',' && depth === 0) {
+      out.push(s.slice(start, i));
+      start = i + 1;
+    }
+  }
+  out.push(s.slice(start));
+  return out;
+}
+
+/**
+ * `process.env` as the global — at a token boundary or a `...` spread
+ * (`{...process.env}`), but NOT a member access like `foo.process.env` (a single
+ * leading dot) and not `process.envX`.
+ */
+const PROCESS_ENV_ARG = /(?:^|\.\.\.|[^.\w$])process\.env\b/;
+
+/**
+ * The bound name of a parameter, and whether it is defaulted to `process.env`.
+ * Handles a plain identifier (`e`), a default (`e=…`), and a destructure default
+ * (`{env:n=process.env}` → `n`). Null for a param this reader cannot name (a bare
+ * destructure, a rest element).
+ */
+function paramBinding(p: string): { name: string; envDefault: boolean } | null {
+  const t = p.trim();
+  const def = /([A-Za-z_$][\w$]*)\s*=\s*process\.env\b/.exec(t);
+  if (def) return { name: def[1] as string, envDefault: true };
+  const id = /^([A-Za-z_$][\w$]*)\s*(?:=|$)/.exec(t);
+  return id ? { name: id[1] as string, envDefault: false } : null;
+}
+
+/**
+ * Env vars read through a PARAMETER bound to `process.env` — the reads the inline
+ * `process.env.NAME` patterns miss. Two proven bindings:
+ *
+ *   1. Call form — `f(process.env)` / `f({...process.env})` where `f`'s body reads
+ *      `param.NAME`. The process.env argument's POSITION is matched to the
+ *      parameter's position, so `f("linux",process.env)` binds the second param.
+ *   2. Default-param — `function(...,{env:n=process.env}){ n.NAME }` (or a plain
+ *      `n=process.env` default). Its evidence is local; no call site needed.
+ *
+ * A name is admitted only when `isAccessorEvidenceEnv` rates it first-party (the
+ * CLAUDE_/ANTHROPIC_ convention the accessor-map path also uses), so a caller that
+ * passes `process.env` down cannot make this publish an OS or third-party var. A
+ * `param.NAME =` WRITE is skipped — that is Claude Code SETTING an env var for a
+ * child process, not reading one it is given.
+ */
+export function extractParamEnvVars(src: string): Map<string, string> {
+  // Pass 1: callee name -> argument positions that receive process.env.
+  const envArg = new Map<string, Set<number>>();
+  for (const m of src.matchAll(/\b([A-Za-z_$][\w$]*)\(/g)) {
+    const open = (m.index as number) + m[0].length - 1;
+    const end = matchBracket(src, open);
+    if (end < 0 || end - open > 4000) continue;
+    splitTopLevel(src.slice(open + 1, end)).forEach((arg, i) => {
+      if (PROCESS_ENV_ARG.test(arg)) {
+        let s = envArg.get(m[1] as string);
+        if (!s) envArg.set(m[1] as string, (s = new Set()));
+        s.add(i);
+      }
+    });
+  }
+  // Pass 2: function definitions -> `param.NAME` reads where the param is env-bound.
+  const out = new Map<string, string>();
+  for (const m of src.matchAll(/\bfunction\s*([A-Za-z_$][\w$]*)?\s*\(/g)) {
+    const fname = m[1];
+    const popen = (m.index as number) + m[0].length - 1;
+    const pend = matchBracket(src, popen);
+    if (pend < 0) continue;
+    let bi = pend + 1;
+    while (bi < src.length && /\s/.test(src[bi] as string)) bi++;
+    if (src[bi] !== '{') continue;
+    const bend = matchBracket(src, bi);
+    if (bend < 0) continue;
+    const body = src.slice(bi + 1, bend);
+    splitTopLevel(src.slice(popen + 1, pend)).forEach((p, i) => {
+      const bind = paramBinding(p);
+      if (!bind || !/^[A-Za-z_$][\w$]*$/.test(bind.name)) return;
+      if (!bind.envDefault && !(fname && envArg.get(fname)?.has(i))) return;
+      // `param.NAME` reads only — a following `=` (not `==`/`===`) is a WRITE.
+      const re = new RegExp('\\b' + bind.name + '\\.([A-Z][A-Z0-9_]{2,})\\b(?!\\s*=(?!=))', 'g');
+      for (const r of body.matchAll(re)) {
+        const name = r[1] as string;
+        if (SYMBOL_DENYLIST.has(name)) continue;
+        const category = categorize(name, 'env_var');
+        if (!isAccessorEvidenceEnv(name, category)) continue;
+        out.set(name, category);
+      }
+    });
+  }
+  return out;
+}
+
+/**
  * Flags with positive own-evidence. Scans every `--flag` occurrence and keeps a
  * flag the first time an occurrence carries registration or argv evidence in the
  * preceding window — so a flag that appears once as a subprocess arg and once in
@@ -562,9 +699,18 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
   }
   // Accessor-map getters fill in first-party env vars CC never reads inline, for
   // the eras and entries the registry does not cover.
-  for (const [symbol, category] of extractAccessorEnvVars(src)) {
+  const accessor = extractAccessorEnvVars(src);
+  for (const [symbol, category] of accessor) {
     if (envReads.has(symbol) || registry.has(symbol)) continue;
     symbols.push({ symbol, type: 'env_var', category, evidence: 'accessor-map' });
+  }
+  // Env vars read through a parameter bound to `process.env` — same proof as an
+  // inline `process.env.NAME` read (that is why they share the `process-env`
+  // evidence tag), reached one call away. Additive: only names no earlier path
+  // already proved.
+  for (const [symbol, category] of extractParamEnvVars(src)) {
+    if (envReads.has(symbol) || registry.has(symbol) || accessor.has(symbol)) continue;
+    symbols.push({ symbol, type: 'env_var', category, evidence: 'process-env' });
   }
   const flags = extractFlags(src);
   const flagDescriptions = extractFlagDescriptions(src, new Set(flags.keys()));

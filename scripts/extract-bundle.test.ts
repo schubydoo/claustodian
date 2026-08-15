@@ -11,6 +11,7 @@ import {
   extractEnvVars,
   extractFlagDescriptions,
   extractFlags,
+  extractParamEnvVars,
   extractSkillCommands,
 } from './extract-bundle.js';
 
@@ -815,5 +816,71 @@ describe('extractHiddenFlags', () => {
   it('leaves a public flag unmarked', () => {
     const src = 'x.addOption(new sd("--print","Print response and exit"))';
     expect(extractBundleSymbols(src).find((s) => s.symbol === '--print')?.hidden).toBeUndefined();
+  });
+});
+
+describe('extractParamEnvVars — env vars read through a param bound to process.env', () => {
+  const names = (src: string) => [...extractParamEnvVars(src).keys()].sort();
+
+  it('extracts a read from a param a call passes process.env', () => {
+    // function ndd(e){ e.CLAUDE_CODE_HTTP_PROXY } called ndd(process.env)
+    const src =
+      'function ndd(e){return e.HTTP_PROXY||e.CLAUDE_CODE_HTTP_PROXY}var x=ndd(process.env);';
+    expect(names(src)).toEqual(['CLAUDE_CODE_HTTP_PROXY']);
+  });
+
+  it('accepts a {...process.env} spread argument', () => {
+    const src = 'function f(e){return e.CLAUDE_CODE_ALTGR_AS_TEXT}f({...process.env,FOO:1});';
+    expect(names(src)).toEqual(['CLAUDE_CODE_ALTGR_AS_TEXT']);
+  });
+
+  it('matches the argument POSITION to the parameter position', () => {
+    // process.env is the SECOND arg, so only the second param is env-bound.
+    const src =
+      'function g(a,b){return a.CLAUDE_CODE_NOPE||b.CLAUDE_CODE_BS_AS_CTRL_BACKSPACE}g("linux",process.env);';
+    expect(names(src)).toEqual(['CLAUDE_CODE_BS_AS_CTRL_BACKSPACE']);
+  });
+
+  it('extracts from a destructure-default {env:n=process.env}, with no call site', () => {
+    const src =
+      'function h(t,{env:n=process.env}){return n.CLAUDE_CODE_AUTO_BACKGROUND_TIMEOUT_MS}';
+    expect(names(src)).toEqual(['CLAUDE_CODE_AUTO_BACKGROUND_TIMEOUT_MS']);
+  });
+
+  it('does NOT extract a module-export assignment (not a process.env-bound param)', () => {
+    // If.ANTHROPIC_API_HOST=… — `If` is an exports object, never passed process.env.
+    const src = 'If.SEGMENT_CDN_HOST=If.ANTHROPIC_API_HOST=void 0;';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('does NOT extract an enum member reference (Model.CLAUDE_OPUS_4_8)', () => {
+    const src = 'params.builder().model(Model.CLAUDE_OPUS_4_8);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('does NOT extract a WRITE — CC setting an env var for a child process', () => {
+    // param IS process.env, but `=` makes it a write, not a read.
+    const src = 'function w(e){e.CLAUDE_CODE_PLUGIN_ROOT="x"}w(process.env);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('does NOT extract a non-first-party name (fails the convention gate)', () => {
+    const src = 'function k(e){return e.SOME_THIRD_PARTY_VAR}k(process.env);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('does NOT extract when the function is never called with process.env', () => {
+    const src = 'function m(e){return e.CLAUDE_CODE_MISS}m(somethingElse);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('surfaces a param-passed env var through extractBundleSymbols as process-env evidence', () => {
+    const src = 'function f(e){return e.CLAUDE_CODE_PROXY_TEST}f(process.env);';
+    const sym = extractBundleSymbols(src).find((s) => s.symbol === 'CLAUDE_CODE_PROXY_TEST');
+    expect(sym).toMatchObject({ type: 'env_var', evidence: 'process-env' });
+  });
+
+  it('does not crash on an unbalanced call (unmatched bracket)', () => {
+    expect(names('f(process.env')).toEqual([]);
   });
 });
