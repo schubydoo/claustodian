@@ -182,7 +182,13 @@ interface PositionedSymbol extends ExtractedSymbol {
 const SYMBOL_PATTERNS: Array<[RegExp, ExtractedSymbolType]> = [
   [/`(--[a-z0-9][a-z0-9-]*)`/g, 'cli_flag'],
   [/`(\/[a-z][a-z0-9-]*)`/g, 'command'],
-  [/`([A-Z][A-Z0-9_]{3,})`/g, 'env_var'],
+  // The changelog often documents an env var by its assignment form —
+  // `set `NAME=1` to …` — with the value inside the backticks. Capture the name
+  // and let an optional `=<value>` be consumed before the closing backtick, or
+  // these rows fall to the binary lane and land needs_review with no description.
+  // (Flags are never written `--flag=value` in this changelog, so cli_flag above
+  // deliberately keeps the exact form.)
+  [/`([A-Z][A-Z0-9_]{3,})(?:=[^`]*)?`/g, 'env_var'],
 ];
 
 /**
