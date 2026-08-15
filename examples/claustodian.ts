@@ -5,7 +5,8 @@
  * Minimal zero-dependency client for the Claustodian dataset.
  *
  * Claustodian answers: "does a Claude Code symbol (CLI flag / env var / slash
- * command) exist in version Y, and what did it do at that version?" The data is
+ * command / settings key / control message) exist in version Y, and what did it
+ * do at that version?" The data is
  * static JSON on GitHub Pages — this client just fetches it and applies the
  * three rules that matter (availability, removal=vanish, describe-at-version).
  *
@@ -20,10 +21,9 @@ export const DEFAULT_BASE = 'https://claustodian.dev/data';
 // config_key are populated. internal_config_flag is reserved by the schema and
 // deliberately unused — internal-ness is carried by `category` (`settings-internal`),
 // because typing off a description would churn a record's identity every time
-// Anthropic edits the text. control_message is assembled by the pipeline but is not
-// in the published dataset yet; widening this union ahead of the data keeps a
-// consumer that adopts it from failing to compile the first time a control_message
-// record appears in a snapshot.
+// Anthropic edits the text. control_message records are published; they also carry
+// `family` and `direction` fields (see the schema) that this minimal client does
+// not model.
 export type SymbolType =
   'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag' | 'control_message';
 export type Status = 'active' | 'deprecated' | 'removed' | 'needs_review';
