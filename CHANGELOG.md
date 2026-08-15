@@ -30,7 +30,7 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   missing field.
 - **A security contact at <https://claustodian.dev/.well-known/security.txt>.** An
   RFC 9116 file pointing at the private reporting channels already named in
-  `SECURITY.md`. Adds no data of its own.
+  `SECURITY.md`. Adds no data of its own. (#233)
 
 ### Changed
 
