@@ -11,6 +11,7 @@ import {
   extractEnvVars,
   extractFlagDescriptions,
   extractFlags,
+  extractParamEnvVars,
   extractSkillCommands,
 } from './extract-bundle.js';
 
@@ -815,5 +816,138 @@ describe('extractHiddenFlags', () => {
   it('leaves a public flag unmarked', () => {
     const src = 'x.addOption(new sd("--print","Print response and exit"))';
     expect(extractBundleSymbols(src).find((s) => s.symbol === '--print')?.hidden).toBeUndefined();
+  });
+});
+
+describe('extractParamEnvVars — env vars read through a param bound to process.env', () => {
+  const names = (src: string) => [...extractParamEnvVars(src).keys()].sort();
+
+  it('extracts a read from a param a call passes process.env', () => {
+    // function ndd(e){ e.CLAUDE_CODE_HTTP_PROXY } called ndd(process.env)
+    const src =
+      'function ndd(e){return e.HTTP_PROXY||e.CLAUDE_CODE_HTTP_PROXY}var x=ndd(process.env);';
+    expect(names(src)).toEqual(['CLAUDE_CODE_HTTP_PROXY']);
+  });
+
+  it('accepts a {...process.env} spread argument', () => {
+    const src = 'function f(e){return e.CLAUDE_CODE_ALTGR_AS_TEXT}f({...process.env,FOO:1});';
+    expect(names(src)).toEqual(['CLAUDE_CODE_ALTGR_AS_TEXT']);
+  });
+
+  it('matches the argument POSITION to the parameter position', () => {
+    // process.env is the SECOND arg, so only the second param is env-bound.
+    const src =
+      'function g(a,b){return a.CLAUDE_CODE_NOPE||b.CLAUDE_CODE_BS_AS_CTRL_BACKSPACE}g("linux",process.env);';
+    expect(names(src)).toEqual(['CLAUDE_CODE_BS_AS_CTRL_BACKSPACE']);
+  });
+
+  it('extracts from a destructure-default {env:n=process.env}, with no call site', () => {
+    const src =
+      'function h(t,{env:n=process.env}){return n.CLAUDE_CODE_AUTO_BACKGROUND_TIMEOUT_MS}';
+    expect(names(src)).toEqual(['CLAUDE_CODE_AUTO_BACKGROUND_TIMEOUT_MS']);
+  });
+
+  it('does NOT extract a module-export assignment (not a process.env-bound param)', () => {
+    // If.ANTHROPIC_API_HOST=… — `If` is an exports object, never passed process.env.
+    const src = 'If.SEGMENT_CDN_HOST=If.ANTHROPIC_API_HOST=void 0;';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('does NOT extract an enum member reference (Model.CLAUDE_OPUS_4_8)', () => {
+    const src = 'params.builder().model(Model.CLAUDE_OPUS_4_8);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('does NOT extract a WRITE — CC setting an env var for a child process', () => {
+    // param IS process.env, but `=` makes it a write, not a read.
+    const src = 'function w(e){e.CLAUDE_CODE_PLUGIN_ROOT="x"}w(process.env);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('does NOT extract a non-first-party name (fails the convention gate)', () => {
+    const src = 'function k(e){return e.SOME_THIRD_PARTY_VAR}k(process.env);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('does NOT extract when the function is never called with process.env', () => {
+    const src = 'function m(e){return e.CLAUDE_CODE_MISS}m(somethingElse);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('surfaces a param-passed env var through extractBundleSymbols as process-env evidence', () => {
+    const src = 'function f(e){return e.CLAUDE_CODE_PROXY_TEST}f(process.env);';
+    const sym = extractBundleSymbols(src).find((s) => s.symbol === 'CLAUDE_CODE_PROXY_TEST');
+    expect(sym).toMatchObject({ type: 'env_var', evidence: 'process-env' });
+  });
+
+  it('does not crash on an unbalanced call (unmatched bracket)', () => {
+    expect(names('f(process.env')).toEqual([]);
+  });
+
+  it('drops the call form when the callee name is defined more than once (ambiguous)', () => {
+    // Two functions named `e`; a minified name reuse. One is called with
+    // process.env, but the call cannot be bound to a specific definition, so
+    // NEITHER is mined — no risk of stamping process.env onto the wrong param.
+    const src = 'function e(x){return x.CLAUDE_CODE_AMBIG}function e(y){return y.z}e(process.env);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('does not treat a trailing member read (process.env.HOME) as the env object', () => {
+    // `process.env.HOME` is a scalar value, not the env object — `g` is not bound.
+    const src = 'function g(a){return a.CLAUDE_CODE_TRAILING}g(process.env.HOME);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('scans past an escaped quote inside a string argument', () => {
+    // The `"a\"b"` string carries an escaped quote — bracket matching and the
+    // top-level comma split must skip it, not end the string early.
+    const src = 'function f(e){return e.CLAUDE_CODE_ESCAPE}f(process.env,"a\\"b");';
+    expect(names(src)).toEqual(['CLAUDE_CODE_ESCAPE']);
+  });
+
+  it('does not crash on a call whose brackets are mismatched', () => {
+    // `f(])` closes with the wrong bracket — matchBracket bails rather than
+    // running off the end.
+    expect(names('f(])')).toEqual([]);
+  });
+
+  it('skips a param this reader cannot name (a bare destructure) and binds the next', () => {
+    // `{a}` yields no binding name; the env-bound `e` two positions over still does.
+    const src = 'function f({a},e){return e.CLAUDE_CODE_DESTRUCT}f(0,process.env);';
+    expect(names(src)).toEqual(['CLAUDE_CODE_DESTRUCT']);
+  });
+
+  it('binds every param position a repeated process.env argument fills', () => {
+    // Both args are process.env, so the callee is recorded once and both params
+    // are env-bound — the second read is still mined.
+    const src = 'function f(a,b){return b.CLAUDE_CODE_TWICE}f(process.env,process.env);';
+    expect(names(src)).toEqual(['CLAUDE_CODE_TWICE']);
+  });
+
+  it('does not crash on a definition whose parameter list never closes', () => {
+    expect(names('function bad(')).toEqual([]);
+  });
+
+  it('ignores a function definition with no block body', () => {
+    // Params match but no `{` follows — nothing to read.
+    expect(names('function f(a)0')).toEqual([]);
+  });
+
+  it('does not crash on a definition whose body brace never closes', () => {
+    expect(names('function f(e){return e.CLAUDE_CODE_UNCLOSED')).toEqual([]);
+  });
+
+  it('drops a denylisted name (a libuv errno code, not an env var)', () => {
+    const src = 'function f(e){return e.ETIMEDOUT}f(process.env);';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('does not double-count a var the inline process.env path already proved', () => {
+    // Same name read both inline and through the param — the additive pass must
+    // skip it, leaving exactly one record.
+    const src =
+      'process.env.CLAUDE_CODE_DUP;function f(e){return e.CLAUDE_CODE_DUP}f(process.env);';
+    const dups = extractBundleSymbols(src).filter((s) => s.symbol === 'CLAUDE_CODE_DUP');
+    expect(dups).toHaveLength(1);
   });
 });
