@@ -950,4 +950,23 @@ describe('extractParamEnvVars — env vars read through a param bound to process
     const dups = extractBundleSymbols(src).filter((s) => s.symbol === 'CLAUDE_CODE_DUP');
     expect(dups).toHaveLength(1);
   });
+
+  it('reads through a `$`-named param (a minifier name `\\b` would silently drop)', () => {
+    // `$` is a valid identifier a minifier emits; the read anchor must not treat it
+    // as a word boundary or a regex metachar. Both binding forms must work.
+    expect(names('function f({env:$=process.env}){return $.CLAUDE_CODE_DOLLAR}')).toEqual([
+      'CLAUDE_CODE_DOLLAR',
+    ]);
+    expect(names('function g($){return $.CLAUDE_CODE_DOLLAR2}g(process.env);')).toEqual([
+      'CLAUDE_CODE_DOLLAR2',
+    ]);
+  });
+
+  it('does not bind a param name that is only a suffix of the accessed identifier', () => {
+    // `some$e.NAME` must not count as a read through param `e`. `$` is a word
+    // boundary, so the old `\b` anchor matched this wrongly — the `(?<![\w$])`
+    // lookbehind rejects it because `$` is an identifier char.
+    const src = 'function k(e){return some$e.CLAUDE_CODE_NO}k(process.env);';
+    expect(names(src)).toEqual([]);
+  });
 });

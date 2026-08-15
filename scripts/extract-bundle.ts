@@ -333,10 +333,12 @@ export function extractAccessorEnvVars(src: string): Map<string, string> {
 /**
  * From an opening bracket at `open`, the index of its match — tracking (), [], {}
  * depth and skipping string literals. A backtick runs to the next unescaped
- * backtick; a nested template (`` `a${`b`}c` ``) is therefore mis-scanned. That is
- * vanishingly rare in the call- and parameter-lists this reads, and the worst it
- * does is misalign one call's argument indices — which the uniqueness guard and
- * the first-party name gate keep from asserting a spurious symbol. -1 if unmatched.
+ * backtick; a nested template (`` `a${`b`}c` ``) is therefore mis-scanned. Regex
+ * literals are NOT recognised either, so a bracket-bearing literal like `/[)}]/`
+ * inside a scanned span can bail or over-run. Both are vanishingly rare in the
+ * call- and parameter-lists this reads, and the worst either does is misalign one
+ * call's argument indices — which the uniqueness guard and the first-party name
+ * gate keep from asserting a spurious symbol. -1 if unmatched.
  */
 function matchBracket(src: string, open: number): number {
   const close: Record<string, string> = { '(': ')', '[': ']', '{': '}' };
@@ -417,7 +419,12 @@ function paramBinding(p: string): { name: string; envDefault: boolean } | null {
  *      Trusted ONLY when the callee name has exactly one `function NAME(`
  *      definition: a minified name reused for two functions is ambiguous — a call
  *      to one must not bind `process.env` onto the other's param — so it is
- *      dropped rather than risk a wrong provenance.
+ *      dropped rather than risk a wrong provenance. Note Pass 1 also captures the
+ *      trailing name of a METHOD call (`x.f(process.env)` records `f`), so a method
+ *      call can supply the argument position that binds a same-named free function's
+ *      param; the first-party name gate below is the backstop, since a real false
+ *      positive would need a CLAUDE_/ANTHROPIC_-named property read off a non-env
+ *      object.
  *   2. Default-param — `function(...,{env:n=process.env}){ n.NAME }` (or a plain
  *      `n=process.env` default). Its evidence is local; no call site needed, and
  *      the uniqueness rule does not apply.
@@ -434,6 +441,8 @@ export function extractParamEnvVars(src: string): Map<string, string> {
   for (const m of src.matchAll(/\b([A-Za-z_$][\w$]*)\(/g)) {
     const open = (m.index as number) + m[0].length - 1;
     const end = matchBracket(src, open);
+    // Skip pathologically wide call spans (a whole minified IIFE body); an
+    // env-passing call's argument list is far shorter, so this only drops noise.
     if (end < 0 || end - open > 4000) continue;
     splitTopLevel(src.slice(open + 1, end)).forEach((arg, i) => {
       if (PROCESS_ENV_ARG.test(arg)) {
@@ -468,7 +477,16 @@ export function extractParamEnvVars(src: string): Map<string, string> {
         fname !== undefined && defCount.get(fname) === 1 && (envArg.get(fname)?.has(i) ?? false);
       if (!bind.envDefault && !callBound) return;
       // `param.NAME` reads only — a following `=` (not `==`/`===`) is a WRITE.
-      const re = new RegExp('\\b' + bind.name + '\\.([A-Z][A-Z0-9_]{2,})\\b(?!\\s*=(?!=))', 'g');
+      // A `(?<![\w$])` lookbehind (not `\b`) anchors the whole param name: `\b`
+      // fails before a `$`-only identifier (a common minifier name), which would
+      // silently drop every read through it. `paramBinding` only ever yields
+      // `[A-Za-z_$][\w$]*`, so `$` is the sole metachar it can contain, but escape
+      // the full regex metaclass anyway — complete rather than input-dependent.
+      const safeName = bind.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re = new RegExp(
+        '(?<![\\w$])' + safeName + '\\.([A-Z][A-Z0-9_]{2,})\\b(?!\\s*=(?!=))',
+        'g'
+      );
       for (const r of body.matchAll(re)) {
         const name = r[1] as string;
         if (SYMBOL_DENYLIST.has(name)) continue;
