@@ -28,6 +28,9 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   (`host_to_cli`, `cli_to_host`, or `null`). A `direction` of `null` means the CLI had
   not yet declared the message's direction at that version — it is a value, not a
   missing field.
+- **A security contact at <https://claustodian.dev/.well-known/security.txt>.** An
+  RFC 9116 file pointing at the private reporting channels already named in
+  `SECURITY.md`. Adds no data of its own. (#233)
 
 ### Changed
 
