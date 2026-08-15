@@ -2127,3 +2127,117 @@ describe('buildEnrichedSnapshots — control attach', () => {
     expect(at('2.1.10')?.symbols.some((r) => r.type === 'control_message')).toBe(true);
   });
 });
+
+describe('assembleSnapshots — per-scope descriptions', () => {
+  // A flag NOT in the curated scopes table, so scopesFor returns exactly the
+  // binary-proved scopes we pass — letting us drive the withScopes intersection.
+  const rec = (over: Partial<SymbolRecord>): SymbolRecord => ({
+    symbol: '--zzscope',
+    type: 'cli_flag',
+    first_seen: '1.5.0',
+    removed_in: null,
+    status: 'active',
+    provenance: 'docs',
+    confidence: 'high',
+    description: 'primary',
+    source_url: null,
+    category: 'cli',
+    ...over,
+  });
+  const blocks = [
+    { version: '2.0.0', bullets: [] },
+    { version: '2.6.0', bullets: [] },
+  ];
+  const at = (snaps: ReturnType<typeof assembleSnapshots>, v: string) =>
+    snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === '--zzscope');
+
+  it('keeps only overrides whose scope is live at the version', () => {
+    const snaps = assembleSnapshots(
+      [
+        rec({
+          scope_descriptions: {
+            'plugin init': 'init text',
+            'plugin tag': 'tag text',
+            install: 'never',
+          },
+        }),
+      ],
+      blocks,
+      undefined,
+      new Map([['cli_flag:--zzscope', { from: '1.5.0', scopes: ['plugin init', 'plugin tag'] }]])
+    );
+    const f = at(snaps, '2.6.0');
+    expect(f?.scopes).toEqual(['plugin init', 'plugin tag']);
+    // `install` had no live scope (undocumented, unproved), so it is dropped.
+    expect(f?.scope_descriptions).toEqual({ 'plugin init': 'init text', 'plugin tag': 'tag text' });
+  });
+
+  it('drops the map entirely in a version where the flag has no scopes', () => {
+    const snaps = assembleSnapshots(
+      [rec({ scope_descriptions: { 'plugin init': 'x', 'plugin tag': 'y' } })],
+      blocks,
+      undefined,
+      // Proved only from 2.6.0, so at 2.0.0 the flag has no scopes at all.
+      new Map([['cli_flag:--zzscope', { from: '2.6.0', scopes: ['plugin init', 'plugin tag'] }]])
+    );
+    const early = at(snaps, '2.0.0');
+    expect(early?.scopes).toBeUndefined();
+    expect(early?.scope_descriptions).toBeUndefined();
+    expect(at(snaps, '2.6.0')?.scope_descriptions).toEqual({
+      'plugin init': 'x',
+      'plugin tag': 'y',
+    });
+  });
+
+  it('drops the map when no override matches a live scope, keeping the scopes', () => {
+    const snaps = assembleSnapshots(
+      [rec({ scope_descriptions: { ghost: 'unmatched' } })],
+      blocks,
+      undefined,
+      new Map([['cli_flag:--zzscope', { from: '1.5.0', scopes: ['plugin init'] }]])
+    );
+    const f = at(snaps, '2.6.0');
+    expect(f?.scopes).toEqual(['plugin init']);
+    expect(f?.scope_descriptions).toBeUndefined();
+  });
+
+  it('applies the anachronism guard to per-scope text, per version', () => {
+    // The override names a release later than the snapshot, so it is future
+    // wording in every historical snapshot — the same defect deanachronize removes
+    // from the primary description. It must be trimmed (here to empty, so dropped)
+    // below the tip and kept whole at the newest snapshot.
+    const snaps = assembleSnapshots(
+      [rec({ scope_descriptions: { 'plugin tag': 'From v2.6.0, tag with the new mode.' } })],
+      blocks,
+      undefined,
+      new Map([['cli_flag:--zzscope', { from: '1.5.0', scopes: ['plugin tag'] }]])
+    );
+    // 2.0.0: the whole override is future text, trimmed empty and dropped; scopes stay.
+    expect(at(snaps, '2.0.0')?.scopes).toEqual(['plugin tag']);
+    expect(at(snaps, '2.0.0')?.scope_descriptions).toBeUndefined();
+    // 2.6.0 is the newest snapshot, so the guard leaves it whole.
+    expect(at(snaps, '2.6.0')?.scope_descriptions).toEqual({
+      'plugin tag': 'From v2.6.0, tag with the new mode.',
+    });
+  });
+
+  it('trims a per-scope override to its era-correct prefix, keeping the rest', () => {
+    // Leading sentence names nothing later; a trailing sentence names 2.6.0. Below
+    // the tip the override survives as just the safe prefix, mirroring how the
+    // primary description is truncated rather than emptied.
+    const snaps = assembleSnapshots(
+      [
+        rec({
+          scope_descriptions: { 'plugin tag': 'Tag the release. From v2.6.0, also signs it.' },
+        }),
+      ],
+      blocks,
+      undefined,
+      new Map([['cli_flag:--zzscope', { from: '1.5.0', scopes: ['plugin tag'] }]])
+    );
+    const kept = at(snaps, '2.0.0')?.scope_descriptions?.['plugin tag'];
+    expect(kept).toBeDefined();
+    expect(kept).toContain('Tag the release.');
+    expect(kept).not.toContain('2.6.0');
+  });
+});

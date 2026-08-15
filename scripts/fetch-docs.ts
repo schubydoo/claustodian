@@ -87,6 +87,20 @@ export interface DocEntry {
    * in `settings.json`.
    */
   category?: string;
+  /**
+   * The subcommand heading this row sat under, e.g. "plugin init" — the raw
+   * scope candidate. Internal to parsing only: `buildDocsIndex` uses it to build
+   * `scope_descriptions` and then strips it, so it never reaches `docs.json`.
+   */
+  scope?: string;
+  /**
+   * Per-scope description overrides for a flag the docs describe differently
+   * under different subcommands (e.g. `--force` under `plugin init` vs `plugin
+   * tag`). Keys are subcommand headings; values are the description under each.
+   * Set only when a flag appears under >1 heading with genuinely different text;
+   * the top-level `description` stays the first-seen (primary) one.
+   */
+  scope_descriptions?: Record<string, string>;
 }
 
 export interface DocsIndex {
@@ -393,6 +407,28 @@ function parseSettingsPage(
   return entries;
 }
 
+/**
+ * Normalises a subcommand heading ("### plugin init", "### `claude plugin tag`")
+ * to the scope string a record carries — a FULL invocation path after `claude`,
+ * so "plugin init", "plugin tag". Returns undefined for an empty heading. Whether
+ * the result is a REAL scope is decided later by intersecting with the record's
+ * binary-proved scopes (in scrape-changelog's withScopes), so a non-subcommand
+ * heading here ("Flags", "Overview") is harmless — it simply matches nothing.
+ */
+function scopeFromHeading(raw: string): string | undefined {
+  const cleaned = raw
+    .replace(/`/g, '')
+    .replace(/^claude\s+/i, '')
+    .trim();
+  // A real subcommand scope is a path of lowercase command tokens ("plugin tag",
+  // "mcp add-json"). Prose section headings ("CLI flags", "System prompt flags",
+  // "Start a Remote Control session") carry capitals or articles and are NOT
+  // scopes — reject them here so they never reach the published docs.json. This
+  // only trims obvious noise; the authoritative filter is still the intersection
+  // with binary-proved scopes in scrape-changelog's withScopes.
+  return /^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$/.test(cleaned) ? cleaned : undefined;
+}
+
 export function parseDocPage(
   page: string,
   markdown: string,
@@ -400,7 +436,21 @@ export function parseDocPage(
 ): DocEntry[] {
   if (page === 'settings') return parseSettingsPage(page, markdown, knownConfigKeys);
   const entries: DocEntry[] = [];
+  let scope: string | undefined;
   for (const line of markdown.split('\n')) {
+    const heading = /^#{2,4}\s+(.*)$/.exec(line);
+    if (heading) {
+      // Any h2–h4 heading (the depths this regex matches) resets the scope. A
+      // non-command subsection under a subcommand — `### Options` in `## plugin
+      // init` — therefore
+      // clears `plugin init` and per-scope capture is skipped for that table. That
+      // fails SAFE (no wrong data, the feature just does not fire); the official
+      // plugins-reference puts each flag table directly under its `### plugin <x>`
+      // heading, so it does fire there. Revisit with heading-depth tracking only if
+      // a page starts nesting flag tables under a non-command subsection.
+      scope = scopeFromHeading(heading[1] as string);
+      continue;
+    }
     if (!/^\s*\|/.test(line) || /^\s*\|\s*:?-{2,}/.test(line)) continue;
     const cells = splitTableRow(line)
       .slice(1, -1)
@@ -427,6 +477,9 @@ export function parseDocPage(
         description,
         doc_min_version,
         doc_page: page,
+        // Scope candidate only for flags — the per-subcommand-description case is
+        // a cli_flag concern. Stripped in buildDocsIndex after the map is built.
+        ...(scope && sym.type === 'cli_flag' ? { scope } : {}),
       });
     }
   }
@@ -439,6 +492,10 @@ export function buildDocsIndex(
   knownConfigKeys?: ReadonlySet<string>
 ): DocsIndex {
   const seen = new Map<string, DocEntry>();
+  // key -> (subcommand scope -> that scope's description), first row per scope
+  // wins. Collected across every row (winners and losers), so a flag documented
+  // under two subcommands is captured even though only one row wins `seen`.
+  const scopeVariants = new Map<string, Map<string, string>>();
   for (const { page, markdown } of pages) {
     // A baselined page is SUPPLEMENTAL: it documents subcommand-scoped flags, so a
     // name that collides with an earlier page is usually a DIFFERENT flag (e.g.
@@ -450,6 +507,11 @@ export function buildDocsIndex(
     const supplemental = baseline !== undefined;
     for (const entry of parseDocPage(page, markdown, knownConfigKeys)) {
       const key = `${entry.type}:${entry.symbol}`;
+      if (entry.scope) {
+        let variants = scopeVariants.get(key);
+        if (!variants) scopeVariants.set(key, (variants = new Map()));
+        if (!variants.has(entry.scope)) variants.set(entry.scope, entry.description);
+      }
       const existing = seen.get(key);
       if (!existing) {
         if (supplemental && !entry.doc_min_version) entry.doc_min_version = baseline;
@@ -460,6 +522,19 @@ export function buildDocsIndex(
         existing.doc_min_version = entry.doc_min_version;
       }
     }
+  }
+  // Attach per-scope descriptions where a flag is documented under MORE THAN ONE
+  // subcommand with DIFFERENT text (identical text under each needs no override).
+  // Then strip the internal `scope` marker from every winner so it never reaches
+  // docs.json. Keys that are not real scopes are dropped later, when scrape's
+  // withScopes intersects this map with the record's binary-proved scopes.
+  for (const [key, winner] of seen) {
+    delete winner.scope;
+    const variants = scopeVariants.get(key);
+    if (!variants || variants.size < 2 || new Set(variants.values()).size < 2) continue;
+    winner.scope_descriptions = Object.fromEntries(
+      [...variants.entries()].sort(([a], [b]) => a.localeCompare(b))
+    );
   }
   const symbols = [...seen.values()].sort(
     (a, b) => a.type.localeCompare(b.type) || a.symbol.localeCompare(b.symbol)

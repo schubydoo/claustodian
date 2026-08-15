@@ -644,3 +644,86 @@ describe('knownSettingsKeys', () => {
     ).rejects.toThrow(/holds no config_key observations/);
   });
 });
+
+describe('buildDocsIndex — per-scope descriptions', () => {
+  it('captures scope_descriptions for a flag documented under >1 subcommand with different text', () => {
+    const md = [
+      '## plugin init',
+      '| `-f, --force` | Overwrite an existing `.claude-plugin/` at the target |',
+      '## plugin tag',
+      '| `-f, --force` | Create the tag even if the working tree is dirty |',
+    ].join('\n');
+    const force = buildDocsIndex([{ page: 'plugins-reference', markdown: md }]).symbols.find(
+      (s) => s.symbol === '--force'
+    );
+    // The primary description stays the first (plugin init) one.
+    expect(force?.description).toBe('Overwrite an existing `.claude-plugin/` at the target');
+    expect(force?.scope_descriptions).toEqual({
+      'plugin init': 'Overwrite an existing `.claude-plugin/` at the target',
+      'plugin tag': 'Create the tag even if the working tree is dirty',
+    });
+    // The internal `scope` marker must never reach docs.json.
+    expect(Object.prototype.hasOwnProperty.call(force, 'scope')).toBe(false);
+  });
+
+  it('keeps the first description when a flag repeats under the same subcommand', () => {
+    const md = [
+      '## plugin init',
+      '| `--force` | first init |',
+      '| `--force` | second init ignored |',
+      '## plugin tag',
+      '| `--force` | tag text |',
+    ].join('\n');
+    const force = buildDocsIndex([{ page: 'plugins-reference', markdown: md }]).symbols.find(
+      (s) => s.symbol === '--force'
+    );
+    expect(force?.scope_descriptions).toEqual({
+      'plugin init': 'first init',
+      'plugin tag': 'tag text',
+    });
+  });
+
+  it('omits the map when the text is identical under each subcommand', () => {
+    const md = [
+      '## plugin init',
+      '| `--force` | Force it |',
+      '## plugin tag',
+      '| `--force` | Force it |',
+    ].join('\n');
+    const force = buildDocsIndex([{ page: 'plugins-reference', markdown: md }]).symbols.find(
+      (s) => s.symbol === '--force'
+    );
+    expect(force?.scope_descriptions).toBeUndefined();
+  });
+
+  it('omits the map for a flag under a single subcommand', () => {
+    const md = ['## plugin init', '| `--force` | Overwrite the dir |'].join('\n');
+    const force = buildDocsIndex([{ page: 'plugins-reference', markdown: md }]).symbols.find(
+      (s) => s.symbol === '--force'
+    );
+    expect(force?.scope_descriptions).toBeUndefined();
+  });
+
+  it('ignores prose section headings (capitals / articles), keeping them out of the map', () => {
+    const md = [
+      '## CLI flags',
+      '| `--name` | The session name |',
+      '## Start a Remote Control session',
+      '| `--name` | Name the remote session |',
+    ].join('\n');
+    const name = buildDocsIndex([{ page: 'cli-reference', markdown: md }]).symbols.find(
+      (s) => s.symbol === '--name'
+    );
+    expect(name?.scope_descriptions).toBeUndefined();
+  });
+
+  it('never attaches per-scope descriptions to a non-flag symbol', () => {
+    const md = ['## plugin init', '| `/foo` | one |', '## plugin tag', '| `/foo` | two |'].join(
+      '\n'
+    );
+    const foo = buildDocsIndex([{ page: 'plugins-reference', markdown: md }]).symbols.find(
+      (s) => s.symbol === '/foo'
+    );
+    expect(foo?.scope_descriptions).toBeUndefined();
+  });
+});

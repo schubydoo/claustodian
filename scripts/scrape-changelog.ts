@@ -121,6 +121,13 @@ export interface SymbolRecord {
    * means no scope information. See scripts/symbol-scopes.ts.
    */
   scopes?: readonly string[];
+  /**
+   * Per-scope description overrides for a flag whose docs text differs by
+   * subcommand (see schema/symbol.schema.json). Keys are a SUBSET of `scopes`; a
+   * scope absent here uses the primary `description`. Sourced from docs and
+   * filtered per version in withScopes against the scopes live at that version.
+   */
+  scope_descriptions?: Readonly<Record<string, string>>;
 }
 
 export interface VersionSnapshot {
@@ -879,7 +886,26 @@ export function assembleSnapshots(
     const proved =
       observed && compareVersionsAsc(version, observed.from) >= 0 ? observed.scopes : undefined;
     const scopes = scopesFor(record.type, record.symbol, proved);
-    return scopes ? { ...record, scopes } : record;
+    if (!scopes) {
+      // No scopes at this version. A scope_descriptions map cannot be validated
+      // against an absent `scopes` (the schema requires scopes when it is present),
+      // so drop it rather than emit an orphan.
+      if (!record.scope_descriptions) return record;
+      const rest = { ...record };
+      delete rest.scope_descriptions;
+      return rest;
+    }
+    const next: SymbolRecord = { ...record, scopes };
+    if (record.scope_descriptions) {
+      // Keep only overrides whose scope is live at THIS version — the same
+      // point-in-time discipline the scopes themselves follow above.
+      const filtered = Object.fromEntries(
+        Object.entries(record.scope_descriptions).filter(([scope]) => scopes.includes(scope))
+      );
+      if (Object.keys(filtered).length > 0) next.scope_descriptions = filtered;
+      else delete next.scope_descriptions;
+    }
+    return next;
   };
 
   /** Same record unless the category actually differs — keeps snapshots stable. */
@@ -984,6 +1010,38 @@ export function assembleSnapshots(
     return { ...record, description: truncated };
   };
 
+  /**
+   * The same point-in-time guard as `deanachronize`, applied to per-scope
+   * description overrides. A `scope_descriptions` value is docs-tip text copied
+   * into every snapshot the scope is live in, so without this a historical
+   * snapshot could publish future wording in the map beside a primary
+   * `description` that WAS trimmed. Each surviving override is truncated to the
+   * text that names nothing later than the version, and dropped if that empties —
+   * the consumer then falls back to the already-guarded primary `description`.
+   *
+   * Runs as the OUTERMOST pipeline stage (not inside deanachronize) because
+   * describeAt returns early on its binary-timeline path without calling
+   * deanachronize, and this map has to be guarded on every path.
+   */
+  const guardScopeDescriptions = (record: SymbolRecord, version: string): SymbolRecord => {
+    if (!record.scope_descriptions) return record;
+    const guarded: Record<string, string> = {};
+    let changed = false;
+    for (const [scope, value] of Object.entries(record.scope_descriptions)) {
+      const kept = isAnachronistic(value, version)
+        ? truncateToVersion(value, version, firstSeenByKey, releases, namedMemo)
+        : value;
+      if (kept === value) guarded[scope] = value;
+      else changed = true;
+      if (kept !== value && kept !== '') guarded[scope] = kept;
+    }
+    if (!changed) return record;
+    const next = { ...record };
+    if (Object.keys(guarded).length > 0) next.scope_descriptions = guarded;
+    else delete next.scope_descriptions;
+    return next;
+  };
+
   // Resolve the description from the binary timeline: a curated (non-empty)
   // description wins in the current era; a HISTORICAL snapshot takes the text
   // observed in that version's binary (de-anachronized), and a previously-EMPTY
@@ -1029,8 +1087,11 @@ export function assembleSnapshots(
     symbols: records
       .filter((record) => liveAt(record, version))
       .map((record) =>
-        withScopes(
-          withFlagVisibility(describeAt(statusAt(record, version), version), version),
+        guardScopeDescriptions(
+          withScopes(
+            withFlagVisibility(describeAt(statusAt(record, version), version), version),
+            version
+          ),
           version
         )
       )
@@ -1071,6 +1132,7 @@ function finalizeRecord(input: SymbolRecord & { first_seen_estimated: boolean })
     // not an absence, and `?? {}` on a nullish check would delete it.
     ...(input.family ? { family: input.family } : {}),
     ...(input.direction !== undefined ? { direction: input.direction } : {}),
+    ...(input.scope_descriptions ? { scope_descriptions: input.scope_descriptions } : {}),
   };
 }
 
@@ -1119,6 +1181,7 @@ export function enrichSymbols(
         description_source: doc ? 'docs' : description ? 'changelog' : undefined,
         source_url: record.source_url,
         category: record.category,
+        ...(doc?.scope_descriptions ? { scope_descriptions: doc.scope_descriptions } : {}),
       })
     );
   }
@@ -1147,6 +1210,7 @@ export function enrichSymbols(
         // differ only by which file reads them, which is a fact the page states
         // and the name never carries.
         category: entry.category ?? categorize(entry.symbol, entry.type),
+        ...(entry.scope_descriptions ? { scope_descriptions: entry.scope_descriptions } : {}),
       })
     );
   }

@@ -59,6 +59,14 @@ interface SymbolFields {
    * bare `claude`. Absent means no scope information — not "top-level".
    */
   scopes?: string[];
+  /**
+   * Per-scope description overrides for a flag whose meaning differs by
+   * subcommand — e.g. `--force` means "overwrite the .claude-plugin dir" under
+   * `plugin init` but "tag despite a dirty tree" under `plugin tag`. Keys are a
+   * subset of `scopes`; read `scope_descriptions[scope] ?? description`. Absent
+   * (as on most flags) means the single `description` applies to every scope.
+   */
+  scope_descriptions?: Record<string, string>;
 }
 
 /**
