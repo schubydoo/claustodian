@@ -66,10 +66,10 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
 ```json
 {
   "symbol": "--output-format",
-  "type": "cli_flag", // schema enum: cli_flag | command | env_var | config_key | internal_config_flag | control_message (the first four are populated)
+  "type": "cli_flag", // schema enum: cli_flag | command | env_var | config_key | internal_config_flag | control_message (all but internal_config_flag are populated)
   // control_message records ALSO carry "family" and "direction", which are
-  // required on that type and forbidden on every other one. The dataset carries no
-  // such record yet; see schema/symbol.schema.json for the conditional.
+  // required on that type and forbidden on every other one; see
+  // schema/symbol.schema.json for the conditional.
   "first_seen": "0.2.66", // earliest version OBSERVED (semver string)
   "removed_in": null, // version it vanished, or null if still present
   // "deprecated_in": "2.1.73",  OPTIONAL, and rare — only 2 records carry it
