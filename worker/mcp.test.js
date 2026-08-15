@@ -1,11 +1,15 @@
 // Copyright 2026 Schuby
 // SPDX-License-Identifier: Apache-2.0
 
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   ERROR,
   PROTOCOL_VERSION,
+  SYMBOL_TYPES,
   TOOLS,
   decodeHeaderValue,
   handleMcp,
@@ -605,5 +609,18 @@ describe('tool definitions', () => {
   it('declares no-argument tools as accepting only empty objects', () => {
     const listVersions = TOOLS.find((t) => t.name === 'list_versions');
     expect(listVersions.inputSchema.additionalProperties).toBe(false);
+  });
+});
+
+describe('SYMBOL_TYPES ↔ schema parity', () => {
+  // The MCP tool advertises SYMBOL_TYPES as its `type` filter enum and rejects
+  // anything outside it. A published type missing here is silently unqueryable
+  // (control_message was), so pin the list to the schema's own enum: adding a
+  // type to schema/symbol.schema.json fails this test until the worker follows.
+  it('lists exactly the types in schema/symbol.schema.json', () => {
+    const schema = JSON.parse(
+      readFileSync(fileURLToPath(new URL('../schema/symbol.schema.json', import.meta.url)), 'utf-8')
+    );
+    expect([...SYMBOL_TYPES].sort()).toEqual([...schema.properties.type.enum].sort());
   });
 });
