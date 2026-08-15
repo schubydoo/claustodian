@@ -29,6 +29,7 @@ body:
         - command
         - env_var
         - config_key
+        - control_message
         - not sure
     validations:
       required: true

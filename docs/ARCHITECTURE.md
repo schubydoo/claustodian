@@ -140,15 +140,6 @@ not rebuild on a custom-domain change, which has already caused one outage.
 - **No API.** Static files only: cacheable, vendorable, and readable offline.
 - **No `internal_config_flag` records.** The type is in the schema enum and unused;
   internal-ness is a `category`, per the identity invariant above.
-- **No `control_message` records yet.** The extractor runs in the extraction loop,
-  its output is cached per version, and `controlRecordsFor` assembles the records —
-  but `data/` carries none, because assembly reads `data/control-observations.json`
-  and that file is not committed. Writing it is opt-in: `backfill-binary` creates it
-  only when passed `--control`, or when it is already there. The committed cache is
-  fully scanned, so without that gate the release bot would produce it on its next
-  run and publish the whole control surface through an auto-mergeable data PR.
-  Publishing is therefore a deliberate act, in its own PR. The site cannot filter
-  them yet either.
 - **No LLM-authored content in the dataset.** Descriptions come from the docs, the
   changelog, or the binary's own text. A generated summary would be an unverified
   artifact in a dataset whose whole value is that claims are checkable.

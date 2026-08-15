@@ -109,11 +109,13 @@ describe('symbol schema', () => {
     expect(validate(validSymbol({ extra_field: 'not allowed' }))).toBe(false);
   });
 
-  // The control_message contract. Nothing else in CI can observe these: Codecov and
-  // the statements threshold measure scripts/ and worker/, and a JSON Schema branch
-  // is not a statement in either; `npm run validate` only sees committed data/, and
-  // no control_message records ship yet. Delete the `else` branch or misspell the
-  // enum member and every other test still passes.
+  // The control_message contract's NEGATIVE half. `npm run validate` now sees the
+  // committed control_message records, so it exercises the valid (family/direction
+  // present) path — but committed data is all valid, so only this test checks that
+  // the schema REJECTS a control_message missing them, or another type carrying
+  // them. Codecov and the statements threshold measure scripts/ and worker/, and a
+  // JSON Schema branch is not a statement in either. Delete the `else` branch or
+  // misspell the enum member and every other test still passes.
   const controlMessage = (overrides: Record<string, unknown> = {}): Record<string, unknown> => ({
     ...validSymbol({
       symbol: 'remote_control',

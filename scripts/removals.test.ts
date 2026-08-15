@@ -24,9 +24,14 @@ describe('CONFIRMED_REMOVALS', () => {
     const keys = new Set<string>();
     for (const r of CONFIRMED_REMOVALS) {
       expect(r.removed_in).toMatch(/^\d+\.\d+\.\d+$/);
-      expect(['cli_flag', 'env_var', 'command', 'config_key', 'internal_config_flag']).toContain(
-        r.type
-      );
+      expect([
+        'cli_flag',
+        'env_var',
+        'command',
+        'config_key',
+        'internal_config_flag',
+        'control_message',
+      ]).toContain(r.type);
       const key = `${r.type}:${r.symbol}`;
       expect(keys.has(key)).toBe(false);
       keys.add(key);
@@ -75,9 +80,14 @@ describe('CONFIRMED_DEPRECATIONS', () => {
     const keys = new Set<string>();
     for (const d of CONFIRMED_DEPRECATIONS) {
       expect(d.deprecated_in).toMatch(/^\d+\.\d+\.\d+$/);
-      expect(['cli_flag', 'env_var', 'command', 'config_key', 'internal_config_flag']).toContain(
-        d.type
-      );
+      expect([
+        'cli_flag',
+        'env_var',
+        'command',
+        'config_key',
+        'internal_config_flag',
+        'control_message',
+      ]).toContain(d.type);
       const key = `${d.type}:${d.symbol}`;
       expect(keys.has(key)).toBe(false);
       keys.add(key);
