@@ -963,8 +963,10 @@ describe('extractParamEnvVars — env vars read through a param bound to process
   });
 
   it('does not bind a param name that is only a suffix of the accessed identifier', () => {
-    // `some_e.NAME` must not count as a read through param `e`.
-    const src = 'function k(e){return some_e.CLAUDE_CODE_NO}k(process.env);';
+    // `some$e.NAME` must not count as a read through param `e`. `$` is a word
+    // boundary, so the old `\b` anchor matched this wrongly — the `(?<![\w$])`
+    // lookbehind rejects it because `$` is an identifier char.
+    const src = 'function k(e){return some$e.CLAUDE_CODE_NO}k(process.env);';
     expect(names(src)).toEqual([]);
   });
 });
