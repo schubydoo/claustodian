@@ -479,9 +479,10 @@ export function extractParamEnvVars(src: string): Map<string, string> {
       // `param.NAME` reads only — a following `=` (not `==`/`===`) is a WRITE.
       // A `(?<![\w$])` lookbehind (not `\b`) anchors the whole param name: `\b`
       // fails before a `$`-only identifier (a common minifier name), which would
-      // silently drop every read through it. `$` is the sole regex metachar the
-      // name can contain, so escape it before interpolating.
-      const safeName = bind.name.replace(/\$/g, '\\$&');
+      // silently drop every read through it. `paramBinding` only ever yields
+      // `[A-Za-z_$][\w$]*`, so `$` is the sole metachar it can contain, but escape
+      // the full regex metaclass anyway — complete rather than input-dependent.
+      const safeName = bind.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const re = new RegExp(
         '(?<![\\w$])' + safeName + '\\.([A-Z][A-Z0-9_]{2,})\\b(?!\\s*=(?!=))',
         'g'
