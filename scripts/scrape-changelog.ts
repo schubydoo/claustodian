@@ -1010,6 +1010,38 @@ export function assembleSnapshots(
     return { ...record, description: truncated };
   };
 
+  /**
+   * The same point-in-time guard as `deanachronize`, applied to per-scope
+   * description overrides. A `scope_descriptions` value is docs-tip text copied
+   * into every snapshot the scope is live in, so without this a historical
+   * snapshot could publish future wording in the map beside a primary
+   * `description` that WAS trimmed. Each surviving override is truncated to the
+   * text that names nothing later than the version, and dropped if that empties —
+   * the consumer then falls back to the already-guarded primary `description`.
+   *
+   * Runs as the OUTERMOST pipeline stage (not inside deanachronize) because
+   * describeAt returns early on its binary-timeline path without calling
+   * deanachronize, and this map has to be guarded on every path.
+   */
+  const guardScopeDescriptions = (record: SymbolRecord, version: string): SymbolRecord => {
+    if (!record.scope_descriptions) return record;
+    const guarded: Record<string, string> = {};
+    let changed = false;
+    for (const [scope, value] of Object.entries(record.scope_descriptions)) {
+      const kept = isAnachronistic(value, version)
+        ? truncateToVersion(value, version, firstSeenByKey, releases, namedMemo)
+        : value;
+      if (kept === value) guarded[scope] = value;
+      else changed = true;
+      if (kept !== value && kept !== '') guarded[scope] = kept;
+    }
+    if (!changed) return record;
+    const next = { ...record };
+    if (Object.keys(guarded).length > 0) next.scope_descriptions = guarded;
+    else delete next.scope_descriptions;
+    return next;
+  };
+
   // Resolve the description from the binary timeline: a curated (non-empty)
   // description wins in the current era; a HISTORICAL snapshot takes the text
   // observed in that version's binary (de-anachronized), and a previously-EMPTY
@@ -1055,8 +1087,11 @@ export function assembleSnapshots(
     symbols: records
       .filter((record) => liveAt(record, version))
       .map((record) =>
-        withScopes(
-          withFlagVisibility(describeAt(statusAt(record, version), version), version),
+        guardScopeDescriptions(
+          withScopes(
+            withFlagVisibility(describeAt(statusAt(record, version), version), version),
+            version
+          ),
           version
         )
       )
