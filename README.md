@@ -92,7 +92,7 @@ Every record carries a `provenance`:
 - **`docs`** — the official documentation pages (`code.claude.com/docs`). Supplies the authoritative description and, where a page states a `min-version`, an anchored `first_seen`.
 - **`binary`** — published release binaries, by positive-evidence detection: CLI flags (commander registration or `argv` checks), env vars (the typed registry), built-in _and_ skill/menu commands, and `settings.json` keys read out of the embedded schema. Binary flag, env-var, command and settings-key finds land as `status: needs_review` until a first-party description confirms them.
 
-> **Coverage limitation — plugin commands.** Commands supplied by the **plugin/marketplace** subsystem (e.g. `/channel`) are registered outside the CLI binary, so the binary lane cannot date them at all. Their absence is **not** evidence they never existed. Skill-provided commands (`/schedule`, `/loop`) _are_ captured.
+> **Coverage limitation — plugin commands.** Commands supplied by the **plugin/marketplace** subsystem register outside the CLI binary, so the binary lane cannot date them at all. Their absence is **not** evidence they never existed. Skill-provided commands (`/schedule`, `/loop`) _are_ captured.
 
 **Claustodian uses only material Anthropic has publicly published and distributed.** It does not use leaked or otherwise non-public material. See CONTRIBUTING.
 
@@ -107,8 +107,7 @@ Three lanes feed the dataset today:
 ### Roadmap / backlog
 
 - Teach the extractor **commander's built-in `--help`/`--version`**. They are auto-registered rather than declared, so the extractor misses them and their `first_seen` comes from a late changelog/docs mention (2.1.200 / 2.1.205) instead of 0.2.x.
-- Parse explicit **changelog removal prose** so `removed_in` can be set on changelog- and docs-sourced symbols; today only the binary lane sets it.
-- A lane for **plugin/marketplace commands**, which live outside the CLI binary entirely.
+- Parse explicit **changelog removal prose** to _propose_ `removed_in` on changelog- and docs-sourced symbols (today only the binary lane sets it) — surfaced for review, never auto-applied: a "Removed" bullet can retire a syntax form rather than the symbol (e.g. `DEBUG=true` was removed while `DEBUG` stays live).
 - A site **"what changed in vX"** view — `catalog.json` already carries the full lifecycle.
 - **Release dates** (`released_on`) from the docs changelog's `<Update>` annotations.
 
