@@ -7,6 +7,10 @@
       {
         "from": "2.1.198",
         "description": "Run a no-plugin baseline arm and report the score delta (none | with-without; default: with-without when targeting a plugin by name (installed or skills-dir), none for a path)"
+      },
+      {
+        "from": "2.1.234",
+        "description": "Run a no-plugin baseline arm and report the score delta (none | with-without; default: with-without whenever a plugin resolves — by name, or from the target path — and none when nothing does; under with-without, graders marked with-only, incl. `tool_used: Skill`, are a plugin-fired indicator rather than part of the score)"
       }
     ],
     "cli_flag:--add-dir": [
@@ -2591,6 +2595,12 @@
         "description": "Auto-compact window size"
       }
     ],
+    "config_key:autoContinueAtUsageLimit": [
+      {
+        "from": "2.1.234",
+        "description": "When a claude.ai usage limit stops your session, wait for the limit to reset and continue the task automatically. When off, the limit dialog offers the wait as a choice instead."
+      }
+    ],
     "config_key:autoDreamEnabled": [
       {
         "from": "2.1.81",
@@ -3325,6 +3335,10 @@
       {
         "from": "2.1.232",
         "description": "@internal Per-OS variant of policyHelper, keyed by platform: macos, linux, windows, wsl, plus an optional \"default\" entry that is a STATIC settings payload (a JSON object of managed settings, not a helper). Each per-OS entry carries a helper (\"path\", with timeoutMs/refreshIntervalMs), its own static \"defaultSettings\" payload, or both; an entry may be payload-only. Selection for a platform walks its chain (the platform's own entry; on wsl the linux entry next): the first helper on the chain wins over policyHelper; if no helper is configured \\u2014 or the selected helper fails at startup or refresh \\u2014 the first payload applies (the chain's \"defaultSettings\" in platform-specific-first order, then the top-level \"default\", applied with no process spawned; unrecognized platforms reach only \"default\"); with no payload either, policyHelper. Honored only from admin-controlled policy sources."
+      },
+      {
+        "from": "2.1.234",
+        "description": "@internal Per-OS variant of policyHelper, keyed by platform: macos, linux, windows, wsl, plus an optional \"default\" entry that is a STATIC settings payload (a JSON object of managed settings, not a helper). Each per-OS entry carries a helper \\u2014 a \"path\", or an inline \"script\" + \"interpreter\" delivered to a fixed interpreter over stdin, either with timeoutMs/refreshIntervalMs \\u2014 its own static \"defaultSettings\" payload, or both; an entry may be payload-only. Selection for a platform walks its chain (the platform's own entry; on wsl the linux entry next): the first helper on the chain wins over policyHelper; if no helper is configured \\u2014 or the selected helper fails at startup or refresh \\u2014 the first payload applies (the chain's \"defaultSettings\" in platform-specific-first order, then the top-level \"default\", applied with no process spawned; unrecognized platforms reach only \"default\"); with no payload either, policyHelper. Honored only from admin-controlled policy sources."
       }
     ],
     "config_key:prUrlTemplate": [
@@ -3843,6 +3857,12 @@
       {
         "from": "2.1.219",
         "description": "When safeguards flag a message, automatically switch to a different model to keep chatting. When off, your session will pause instead."
+      }
+    ],
+    "config_key:syncClaudeAiSkills": [
+      {
+        "from": "2.1.234",
+        "description": "Set to false to turn off syncing of the skills you have enabled on claude.ai. In your user settings (or managed settings): nothing more is downloaded, previously synced skills (~/.claude/skills/synced) can no longer be run, are hidden from every session started afterwards, and are moved to ~/.claude/skills/.trash at the next launch (deleted after cleanupPeriodDays; re-downloaded, not restored, if you re-enable). In .claude/settings.local.json or --settings: downloads stop and synced skills are blocked and hidden for sessions in that workspace or invocation only (nothing is moved). Not read from project settings (.claude/settings.json). Only false is honored \\u2014 the feature is enabled server-side for your account, so setting true does not turn it on early. While it is on, synced skills are available in every session, re-synced every 10 minutes, and removed when you disable them on claude.ai. Only applies when signed in with your Claude account."
       }
     ],
     "config_key:syntaxHighlightingDisabled": [
