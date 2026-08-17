@@ -60,7 +60,7 @@
     {
       "symbol": "--allowed-tools",
       "type": "cli_flag",
-      "description": "Tools that execute without prompting for permission. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead",
+      "description": "Tools that execute without prompting for permission. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead. If you name one of the task-tracking tools here, Claude Code also opts the session in",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -251,7 +251,11 @@
       "type": "cli_flag",
       "description": "List what would be removed without removing anything",
       "doc_min_version": null,
-      "doc_page": "plugins-reference"
+      "doc_page": "plugins-reference",
+      "scope_descriptions": {
+        "plugin prune": "List what would be removed without removing anything",
+        "plugin tag": "Print what would be tagged without creating the tag"
+      }
     },
     {
       "symbol": "--effort",
@@ -300,7 +304,11 @@
       "type": "cli_flag",
       "description": "Overwrite an existing `.claude-plugin/` at the target",
       "doc_min_version": null,
-      "doc_page": "plugins-reference"
+      "doc_page": "plugins-reference",
+      "scope_descriptions": {
+        "plugin init": "Overwrite an existing `.claude-plugin/` at the target",
+        "plugin tag": "Create the tag even if the working tree is dirty or the tag already exists"
+      }
     },
     {
       "symbol": "--fork-session",
@@ -594,7 +602,15 @@
       "type": "cli_flag",
       "description": "Installation scope: `user`, `project`, or `local`",
       "doc_min_version": null,
-      "doc_page": "plugins-reference"
+      "doc_page": "plugins-reference",
+      "scope_descriptions": {
+        "plugin disable": "Scope to disable: `user`, `project`, or `local`. When omitted, Claude Code detects the scope where the plugin is installed",
+        "plugin enable": "Scope to enable: `user`, `project`, or `local`. When omitted, Claude Code detects the scope where the plugin is installed",
+        "plugin install": "Installation scope: `user`, `project`, or `local`",
+        "plugin prune": "Prune at scope: `user`, `project`, or `local`",
+        "plugin uninstall": "Uninstall from scope: `user`, `project`, or `local`",
+        "plugin update": "Scope to update: `user`, `project`, `local`, or `managed`"
+      }
     },
     {
       "symbol": "--session-id",
@@ -669,7 +685,7 @@
     {
       "symbol": "--tools",
       "type": "cli_flag",
-      "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for all, or tool names like `\"Bash,Edit,Read\"`. The flag doesn't affect MCP tools; to deny those too, use `--disallowedTools \"mcp__*\"`. A list that omits `EndConversation` doesn't remove it; `\"\"` removes it only when no MCP tools remain",
+      "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for all, or tool names like `\"Bash,Edit,Read\"`. If you name one of the task-tracking tools here, Claude Code also opts the session in. The flag doesn't affect MCP tools; to deny those too, use `--disallowedTools \"mcp__*\"`. A list that omits `EndConversation` doesn't remove it; `\"\"` removes it only when no MCP tools remain",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -697,7 +713,7 @@
     {
       "symbol": "--worktree",
       "type": "cli_flag",
-      "description": "Start Claude in an isolated git worktree at `<repo>/.claude/worktrees/<name>`. If no name is given, one is auto-generated. Pass `#<number>` or a GitHub pull request URL to fetch that PR from `origin` and branch the worktree from it",
+      "description": "Start Claude in an isolated git worktree at `<repo>/.claude/worktrees/<name>`. If you don't give a name, Claude Code generates one. Pass `#<number>`, a GitHub pull request URL, or a GitLab merge request URL to fetch that PR or MR from `origin` and branch the worktree from it. Branching from a GitLab merge request requires Claude Code v2.1.233 or later",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -706,7 +722,13 @@
       "type": "cli_flag",
       "description": "Accept the command that a plugin with a `command` source runs, without the confirmation prompt. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
       "doc_min_version": null,
-      "doc_page": "plugins-reference"
+      "doc_page": "plugins-reference",
+      "scope_descriptions": {
+        "plugin install": "Accept the command that a plugin with a `command` source runs, without the confirmation prompt. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
+        "plugin prune": "Skip the confirmation prompt. Required when stdin or stdout is not a TTY",
+        "plugin uninstall": "Skip the `--prune` confirmation prompt. Required when stdin or stdout is not a TTY",
+        "plugin update": "Accept the command that a plugin with a `command` source runs, without the confirmation prompt. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal"
+      }
     },
     {
       "symbol": "/add-dir",
@@ -1785,7 +1807,7 @@
     {
       "symbol": "disableAutoMode",
       "type": "config_key",
-      "description": "Set to `\"disable\"` to prevent auto mode from being activated. Removes `auto` from the `Shift+Tab` cycle and rejects `--permission-mode auto` at startup. Also accepted under `permissions` as `permissions.disableAutoMode`. Most useful in managed settings where users cannot override it",
+      "description": "Set to `\"disable\"` to prevent auto mode from being activated. Removes `auto` from the `Shift+Tab` cycle, and any session that would otherwise start in auto mode, whether from `--permission-mode auto`, a settings file, or the built-in default, starts in `default` instead. Also accepted under `permissions` as `permissions.disableAutoMode`. Most useful in managed settings where users cannot override it",
       "doc_min_version": null,
       "doc_page": "settings"
     },
@@ -2130,7 +2152,7 @@
     {
       "symbol": "permissions.defaultMode",
       "type": "config_key",
-      "description": "Default permission mode for new sessions. In sessions the VS Code extension starts, the extension resolves the starting mode instead. Valid values: `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`, and `manual` as an alias for `default`, the mode labeled Manual in the CLI, the VS Code and JetBrains extensions, and the desktop app. The `manual` alias requires Claude Code v2.1.200 or later. `auto` is ignored when set in project or local settings, so a repository can't grant itself auto mode; set it in `~/.claude/settings.json` instead. Before v2.1.142, project settings could set `auto`. The `--permission-mode` CLI flag overrides this setting for a single session",
+      "description": "Permission mode that new sessions start in. When unset, sessions start in the built-in default for your plan and surface. For conversations the VS Code extension starts, see what the extension reads. Valid values: `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`, and `manual` as an alias for `default`, the mode labeled Manual in the CLI, the VS Code and JetBrains extensions, and the desktop app. The `manual` alias requires Claude Code v2.1.200 or later. `auto` doesn't take effect from project or local settings; set it in `~/.claude/settings.json` instead. Before v2.1.142, project settings could set `auto`. The `--permission-mode` CLI flag overrides this setting for a single session",
       "doc_min_version": null,
       "doc_page": "settings"
     },
@@ -2599,7 +2621,7 @@
     {
       "symbol": "strictKnownMarketplaces",
       "type": "config_key",
-      "description": "(Managed settings only) Allowlist of plugin marketplace sources. Undefined = no restrictions, empty array = lockdown. Enforced on marketplace add and on plugin install, update, refresh, and auto-update, so a marketplace added before the policy was set cannot be used to fetch plugins. See Managed marketplace restrictions",
+      "description": "(Managed settings only) Allowlist of plugin marketplace sources. Undefined = no restrictions, empty array = lockdown. Enforced on marketplace add and on plugin install, update, refresh, and auto-update, so a marketplace added before the policy was set cannot be used to fetch plugins. The `allowedMarketplaces` alias requires Claude Code v2.1.232 or later. See Managed marketplace restrictions",
       "doc_min_version": null,
       "doc_page": "settings"
     },
@@ -3564,6 +3586,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_PERMISSION_PROMPT_NOTIFY_HOOKS",
+      "type": "env_var",
+      "description": "Set to `1` to stop Claude Code from running your `Notification` hooks for unanswered permission requests in sessions where Claude Code sends them to the Agent SDK's `canUseTool` callback, which is how Claude Desktop and the VS Code extension host Claude Code. Has no effect in terminal sessions. Requires Claude Code v2.1.233 or later",
+      "doc_min_version": "2.1.233",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_POLICY_SKILLS",
       "type": "env_var",
       "description": "Set to `1` to skip loading skills from the system-wide managed skills directory. Useful for container or CI sessions that should not load operator-provisioned skills",
@@ -3678,7 +3707,7 @@
     {
       "symbol": "CLAUDE_CODE_ENABLE_TASKS",
       "type": "env_var",
-      "description": "Controls whether sessions use the structured Task tools (`TaskCreate`, `TaskUpdate`, `TaskGet`, `TaskList`) or the legacy `TodoWrite` tool. Task tools are the default in all modes. Set to `0` to use `TodoWrite`. See Task list and Migrate to Task tools",
+      "description": "Selects which task-tracking tools Claude Code provides in sessions that have them. By default, Claude Code provides the Task tools `TaskCreate`, `TaskUpdate`, `TaskGet`, and `TaskList`. Set to `0` to get the legacy `TodoWrite` tool instead. See Task list and Migrate to Task tools",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3687,6 +3716,13 @@
       "type": "env_var",
       "description": "Set to `1` to enable OpenTelemetry data collection for metrics and logging. Required before configuring OTel exporters. See Monitoring",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_ENABLE_TODO_TOOLS",
+      "type": "env_var",
+      "description": "Set to `1` to get the task-tracking tools on the models listed under Task tool availability, where Claude Code otherwise leaves them out. `CLAUDE_CODE_ENABLE_TASKS` still selects the Task tools or `TodoWrite`. Requires Claude Code v2.1.233 or later",
+      "doc_min_version": "2.1.233",
       "doc_page": "env-vars"
     },
     {
@@ -4315,7 +4351,7 @@
     {
       "symbol": "CLAUDE_CODE_TASK_LIST_ID",
       "type": "env_var",
-      "description": "Share a task list across sessions. Set the same ID in multiple Claude Code instances to coordinate on a shared task list. See Task list",
+      "description": "Share a task list across sessions. Set the same ID in multiple Claude Code instances to coordinate on a shared task list, in sessions that have the Task tools. See Task list",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4338,6 +4374,13 @@
       "type": "env_var",
       "description": "Set to any non-empty value, such as `1`, to allow 24-bit truecolor output inside tmux. **Setting it to `0` or `false` still allows truecolor**, unlike most on/off variables; unset the variable to restore the 256-color clamp. By default, Claude Code clamps to 256 colors when `$TMUX` is set because tmux does not pass through truecolor escape sequences unless configured to. Set this after adding `set -ga terminal-overrides ',*:Tc'` to your `~/.tmux.conf`. See Terminal configuration for other tmux settings",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_TOOL_MEMORY_LIMIT",
+      "type": "env_var",
+      "description": "On Linux and WSL, set to a size such as `4G` to cap the memory that Bash and PowerShell tool commands can use. Write the size in plain digits, alone for a number of bytes or with a `K`, `M`, `G`, or `T` suffix. Set `0` or `off` to turn the cap off. Once a tool command has turned the cap on or off, a changed value takes effect the next time you launch `claude`. Requires Claude Code v2.1.233 or later",
+      "doc_min_version": "2.1.233",
       "doc_page": "env-vars"
     },
     {
@@ -4394,6 +4437,13 @@
       "type": "env_var",
       "description": "Deadline in milliseconds for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, and for the approval dialog for a held cross-session message, before Claude Code cancels them; permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by it. Control inbound messages and non-interactive sessions cover the full held-message expiry rules, including the cases where the deadline doesn't apply. Overrides the `dialogExpiry` setting; `0` or a negative value disables the deadline",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_WEBFETCH_CACHE_TTL_MS",
+      "type": "env_var",
+      "description": "Set to the number of milliseconds WebFetch keeps each fetched URL's response cached. The default is `900000`, which is 15 minutes. Takes plain digits only; `0`, a decimal, or any other spelling keeps the default. Claude Code reads the value once per launch, so a change in a settings `env` block applies when you next launch `claude`. Requires Claude Code v2.1.233 or later",
+      "doc_min_version": "2.1.233",
       "doc_page": "env-vars"
     },
     {
