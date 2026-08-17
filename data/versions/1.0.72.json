@@ -137,6 +137,10 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
+      "scope_descriptions": {
+        "plugin init": "Overwrite an existing `.claude-plugin/` at the target",
+        "plugin tag": "Create the tag even if the working tree is dirty or the tag already exists"
+      },
       "scopes": [
         "install",
         "plugin init",
@@ -361,6 +365,14 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
+      "scope_descriptions": {
+        "plugin disable": "Scope to disable: `user`, `project`, or `local`. When omitted, Claude Code detects the scope where the plugin is installed",
+        "plugin enable": "Scope to enable: `user`, `project`, or `local`. When omitted, Claude Code detects the scope where the plugin is installed",
+        "plugin install": "Installation scope: `user`, `project`, or `local`",
+        "plugin prune": "Prune at scope: `user`, `project`, or `local`",
+        "plugin uninstall": "Uninstall from scope: `user`, `project`, or `local`",
+        "plugin update": "Scope to update: `user`, `project`, `local`, or `managed`"
+      },
       "scopes": [
         "mcp add",
         "mcp add-from-claude-desktop",
@@ -1410,12 +1422,13 @@
       "symbol": "ANTHROPIC_LOG",
       "type": "env_var",
       "first_seen": "0.2.125",
+      "first_seen_estimated": true,
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
+      "status": "active",
+      "provenance": "changelog",
       "confidence": "medium",
       "description": "",
-      "source_url": null,
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -1603,11 +1616,11 @@
       "first_seen": "1.0.35",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Override automatic IDE connection. By default, Claude Code connects automatically when launched inside a supported IDE's integrated terminal. Set to `false` to prevent this. Set to `true` to force a connection attempt when auto-detection fails, such as when tmux obscures the parent terminal. Takes precedence over the `autoConnectIde` global config setting",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -1983,11 +1996,11 @@
       "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` to enable debug mode, equivalent to launching with `--debug`.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -2274,11 +2287,11 @@
       "first_seen": "0.2.47",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024; see `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Fable 5, which cannot have thinking turned off; on third-party providers, `0` omits the `thinking` parameter instead.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {

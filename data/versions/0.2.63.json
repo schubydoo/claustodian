@@ -145,6 +145,14 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
+      "scope_descriptions": {
+        "plugin disable": "Scope to disable: `user`, `project`, or `local`. When omitted, Claude Code detects the scope where the plugin is installed",
+        "plugin enable": "Scope to enable: `user`, `project`, or `local`. When omitted, Claude Code detects the scope where the plugin is installed",
+        "plugin install": "Installation scope: `user`, `project`, or `local`",
+        "plugin prune": "Prune at scope: `user`, `project`, or `local`",
+        "plugin uninstall": "Uninstall from scope: `user`, `project`, or `local`",
+        "plugin update": "Scope to update: `user`, `project`, `local`, or `managed`"
+      },
       "scopes": [
         "mcp add",
         "mcp add-from-claude-desktop",
@@ -623,11 +631,11 @@
       "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` to enable debug mode, equivalent to launching with `--debug`.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -763,11 +771,11 @@
       "first_seen": "0.2.47",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Fixed token budget for extended thinking.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
