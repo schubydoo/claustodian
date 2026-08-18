@@ -583,8 +583,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Add a working directory for file access during the current session. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Most `.claude/` configuration is not discovered from the added directory. A successful add runs your `DirectoryAdded` hooks",
-      "description_source": "docs",
+      "description": "Add a new working directory",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },

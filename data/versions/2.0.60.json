@@ -794,8 +794,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Add a working directory for file access during the current session. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Most `.claude/` configuration is not discovered from the added directory. A successful add runs your `DirectoryAdded` hooks",
-      "description_source": "docs",
+      "description": "Add a new working directory",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2026,13 +2026,13 @@
       "type": "config_key",
       "first_seen": "2.0.43",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Custom ripgrep configuration for bundled ripgrep support",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Custom `ripgrep` binary for the sandbox. Set `command` to the binary's path. To pass arguments to that binary, also set `args`. If you don't set `ripgrep`, the sandbox uses the same `ripgrep` binary as Claude Code. That is the bundled binary unless you set `USE_BUILTIN_RIPGREP` to `0`. Only honored from user, managed, or CLI settings.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "settings"
     },
     {
       "symbol": "sandbox.ripgrep.args",
