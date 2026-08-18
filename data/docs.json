@@ -481,7 +481,7 @@
     {
       "symbol": "--permission-mode",
       "type": "cli_flag",
-      "description": "Begin in a specified permission mode. Accepts `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`, or `manual` as an alias for `default`. The `manual` alias selects the mode the UI labels Manual and requires Claude Code v2.1.200 or later; `claude --help` lists it in place of `default`, and both values work. Overrides `defaultMode` from settings files",
+      "description": "Begin in a specified permission mode. Accepts `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`, or `manual` as an alias for `default`. The `manual` alias selects the permission mode the UI labels Manual and requires Claude Code v2.1.200 or later; `claude --help` lists it in place of `default`, and both values work. Overrides `defaultMode` from settings files. Without this flag or `--dangerously-skip-permissions`, a new session starts in the permission mode described in which permission mode a session starts in. For `-p`, that's `default` when nothing is configured",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -733,7 +733,7 @@
     {
       "symbol": "/add-dir",
       "type": "command",
-      "description": "Add a working directory for file access during the current session. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Most `.claude/` configuration is not discovered from the added directory. A successful add runs your `DirectoryAdded` hooks",
+      "description": "Add a working directory for file access during the current session. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Most `.claude/` configuration is not discovered from the added directory. A successful add runs your `DirectoryAdded` hooks. When you run it while Claude is responding, Claude Code asks you to confirm the directory right away, and once you confirm, Claude's next tool call in the same turn can access it. Before v2.1.234, Claude Code queued the command until the turn finished",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -796,7 +796,7 @@
     {
       "symbol": "/bug",
       "type": "command",
-      "description": "Report a bug or share your conversation. You choose how much session history to include and confirm on a consent screen before anything is sent. When you're signed in to Anthropic on a first-party connection, the report goes to Anthropic; on a third-party provider, or without Anthropic credentials, Claude Code writes the report to a local archive under `~/.claude/feedback-bundles/` that you forward yourself. In the VS Code extension, `/bug` opens the extension's own feedback dialog instead; requires Claude Code v2.1.229 or later. Alias: `/share`. Before v2.1.212, `/bug` and `/share` were aliases of `/feedback`",
+      "description": "Report a bug or share your conversation. You choose how much session history to include and confirm on a consent screen before anything is sent. When you're signed in to Anthropic on a first-party connection, the report goes to Anthropic; on a third-party provider, or without Anthropic credentials, Claude Code writes the report to a local archive under `~/.claude/feedback-bundles/` that you forward yourself. In the VS Code extension, `/bug` opens the extension's own feedback dialog instead; requires Claude Code v2.1.229 or later. When you run it while Claude is responding, Claude Code opens the dialog immediately. Before v2.1.232, Claude Code queued the command until the turn finished. Alias: `/share`. Before v2.1.212, `/bug` and `/share` were aliases of `/feedback`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -964,7 +964,7 @@
     {
       "symbol": "/feedback",
       "type": "command",
-      "description": "Send product feedback about Claude Code. Opens the same dialog as `/bug` with the same consent step and sending rules",
+      "description": "Send product feedback about Claude Code. Opens the same dialog as `/bug`, with the same consent step, sending rules, and mid-turn behavior",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -992,7 +992,7 @@
     {
       "symbol": "/goal",
       "type": "command",
-      "description": "Set a goal: Claude keeps working across turns until the condition is met or judged impossible. With no argument, shows the current or most recently achieved goal. `clear`, `stop`, `off`, `reset`, `none`, or `cancel` removes an active goal early",
+      "description": "Set a goal: Claude keeps working across turns until the condition is met or the goal clears for another reason. With no argument, shows the current or most recently achieved goal. `clear`, `stop`, `off`, `reset`, `none`, or `cancel` removes an active goal early",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1132,7 +1132,7 @@
     {
       "symbol": "/permissions",
       "type": "command",
-      "description": "Manage allow, ask, and deny rules for tool permissions. Opens an interactive dialog where you can view rules by scope, add or remove rules, manage working directories, and review recent auto mode denials. Alias: `/allowed-tools`",
+      "description": "Manage allow, ask, and deny rules for tool permissions. Opens an interactive dialog where you can view rules by scope, add or remove rules, manage working directories, and review recent auto mode denials. When you run it while Claude is responding, Claude Code opens the dialog immediately and applies your changes starting with Claude's next tool call in the same turn. Before v2.1.234, Claude Code queued the command until the turn finished. Alias: `/allowed-tools`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1475,7 +1475,7 @@
     {
       "symbol": "advisorModel",
       "type": "config_key",
-      "description": "Model for the server-side advisor tool. Accepts the model aliases `\"fable\"`, `\"opus\"`, and `\"sonnet\"`, or a full model ID. `\"fable\"` requires Fable 5 access. Written automatically when you run `/advisor`. Unset to disable the advisor.",
+      "description": "Model for the server-side advisor tool. Accepts the model aliases `\"fable\"`, `\"opus\"`, and `\"sonnet\"`, or a full model ID. `\"fable\"` requires Fable 5 access. Written automatically when you run `/advisor`, except when you pick Fable while the usage-credits consent is pending. Unset to disable the advisor.",
       "doc_min_version": null,
       "doc_page": "settings"
     },
@@ -2257,7 +2257,7 @@
     {
       "symbol": "prUrlTemplate",
       "type": "config_key",
-      "description": "URL template for the PR badge shown in the footer and in tool-result summaries. Substitutes `{host}`, `{owner}`, `{repo}`, `{number}`, and `{url}` from the `gh`-reported PR URL. Use to point PR links at an internal code-review tool instead of `github.com`. Does not affect `#123` autolinks in Claude's prose",
+      "description": "URL template for the PR badge shown in the footer and in tool-result summaries. Substitutes `{host}`, `{owner}`, `{repo}`, `{number}`, and `{url}` from the `gh`-reported PR URL. Use to point PR links at an internal code-review tool instead of `github.com`. Does not affect `#123` autolinks in Claude's prose, or the GitLab merge request badge, which keeps its GitLab URL",
       "doc_min_version": null,
       "doc_page": "settings"
     },
@@ -2521,6 +2521,13 @@
       "doc_page": "settings"
     },
     {
+      "symbol": "sandbox.ripgrep",
+      "type": "config_key",
+      "description": "Custom `ripgrep` binary for the sandbox. Set `command` to the binary's path. To pass arguments to that binary, also set `args`. If you don't set `ripgrep`, the sandbox uses the same `ripgrep` binary as Claude Code. That is the bundled binary unless you set `USE_BUILTIN_RIPGREP` to `0`. Only honored from user, managed, or CLI settings.",
+      "doc_min_version": null,
+      "doc_page": "settings"
+    },
+    {
       "symbol": "sandbox.socatPath",
       "type": "config_key",
       "description": "(Managed settings only, Linux/WSL2) Absolute path to the `socat` binary used for the sandbox network proxy. Overrides automatic detection via `PATH`. Only honored from managed settings.",
@@ -2656,7 +2663,7 @@
     {
       "symbol": "teammateDefaultModel",
       "type": "config_key",
-      "description": "Default model for agent team teammates when the spawn prompt doesn't specify one. Set to a model alias such as `\"sonnet\"`, or `null` to inherit the lead's current `/model` selection. Appears in `/config` as **Default teammate model**",
+      "description": "Removed in v2.1.234; Claude Code ignores a leftover value. See Specify teammates and models",
       "doc_min_version": null,
       "doc_page": "settings",
       "category": "global-config"
@@ -2818,7 +2825,7 @@
     {
       "symbol": "ANTHROPIC_AWS_BASE_URL",
       "type": "env_var",
-      "description": "Override the Claude Platform on AWS endpoint URL. Use for custom regions or when routing through an LLM gateway. Defaults to `https://aws-external-anthropic.{AWS_REGION}.api.aws`",
+      "description": "Override the Claude Platform on AWS endpoint URL. Use for custom regions or when routing through an LLM gateway. Defaults to `https://aws-external-anthropic.{region}.api.aws`. Claude Code resolves the region with the same precedence as on Amazon Bedrock",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3205,6 +3212,13 @@
       "type": "env_var",
       "description": "Set the percentage (1-100) of the auto-compact window at which auto-compaction triggers. Use lower values like `50` to compact earlier; the variable can't raise the threshold, so values above the default percentage are ignored. It applies only in sessions that compact before the model's context limit. Applies to both main conversations and subagents",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_AX_PREPARK_MS",
+      "type": "env_var",
+      "description": "In screen reader mode, how many milliseconds Claude Code waits, with the cursor at the start of the line, before it writes a new or changed line. Default `50`. Set `0` to write immediately. Claude Code caps the wait at `5000`. Requires Claude Code v2.1.233 or later",
+      "doc_min_version": "2.1.233",
       "doc_page": "env-vars"
     },
     {
@@ -3777,7 +3791,7 @@
     {
       "symbol": "CLAUDE_CODE_FORK_SUBAGENT",
       "type": "env_var",
-      "description": "Controls fork mode, which lets Claude spawn forked subagents itself and is on by default in interactive sessions only. Set to `1` to turn it on in `claude -p` and the Agent SDK as well, or `0` to turn it off in every kind of session. The `/subtask` command works whether or not fork mode is on. The interactive default requires Claude Code v2.1.232 or later",
+      "description": "Controls fork mode, which lets Claude spawn forked subagents itself and is on by default in interactive sessions only. Set to `1` to turn it on in `claude -p` and the Agent SDK as well, or `0` to turn it off in every kind of session. You can run `/subtask` whether or not fork mode is on. The interactive default requires Claude Code v2.1.232 or later; on earlier versions, set the variable to `1` to turn fork mode on",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3814,6 +3828,13 @@
       "type": "env_var",
       "description": "Timeout in seconds for Glob tool file discovery. Defaults to 20 seconds on most platforms and 60 seconds on WSL",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_GOAL_CHECKIN_MINUTES",
+      "type": "env_var",
+      "description": "How many minutes background work can keep an active goal waiting before Claude Code asks Claude to check on it. Default `30`. Set `0` to turn check-ins off. Give whole minutes in plain digits, at most `10080`, which is one week. Claude Code treats any other value as unset and uses the default. Requires Claude Code v2.1.234 or later",
+      "doc_min_version": "2.1.234",
       "doc_page": "env-vars"
     },
     {
@@ -4771,7 +4792,7 @@
     {
       "symbol": "FORCE_HYPERLINK",
       "type": "env_var",
-      "description": "Set to `1` to enable clickable OSC 8 hyperlinks when your terminal supports them but isn't auto-detected, or `0` to disable them. When unset, Claude Code enables hyperlinks only when it detects terminal support. Claude Code parses this value as a number, not a Boolean, so a value such as `false`, `no`, or `off` enables hyperlinks rather than disabling them. Claude Code renders the footer PR badge as a hyperlink even when it can't detect terminal support, such as over SSH. Set `0` to render the badge as plain text",
+      "description": "Set to `1` to enable clickable OSC 8 hyperlinks when your terminal supports them but isn't auto-detected, or `0` to disable them. When unset, Claude Code enables hyperlinks only when it detects terminal support. Claude Code parses this value as a number, not a Boolean, so a value such as `false`, `no`, or `off` enables hyperlinks rather than disabling them. Claude Code renders the footer PR or merge request badge as a hyperlink even when it can't detect terminal support, such as over SSH. Set `0` to render the badge as plain text",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },

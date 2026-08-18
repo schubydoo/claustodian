@@ -2064,8 +2064,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Add a working directory for file access during the current session. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Most `.claude/` configuration is not discovered from the added directory. A successful add runs your `DirectoryAdded` hooks",
-      "description_source": "docs",
+      "description": "Add a new working directory",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3723,7 +3723,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Model for the server-side advisor tool. Accepts the model aliases `\"fable\"`, `\"opus\"`, and `\"sonnet\"`, or a full model ID. `\"fable\"` requires Fable 5 access. Written automatically when you run `/advisor`. Unset to disable the advisor.",
+      "description": "Model for the server-side advisor tool. Accepts the model aliases `\"fable\"`, `\"opus\"`, and `\"sonnet\"`, or a full model ID. `\"fable\"` requires Fable 5 access. Written automatically when you run `/advisor`, except when you pick Fable while the usage-credits consent is pending. Unset to disable the advisor.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -5613,13 +5613,13 @@
       "type": "config_key",
       "first_seen": "2.0.43",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Custom ripgrep configuration for bundled ripgrep support",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Custom `ripgrep` binary for the sandbox. Set `command` to the binary's path. To pass arguments to that binary, also set `args`. If you don't set `ripgrep`, the sandbox uses the same `ripgrep` binary as Claude Code. That is the bundled binary unless you set `USE_BUILTIN_RIPGREP` to `0`. Only honored from user, managed, or CLI settings.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "category": "settings"
     },
     {
       "symbol": "sandbox.ripgrep.args",
@@ -7092,7 +7092,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override the Claude Platform on AWS endpoint URL. Use for custom regions or when routing through an LLM gateway. Defaults to `https://aws-external-anthropic.{AWS_REGION}.api.aws`",
+      "description": "Override the Claude Platform on AWS endpoint URL. Use for custom regions or when routing through an LLM gateway. Defaults to `https://aws-external-anthropic.{region}.api.aws`. Claude Code resolves the region with the same precedence as on Amazon Bedrock",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -12367,7 +12367,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Set to `1` to enable clickable OSC 8 hyperlinks when your terminal supports them but isn't auto-detected, or `0` to disable them. When unset, Claude Code enables hyperlinks only when it detects terminal support. Claude Code parses this value as a number, not a Boolean, so a value such as `false`, `no`, or `off` enables hyperlinks rather than disabling them. Claude Code renders the footer PR badge as a hyperlink even when it can't detect terminal support, such as over SSH. Set `0` to render the badge as plain text",
+      "description": "Set to `1` to enable clickable OSC 8 hyperlinks when your terminal supports them but isn't auto-detected, or `0` to disable them. When unset, Claude Code enables hyperlinks only when it detects terminal support. Claude Code parses this value as a number, not a Boolean, so a value such as `false`, `no`, or `off` enables hyperlinks rather than disabling them. Claude Code renders the footer PR or merge request badge as a hyperlink even when it can't detect terminal support, such as over SSH. Set `0` to render the badge as plain text",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"

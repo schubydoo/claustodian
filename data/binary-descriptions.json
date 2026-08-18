@@ -769,6 +769,10 @@
       {
         "from": "2.1.198",
         "description": "Directory for aggregate-result.json (default: ./evals/results/<timestamp>/)"
+      },
+      {
+        "from": "2.1.235",
+        "description": "Directory for aggregate-result.json (default: ./<eval dir>/results/<timestamp>/)"
       }
     ],
     "cli_flag:--output-format": [
@@ -3789,6 +3793,24 @@
       {
         "from": "2.0.9",
         "description": "List of plugin IDs (plugin@marketplace format) the user has chosen not to install when prompted"
+      }
+    ],
+    "config_key:spellcheck.color": [
+      {
+        "from": "2.1.235",
+        "description": "Color of misspelled words (they are also underlined): a terminal color name such as \"red\" or \"magenta\", \"#rrggbb\", \"rgb(r,g,b)\", \"ansi256(n)\" or \"ansi:<name>\". Default: the theme's error color"
+      }
+    ],
+    "config_key:spellcheck.enabled": [
+      {
+        "from": "2.1.235",
+        "description": "Turn on spell checking of the prompt input (default: false)"
+      }
+    ],
+    "config_key:spellcheck.language": [
+      {
+        "from": "2.1.235",
+        "description": "Dictionary to use, passed to the checker as-is (aspell --lang, hunspell -d, ispell -d), e.g. \"en_GB\"; names are checker-specific (letters, digits and _ - . , only). Default: the checker's own default"
       }
     ],
     "config_key:spinnerTipsEnabled": [
