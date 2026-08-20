@@ -5495,11 +5495,11 @@
       "first_seen": "2.0.66",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `false` to disable prompt suggestions (the \"Prompt suggestions\" toggle in `/config`). These are the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting. See Prompt suggestions",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -5522,7 +5522,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Selects which task-tracking tools Claude Code provides in sessions that have them. By default, Claude Code provides the Task tools `TaskCreate`, `TaskUpdate`, `TaskGet`, and `TaskList`. Set to `0` to get the legacy `TodoWrite` tool instead. See Task list and Migrate to Task tools",
+      "description": "Selects which task-tracking tools Claude Code provides in sessions that have them. By default, Claude Code provides the Task tools `TaskCreate`, `TaskUpdate`, `TaskGet`, and `TaskList`. Set to `0` to get the legacy `TodoWrite` tool instead. See Task list",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
