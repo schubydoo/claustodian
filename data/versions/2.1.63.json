@@ -2565,8 +2565,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allowlist of models that users can select. Accepts family aliases (\"opus\" allows any opus version), version prefixes (\"opus-4-5\" allows only that version), and full model IDs. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators.",
-      "description_source": "binary",
+      "description": "Restrict which models users can select for the main session, subagents, skills, and the advisor. See Default model behavior for the Default option. See Restrict model selection",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
     },
@@ -4364,7 +4364,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable all built-in subagent types such as Explore and Plan. Only applies in non-interactive mode (the `-p` flag). Useful for SDK users who want a blank slate",
+      "description": "Set to `1` to disable all built-in subagent types such as Explore and Plan. Only applies in non-interactive mode (the `-p` flag). Useful for SDK users who want a blank slate. This also removes `general-purpose`, the subagent Claude Code runs when an Agent tool call omits `subagent_type`. Such a call then fails with `subagent_type is required`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"

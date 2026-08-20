@@ -4857,7 +4857,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Restrict which models users can select for the main session, subagents, skills, and the advisor. Does not affect the Default option unless `enforceAvailableModels` is also set. See Restrict model selection",
+      "description": "Restrict which models users can select for the main session, subagents, skills, and the advisor. See Default model behavior for the Default option. See Restrict model selection",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -5377,7 +5377,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Extend the `availableModels` allowlist to the Default model. When `true` in managed settings and `availableModels` is a non-empty array, the Default option falls back to the first allowlisted entry that is available, but only when the model Default would resolve to (the organization default when one applies, otherwise the account-type default) is not in the allowlist; an allowlisted default is kept as-is. Has no effect when `availableModels` is unset or empty. See Enforce the allowlist for the Default model. Requires Claude Code v2.1.175 or later",
+      "description": "Extend the `availableModels` allowlist to the Default model. When `true` in managed settings and `availableModels` is a non-empty array, a Default model outside the allowlist falls back to the first allowlisted entry that is available. See Enforce the allowlist for the Default model. Requires Claude Code v2.1.175 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -9282,7 +9282,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable all built-in subagent types such as Explore and Plan. Only applies in non-interactive mode (the `-p` flag). Useful for SDK users who want a blank slate",
+      "description": "Set to `1` to disable all built-in subagent types such as Explore and Plan. Only applies in non-interactive mode (the `-p` flag). Useful for SDK users who want a blank slate. This also removes `general-purpose`, the subagent Claude Code runs when an Agent tool call omits `subagent_type`. Such a call then fails with `subagent_type is required`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
