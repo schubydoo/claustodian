@@ -754,7 +754,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Environment variables applied to every session and to subprocesses Claude Code spawns from it. Set a variable to `\"\"` to override a shell export with an empty string, which Claude Code treats as unset for provider selection. Subprocesses still inherit the empty value.",
+      "description": "Environment variables Claude Code sets in every session and passes to the processes it starts, such as Bash commands and hooks. To override a shell export you can't unset, set that variable to `\"\"` here; Claude Code treats the empty value as unset for provider selection, and processes it starts still inherit the empty value.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"

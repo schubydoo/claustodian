@@ -5985,7 +5985,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Restrict which models users can select for the main session, subagents, skills, and the advisor. Does not affect the Default option unless `enforceAvailableModels` is also set. See Restrict model selection",
+      "description": "Restrict which models users can select for the main session, subagents, skills, and the advisor. See Default model behavior for the Default option. See Restrict model selection",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -6613,7 +6613,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Extend the `availableModels` allowlist to the Default model. When `true` in managed settings and `availableModels` is a non-empty array, the Default option falls back to the first allowlisted entry that is available, but only when the model Default would resolve to (the organization default when one applies, otherwise the account-type default) is not in the allowlist; an allowlisted default is kept as-is. Has no effect when `availableModels` is unset or empty. See Enforce the allowlist for the Default model. Requires Claude Code v2.1.175 or later",
+      "description": "Extend the `availableModels` allowlist to the Default model. When `true` in managed settings and `availableModels` is a non-empty array, a Default model outside the allowlist falls back to the first allowlisted entry that is available. See Enforce the allowlist for the Default model. Requires Claude Code v2.1.175 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -6626,7 +6626,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Environment variables applied to every session and to subprocesses Claude Code spawns from it. Set a variable to `\"\"` to override a shell export with an empty string, which Claude Code treats as unset for provider selection. Subprocesses still inherit the empty value. `NO_COLOR` and `FORCE_COLOR` set here reach only subprocesses; to change Claude Code's own interface colors, set them in your shell before launching `claude`. Claude Code ignores identity variables set here that its hosting environments own, such as `CLAUDE_CODE_REMOTE` and `CLAUDE_CODE_ACCOUNT_UUID`. It also ignores `CLAUDE_CODE_MESSAGING_SOCKET` and `CLAUDE_CODE_MESSAGING_TOKEN`, which it exports itself. Ignoring the socket variable requires Claude Code v2.1.224 or later, and ignoring the token requires v2.1.228 or later",
+      "description": "Environment variables Claude Code sets in every session and passes to the processes it starts, such as Bash commands and hooks. To override a shell export you can't unset, set that variable to `\"\"` here; Claude Code treats the empty value as unset for provider selection, and processes it starts still inherit the empty value. `NO_COLOR` and `FORCE_COLOR` set here reach only subprocesses; to change Claude Code's own interface colors, set them in your shell before launching `claude`. Claude Code ignores identity variables set here that its hosting environments own, such as `CLAUDE_CODE_REMOTE` and `CLAUDE_CODE_ACCOUNT_UUID`. It also ignores `CLAUDE_CODE_MESSAGING_SOCKET` and `CLAUDE_CODE_MESSAGING_TOKEN`, which it exports itself. Ignoring the socket variable requires Claude Code v2.1.224 or later, and ignoring the token requires v2.1.228 or later. Ignoring `CLAUDE_CODE_PROJECT_DIR_NAME`, which it reads from the launch environment only, requires v2.1.234 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings.md",
       "category": "settings"
@@ -10777,7 +10777,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable all built-in subagent types such as Explore and Plan. Only applies in non-interactive mode (the `-p` flag). Useful for SDK users who want a blank slate",
+      "description": "Set to `1` to disable all built-in subagent types such as Explore and Plan. Only applies in non-interactive mode (the `-p` flag). Useful for SDK users who want a blank slate. This also removes `general-purpose`, the subagent Claude Code runs when an Agent tool call omits `subagent_type`. Such a call then fails with `subagent_type is required`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -15219,8 +15219,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added the optional `CLAUDE_CODE_PROJECT_DIR_NAME` environment variable: hosts that give each session its own config directory can choose a short name for the per-project transcript directory",
-      "description_source": "changelog",
+      "description": "Set together with `CLAUDE_CONFIG_DIR` to choose the `projects/` directory name Claude Code stores that session's transcripts and auto memory under, in place of one derived from the working directory path. For example, starting Claude Code with `CLAUDE_CONFIG_DIR=/srv/tenant-a CLAUDE_CODE_PROJECT_DIR_NAME=work claude` stores them under `/srv/tenant-a/projects/work/`. Claude Code ignores this variable when `CLAUDE_CONFIG_DIR` is unset, and reads it only from the environment you start `claude` from, never from a settings file `env` block. See Name the project directory yourself. Requires Claude Code v2.1.234 or later",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
