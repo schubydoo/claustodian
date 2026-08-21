@@ -127,8 +127,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Load the most recent conversation in the current directory. Includes sessions that added this directory with `/add-dir`",
-      "description_source": "docs",
+      "description": "Continue the most recent conversation in the current directory",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -3445,7 +3445,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `false` to disable prompt suggestions (the \"Prompt suggestions\" toggle in `/config`). These are the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting. See Prompt suggestions",
+      "description": "Set to `false` to turn off prompt suggestions, the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting, which is what the **Prompt suggestions** toggle in `/config` writes. Claude Code also pauses suggestions while your account is close to or at its usage limit. Set to `true` to keep them on until you reach the limit.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -4710,11 +4710,11 @@
       "first_seen": "0.2.32",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Specify HTTPS proxy server for network connections",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "network"
     },
     {

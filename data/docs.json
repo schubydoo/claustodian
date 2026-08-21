@@ -137,7 +137,7 @@
     {
       "symbol": "--bare",
       "type": "cli_flag",
-      "description": "Minimal mode: skip auto-discovery of hooks, skills, plugins, MCP servers, auto memory, and CLAUDE.md so scripted calls start faster. Claude has access to Bash, file read, and file edit tools. Sets `CLAUDE_CODE_SIMPLE`. See bare mode",
+      "description": "Minimal mode: skip auto-discovery of hooks, skills, custom commands, subagents, plugins, MCP servers, auto memory, and CLAUDE.md so scripted calls start faster. Skills in a directory you pass with `--add-dir` still load. Claude has access to Bash, file read, and file edit tools. Sets `CLAUDE_CODE_SIMPLE`. See bare mode",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -193,7 +193,7 @@
     {
       "symbol": "--continue",
       "type": "cli_flag",
-      "description": "Load the most recent conversation in the current directory. Includes sessions that added this directory with `/add-dir`",
+      "description": "Load the most recent conversation in the current directory, skipping background sessions, sessions created with `claude -p` or the Agent SDK, and sessions whose first prompt was `/loop`. `claude -p --continue` includes `-p`, SDK, and `/loop` sessions. Includes sessions that added this directory with `/add-dir`",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -752,6 +752,13 @@
       "doc_page": "commands"
     },
     {
+      "symbol": "/artifacts",
+      "type": "command",
+      "description": "List the artifacts you own or that are shared with you, then attach one to the session, open it in your browser, or copy its link. Available where artifacts are. Requires Claude Code v2.1.208 or later; attaching with `Enter` requires v2.1.216",
+      "doc_min_version": "2.1.208",
+      "doc_page": "commands"
+    },
+    {
       "symbol": "/autocompact",
       "type": "command",
       "description": "Set the auto-compact window: how full the context window gets before Claude Code compacts automatically. Pass a size such as `500k`, or `auto` to return to the window tuned for your model. Claude Code saves the value to user settings and applies it to the current session. See Set the auto-compact window for accepted values and what overrides it. Without an argument, opens a dialog that shows the current window. Requires Claude Code v2.1.221 or later",
@@ -999,7 +1006,7 @@
     {
       "symbol": "/heapdump",
       "type": "command",
-      "description": "Write a JavaScript heap snapshot and a memory breakdown to `~/Desktop`, or your home directory on Linux without a Desktop folder, for diagnosing high memory usage. Attach only the `-diagnostics.json` file when reporting a memory issue; the `.heapsnapshot` contains your full conversation and credentials, so don't share it. Doesn't appear in the command menu; type it in full. See what to do with the output",
+      "description": "Write a JavaScript heap snapshot and a memory breakdown to `~/Desktop`, or your home directory on Linux without a Desktop folder, for diagnosing high memory usage. Attach only the `-diagnostics.json` file when reporting a memory issue; the `.heapsnapshot` contains your full conversation and credentials, so don't share it. Hidden from the command menu; type it in full. See what to do with the output",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1293,14 +1300,14 @@
     {
       "symbol": "/setup-bedrock",
       "type": "command",
-      "description": "Configure Amazon Bedrock authentication, region, and model pins through an interactive wizard. Only visible when `CLAUDE_CODE_USE_BEDROCK=1` is set. First-time Amazon Bedrock users can also access this wizard from the login screen",
+      "description": "Configure Amazon Bedrock authentication, region, and model pins through an interactive wizard. Hidden from the command menu until `CLAUDE_CODE_USE_BEDROCK=1` is set; type it in full. First-time Amazon Bedrock users can also access this wizard from the login screen",
       "doc_min_version": null,
       "doc_page": "commands"
     },
     {
       "symbol": "/setup-vertex",
       "type": "command",
-      "description": "Configure Google Cloud's Agent Platform authentication, project, region, and model pins through an interactive wizard. Only visible when `CLAUDE_CODE_USE_VERTEX=1` is set. First-time Google Cloud's Agent Platform users can also access this wizard from the login screen",
+      "description": "Configure Google Cloud's Agent Platform authentication, project, region, and model pins through an interactive wizard. Hidden from the command menu until `CLAUDE_CODE_USE_VERTEX=1` is set; type it in full. First-time Google Cloud's Agent Platform users can also access this wizard from the login screen",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2062,6 +2069,13 @@
       "type": "config_key",
       "description": "Require your explicit approval before Claude's `SendMessage` reaches one of your sessions beyond this machine; see cross-session messaging. The approval prompt appears even in `bypassPermissions` mode. A `true` from any settings scope applies, so a checked-in project file can turn the requirement on but not off. The cross-machine `SendMessage` approval requires Claude Code v2.1.224 or later",
       "doc_min_version": null,
+      "doc_page": "settings"
+    },
+    {
+      "symbol": "keybindingFlavor",
+      "type": "config_key",
+      "description": "**Default**: `\"classic\"`. Set to `\"readline\"` to make `Ctrl+W` delete back to the previous whitespace, as Bash does, instead of only the previous word. See Make Ctrl+W delete back to whitespace. Requires Claude Code v2.1.238 or later",
+      "doc_min_version": "2.1.238",
       "doc_page": "settings"
     },
     {
@@ -3362,6 +3376,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_BS_AS_CTRL_BACKSPACE",
+      "type": "env_var",
+      "description": "Set to `0` to make Claude Code read the `0x08` byte, also written `^H`, as plain Backspace, or `1` to read it as Ctrl+Backspace. Either value replaces the platform default. By default, Claude Code reads it as Ctrl+Backspace on Windows, except when `TERM_PROGRAM` is `mintty` or `TERM` is `cygwin`, and as plain Backspace on macOS and Linux. Set `0` in a Windows terminal where Backspace deletes a whole word",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_CERT_STORE",
       "type": "env_var",
       "description": "Comma-separated list of CA certificate sources for TLS connections. `bundled` is the Mozilla CA set shipped with Claude Code. `system` is the operating system trust store, read only on runtimes with `tls.getCACertificates`: the native binary, or Node 22.15 or later for npm installs. See CA certificate store. Default is `bundled,system`",
@@ -3742,8 +3763,8 @@
     {
       "symbol": "CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION",
       "type": "env_var",
-      "description": "Set to `false` to disable prompt suggestions (the \"Prompt suggestions\" toggle in `/config`). These are the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting. See Prompt suggestions",
-      "doc_min_version": null,
+      "description": "Set to `false` to turn off prompt suggestions, the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting, which is what the **Prompt suggestions** toggle in `/config` writes. Claude Code also pauses suggestions while your account is close to or at its usage limit. Set to `true` to keep them on until you reach the limit. Requires Claude Code v2.1.238 or later. See Prompt suggestions",
+      "doc_min_version": "2.1.238",
       "doc_page": "env-vars"
     },
     {
@@ -3987,7 +4008,7 @@
     {
       "symbol": "CLAUDE_CODE_MESSAGING_TOKEN",
       "type": "env_var",
-      "description": "Set by Claude Code, not by you: in sessions that bind an inbox socket, Claude Code exports this per-session token to hooks and Bash commands alongside `CLAUDE_CODE_MESSAGING_SOCKET`. A script posting to the socket can send `{\"type\":\"auth\",\"token\":\"<token>\"}` as its first line to prove it belongs to the session. The own-child rules say when Claude Code consults it. Each session exports its own token, never one inherited from a parent session. Settings `env` blocks can't set it. Requires Claude Code v2.1.228 or later",
+      "description": "Set by Claude Code, not by you: in sessions that bind an inbox socket, Claude Code exports this per-session token to hooks and Bash commands alongside `CLAUDE_CODE_MESSAGING_SOCKET`. A script posting to the socket can send `{\"type\":\"auth\",\"token\":\"<token>\"}` as its first line to prove it belongs to the session. On native Windows, Claude Code requires this line and closes any connection that doesn't open with a valid one. The own-child rules say when Claude Code consults the token. Each session exports its own token, never one inherited from a parent session. Settings `env` blocks can't set it. Requires Claude Code v2.1.228 or later",
       "doc_min_version": "2.1.228",
       "doc_page": "env-vars"
     },
@@ -4267,7 +4288,7 @@
     {
       "symbol": "CLAUDE_CODE_SIMPLE",
       "type": "env_var",
-      "description": "Set to `1` to run with a minimal system prompt and only the Bash, file read, and file edit tools. MCP tools from `--mcp-config` are still available. Disables auto-discovery of hooks, skills, plugins, MCP servers, auto memory, and CLAUDE.md. OAuth tokens and keychain credentials are not read, so Anthropic authentication must come from `ANTHROPIC_API_KEY` or an `apiKeyHelper` in `--settings`. Equivalent to passing `--bare`",
+      "description": "Set to `1` to run with a minimal system prompt and only the Bash, file read, and file edit tools. MCP tools from `--mcp-config` are still available. Disables auto-discovery of hooks, skills, custom commands, subagents, plugins, MCP servers, auto memory, and CLAUDE.md. Skills in a directory you pass with `--add-dir` still load. OAuth tokens and keychain credentials are not read, so Anthropic authentication must come from `ANTHROPIC_API_KEY` or an `apiKeyHelper` in `--settings`. Equivalent to passing `--bare`",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4491,7 +4512,7 @@
     {
       "symbol": "CLAUDE_CODE_USER_DIALOG_TIMEOUT_MS",
       "type": "env_var",
-      "description": "Deadline in milliseconds for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, and for the approval dialog for a held cross-session message, before Claude Code cancels them; permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by it. Control inbound messages and non-interactive sessions cover the full held-message expiry rules, including the cases where the deadline doesn't apply. Overrides the `dialogExpiry` setting; `0` or a negative value disables the deadline",
+      "description": "Deadline in milliseconds for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, and for the approval dialog for a held cross-session message, before Claude Code cancels them; permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by it. Also bounds the mid-session Fable 5 usage-credits consent prompt in a session that may be running unattended. Control inbound messages and non-interactive sessions cover the full held-message expiry rules, including the cases where the deadline doesn't apply. Overrides the `dialogExpiry` setting; `0` or a negative value disables the deadline",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4904,7 +4925,28 @@
     {
       "symbol": "MCP_DISCOVERY_CACHE",
       "type": "env_var",
-      "description": "Set to `0` to turn off the cross-process MCP discovery cache, so every server connects at startup instead of showing the `connects on first use` cached status and connecting on its first tool call. The cached status requires Claude Code v2.1.221 or later",
+      "description": "Turns the MCP discovery cache on or off. With the cache on, a remote HTTP or SSE server you've used before can show the `cached` status, and Claude Code connects it on its first tool call instead of at startup. The cache is off by default unless a gradual rollout has enabled it for your account. Set to `1` to turn it on, or `0` to keep it off even when the rollout has enabled it. Before v2.1.238, the cache was on by default. The `cached` status requires Claude Code v2.1.221 or later",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "MCP_DISCOVERY_CACHE_MAX_STALE_S",
+      "type": "env_var",
+      "description": "Maximum age, in seconds, of a discovery-cache entry (default: 14400, or 4 hours). At a start where the entry is older than that, Claude Code discards it and connects the server at startup, as it does with the cache off. Claude Code caps the value at 7 days. Before v2.1.238, the default was 86400, or 24 hours, and Claude Code didn't cap the value",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "MCP_DISCOVERY_CACHE_STRIKES",
+      "type": "env_var",
+      "description": "At a start where a discovery-cache entry is older than `MCP_DISCOVERY_CACHE_TTL_S`, Claude Code refreshes it in the background. This variable sets how many refreshes in a row can fail before Claude Code discards the entry and connects the server at the next start instead (default: 1). Raise it if your network connection drops occasionally, so that one failed refresh doesn't discard the entry. Requires Claude Code v2.1.238 or later",
+      "doc_min_version": "2.1.238",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "MCP_DISCOVERY_CACHE_TTL_S",
+      "type": "env_var",
+      "description": "Seconds for which Claude Code uses a discovery-cache entry without refreshing it (default: 900). At a start where the entry is older than that, Claude Code still uses it but refreshes it in the background. Once the entry is older than `MCP_DISCOVERY_CACHE_MAX_STALE_S`, Claude Code discards it instead. Claude Code caps the value at `MCP_DISCOVERY_CACHE_MAX_STALE_S`, which is 4 hours by default. Before v2.1.238, Claude Code didn't cap the value",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4913,6 +4955,13 @@
       "type": "env_var",
       "description": "Fixed port for the OAuth redirect callback, as an alternative to `--callback-port` when adding an MCP server with pre-configured credentials",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "MCP_PROTOCOL_NEGOTIATION",
+      "type": "env_var",
+      "description": "On the v2 MCP client runtime only, whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `auto` to probe HTTP, claude.ai connector, and stdio servers; a server that doesn't answer the probe connects on the earlier protocol instead, as SSE and WebSocket servers always do. Set `legacy` to skip the probe for every server. Without the variable, Claude Code probes HTTP and claude.ai connector servers on Claude Code v2.1.232 or later, with the exceptions the MCP client runtimes section lists. Any other value is ignored with a warning in the debug log. Requires Claude Code v2.1.221 or later",
+      "doc_min_version": "2.1.221",
       "doc_page": "env-vars"
     },
     {
@@ -4925,7 +4974,7 @@
     {
       "symbol": "MCP_SDK_GENERATION",
       "type": "env_var",
-      "description": "Pin which MCP client runtime this process uses, the implementation behind MCP server connections, while Claude Code migrates from its v1 runtime to v2. Set `v1` to stay on the current runtime or `v2` to opt in early. Without the variable, a gradual rollout decides, and defaults to v1. On Claude Code v2.1.221 or later, the v2 runtime checks the issuer an MCP OAuth server returns in its authorization response and fails the sign-in with an error that begins `Issuer mismatch in authorization response` when it doesn't match. The v1 runtime doesn't run this check. If you set an unrecognized value, Claude Code ignores it and writes a warning to the debug log. Claude Code reads the value once per process. Requires Claude Code v2.1.218 or later",
+      "description": "Pin which MCP client runtime this process connects to MCP servers with: `v1`, built on MCP TypeScript SDK 1.x, or `v2`, built on MCP TypeScript SDK 2.0. Without the variable, Claude Code uses v2 on Claude Code v2.1.232 or later, except where that section says it uses v1. On Claude Code v2.1.221 or later, the v2 runtime checks the issuer an MCP OAuth server returns in its authorization response and fails the sign-in with an error that begins `Issuer mismatch in authorization response` when it doesn't match. The v1 runtime doesn't run this check. If you set an unrecognized value, Claude Code ignores it and writes a warning to the debug log. Claude Code reads the value once per process. Requires Claude Code v2.1.218 or later",
       "doc_min_version": "2.1.218",
       "doc_page": "env-vars"
     },
