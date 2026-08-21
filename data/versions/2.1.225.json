@@ -372,7 +372,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Minimal mode: skip auto-discovery of hooks, skills, plugins, MCP servers, auto memory, and CLAUDE.md so scripted calls start faster. Claude has access to Bash, file read, and file edit tools. Sets `CLAUDE_CODE_SIMPLE`. See bare mode",
+      "description": "Minimal mode: skip auto-discovery of hooks, skills, custom commands, subagents, plugins, MCP servers, auto memory, and CLAUDE.md so scripted calls start faster. Skills in a directory you pass with `--add-dir` still load. Claude has access to Bash, file read, and file edit tools. Sets `CLAUDE_CODE_SIMPLE`. See bare mode",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -655,7 +655,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Load the most recent conversation in the current directory. Includes sessions that added this directory with `/add-dir`",
+      "description": "Load the most recent conversation in the current directory, skipping background sessions, sessions created with `claude -p` or the Agent SDK, and sessions whose first prompt was `/loop`. `claude -p --continue` includes `-p`, SDK, and `/loop` sessions. Includes sessions that added this directory with `/add-dir`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -3452,13 +3452,13 @@
       "type": "command",
       "first_seen": "2.1.206",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Browse your published and shared artifacts",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "List the artifacts you own or that are shared with you, then attach one to the session, open it in your browser, or copy its link. Available where artifacts are. Requires Claude Code v2.1.208 or later; attaching with `Enter` requires v2.1.216",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "category": "command"
     },
     {
       "symbol": "/auto-mode-setup",
@@ -4152,7 +4152,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Write a JavaScript heap snapshot and a memory breakdown to `~/Desktop`, or your home directory on Linux without a Desktop folder, for diagnosing high memory usage. Attach only the `-diagnostics.json` file when reporting a memory issue; the `.heapsnapshot` contains your full conversation and credentials, so don't share it. Doesn't appear in the command menu; type it in full. See what to do with the output",
+      "description": "Write a JavaScript heap snapshot and a memory breakdown to `~/Desktop`, or your home directory on Linux without a Desktop folder, for diagnosing high memory usage. Attach only the `-diagnostics.json` file when reporting a memory issue; the `.heapsnapshot` contains your full conversation and credentials, so don't share it. Hidden from the command menu; type it in full. See what to do with the output",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4319,11 +4319,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
-      "description": "List the subagents and other Claude Code sessions Claude can message, with the name to use for each; agent team teammates aren't listed, since Claude reaches them through the team's roster. See cross-session messaging. Also available as `/peers`. Requires Claude Code v2.1.224 or later; earlier versions report `Unknown command: /list-agents`. Available only in sessions where cross-session messaging is enabled",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "description": "List subagents and other Claude sessions you can message",
+      "description_source": "binary",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -4932,7 +4932,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Configure Amazon Bedrock authentication, region, and model pins through an interactive wizard. Only visible when `CLAUDE_CODE_USE_BEDROCK=1` is set. First-time Amazon Bedrock users can also access this wizard from the login screen",
+      "description": "Configure Amazon Bedrock authentication, region, and model pins through an interactive wizard. Hidden from the command menu until `CLAUDE_CODE_USE_BEDROCK=1` is set; type it in full. First-time Amazon Bedrock users can also access this wizard from the login screen",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4958,7 +4958,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Configure Google Cloud's Agent Platform authentication, project, region, and model pins through an interactive wizard. Only visible when `CLAUDE_CODE_USE_VERTEX=1` is set. First-time Google Cloud's Agent Platform users can also access this wizard from the login screen",
+      "description": "Configure Google Cloud's Agent Platform authentication, project, region, and model pins through an interactive wizard. Hidden from the command menu until `CLAUDE_CODE_USE_VERTEX=1` is set; type it in full. First-time Google Cloud's Agent Platform users can also access this wizard from the login screen",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -12760,7 +12760,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `false` to disable prompt suggestions (the \"Prompt suggestions\" toggle in `/config`). These are the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting. See Prompt suggestions",
+      "description": "Set to `false` to turn off prompt suggestions, the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting, which is what the **Prompt suggestions** toggle in `/config` writes. Claude Code also pauses suggestions while your account is close to or at its usage limit. Set to `true` to keep them on until you reach the limit.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -15204,7 +15204,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to run with a minimal system prompt and only the Bash, file read, and file edit tools. MCP tools from `--mcp-config` are still available. Disables auto-discovery of hooks, skills, plugins, MCP servers, auto memory, and CLAUDE.md. OAuth tokens and keychain credentials are not read, so Anthropic authentication must come from `ANTHROPIC_API_KEY` or an `apiKeyHelper` in `--settings`. Equivalent to passing `--bare`",
+      "description": "Set to `1` to run with a minimal system prompt and only the Bash, file read, and file edit tools. MCP tools from `--mcp-config` are still available. Disables auto-discovery of hooks, skills, custom commands, subagents, plugins, MCP servers, auto memory, and CLAUDE.md. Skills in a directory you pass with `--add-dir` still load. OAuth tokens and keychain credentials are not read, so Anthropic authentication must come from `ANTHROPIC_API_KEY` or an `apiKeyHelper` in `--settings`. Equivalent to passing `--bare`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -16128,7 +16128,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Deadline in milliseconds for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, and for the approval dialog for a held cross-session message, before Claude Code cancels them; permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by it. Control inbound messages and non-interactive sessions cover the full held-message expiry rules, including the cases where the deadline doesn't apply. Overrides the `dialogExpiry` setting; `0` or a negative value disables the deadline",
+      "description": "Deadline in milliseconds for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, and for the approval dialog for a held cross-session message, before Claude Code cancels them; permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by it. Also bounds the mid-session Fable 5 usage-credits consent prompt in a session that may be running unattended. Control inbound messages and non-interactive sessions cover the full held-message expiry rules, including the cases where the deadline doesn't apply. Overrides the `dialogExpiry` setting; `0` or a negative value disables the deadline",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -17830,11 +17830,11 @@
       "first_seen": "0.2.32",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Specify HTTPS proxy server for network connections",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "network"
     },
     {
@@ -17985,8 +17985,31 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `0` to turn off the cross-process MCP discovery cache, so every server connects at startup instead of showing the `connects on first use` cached status and connecting on its first tool call. The cached status requires Claude Code v2.1.221 or later",
-      "description_source": "docs",
+      "description": "",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
+      "symbol": "MCP_DISCOVERY_CACHE_MAX_STALE_S",
+      "type": "env_var",
+      "first_seen": "2.1.217",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
+      "symbol": "MCP_DISCOVERY_CACHE_TTL_S",
+      "type": "env_var",
+      "first_seen": "2.1.217",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
     },
@@ -18016,6 +18039,19 @@
       "category": "claude-code"
     },
     {
+      "symbol": "MCP_PROTOCOL_NEGOTIATION",
+      "type": "env_var",
+      "first_seen": "2.1.221",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "On the v2 MCP client runtime only, whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `auto` to probe HTTP, claude.ai connector, and stdio servers; a server that doesn't answer the probe connects on the earlier protocol instead, as SSE and WebSocket servers always do. Set `legacy` to skip the probe for every server.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
       "symbol": "MCP_REMOTE_SERVER_CONNECTION_BATCH_SIZE",
       "type": "env_var",
       "first_seen": "2.0.77",
@@ -18036,7 +18072,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Pin which MCP client runtime this process uses, the implementation behind MCP server connections, while Claude Code migrates from its v1 runtime to v2. Set `v1` to stay on the current runtime or `v2` to opt in early. Without the variable, a gradual rollout decides, and defaults to v1. On Claude Code v2.1.221 or later, the v2 runtime checks the issuer an MCP OAuth server returns in its authorization response and fails the sign-in with an error that begins `Issuer mismatch in authorization response` when it doesn't match. The v1 runtime doesn't run this check. If you set an unrecognized value, Claude Code ignores it and writes a warning to the debug log. Claude Code reads the value once per process. Requires Claude Code v2.1.218 or later",
+      "description": "Pin which MCP client runtime this process connects to MCP servers with: `v1`, built on MCP TypeScript SDK 1.x, or `v2`, built on MCP TypeScript SDK 2.0.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"

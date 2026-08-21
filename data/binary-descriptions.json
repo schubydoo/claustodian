@@ -1845,6 +1845,10 @@
       {
         "from": "2.1.224",
         "description": "List subagents and other Claude sessions you can message"
+      },
+      {
+        "from": "2.1.239",
+        "description": "List subagents, teammates, and other Claude sessions you can message"
       }
     ],
     "command:/logout": [
@@ -3187,6 +3191,10 @@
       {
         "from": "2.1.238",
         "description": "Which conventions the prompt's editing keys follow: \"readline\" matches Bash and other readline programs (Ctrl+W deletes back to the previous whitespace); \"classic\" (default) keeps Claude Code's long-standing behavior (Ctrl+W deletes the previous word)"
+      },
+      {
+        "from": "2.1.239",
+        "description": "Which conventions the prompt's word-editing keys follow: \"readline\" matches Bash and other readline programs (Ctrl+W deletes back to the previous whitespace; Alt+F and Alt+D stop at the end of the current word and Ctrl+Y can paste back what Alt+D deleted; for Alt+B, Alt+F, Alt+D, Ctrl/Option+Arrow and Option/Ctrl+Backspace a word is a run of letters and digits, so punctuation separates words); \"classic\" (default) keeps Claude Code's long-standing behavior (Ctrl+W deletes the previous word; the word keys use Unicode word segmentation, so foo_bar and 3.14 are one word)"
       }
     ],
     "config_key:language": [
@@ -3221,6 +3229,12 @@
       {
         "from": "2.1.73",
         "description": "Override mapping from Anthropic model ID (e.g. \"claude-opus-4-6\") to provider-specific model ID (e.g. a Bedrock inference profile ARN). Typically set in managed settings by enterprise administrators."
+      }
+    ],
+    "config_key:modelSettings": [
+      {
+        "from": "2.1.239",
+        "description": "Persisted effort level for this model."
       }
     ],
     "config_key:otelHeadersHelper": [
@@ -4059,6 +4073,10 @@
       {
         "from": "2.1.76",
         "description": "Git worktree configuration for --worktree flag."
+      },
+      {
+        "from": "2.1.239",
+        "description": "Git worktree configuration: the CLI --worktree flag, EnterWorktree and agent isolation, plus the location Claude Code Desktop uses for SSH-session worktrees on this machine."
       }
     ],
     "config_key:worktree.baseRef": [
@@ -4071,6 +4089,12 @@
       {
         "from": "2.1.143",
         "description": "Isolation mode for background sessions in this repo. 'worktree' (default) blocks Edit/Write in the main checkout until EnterWorktree is called. 'none' lets background jobs edit the working copy directly."
+      }
+    ],
+    "config_key:worktree.location": [
+      {
+        "from": "2.1.239",
+        "description": "Directory under which Claude Code Desktop creates the worktrees of SSH sessions that run on this machine (an absolute path or one starting with ~/), instead of <project>/.claude/worktrees. Read by the desktop app from the SSH host user settings; a location chosen in the desktop app's SSH connection settings takes precedence. The CLI (--worktree, EnterWorktree, agent isolation) does not read it yet."
       }
     ],
     "config_key:worktree.symlinkDirectories": [
