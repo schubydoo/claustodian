@@ -1130,9 +1130,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Custom command, run through the system shell (`/bin/sh` on macOS and Linux, `cmd` on Windows), to generate an auth value. This value will be sent as `X-Api-Key` and `Authorization: Bearer` headers for model requests. Set the refresh interval with `CLAUDE_CODE_API_KEY_HELPER_TTL_MS`",
+      "description": "Run your own command to produce the credential Claude Code sends with model requests. Claude Code runs the command through the system shell, `/bin/sh` on macOS and Linux and `cmd` on Windows, and sends its output as both the `X-Api-Key` and `Authorization: Bearer` headers. Use it for dynamic or rotating credentials, such as short-lived tokens fetched from a vault.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1143,9 +1143,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Custom script that modifies the `.aws` directory (see advanced credential configuration)",
+      "description": "Run your own command, such as `aws sso login`, to refresh the credentials in your `.aws` directory when the ones Claude Code has for Amazon Bedrock stop working. Claude Code checks the current credentials against STS first and runs the command only when that check fails, then reads the refreshed `.aws` directory.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1156,9 +1156,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Custom script that outputs JSON with AWS credentials (see advanced credential configuration)",
+      "description": "Run your own command that prints AWS credentials as JSON, so Claude Code can call Amazon Bedrock with credentials that don't live in your `.aws` directory. Claude Code accepts the `aws sts` output shape and the flat `aws configure export-credentials` shape, and scopes the credentials to its own Bedrock client, so the shell commands Claude runs still see your ambient credentials.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1171,7 +1171,7 @@
       "confidence": "high",
       "description": "Number of days to retain chat transcripts (0 to disable cleanup)",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1182,9 +1182,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Disable all hooks, any custom status line, and any custom file suggestion command",
+      "description": "Turn off hooks, any custom status line, and any custom file suggestion command. Use it to turn all of these off temporarily without deleting them from your settings.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1195,9 +1195,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List of specific MCP servers from `.mcp.json` files to reject",
+      "description": "Reject specific servers defined in a project's `.mcp.json` file so Claude Code never connects them or asks you to approve them. A rejection in any settings file applies, including a project `.claude/settings.json` checked into the repository.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1208,9 +1208,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Whether to automatically approve all MCP servers in the project",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Approve every MCP server defined in project `.mcp.json` files without a prompt. Claude Code writes this key to `.claude/settings.local.json` when you choose to approve all servers in the approval dialog.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1221,9 +1221,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List of approved MCP servers from .mcp.json",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Approve specific servers defined in project `.mcp.json` files so Claude Code connects them without asking. Claude Code writes this key to `.claude/settings.local.json` when you approve a server in the approval dialog.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1231,13 +1231,13 @@
       "type": "config_key",
       "first_seen": "1.0.81",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "Enabled plugins by repository. Keys are repository names, values are arrays of enabled plugin names. For npm packages, use \"npm:@package/name\": true",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "env",
@@ -1247,9 +1247,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Environment variables to set for Claude Code sessions",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Set environment variables for every session and for the subprocesses Claude Code starts from it. Any variable in the environment variables reference can go here, which is how you apply one to every session or roll it out to your team.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1262,7 +1262,7 @@
       "confidence": "high",
       "description": "Force a specific login method: \"claudeai\" for Claude Pro/Max, \"console\" for Console billing",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1275,7 +1275,7 @@
       "confidence": "high",
       "description": "Organization UUID to use for OAuth login",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1286,9 +1286,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Configure custom commands to run at lifecycle events. See hooks documentation for format",
+      "description": "Run your own commands, prompts, agents, HTTP requests, or MCP tools as hooks at points in Claude Code's lifecycle, such as before a tool call or when a session starts; the hooks reference lists every event, its payload, and its exit codes. Each event maps to a list of matcher groups, and each group lists the handlers to run when the matcher applies.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1296,13 +1296,13 @@
       "type": "config_key",
       "first_seen": "0.2.122",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "Whether to include Claude's co-authored by attribution in commits and PRs (defaults to true)",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "model",
@@ -1312,9 +1312,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override the default model to use for Claude Code. `--model` and `ANTHROPIC_MODEL` override this for one session",
+      "description": "Set the model every new session uses, so you don't have to pick one with `/model` each time. Setting it here doesn't stop you from switching mid-session. If your admin set an organization default model to override user selection, you get that model even when you set this key in user, project, or local settings.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1325,9 +1325,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Path to a script that outputs OpenTelemetry headers",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Run your own command to generate the headers Claude Code sends with OpenTelemetry exports, for backends whose tokens rotate. Claude Code runs it at startup and periodically after that, and expects a JSON object of string header values on stdout.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1338,9 +1338,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Configure an output style to adjust the system prompt. See output styles documentation",
+      "description": "Select an output style by name. An output style is a saved set of instructions that Claude Code adds to the system prompt to change Claude's role, tone, and output format, such as the built-in Explanatory and Learning styles or one you wrote yourself.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1351,9 +1351,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "See table below for structure of permissions.",
+      "description": "Control which tools Claude can use without asking, which ones always prompt, and which ones are blocked, and set the permission mode a session starts in. Every `permissions.*` key below nests under this object.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1364,9 +1364,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Additional working directories for file access. Most `.claude/` configuration is not discovered from these directories",
+      "description": "Give Claude file access to directories outside the one you started in, as additional working directories. Most `.claude/` configuration is not discovered from these directories.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1377,9 +1377,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Array of permission rules to allow tool use. Tool-name globs are supported only in the tool position after a literal `mcp__<server>__` prefix, such as `mcp__github__get_*`; the server segment must be glob-free. See Permission rule syntax below for pattern matching details",
+      "description": "List the tool uses Claude Code approves without asking you. In an MCP rule, `*` can appear only in the tool name after the `mcp__<server>__` prefix, such as `mcp__github__get_*`; it can't appear in the server name.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1390,9 +1390,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Array of permission rules to ask for confirmation upon tool use. See Permission rule syntax below",
+      "description": "List the tool uses that prompt you for confirmation even in a permission mode that would otherwise approve them, such as `acceptEdits` or `bypassPermissions`. In `dontAsk` mode Claude Code denies a matching tool use instead of prompting.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1405,7 +1405,7 @@
       "confidence": "high",
       "description": "Default permission mode when Claude Code needs access",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1416,9 +1416,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Array of permission rules to deny tool use. Use this to exclude sensitive files from Claude Code access. Tool names accept glob patterns: `\"*\"` denies every tool and `\"mcp__*\"` denies every MCP tool. Deny rules can't remove `EndConversation` while any other tool remains. See Permission rule syntax and Bash permission limitations",
+      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths. Read and Edit deny rules apply to Claude's built-in file tools and to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`; they don't apply to arbitrary subprocesses, so for OS-level enforcement enable the sandbox.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1429,9 +1429,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Disable the ability to bypass permission prompts",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Prevent anyone from entering `bypassPermissions` mode. Claude Code then rejects the `--dangerously-skip-permissions` flag, and ignores an agent definition's `permissionMode: bypassPermissions`, so the subagent runs with the parent session's permission mode.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1442,9 +1442,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Skip the WebFetch domain safety check that sends each requested hostname to `api.anthropic.com` before fetching. Set to `true` in environments that block traffic to Anthropic, such as Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry deployments with restrictive egress. When skipped, WebFetch attempts any URL without consulting the blocklist",
+      "description": "Skip the WebFetch domain safety check, which sends each requested hostname to `api.anthropic.com` before fetching. Set `true` in environments that block traffic to Anthropic, such as Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry deployments with restrictive egress.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -1455,9 +1455,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Configure a custom status line to display context. The object's optional `padding`, `refreshInterval`, and `hideVimModeIndicator` fields control spacing, periodic re-runs, and whether the built-in vim mode indicator below the prompt is hidden. See `statusLine` documentation",
+      "description": "Run your own command to render a status line below the prompt with context such as the model, cost, or git branch. Optional fields adjust spacing, add periodic re-runs, and hide the built-in vim mode indicator when your script renders `vim.mode` itself.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
