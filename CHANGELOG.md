@@ -16,6 +16,21 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-08-22
+
+### Fixed
+
+- **Settings keys keep their documented descriptions.** Anthropic split the settings
+  page in two, moving every key definition to a settings reference page. The docs lane
+  still read the original page, still parsed it, and found nothing there — so every
+  documented `config_key` lost its first-party description and `source_url`, dropped
+  from `provenance: "docs"` to `provenance: "binary"`, and fell back to
+  `status: "needs_review"`. The lane now reads the reference page, and refuses to
+  publish a run in which a page that should carry symbols stops yielding them.
+  Consumers reading `config_key` descriptions or filtering on `status` see the
+  documented surface restored, plus the keys the new page documents that the old one
+  did not.
+
 ## 2026-08-15
 
 ### Added

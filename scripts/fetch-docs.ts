@@ -35,6 +35,7 @@ export const DOC_PAGES = [
   'glossary',
   'remote-control',
   'settings',
+  'settings-reference',
 ] as const;
 
 export type DocSymbolType = 'cli_flag' | 'command' | 'env_var' | 'config_key';
@@ -53,6 +54,32 @@ export type DocSymbolType = 'cli_flag' | 'command' | 'env_var' | 'config_key';
  */
 export const PAGE_BASELINE_MIN_VERSION: Partial<Record<(typeof DOC_PAGES)[number], string>> = {
   'remote-control': '2.1.51',
+};
+
+/**
+ * The least a symbol-bearing page may contribute before the run is treated as a
+ * parse failure rather than an upstream deletion.
+ *
+ * Anthropic moved the settings tables to their own page. The settings page still
+ * fetched, still parsed, and yielded nothing — so every documented settings key
+ * lost its description, fell back to the binary lane, and landed at
+ * `needs_review`. A green run reported that as fact. Nothing in the pipeline can
+ * tell "the page stopped saying it" from "we stopped reading it", so the page set
+ * has to state what it expects to find.
+ *
+ * A page absent from this map contributes optionally: several official pages are
+ * fetched for prose context and name no trackable symbol at all. Each floor is
+ * set near half the page's present yield — low enough that ordinary churn never
+ * trips it, high enough that a collapse cannot pass — or at one where the page is
+ * a small supplement. When a floor does fire, read the page before lowering it.
+ */
+export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number>> = {
+  'cli-reference': 50,
+  commands: 60,
+  'env-vars': 200,
+  'settings-reference': 120,
+  'plugins-reference': 10,
+  'remote-control': 1,
 };
 
 /** Generic OS/shell env vars a doc may reference but that aren't Claude Code symbols. */
@@ -408,6 +435,135 @@ function parseSettingsPage(
 }
 
 /**
+ * Topic sections of the settings-reference page that define config keys, with the
+ * category where the page distinguishes one. An ALLOWLIST, for the same reason
+ * `SETTINGS_SECTIONS` is one: a heading absent from this map contributes nothing,
+ * so a new upstream section cannot silently start publishing keys.
+ *
+ * Excluded on purpose:
+ *  - "All settings" — the index table. Every row links to the entry below it, so
+ *    reading both would parse each key twice, and the index cell is a one-line
+ *    summary while the entry carries the prose AND the version marker.
+ *  - "See also" — a link list, no key definitions.
+ */
+const SETTINGS_REFERENCE_SECTIONS: ReadonlyMap<string, { category?: string }> = new Map([
+  ['Model and responses', {}],
+  ['Permission settings', {}],
+  ['Sandbox settings', {}],
+  ['Memory and context', {}],
+  ['Interface and terminal', {}],
+  ['Git and attribution', {}],
+  ['Hooks and automation', {}],
+  ['Plugins and skills', {}],
+  ['MCP', {}],
+  ['Agents, sessions, and worktrees', {}],
+  ['Remote, desktop, and notifications', {}],
+  ['Authentication and providers', {}],
+  ['Updates and versioning', {}],
+  ['Tools', {}],
+  ['Privacy and telemetry', {}],
+  ['Enterprise and managed settings', {}],
+  // Same reasoning as the settings page's section of this name: real config keys
+  // that live in `~/.claude.json`, not `settings.json`.
+  ['Global config settings', { category: 'global-config' }],
+]);
+
+/** An entry heading on the settings-reference page: `### \`sandbox.network.allow\``. */
+const SETTINGS_ENTRY_HEADING = /^###\s+(.*)$/;
+
+/**
+ * A Mintlify component tag alone on its line (`<Warning>`, `</Note>`). Dropped so a
+ * callout-first entry yields its text instead of the tag: a deprecation notice IS
+ * the description for a key whose entry opens with one. Only a whole-line tag is
+ * removed, so a `<placeholder>` inside prose survives.
+ */
+const COMPONENT_TAG_LINE = /^\s*<\/?[A-Z][A-Za-z]*(\s[^>]*)?\/?>\s*$/;
+
+/**
+ * Config keys from the settings-reference page, which defines one key per `###`
+ * entry under a topic `##` heading rather than in tables.
+ *
+ * Entry headings carry the FULL key path (`sandbox.credentials.envVars`), so this
+ * page needs none of the namespace resolution `parseSettingsPage` does — there is
+ * no bare key to qualify and so nothing to guess.
+ *
+ * The description AND the version marker both come from the entry's opening
+ * paragraph, never from the rest of the entry. An entry documents its key's
+ * sub-options too, and those carry their own `Requires Claude Code vX.Y.Z`
+ * sentences: `extraKnownMarketplaces` states one for the `skipLfs` field of its
+ * source objects, which the binary lane dates many releases after the key itself.
+ * Reading the whole entry would publish that as the key's introduction. The old
+ * settings page confined the marker to the key's own table row; the opening
+ * paragraph is this page's equivalent of that row.
+ */
+function parseSettingsReferencePage(page: string, markdown: string): DocEntry[] {
+  const entries: DocEntry[] = [];
+  const lines = markdown.split('\n');
+  let section = '';
+  let current: { symbol: string; category?: string; body: string[] } | null = null;
+
+  const flush = (): void => {
+    if (!current) return;
+    const { symbol, category, body } = current;
+    current = null;
+    const kept = body.filter((line) => !COMPONENT_TAG_LINE.test(line));
+    let i = 0;
+    while (i < kept.length && (kept[i] as string).trim() === '') i++;
+    const paragraph: string[] = [];
+    while (i < kept.length && (kept[i] as string).trim() !== '') {
+      paragraph.push(kept[i] as string);
+      i++;
+    }
+    const opening = paragraph.join(' ');
+    const description = cleanCell(opening);
+    if (description.length < 3) return;
+    entries.push({
+      symbol,
+      type: 'config_key',
+      description,
+      doc_min_version: minVersion(opening),
+      doc_page: page,
+      ...(category ? { category } : {}),
+    });
+  };
+
+  for (const line of lines) {
+    const topic = /^##\s+([^#].*)$/.exec(line);
+    if (topic) {
+      flush();
+      section = (topic[1] as string).trim();
+      continue;
+    }
+    const entry = SETTINGS_ENTRY_HEADING.exec(line);
+    if (entry) {
+      flush();
+      const spec = SETTINGS_REFERENCE_SECTIONS.get(section);
+      const heading = (entry[1] as string).trim();
+      if (spec === undefined) continue;
+      const matched = SETTINGS_KEY_CELL.exec(heading);
+      if (matched) {
+        current = { symbol: matched[1] as string, ...spec, body: [] };
+        continue;
+      }
+      // A prose subheading ("Examples") is not a key and is simply skipped. A
+      // BACKTICKED heading that fails the key grammar is a construct this parser
+      // does not understand — an env var or a flag given its own entry, say — and
+      // skipping it silently would read downstream as a key that never existed.
+      if (/^`[^`]+`$/.test(heading)) {
+        throw new Error(
+          `settings-reference: entry heading ${heading} under "${section}" is not a ` +
+            `settings key path. The page's entry grammar changed; refusing to guess.`
+        );
+      }
+      continue;
+    }
+    if (current) current.body.push(line);
+  }
+  flush();
+  return entries;
+}
+
+/**
  * Normalises a subcommand heading ("### plugin init", "### `claude plugin tag`")
  * to the scope string a record carries — a FULL invocation path after `claude`,
  * so "plugin init", "plugin tag". Returns undefined for an empty heading. Whether
@@ -435,6 +591,7 @@ export function parseDocPage(
   knownConfigKeys?: ReadonlySet<string>
 ): DocEntry[] {
   if (page === 'settings') return parseSettingsPage(page, markdown, knownConfigKeys);
+  if (page === 'settings-reference') return parseSettingsReferencePage(page, markdown);
   const entries: DocEntry[] = [];
   let scope: string | undefined;
   for (const line of markdown.split('\n')) {
@@ -582,6 +739,29 @@ export function assertOfficialDocs(docs: DocsIndex): void {
   }
 }
 
+/**
+ * Yield guard for a freshly fetched index: every page with a floor in
+ * `PAGE_MIN_SYMBOLS` must still own at least that many symbols. Throws naming the
+ * page and both numbers, because the fix is always to read the page — an upstream
+ * restructure needs a parser, an upstream deletion needs the floor lowered, and
+ * the two are indistinguishable from the output alone.
+ */
+export function assertDocsCoverage(docs: DocsIndex): void {
+  const owned = new Map<string, number>();
+  for (const entry of docs.symbols) owned.set(entry.doc_page, (owned.get(entry.doc_page) ?? 0) + 1);
+  for (const [page, floor] of Object.entries(PAGE_MIN_SYMBOLS)) {
+    const found = owned.get(page) ?? 0;
+    if (found < (floor as number)) {
+      throw new Error(
+        `Docs page "${page}" yielded ${found} of the ${floor} symbols its floor requires. ` +
+          `Either the page was restructured and the parser no longer reads it, or the ` +
+          `symbols really went away. Read ${DOCS_BASE}${page}.md and fix the parser or ` +
+          `the floor in PAGE_MIN_SYMBOLS before publishing this as provenance:"docs".`
+      );
+    }
+  }
+}
+
 async function fetchPage(page: string): Promise<{ page: string; markdown: string }> {
   const url = `${DOCS_BASE}${page}.md`;
   const response = await fetch(url);
@@ -624,6 +804,7 @@ export async function main(argv: string[]): Promise<void> {
   const known = await knownSettingsKeys(argv[1] ?? 'data/binary-observations.json');
   const pages = await Promise.all(DOC_PAGES.map(fetchPage));
   const index = buildDocsIndex(pages, known);
+  assertDocsCoverage(index);
   await writeFile(outPath, `${JSON.stringify(index, null, 2)}\n`, 'utf-8');
   const withMin = index.symbols.filter((s) => s.doc_min_version).length;
   console.log(

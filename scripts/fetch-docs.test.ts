@@ -6,17 +6,41 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  assertDocsCoverage,
   assertOfficialDocs,
   buildDocsIndex,
   knownSettingsKeys,
   main,
   officialSourcePages,
   PAGE_BASELINE_MIN_VERSION,
+  PAGE_MIN_SYMBOLS,
   parseDocPage,
   splitTableRow,
   symbolFromCell,
   symbolsFromCell,
 } from './fetch-docs.js';
+
+/**
+ * A synthetic page body that clears the page's yield floor, so `main` reaches the
+ * write instead of tripping `assertDocsCoverage`. Symbol names are page-unique:
+ * an index-wide duplicate would be deduped away and starve the second page.
+ */
+function mockPageBody(url: string): string {
+  const page = (url.split('/').pop() ?? '').replace(/\.md$/, '');
+  const floor = PAGE_MIN_SYMBOLS[page as keyof typeof PAGE_MIN_SYMBOLS] ?? 0;
+  const rows = Array.from({ length: floor }, (_, i) => i);
+  if (page === 'settings-reference') {
+    return ['## Tools', ...rows.map((i) => `### \`mockKey${i}\`\n\nA mocked settings key.`)].join(
+      '\n\n'
+    );
+  }
+  const cell = (i: number): string => {
+    if (page === 'commands') return `/mock-${i}`;
+    if (page === 'env-vars') return `MOCK_ENV_${i}`;
+    return `--${page}-mock-${i}`;
+  };
+  return rows.map((i) => `| \`${cell(i)}\` | A mocked symbol |`).join('\n');
+}
 
 describe('symbolFromCell', () => {
   it('recognizes a CLI flag', () => {
@@ -328,19 +352,37 @@ describe('main (mocked fetch)', () => {
   it('fetches the pages and writes a docs index', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => ({ ok: true, text: async () => '| `--mock` | A mocked flag |' }))
+      vi.fn(async (url: string) => ({ ok: true, text: async () => mockPageBody(url) }))
     );
     const out = '/tmp/claustodian-fetch-docs.test.json';
     await main([out]);
     const index = JSON.parse(await readFile(out, 'utf8'));
-    expect(index.symbols.some((s: { symbol: string }) => s.symbol === '--mock')).toBe(true);
+    expect(
+      index.symbols.some((s: { symbol: string }) => s.symbol === '--cli-reference-mock-0')
+    ).toBe(true);
     await rm(out, { force: true });
+  });
+
+  it('refuses to write when a page stops yielding symbols', async () => {
+    // The settings-page regression: the page still fetched and still parsed, but
+    // its tables had moved, so it yielded nothing and every documented settings
+    // key silently lost its description.
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => ({
+        ok: true,
+        text: async () => (url.endsWith('/settings-reference.md') ? '' : mockPageBody(url)),
+      }))
+    );
+    await expect(main(['/tmp/claustodian-fetch-docs.floor.json'])).rejects.toThrow(
+      /"settings-reference" yielded 0 of the/
+    );
   });
 
   it('defaults both paths when called with no argv', async () => {
     vi.stubGlobal(
       'fetch',
-      vi.fn(async () => ({ ok: true, text: async () => '| `--mock` | A mocked flag |' }))
+      vi.fn(async (url: string) => ({ ok: true, text: async () => mockPageBody(url) }))
     );
     const dir = await mkdtemp(join(tmpdir(), 'claustodian-docs-main-'));
     await mkdir(join(dir, 'data'));
@@ -354,7 +396,9 @@ describe('main (mocked fetch)', () => {
     try {
       await main([]);
       const index = JSON.parse(await readFile(join(dir, 'data', 'docs.json'), 'utf8'));
-      expect(index.symbols.some((s: { symbol: string }) => s.symbol === '--mock')).toBe(true);
+      expect(
+        index.symbols.some((s: { symbol: string }) => s.symbol === '--cli-reference-mock-0')
+      ).toBe(true);
     } finally {
       process.chdir(prev);
       await rm(dir, { recursive: true, force: true });
@@ -599,6 +643,154 @@ describe('parseDocPage — settings page', () => {
       '| `--settings` | A flag mentioned in passing |\n' +
       '| `CLAUDE_CODE_SAFE_MODE` | An env var mentioned in passing |\n';
     expect(page(md).map((e) => e.type)).toEqual(['config_key']);
+  });
+});
+
+describe('parseDocPage — settings-reference page', () => {
+  const page = (body: string) => parseDocPage('settings-reference', body);
+
+  it('reads a key and its opening paragraph from an entry heading', () => {
+    const md =
+      '## Model and responses\n\n### `advisorModel`\n\nPick which model answers when Claude calls the advisor.\n';
+    expect(page(md)).toEqual([
+      {
+        symbol: 'advisorModel',
+        type: 'config_key',
+        description: 'Pick which model answers when Claude calls the advisor.',
+        doc_min_version: null,
+        doc_page: 'settings-reference',
+      },
+    ]);
+  });
+
+  it('takes the full key path from the heading, with no schema supplied', () => {
+    // Entry headings are already fully qualified, so unlike the settings page
+    // there is no bare key to resolve and nothing to guess.
+    const md =
+      '## Sandbox settings\n\n### `sandbox.credentials.envVars`\n\nProtect environment variables from sandboxed commands.\n';
+    expect(page(md)[0]?.symbol).toBe('sandbox.credentials.envVars');
+  });
+
+  it('stops the description at the end of the opening paragraph', () => {
+    const md =
+      '## Tools\n\n### `spellcheck`\n\nCheck spelling as you type.\n\n* **Scope**: `Any file`\n* **Type**: Boolean\n';
+    expect(page(md)[0]?.description).toBe('Check spelling as you type.');
+  });
+
+  it('reads a min-version stated in the opening paragraph', () => {
+    const md =
+      '## Sandbox settings\n\n### `sandbox.credentials`\n\nDeclare the credentials to protect. Requires Claude Code v2.1.187 or later.\n';
+    expect(page(md)[0]?.doc_min_version).toBe('2.1.187');
+  });
+
+  it('does NOT read a min-version stated later in the entry', () => {
+    // An entry documents its key's sub-options, and those carry their own version
+    // sentences. `extraKnownMarketplaces` states one for the `skipLfs` field of
+    // its source objects; the key itself is many releases older.
+    const md =
+      '## Plugins and skills\n\n### `extraKnownMarketplaces`\n\nTrust marketplaces without prompting.\n\n' +
+      'For `github` sources, set `"skipLfs": true` inside the `source` object. Requires Claude Code v2.1.153 or later.\n';
+    expect(page(md)[0]).toMatchObject({
+      symbol: 'extraKnownMarketplaces',
+      doc_min_version: null,
+    });
+  });
+
+  it('drops a whole-line component tag so a callout-first entry keeps its text', () => {
+    const md =
+      '## Git and attribution\n\n### `includeCoAuthoredBy`\n\n<Warning>\n  Deprecated since v2.0.62, when `attribution` replaced it.\n</Warning>\n';
+    expect(page(md)[0]?.description).toBe(
+      'Deprecated since v2.0.62, when `attribution` replaced it.'
+    );
+  });
+
+  it('tags a global-config key with its own category', () => {
+    const md = '## Global config settings\n\n### `diffTool`\n\nChoose where diffs open.\n';
+    expect(page(md)[0]).toMatchObject({ symbol: 'diffTool', category: 'global-config' });
+  });
+
+  it('leaves a settings.json key without a category override', () => {
+    const md = '## Tools\n\n### `spellcheck`\n\nCheck spelling as you type.\n';
+    expect(page(md)[0]).not.toHaveProperty('category');
+  });
+
+  it('ignores the index table, which lists every key a second time', () => {
+    // "All settings" is the index: every row links to the entry below it, so
+    // reading both would parse each key twice.
+    const md =
+      '## All settings\n\n| Key | Description |\n| :-- | :-- |\n' +
+      '| [`advisorModel`](#advisormodel) | Pick which model answers |\n';
+    expect(page(md)).toEqual([]);
+  });
+
+  it('ignores an ENTRY under a section that does not define keys', () => {
+    // The allowlist is what stops a new upstream section from publishing keys, so
+    // it has to be tested on an entry heading and not only on a table: a section
+    // holding no `###` at all yields nothing whatever the allowlist says.
+    const md =
+      '## All settings\n\n### `advisorModel`\n\nPick which model answers when Claude calls the advisor.\n';
+    expect(page(md)).toEqual([]);
+  });
+
+  it('skips a stub entry with no prose under its heading', () => {
+    const md =
+      '## Tools\n\n### `spellcheck`\n\n### `bashTimeout`\n\nFail a Bash command that runs longer than this.\n';
+    expect(page(md).map((e) => e.symbol)).toEqual(['bashTimeout']);
+  });
+
+  it('skips a prose subheading inside a key-defining section', () => {
+    const md =
+      '## Tools\n\n### `spellcheck`\n\nCheck spelling as you type.\n\n### Examples\n\nSome prose.\n';
+    expect(page(md).map((e) => e.symbol)).toEqual(['spellcheck']);
+  });
+
+  it('throws on a backticked entry heading that is not a settings key path', () => {
+    // A silent skip here reads downstream as a key that never existed.
+    const md = '## Tools\n\n### `CLAUDE_CODE_SAFE_MODE`\n\nAn env var given its own entry.\n';
+    expect(() => page(md)).toThrow(/refusing to guess/);
+  });
+
+  it('closes the last entry at end of input', () => {
+    const md = '## Tools\n\n### `spellcheck`\n\nCheck spelling as you type.';
+    expect(page(md)).toHaveLength(1);
+  });
+});
+
+describe('assertDocsCoverage', () => {
+  const index = (counts: Record<string, number>) => ({
+    $generated_by: 'scripts/fetch-docs.ts',
+    source_pages: officialSourcePages(),
+    symbols: Object.entries(counts).flatMap(([doc_page, n]) =>
+      Array.from({ length: n }, (_, i) => ({
+        symbol: `--mock-${doc_page}-${i}`,
+        type: 'cli_flag' as const,
+        description: 'A mocked symbol',
+        doc_min_version: null,
+        doc_page,
+      }))
+    ),
+  });
+  const atFloor = () =>
+    Object.fromEntries(Object.entries(PAGE_MIN_SYMBOLS).map(([p, n]) => [p, n as number]));
+
+  it('accepts an index where every floored page meets its floor', () => {
+    expect(() => assertDocsCoverage(index(atFloor()))).not.toThrow();
+  });
+
+  it('throws naming the page that collapsed', () => {
+    const counts = { ...atFloor(), 'settings-reference': 0 };
+    expect(() => assertDocsCoverage(index(counts))).toThrow(
+      /"settings-reference" yielded 0 of the/
+    );
+  });
+
+  it('throws on a partial collapse, not only an empty page', () => {
+    const counts = { ...atFloor(), 'env-vars': 1 };
+    expect(() => assertDocsCoverage(index(counts))).toThrow(/"env-vars" yielded 1 of the/);
+  });
+
+  it('ignores a page with no floor', () => {
+    expect(() => assertDocsCoverage(index({ ...atFloor(), glossary: 0 }))).not.toThrow();
   });
 });
 
