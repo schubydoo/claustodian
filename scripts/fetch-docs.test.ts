@@ -714,13 +714,28 @@ describe('parseDocPage — settings-reference page', () => {
     expect(page(md)[0]).not.toHaveProperty('category');
   });
 
-  it('ignores entries under a section that does not define keys', () => {
-    // "All settings" is the index table: every row links to the entry below it,
-    // so reading both would parse each key twice.
+  it('ignores the index table, which lists every key a second time', () => {
+    // "All settings" is the index: every row links to the entry below it, so
+    // reading both would parse each key twice.
     const md =
       '## All settings\n\n| Key | Description |\n| :-- | :-- |\n' +
       '| [`advisorModel`](#advisormodel) | Pick which model answers |\n';
     expect(page(md)).toEqual([]);
+  });
+
+  it('ignores an ENTRY under a section that does not define keys', () => {
+    // The allowlist is what stops a new upstream section from publishing keys, so
+    // it has to be tested on an entry heading and not only on a table: a section
+    // holding no `###` at all yields nothing whatever the allowlist says.
+    const md =
+      '## All settings\n\n### `advisorModel`\n\nPick which model answers when Claude calls the advisor.\n';
+    expect(page(md)).toEqual([]);
+  });
+
+  it('skips a stub entry with no prose under its heading', () => {
+    const md =
+      '## Tools\n\n### `spellcheck`\n\n### `bashTimeout`\n\nFail a Bash command that runs longer than this.\n';
+    expect(page(md).map((e) => e.symbol)).toEqual(['bashTimeout']);
   });
 
   it('skips a prose subheading inside a key-defining section', () => {
