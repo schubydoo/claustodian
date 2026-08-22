@@ -1,6 +1,10 @@
 # Task 3.5 — Regenerate the dataset from the official CHANGELOG.md and open a
-# PR with any changes. Changelog-sourced data is authoritative, so this PR is
-# intended to be auto-mergeable once the validate-pr checks pass.
+# PR with any changes. Merging is manual and always has been: this workflow
+# enables no auto-merge, so a green validate-pr is a precondition for merging
+# the PR, never a trigger for it. Changelog-sourced data is authoritative, but
+# the other lanes feeding the same run are not self-checking — a docs-lane
+# parser that quietly stops matching an upstream page yields a green PR that
+# guts a lane. Read the diff.
 #
 # NOTE: the FIRST run produces a large PR — the initial full backfill that
 # replaces the curated seed with the complete changelog-derived dataset
