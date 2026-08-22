@@ -65,6 +65,12 @@ by JSON nesting, so a page's "Permission settings" table can list a key the sche
 holds flat. The only way to know which is which is to check the binary-derived schema.
 Run the docs lane first and it resolves against a stale schema, silently.
 
+That resolution is currently dormant rather than retired: the settings reference page
+that now defines the keys writes each one at its full path, so there is nothing to
+qualify and nothing to guess. `fetch-docs` still reads the observations and still
+refuses to run without them, because the page that needs them is still fetched and can
+regain key tables at any time. Keep the order.
+
 The runbook has the commands, the reconciliation step that has to happen first, and
 the verification. It is a procedure; this is the reason behind it.
 
