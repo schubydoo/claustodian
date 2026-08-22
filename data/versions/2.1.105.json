@@ -1948,7 +1948,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "**Skill.** Load Claude API and Managed Agents reference material for your project's language. Also activates automatically when your code imports `anthropic` or `@anthropic-ai/sdk`. Run `migrate` to upgrade existing Claude API code to a newer model, `managed-agents-onboard` for a walkthrough that creates a new Managed Agent, or `prompt-audit` to flag instructions written for older models in your prompts, skills, and tool descriptions and propose fixes as a diff.",
+      "description": "**Skill.** Load Claude API and Managed Agents reference material for your project's language. Also activates automatically when your code imports `anthropic` or `@anthropic-ai/sdk`. Run `migrate` to update existing Claude API code to a newer model; `upgrade` to move your project's Anthropic SDK dependency across a major version, currently the Python `anthropic` package from 0.x to 1.x; `managed-agents-onboard` for a walkthrough that creates a new Managed Agent; or `prompt-audit` to flag instructions written for older models in your prompts, skills, and tool descriptions and propose fixes as a diff.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2159,8 +2159,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Set effort level for model usage",
-      "description_source": "binary",
+      "description": "Set the effort level: `low` to `xhigh`, `max`, `ultracode`, or `auto`; `status` prints it. `max` and `ultracode` are session-only; the `ultracode` key persists. Works in `-p` outside the effort hold",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3187,9 +3187,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Model for the server-side advisor tool. Accepts the model aliases `\"fable\"`, `\"opus\"`, and `\"sonnet\"`, or a full model ID. `\"fable\"` requires Fable 5 access. Written automatically when you run `/advisor`, except when you pick Fable while the usage-credits consent is pending. Unset to disable the advisor.",
+      "description": "Pick which model answers when Claude calls the server-side advisor tool. Unset it to turn the advisor off. The advisor must be at least as capable as your main model; when it isn't, Claude Code sends requests without the advisor. See Choose an advisor model.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3200,9 +3200,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Run the main thread as a named subagent, and set the default agent for sessions dispatched from `claude agents`. Applies that subagent's system prompt, tool restrictions, and model. See Invoke subagents explicitly",
+      "description": "Run the main thread as a named subagent, so Claude Code applies that subagent's system prompt, tool restrictions, and model to your session. The same key sets the default agent for sessions you dispatch from `claude agents`.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3213,9 +3213,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) Restrict which hooks run; see Hook configuration for the full effect list",
+      "description": "Restrict hook execution to hooks your organization deploys.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3226,9 +3226,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) Only `allowedMcpServers` from managed settings are respected. `deniedMcpServers` still merges from all sources. Users can still add MCP servers, but only the admin-defined allowlist applies. See Managed MCP configuration",
+      "description": "Make the managed allowlist the only one that applies. Claude Code then reads `allowedMcpServers` from managed settings alone and ignores allowlists in user, project, and local settings; `deniedMcpServers` still merges from every file, so users can still block servers for themselves. Administrators set it so a user's own settings can't broaden what the managed allowlist permits.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3239,9 +3239,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) Prevent user and project settings from defining `allow`, `ask`, or `deny` permission rules. Only rules in managed settings apply. See Managed-only settings",
+      "description": "Make managed settings the only source of `allow`, `ask`, and `deny` permission rules. Claude Code then ignores rules in user, project, local, and `--settings` files, ignores `--allowedTools`, hides the always-allow choices in permission prompts, and stops saving new rules.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3252,9 +3252,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) Allowlist of channel plugins that may push messages. Replaces the default Anthropic allowlist when set. Undefined = fall back to the default, empty array = block all channel plugins. Requires `channelsEnabled: true`. See Restrict which channel plugins can run",
+      "description": "Choose which channel plugins can push messages into sessions in your organization. When you set it, Claude Code uses your list in place of the default Anthropic allowlist; each entry names a plugin and the marketplace it comes from.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3265,9 +3265,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allowlist of URL patterns that HTTP hooks may target. Supports `*` as a wildcard. When set, hooks with non-matching URLs are blocked. Undefined = no restrictions, empty array = block all HTTP hooks. Arrays merge across settings sources. See Hook configuration",
+      "description": "Limit which URLs HTTP hooks can target. When you define this key, Claude Code runs an HTTP hook only if its URL matches one of the patterns and blocks the rest without running them; an empty array blocks every HTTP hook.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3278,9 +3278,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "When set in managed-settings.json, allowlist of MCP servers users can configure. Undefined = no restrictions, empty array = lockdown. Applies to all scopes. Denylist takes precedence. See Managed MCP configuration",
+      "description": "Allowlist the MCP servers people can use. Claude Code blocks any server that doesn't match an entry, whichever settings file or `.mcp.json` defined it, including servers from `managed-mcp.json`. Built-in servers such as Claude in Chrome, IDE-provided servers, and servers the CLI itself configures are exempt from the allowlist; the denylist still applies to them.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3291,9 +3291,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Enable extended thinking by default for all sessions. Typically configured via the `/config` command rather than editing directly. To force thinking off regardless of this setting, set `MAX_THINKING_TOKENS=0` in `env`, which disables thinking on the Anthropic API except on Fable 5, which cannot have thinking turned off. On third-party providers this omits the `thinking` parameter instead, and adaptive-reasoning models may still think",
+      "description": "Turn extended thinking off for every session by setting this to `false`. Thinking is on by default, so `true` changes nothing. Most people set this through `/config` rather than by editing the file.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3304,9 +3304,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Custom command, run through the system shell (`/bin/sh` on macOS and Linux, `cmd` on Windows), to generate an auth value. This value will be sent as `X-Api-Key` and `Authorization: Bearer` headers for model requests. Set the refresh interval with `CLAUDE_CODE_API_KEY_HELPER_TTL_MS`",
+      "description": "Run your own command to produce the credential Claude Code sends with model requests. Claude Code runs the command through the system shell, `/bin/sh` on macOS and Linux and `cmd` on Windows, and sends its output as both the `X-Api-Key` and `Authorization: Bearer` headers. Use it for dynamic or rotating credentials, such as short-lived tokens fetched from a vault.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3317,9 +3317,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Customize attribution for git commits and pull requests. See Attribution settings",
+      "description": "Customize the attribution Claude Code adds to git commits and pull requests. Commits get a git trailer such as `Co-Authored-By` by default; pull request descriptions get plain text. Set each part separately with the sub-keys below.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3330,9 +3330,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Attribution for git commits, including any trailers. Empty string hides commit attribution",
+      "description": "Set the attribution text Claude Code adds to git commits, including any trailers. Set it to an empty string to hide commit attribution.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3343,9 +3343,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Attribution for pull request descriptions. Empty string hides pull request attribution",
+      "description": "Set the attribution text Claude Code adds to pull request descriptions. Set it to an empty string to hide pull request attribution.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3356,9 +3356,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Auto-compact window size",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Set how full the context window gets before Claude Code compacts automatically.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3382,9 +3382,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Custom directory for auto memory storage. Accepts an absolute path or a `~/`-prefixed path. From project or local settings, Claude Code honors it under the same workspace trust rule as hooks, since a cloned repository can supply this file",
+      "description": "Store auto memory in a directory of your choice instead of the per-project default.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3395,9 +3395,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `true`. Enable auto memory. When `false`, Claude does not read from or write to the auto memory directory. You can also toggle this with `/memory` during a session. To disable via environment variable, set `CLAUDE_CODE_DISABLE_AUTO_MEMORY` in `env`",
+      "description": "Turn auto memory on or off. When `false`, Claude doesn't read from or write to the auto memory directory. You can also toggle it with `/memory` during a session, which writes this key to your user settings.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3408,9 +3408,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `\"latest\"`. Release channel to follow for updates. Use `\"stable\"` for a version that is typically about one week old and skips versions with major regressions, or `\"latest\"` for the most recent release. To disable auto-updates entirely, set `DISABLE_AUTOUPDATER` in `env`",
+      "description": "Choose which release channel background auto-updates and `claude update` follow. Set `\"stable\"` for a version that is typically about one week old and skips releases with major regressions, or `\"latest\"` for the most recent release.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3421,9 +3421,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Restrict which models users can select for the main session, subagents, skills, and the advisor. See Default model behavior for the Default option. See Restrict model selection",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Allowlist of models that users can select. Accepts family aliases (\"opus\" allows any opus version), version prefixes (\"opus-4-5\" allows only that version), and full model IDs. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators.",
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3436,7 +3436,7 @@
       "confidence": "high",
       "description": "@internal When false, the session recap (shown when you return after being away for 5+ minutes) is disabled. When absent or true, recap is enabled. Hidden from public SDK types until external launch; mirrors voiceHandsfree pattern above.",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings-internal"
     },
     {
@@ -3447,9 +3447,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Custom script that modifies the `.aws` directory (see advanced credential configuration)",
+      "description": "Run your own command, such as `aws sso login`, to refresh the credentials in your `.aws` directory when the ones Claude Code has for Amazon Bedrock stop working. Claude Code checks the current credentials against STS first and runs the command only when that check fails, then reads the refreshed `.aws` directory.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3460,9 +3460,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Custom script that outputs JSON with AWS credentials (see advanced credential configuration)",
+      "description": "Run your own command that prints AWS credentials as JSON, so Claude Code can call Amazon Bedrock with credentials that don't live in your `.aws` directory. Claude Code accepts the `aws sts` output shape and the flat `aws configure export-credentials` shape, and scopes the credentials to its own Bedrock client, so the shell commands Claude runs still see your ambient credentials.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3475,7 +3475,7 @@
       "confidence": "high",
       "description": "Enterprise blocklist of marketplace sources. When set in managed settings, these exact sources are blocked from being added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem.",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3488,7 +3488,7 @@
       "confidence": "high",
       "description": "Teams/Enterprise opt-in for channel notifications (MCP servers with the claude/channel capability pushing inbound messages). Default off. Set true to allow; users then select servers via --channels.",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3499,9 +3499,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Glob patterns or absolute paths of `CLAUDE.md` files to skip when loading memory. Patterns match against absolute file paths. Only applies to user, project, and local memory; managed policy files cannot be excluded",
+      "description": "Skip specific `CLAUDE.md` files when Claude Code loads memory. In a large monorepo, use it to skip CLAUDE.md files from other teams that aren't relevant to your work; Exclude irrelevant CLAUDE.md files in the large-codebases guide walks through that case. Patterns match against absolute file paths.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3512,9 +3512,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `30` days, minimum `1`. Claude Code deletes session files and other application data older than this period at startup, as long as it can safely determine the retention period. To disable transcript writes entirely, see Plaintext storage.",
+      "description": "Set how many days Claude Code keeps session transcripts and other application data before deleting them. Claude Code runs the deletion as a background sweep after a session starts, as long as it can safely determine the retention period.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3525,9 +3525,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Announcement to display to users at startup. If multiple announcements are provided, they will be cycled through at random.",
+      "description": "Show your organization's announcements to users at startup. When you list more than one, Claude Code picks one at random for each session; on a person's very first launch it shows the first entry.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3538,9 +3538,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `\"bash\"`, or `\"powershell\"` on Windows when Bash isn't available. Default shell for input-box `!` commands. Accepts `\"bash\"` or `\"powershell\"`. Setting `\"powershell\"` routes interactive `!` commands through PowerShell when the PowerShell tool is enabled: it's on by default on Windows without Git Bash, and `CLAUDE_CODE_USE_POWERSHELL_TOOL=1` enables it elsewhere",
+      "description": "Choose whether Bash or PowerShell runs the shell commands you type with the `!` prefix in the input box, the ones Claude Code runs directly and adds to the session.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3551,9 +3551,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "When set in managed-settings.json, denylist of MCP servers that are explicitly blocked. Applies to all scopes including managed servers. Denylist takes precedence over allowlist. See Managed MCP configuration",
+      "description": "Block specific MCP servers. Claude Code refuses to load a matching server in every scope, including servers from `managed-mcp.json` and claude.ai connectors.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3564,9 +3564,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Disable all hooks, any custom status line, and any custom file suggestion command",
+      "description": "Turn off hooks, any custom status line, and any custom file suggestion command. Use it to turn all of these off temporarily without deleting them from your settings.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3577,9 +3577,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `\"disable\"` to prevent auto mode from being activated. Removes `auto` from the `Shift+Tab` cycle, and any session that would otherwise start in auto mode, whether from `--permission-mode auto`, a settings file, or the built-in default, starts in `default` instead. Also accepted under `permissions` as `permissions.disableAutoMode`. Most useful in managed settings where users cannot override it",
+      "description": "Remove auto mode from the `Shift+Tab` cycle. Any session that would otherwise start in auto mode, whether from `--permission-mode auto`, a settings file, or the built-in default, starts in `default` instead. Administrators set it in managed settings to prevent developers in their organization from using auto mode.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3587,13 +3587,13 @@
       "type": "config_key",
       "first_seen": "2.1.91",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Disable inline shell execution in skills and custom slash commands from user, project, or plugin sources. Commands are replaced with a placeholder instead of being run.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Turn off inline shell execution for `` !`...` `` and ` ```! ` blocks in skills and custom commands from user, project, plugin, or additional-directory sources. Claude Code replaces each command with `[shell command execution disabled by policy]` instead of running it.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "disabledMcpjsonServers",
@@ -3603,9 +3603,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List of specific MCP servers from `.mcp.json` files to reject",
+      "description": "Reject specific servers defined in a project's `.mcp.json` file so Claude Code never connects them or asks you to approve them. A rejection in any settings file applies, including a project `.claude/settings.json` checked into the repository.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3616,9 +3616,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Persist the effort level across sessions. Accepts `\"low\"`, `\"medium\"`, `\"high\"`, or `\"xhigh\"`. Written automatically when you run `/effort` with one of those values. `--effort` and `CLAUDE_CODE_EFFORT_LEVEL` override this for one session. See Adjust effort level for supported models",
+      "description": "Keep an effort level across sessions. Lower levels are faster and cheaper on straightforward tasks, and higher levels reason more deeply on complex problems. Claude Code writes this key to your user settings when you run `/effort low`, `medium`, `high`, or `xhigh` in an interactive session on your machine. In a `-p` run, the Agent SDK, or a session attached to a remote worker, `/effort` applies to that session only. The message `/effort` prints says which happened.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3629,9 +3629,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Whether to automatically approve all MCP servers in the project",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Approve every MCP server defined in project `.mcp.json` files without a prompt. Claude Code writes this key to `.claude/settings.local.json` when you choose to approve all servers in the approval dialog.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3642,9 +3642,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List of approved MCP servers from .mcp.json",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Approve specific servers defined in project `.mcp.json` files so Claude Code connects them without asking. Claude Code writes this key to `.claude/settings.local.json` when you approve a server in the approval dialog.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3652,13 +3652,13 @@
       "type": "config_key",
       "first_seen": "1.0.81",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "Enabled plugins using plugin-id@marketplace-id format. Example: { \"formatter@anthropic-tools\": true }. Also supports extended format with version constraints.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "env",
@@ -3668,9 +3668,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Environment variables to set for Claude Code sessions",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Set environment variables for every session and for the subprocesses Claude Code starts from it. Any variable in the environment variables reference can go here, which is how you apply one to every session or roll it out to your team.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3678,13 +3678,13 @@
       "type": "config_key",
       "first_seen": "2.0.9",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Additional marketplaces to make available for this repository. Typically used in repository .claude/settings.json to ensure team members have required plugin sources.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Register additional plugin marketplaces by name, so that people who open the repository, or everyone your managed settings reach, get the marketplace without adding it themselves. Claude Code registers each marketplace it doesn't already know. Whether a plugin that `enabledPlugins` names from it installs depends on the plugin's source and which file enables it; that entry has the rules.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "fastMode",
@@ -3694,9 +3694,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn fast mode on for sessions where it's available. Toggling with `/fast` writes `true` here in user settings and removes the key when you turn fast mode off",
+      "description": "Turn fast mode on for sessions where it's available, for interactive work like rapid iteration or live debugging where you want speed at a higher cost per token. You don't usually edit this key by hand: running `/fast` writes `fastMode: true` to `~/.claude/settings.json`, and running it again to turn fast mode off removes the key. Fast mode runs only on Opus 5 and Opus 4.8: turning it on from another model switches you to Opus, and switching to an unsupported model turns it off. See Switch models while fast mode is on.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3707,9 +3707,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "When `true`, fast mode does not persist across sessions. Each session starts with fast mode off, requiring users to enable it with `/fast`. The user's fast mode preference is still saved. See Require per-session opt-in",
+      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so fast mode is on at the start of every later session. Set this key to `true` to stop that: a saved `fastMode: true` no longer turns fast mode on at session start, and each person has to run `/fast` in each session they want it. Claude Code leaves the `fastMode` key in their file, so turning this key off restores the old behavior. Owners on Team or Enterprise plans can deploy it organization-wide through server-managed settings.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3722,7 +3722,7 @@
       "confidence": "high",
       "description": "Probability (0–1) that the session quality survey appears when eligible. 0.05 is a reasonable starting point.",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3733,9 +3733,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Configure a custom script for `@` file autocomplete. See File suggestion settings",
+      "description": "Run your own command to supply `@` file path autocomplete instead of the built-in file suggestion. The built-in suggestion uses fast filesystem traversal; a large monorepo may do better with project-specific indexing such as a pre-built file index.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3772,7 +3772,7 @@
       "confidence": "high",
       "description": "Force a specific login method: \"claudeai\" for Claude Pro/Max, \"console\" for Console billing",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3783,9 +3783,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Require claude.ai account logins to belong to a specific Anthropic organization. Accepts a single UUID string, which also pre-selects that organization during a claude.ai or Claude Console login, or an array of UUIDs where any listed organization is accepted without pre-selection. An empty array fails closed and blocks login with a misconfiguration message. See Restrict login to your organization for how Claude Code treats Claude Console logins, the other login paths, and environment credentials",
+      "description": "From a managed source, require claude.ai account logins to belong to one Anthropic organization, a single UUID, or to any of several, an array. From any settings file, a single UUID also pre-selects that organization during a claude.ai or Claude Console login; an array pre-selects nothing.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3796,9 +3796,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) Block CLI startup until remote managed settings are freshly fetched from the server. If the fetch fails, the CLI exits rather than continuing with cached or no settings. When not set, startup continues without waiting for remote settings. See fail-closed enforcement",
+      "description": "Block CLI startup until Claude Code has freshly fetched server-managed settings. If the fetch fails, Claude Code exits instead of continuing with cached or no settings. When the key is unset, startup continues without waiting for remote settings. A Cloud gateway session always waits, and exits if the gateway can't be reached. Set it when your environment can't accept even a brief window in which a session runs without its managed policy.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3809,9 +3809,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Custom script that refreshes GCP Application Default Credentials when they expire or cannot be loaded. See advanced credential configuration",
+      "description": "Run your own command to refresh Google Cloud Application Default Credentials when Claude Code finds they've expired or can't be loaded, so Google Cloud's Agent Platform requests keep working without you re-authenticating by hand.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3822,9 +3822,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Configure custom commands to run at lifecycle events. See hooks documentation for format",
+      "description": "Run your own commands, prompts, agents, HTTP requests, or MCP tools as hooks at points in Claude Code's lifecycle, such as before a tool call or when a session starts; the hooks reference lists every event, its payload, and its exit codes. Each event maps to a list of matcher groups, and each group lists the handlers to run when the matcher applies.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3835,9 +3835,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allowlist of environment variable names HTTP hooks may interpolate into headers. When set, each hook's effective `allowedEnvVars` is the intersection with this list. Undefined = no restriction. Arrays merge across settings sources. See Hook configuration",
+      "description": "An HTTP hook can put the value of an environment variable into a request header, for example an `Authorization: Bearer $HOOK_TOKEN` header, but only for variables the hook lists in its own `allowedEnvVars`. This key sets an outer limit on that list for every HTTP hook: a hook can use a variable only if both its own `allowedEnvVars` and this key name it. Use it to stop a hook from reading a secret it shouldn't, even when the hook's definition asks for it.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3845,13 +3845,13 @@
       "type": "config_key",
       "first_seen": "0.2.122",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Deprecated: Use attribution instead. Whether to include Claude's co-authored by attribution in commits and PRs (defaults to true)",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Deprecated since v2.0.62, when `attribution` replaced it. Claude Code still reads it, but new configurations should set `attribution`.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "includeGitInstructions",
@@ -3861,9 +3861,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `true`. Include built-in commit and PR workflow instructions and the git status snapshot in Claude's system prompt. Set to `false` to remove both, for example when using your own git workflow skills. The `CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS` environment variable takes precedence over this setting when set",
+      "description": "At session start, Claude Code adds two git-related pieces to Claude's prompt: its built-in instructions for how to write commits and pull requests, in the Bash tool's description, and a git status snapshot of your repository in the system prompt, meaning the current branch, the main branch, `git status` output, and recent commits. Set this key to `false` to leave both out, for example when you use your own git workflow skills.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3874,9 +3874,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Preferred language for Claude responses and voice dictation (e.g., \"japanese\", \"spanish\")",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Have Claude respond in a language other than English by default. There is no fixed list for responses: Claude Code adds the value verbatim to the system prompt as an instruction to always respond in that language, so any language name Claude can read works. Claude Code doesn't check the value, so a misspelled name reaches Claude as written rather than producing an error. The same value sets the language for voice dictation, which does have a fixed list of supported dictation languages, and for auto-generated session titles.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3887,9 +3887,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Minimum version to stay on - prevents downgrades when switching to stable channel",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Keep background auto-updates and `claude update` from installing any version below this one, so moving to the `\"stable\"` channel doesn't downgrade you from a newer `\"latest\"` build. Claude Code writes this key for you when you choose to stay on your current version while switching channels in `/config`, and clears it when you switch back to `\"latest\"`.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3900,9 +3900,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override the default model to use for Claude Code. `--model` and `ANTHROPIC_MODEL` override this for one session",
+      "description": "Set the model every new session uses, so you don't have to pick one with `/model` each time. Setting it here doesn't stop you from switching mid-session. If your admin set an organization default model to override user selection, you get that model even when you set this key in user, project, or local settings.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3913,9 +3913,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Map Anthropic model IDs to provider-specific model IDs such as Amazon Bedrock inference profile ARNs. Each model picker entry uses its mapped value when calling the provider API. See Override model IDs per version",
+      "description": "Map Anthropic model IDs to provider-specific model IDs, such as Amazon Bedrock inference profile ARNs. Each model picker entry then uses its mapped value when calling the provider API. Administrators use this on Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry to route each model version to a specific inference profile, version name, or deployment for governance, cost allocation, or regional routing.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3926,9 +3926,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Script to generate dynamic OpenTelemetry headers. Runs at startup and periodically. Set the refresh interval with `CLAUDE_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS`. See Dynamic headers",
+      "description": "Run your own command to generate the headers Claude Code sends with OpenTelemetry exports, for backends whose tokens rotate. Claude Code runs it at startup and periodically after that, and expects a JSON object of string header values on stdout.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3939,9 +3939,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Configure an output style to adjust the system prompt. See output styles documentation",
+      "description": "Select an output style by name. An output style is a saved set of instructions that Claude Code adds to the system prompt to change Claude's role, tone, and output format, such as the built-in Explanatory and Learning styles or one you wrote yourself.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3952,9 +3952,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "See table below for structure of permissions.",
+      "description": "Control which tools Claude can use without asking, which ones always prompt, and which ones are blocked, and set the permission mode a session starts in. Every `permissions.*` key below nests under this object.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3965,9 +3965,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Additional working directories for file access. Most `.claude/` configuration is not discovered from these directories",
+      "description": "Give Claude file access to directories outside the one you started in, as additional working directories. Most `.claude/` configuration is not discovered from these directories.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3978,9 +3978,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Array of permission rules to allow tool use. Tool-name globs are supported only in the tool position after a literal `mcp__<server>__` prefix, such as `mcp__github__get_*`; the server segment must be glob-free. See Permission rule syntax below for pattern matching details",
+      "description": "List the tool uses Claude Code approves without asking you. In an MCP rule, `*` can appear only in the tool name after the `mcp__<server>__` prefix, such as `mcp__github__get_*`; it can't appear in the server name.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -3991,9 +3991,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Array of permission rules to ask for confirmation upon tool use. See Permission rule syntax below",
+      "description": "List the tool uses that prompt you for confirmation even in a permission mode that would otherwise approve them, such as `acceptEdits` or `bypassPermissions`. In `dontAsk` mode Claude Code denies a matching tool use instead of prompting.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4006,7 +4006,7 @@
       "confidence": "high",
       "description": "Default permission mode when Claude Code needs access",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4017,9 +4017,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Array of permission rules to deny tool use. Use this to exclude sensitive files from Claude Code access. Tool names accept glob patterns: `\"*\"` denies every tool and `\"mcp__*\"` denies every MCP tool. Deny rules can't remove `EndConversation` while any other tool remains. See Permission rule syntax and Bash permission limitations",
+      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths. Read and Edit deny rules apply to Claude's built-in file tools and to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`; they don't apply to arbitrary subprocesses, so for OS-level enforcement enable the sandbox.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4027,13 +4027,13 @@
       "type": "config_key",
       "first_seen": "2.1.73",
       "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
-      "description": "Set to `\"disable\"` to prevent auto mode from being activated. Equivalent to the top-level `disableAutoMode` setting, which describes the full effect. Most useful in managed settings where users cannot override it",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
-      "category": "settings"
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Disable auto mode",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
     },
     {
       "symbol": "permissions.disableBypassPermissionsMode",
@@ -4043,9 +4043,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Disable the ability to bypass permission prompts",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Prevent anyone from entering `bypassPermissions` mode. Claude Code then rejects the `--dangerously-skip-permissions` flag, and ignores an agent definition's `permissionMode: bypassPermissions`, so the subagent runs with the parent session's permission mode.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4056,9 +4056,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `~/.claude/plans`. Customize where plan files are stored. Path is relative to project root.",
+      "description": "Choose where Claude Code stores the plan files it writes in plan mode. Claude Code resolves the path relative to the project root and keeps the default when the path resolves outside it.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4066,13 +4066,13 @@
       "type": "config_key",
       "first_seen": "2.0.22",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "User configuration values for MCP servers keyed by server name",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Store the non-sensitive answers you give a plugin's `userConfig` configuration dialog, keyed by plugin ID. Claude Code writes this key to your user settings when you fill in the dialog, so you don't need to edit it by hand. Sensitive options go to the macOS Keychain instead, or to `~/.claude/.credentials.json` on platforms without a supported keychain.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "pluginTrustMessage",
@@ -4082,9 +4082,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) Custom message appended to the plugin trust warning shown before installation. Use this to add organization-specific context, for example to confirm that plugins from your internal marketplace are vetted.",
+      "description": "Add your organization's own text to the plugin trust warning Claude Code shows before installation, for example to confirm that plugins from your internal marketplace are vetted.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4095,9 +4095,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Reduce or disable UI animations (spinners, shimmer, flash effects) for accessibility",
+      "description": "Reduce or turn off interface animations such as the spinner, shimmer, and flash effects. Appears in `/config` as **Reduce motion**.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4108,9 +4108,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `true`. Show prompt suggestions, the grayed-out predictions that appear in your prompt input. Set to `false` or turn off **Prompt suggestions** in `/config` to disable. `CLAUDE_CODE_ENABLE_PROMPT_SUGGESTION` takes precedence when both are set",
+      "description": "Show or hide prompt suggestions, the grayed-out predictions that appear in your prompt input. Set it to `false`, or turn off **Prompt suggestions** in `/config`, to hide them.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4136,7 +4136,7 @@
       "confidence": "high",
       "description": "Default environment ID to use for remote sessions",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4147,9 +4147,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `true`. Control whether the `@` file picker respects `.gitignore` patterns. When `true`, files matching `.gitignore` patterns are excluded from suggestions",
+      "description": "Control whether the `@` file picker leaves out files that match `.gitignore` patterns. Appears in `/config` as **Respect .gitignore in file picker**.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4157,13 +4157,13 @@
       "type": "config_key",
       "first_seen": "1.0.110",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Sandbox configuration for network and filesystem restrictions",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Isolate the Bash commands Claude runs from your filesystem and network with sandboxing. Turn the sandbox on with `enabled`, then narrow or widen what sandboxed commands can touch with the `filesystem`, `network`, and `credentials` sub-objects. The sandbox runs on macOS, Linux, and WSL2.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "sandbox.allowUnsandboxedCommands",
@@ -4173,9 +4173,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allow commands to run outside the sandbox via the `dangerouslyDisableSandbox` parameter. When set to `false`, the `dangerouslyDisableSandbox` escape hatch is completely disabled and all commands must run sandboxed (or be in `excludedCommands`). Useful for enterprise policies that require strict sandboxing. Default: true",
+      "description": "Let Claude retry a command outside the sandbox with the `dangerouslyDisableSandbox` parameter after the sandbox blocks it. Set it to `false` so Claude Code ignores that parameter completely and every command must run sandboxed or appear in `excludedCommands`, which the `/sandbox` **Overrides** tab shows as **Strict sandbox mode**. Use `false` in managed settings for policies that require strict sandboxing.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4186,9 +4186,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Auto-approve bash commands when sandboxed. Default: true",
+      "description": "Let Claude Code run sandboxed Bash commands without a permission prompt. Commands that can't run in the sandbox still go through the regular permission flow, and `deny` rules and content-scoped `ask` rules such as `Bash(git push *)` still apply; a bare `Bash` ask rule is skipped for sandboxed commands. Set it to `false` to send sandboxed commands through the regular permission flow too, which the `/sandbox` **Mode** tab calls regular permissions mode.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4199,9 +4199,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Enable weaker sandbox for unprivileged Docker environments (Linux and WSL2 only). **Reduces security.** Default: false",
+      "description": "Run the Linux sandbox inside an unprivileged Docker container, where bubblewrap can't mount a fresh `/proc`. Instead the inner sandbox bind-mounts the container's existing `/proc`, which exposes process information that a fresh mount would hide. This reduces security; use it only when the outer container already provides the isolation you need.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4212,9 +4212,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(macOS only) Allow access to the system TLS trust service (`com.apple.trustd.agent`) in the sandbox. Required for Go-based tools like `gh`, `gcloud`, and `terraform` to verify TLS certificates when using `httpProxyPort` with a MITM proxy and custom CA. **Reduces security** by opening a potential data exfiltration path. Default: false",
+      "description": "Let sandboxed commands on macOS reach the system TLS trust service, `com.apple.trustd.agent`. Go-based tools such as `gh`, `gcloud`, and `terraform` need it to verify TLS certificates when you use `network.httpProxyPort` with a MITM proxy and a custom CA. This reduces security by opening a potential data exfiltration path through the trust service.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4225,9 +4225,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Enable bash sandboxing (macOS, Linux, and WSL2). Default: false",
+      "description": "Turn on sandboxing for Bash commands. When you pick a mode in the `/sandbox` panel, Claude Code writes this key to `.claude/settings.local.json` for the current project; set it in `~/.claude/settings.json` to sandbox every project.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4238,9 +4238,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Commands that should run outside of the sandbox",
+      "description": "Name commands that Claude Code always runs outside the sandbox, such as tools that don't work under it. Each entry uses the same syntax as the content of a `Bash(...)` permission rule: an exact command, a prefix such as `docker *`, or a wildcard pattern. When any part of a compound command matches an entry, Claude Code runs the whole command unsandboxed.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4253,7 +4253,7 @@
       "confidence": "high",
       "description": "Exit with an error at startup if sandbox.enabled is true but the sandbox cannot start (missing dependencies, unsupported platform, or platform not in enabledPlatforms). When false (default), a warning is shown and commands run unsandboxed. Intended for managed-settings deployments that require sandboxing as a hard gate.",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4261,13 +4261,13 @@
       "type": "config_key",
       "first_seen": "1.0.110",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Filesystem access restrictions - read and write can use different modes",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Control which paths sandboxed commands can read and write. By default they can write to the working directory, any directories you add with `--add-dir`, and the session temp directory, and can read the rest of the filesystem, including credential files. Widen or narrow that with the four path lists, or switch the filesystem layer off with `disabled`. See Filesystem isolation for the default boundaries.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "sandbox.filesystem.allowManagedReadPathsOnly",
@@ -4277,9 +4277,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) Only `filesystem.allowRead` paths from managed settings are respected. `denyRead` still merges from all sources. Default: false",
+      "description": "Honor only the `allowRead` entries that come from managed settings, so developers can't re-open read access to paths your organization blocked. `denyRead` entries still merge from every settings file.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4290,9 +4290,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Paths to re-allow reading within `denyRead` regions. An `allowRead` path re-opens reading inside a broader `denyRead` region. Claude Code keeps an exact or wildcard `denyRead` entry blocked inside a broader `allowRead`, as the overlap table shows. Arrays are merged across all settings scopes. Use this to create workspace-only read access patterns.",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Paths to re-allow reading within denyRead regions. Takes precedence over denyRead for matching paths.",
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4303,9 +4303,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Additional paths where sandboxed commands can write. Arrays are merged across all settings scopes: user, project, and managed paths are combined, not replaced. Also merged with paths from `Edit(...)` allow permission rules. See path prefixes below.",
+      "description": "Add paths where sandboxed commands can write, beyond the working directory and the session temp directory. Use it when a subprocess such as `kubectl` or a build tool needs to write outside the project.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4316,9 +4316,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Paths where sandboxed commands cannot read. Arrays are merged across all settings scopes. Also merged with paths from `Read(...)` deny permission rules.",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Additional paths to deny reading within the sandbox. Merged with paths from Read(...) deny permission rules.",
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4329,9 +4329,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Paths where sandboxed commands cannot write. Arrays are merged across all settings scopes. Also merged with paths from `Edit(...)` deny permission rules.",
+      "description": "Block sandboxed commands from writing to specific paths, including paths inside a directory that is otherwise writable.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4339,11 +4339,12 @@
       "type": "config_key",
       "first_seen": "1.0.122",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Silence sandbox violation reports for paths you expect a command to probe and be refused, such as a tool that checks `/etc/hosts` on startup, so those denials don't show up as violations or in what Claude sees. The sandbox still blocks the access; only the report is suppressed. Keys are substrings to match against the command, with `*` matching every command, and values are substrings of the violation to ignore for that command, such as a filesystem path.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4351,13 +4352,13 @@
       "type": "config_key",
       "first_seen": "1.0.110",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Network access restrictions",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Control which hosts, ports, and sockets sandboxed commands can reach. The sandbox routes outbound traffic through a proxy that enforces these lists; see Network isolation for how the proxy decides and when it prompts.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "sandbox.network.allowAllUnixSockets",
@@ -4367,9 +4368,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allow all Unix socket connections in sandbox. On Linux and WSL2, when the optional seccomp filter is installed, this is the only way to permit Unix sockets, since it skips the filter that otherwise blocks `socket(AF_UNIX, ...)` calls; without the filter, the sandbox doesn't block Unix-socket calls. On WSL2, `true` also reopens the interop socket that launches Windows binaries. Default: false",
+      "description": "Let sandboxed commands connect to every Unix socket. On Linux and WSL2, the sandbox's seccomp filter blocks `socket(AF_UNIX, ...)` calls, so this is the only way to permit Unix sockets there. When the filter is missing, which `/sandbox` reports on its Dependencies tab, the sandbox doesn't block Unix-socket calls. See Set up Linux and WSL2 for where the filter comes from.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4380,9 +4381,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allow binding to localhost ports (macOS only). Default: false",
+      "description": "Let sandboxed commands bind to localhost ports on macOS, for example to start a dev server.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4393,9 +4394,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Additional XPC/Mach service names the sandbox may look up (macOS only). Supports a single trailing `*` for prefix matching. Needed for tools that communicate via XPC such as the iOS Simulator or Playwright.",
+      "description": "List additional XPC and Mach service names the macOS sandbox may look up. Tools that communicate over XPC, such as the iOS Simulator or Playwright, need their services listed here.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4406,9 +4407,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) Only `allowedDomains` and `WebFetch(domain:...)` allow rules from managed settings are respected. Domains from user, project, and local settings are ignored. Non-allowed domains are blocked automatically without prompting the user. Denied domains are still respected from all sources. Default: false",
+      "description": "Lock the network allowlist to what managed settings define. Claude Code then honors only `allowedDomains` and `WebFetch(domain:...)` allow rules from managed settings, ignores domains from user, project, local, and `--settings` settings, and blocks a non-allowed domain automatically instead of prompting.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4419,9 +4420,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(macOS only) Unix socket paths accessible in sandbox. Ignored on Linux and WSL2, where the seccomp filter cannot inspect socket paths; use `allowAllUnixSockets` instead.",
+      "description": "List the Unix socket paths sandboxed commands can connect to on macOS. Claude Code ignores this list on Linux and WSL2, where the seccomp filter can't inspect socket paths; use `allowAllUnixSockets` there instead.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4432,9 +4433,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Array of domains to allow for outbound network traffic. Supports wildcards, such as `*.example.com`. Write IPv6 literals bracketed, with an optional port: `\"[::1]\"` allows every port and `\"[::1]:443\"` one port.",
+      "description": "Pre-allow domains for outbound traffic from sandboxed commands, so the sandbox doesn't prompt for them. Wildcards such as `*.example.com` match subdomains, and an optional `:port` suffix limits an entry to one port; an entry without a port matches every port.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4445,9 +4446,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "HTTP proxy port used if you wish to bring your own proxy. If not specified, Claude will run its own proxy.",
+      "description": "Point the sandbox at your own HTTP proxy instead of the one Claude Code runs. Organizations do this to inspect HTTPS traffic, apply their own filtering rules, or log every request. When unset, Claude Code starts its own proxy for HTTP traffic.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4458,9 +4459,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "SOCKS5 proxy port used if you wish to bring your own proxy. If not specified, Claude will run its own proxy.",
+      "description": "Point the sandbox at your own SOCKS5 proxy instead of the one Claude Code runs. When unset, Claude Code starts its own proxy for SOCKS traffic.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4471,9 +4472,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Custom `ripgrep` binary for the sandbox. Set `command` to the binary's path. To pass arguments to that binary, also set `args`. If you don't set `ripgrep`, the sandbox uses the same `ripgrep` binary as Claude Code. That is the bundled binary unless you set `USE_BUILTIN_RIPGREP` to `0`. Only honored from user, managed, or CLI settings.",
+      "description": "Point the sandbox at a ripgrep binary of your own instead of the one Claude Code uses, for example when your platform needs a differently built `rg`.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4508,9 +4509,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `false`. Show the \"clear context\" option on the plan accept screen. Set to `true` to restore the option",
+      "description": "When Claude finishes a plan in plan mode, it shows an approval menu. Planning can use a lot of context, so this key adds a first option to that menu, **Yes, clear context and …**, that approves the plan, clears the conversation context, and starts implementing from the plan alone. The rest of the label names the permission mode the session continues in, and shows how much of your context the planning used.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4523,7 +4524,7 @@
       "confidence": "high",
       "description": "Show thinking summaries in the transcript view (ctrl+o). Default: false.",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4534,9 +4535,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `0.01`. Fraction of the model's context window reserved for the skill listing Claude sees each turn, so the default reserves 1%. When the listing exceeds the budget, descriptions for the least-used skills are dropped and only their names are listed, so Claude can still invoke them but can't see what they do. Raise to keep more descriptions visible at the cost of more context per turn. `/doctor` estimates the listing cost against the budget",
+      "description": "Each turn, Claude sees a listing of your skills with their descriptions, and Claude Code caps that listing at a share of the context window. When the listing is over the cap, Claude Code keeps every skill's name but drops the descriptions of the least-used skills, so Claude can still invoke those skills but is less likely to choose one on its own. Raise this key to keep more descriptions visible at the cost of more context per turn.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4547,9 +4548,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `1536`. Per-skill character cap on the combined `description` and `when_to_use` text in the skill listing Claude sees each turn. Text longer than this is truncated. Raise to keep long descriptions intact at the cost of more context per turn; lower to fit more skills under `skillListingBudgetFraction`",
+      "description": "Each turn, Claude sees a listing of your skills that shows each skill's `description` and `when_to_use` text. This key caps how many characters of that text Claude Code shows per skill; longer text is cut at the cap.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4560,9 +4561,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Per-skill visibility overrides keyed by skill name. Value is `\"on\"`, `\"name-only\"`, `\"user-invocable-only\"`, or `\"off\"`. Lets you hide or collapse a skill without editing its SKILL.md. Does not apply to plugin skills, which are managed through `/plugin`. The `/skills` menu writes these to `.claude/settings.local.json`. See Override skill visibility from settings",
+      "description": "Hide or collapse a skill without editing its `SKILL.md`. Claude Code applies the value under each skill's name to the skill list Claude sees and to your `/` autocomplete.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4573,9 +4574,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Skip the confirmation prompt shown before entering bypass permissions mode via `--dangerously-skip-permissions` or `defaultMode: \"bypassPermissions\"`. Ignored when set in project settings (`.claude/settings.json`) to prevent untrusted repositories from auto-bypassing the prompt",
+      "description": "Skip the confirmation dialog Claude Code shows before a session enters `bypassPermissions` mode, whether from `--dangerously-skip-permissions` or from `defaultMode: \"bypassPermissions\"`. Claude Code writes `true` here in your user settings when you accept that dialog once.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4586,9 +4587,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Skip the WebFetch domain safety check that sends each requested hostname to `api.anthropic.com` before fetching. Set to `true` in environments that block traffic to Anthropic, such as Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry deployments with restrictive egress. When skipped, WebFetch attempts any URL without consulting the blocklist",
+      "description": "Skip the WebFetch domain safety check, which sends each requested hostname to `api.anthropic.com` before fetching. Set `true` in environments that block traffic to Anthropic, such as Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry deployments with restrictive egress.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4599,9 +4600,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Default**: `true`. Show tips in the spinner while Claude is working. Set to `false` to disable tips",
+      "description": "While Claude works, the spinner line rotates through short tips about Claude Code features, such as \"Use Plan Mode to prepare for a complex request before making changes. Press Shift+Tab twice to enable.\" Set this key to `false` to hide them. Appears in `/config` as **Show tips**.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4612,9 +4613,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override spinner tips with custom strings. `tips`: array of tip strings. `excludeDefault`: if `true`, only show custom tips; if `false` or absent, custom tips are merged with built-in tips",
+      "description": "Replace or extend the spinner tips, the short hints Claude Code rotates through while Claude works, with your own strings, such as a team reminder to run a review skill. Set `excludeDefault` to `true` and list at least one tip to show only your tips; when it's `false` or absent, or `tips` is empty, Claude Code keeps the built-in tips and adds yours.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4649,9 +4650,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Customize the action verbs shown while a turn is in progress. Set `mode` to `\"replace\"` to use only your verbs, or `\"append\"` to add them to the defaults",
+      "description": "While a turn is in progress, the spinner shows a rotating verb such as \"Accomplishing\", \"Architecting\", or \"Baking\". Use this key to add your own verbs to that rotation or replace the built-in list with yours.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4686,9 +4687,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "SSH connections to show in the Desktop environment dropdown. Each entry requires `id`, `name`, and `sshHost`; `sshPort`, `sshIdentityFile`, and `startDirectory` are optional. When set in managed settings, connections are read-only for users. Read from managed and user settings only",
+      "description": "Add SSH connections to the Desktop environment dropdown. Administrators use it to distribute shared connections to a team. Connections you define in managed settings show as managed, so users can select them but can't edit or delete them in the app.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4699,9 +4700,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Configure a custom status line to display context. The object's optional `padding`, `refreshInterval`, and `hideVimModeIndicator` fields control spacing, periodic re-runs, and whether the built-in vim mode indicator below the prompt is hidden. See `statusLine` documentation",
+      "description": "Run your own command to render a status line below the prompt with context such as the model, cost, or git branch. Optional fields adjust spacing, add periodic re-runs, and hide the built-in vim mode indicator when your script renders `vim.mode` itself.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4761,9 +4762,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these exact sources can be added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem.",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "description": "Restrict which plugin marketplace sources people in your organization can add and install plugins from. Claude Code enforces the allowlist on marketplace add and on plugin install, update, refresh, and auto-update, before any network or filesystem operation, so a marketplace someone added before you set the policy can't be used to fetch plugins once its source no longer matches. Blocked users see an error naming the managed policy.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4774,9 +4775,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "(Managed settings only) Block skills, agents, hooks, and MCP servers from user and project sources, so they can only come from plugins or managed settings. `true` locks all four surfaces; an array locks only the named ones. See `strictPluginOnlyCustomization`",
+      "description": "Block skills, agents, hooks, and MCP servers from user and project sources, so they can come only from plugins or managed settings. Combine it with `strictKnownMarketplaces` to control the full customization supply chain: the marketplace allowlist controls which plugins users can install.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4787,9 +4788,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Configure a custom command that rewrites rows in the subagent task display. See Subagent status lines",
+      "description": "When Claude runs subagents, Claude Code lists them in a task display below the prompt, one row per subagent showing `name · description · token count`. This key lets you run your own command to rewrite those rows, for example to show each subagent's context usage as a percentage. On each refresh, Claude Code sends the visible rows as one JSON object on stdin, with a `tasks` array carrying each subagent's `id`, `name`, `status`, `model`, `tokenCount`, and more, and replaces the row for each `id` you write back as a `{\"id\", \"content\"}` line. Rows you don't write back keep the default rendering.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4824,9 +4825,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Disable syntax highlighting in diffs, code blocks, and file previews",
+      "description": "Claude Code colors code by language in the diffs, code blocks, and file previews it shows in the terminal, with its built-in highlighter; no plugin or language server is involved. Set this key to `true` to show them as plain text instead, for example if the colors clash with your terminal theme or slow a screen reader.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4834,13 +4835,13 @@
       "type": "config_key",
       "first_seen": "2.1.26",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Whether /rename updates the terminal tab title (defaults to true). Set to false to keep auto-generated topic titles.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Claude Code sets your terminal tab's title. By default it uses a title it generates from the conversation, and once you give the session a name with `/rename` or `--name`, the tab shows that name instead. Set this key to `false` to keep the generated title on the tab even after you name the session. The name itself still applies, so `/resume <name>` and the session picker find it.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "viewMode",
@@ -4850,9 +4851,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Default transcript view mode on startup: `\"default\"`, `\"verbose\"`, or `\"focus\"`. Overrides the sticky `/focus` selection when set. The `--verbose` flag overrides this for one session",
+      "description": "Set the transcript view Claude Code starts in: `\"default\"`, `\"verbose\"`, or `\"focus\"`. When set, it overrides both the sticky `/focus` selection and the `verbose` setting.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4865,7 +4866,7 @@
       "confidence": "high",
       "description": "@internal Voice handsfree settings; behavior gated at read sites by feature(VOICE_HANDSFREE). Hidden from public SDK types until external launch; see TODO on voiceEnabled above.",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings-internal"
     },
     {
@@ -4911,13 +4912,13 @@
       "type": "config_key",
       "first_seen": "2.1.38",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "Git worktree configuration for --worktree flag.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "worktree.sparsePaths",
@@ -4927,9 +4928,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Directories to check out in each worktree via git sparse-checkout. Only the listed directories plus root-level files are written to disk, which is faster in large monorepos. While a sparse worktree exists, git enables `extensions.worktreeConfig` in the repository's shared `.git/config`; see Check out only the directories you need",
+      "description": "Check out only the listed directories in each worktree through git sparse-checkout. Claude Code writes only those directories plus root-level files to disk, which is faster in large monorepos; see Check out only the directories you need.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -4940,9 +4941,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Directories to symlink from the main repository into each worktree to avoid duplicating large directories on disk. No directories are symlinked by default",
+      "description": "Symlink directories from the main repository into each worktree so you don't duplicate large directories on disk.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings.md",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
     {
@@ -7589,7 +7590,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to enable fullscreen rendering, a research preview that reduces flicker and keeps memory flat in long conversations. You can also switch with `/tui fullscreen`",
+      "description": "Set to `1` to enable fullscreen rendering, a research preview that reduces flicker and keeps memory flat in long conversations. Overrides the `tui` setting; you can also switch with `/tui fullscreen`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -8681,7 +8682,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls the PowerShell tool. On Windows without Git Bash, the tool is enabled automatically; set to `0` to disable it. On Windows with Git Bash installed, the tool is rolling out progressively: set to `1` to opt in or `0` to opt out. On Linux, macOS, and WSL, set to `1` to enable it, which requires `pwsh` on your `PATH`. When enabled on Windows, Claude can run PowerShell commands natively instead of routing through Git Bash. See PowerShell tool",
+      "description": "Controls the PowerShell tool. On Windows without Git Bash, the tool is enabled automatically; set to `0` to disable it. On Windows with Git Bash installed, the tool is on by default for claude.ai and Console accounts; set to `1` to enable it in Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry sessions, or `0` to turn it off. On Linux, macOS, and WSL, set to `1` to enable it, which requires `pwsh` on your `PATH`. When enabled on Windows, Claude can run PowerShell commands natively instead of routing through Git Bash. See PowerShell tool",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
