@@ -600,4 +600,372 @@ describe('extractControlMessages', () => {
       expect(controlMessageConfidence(init)).toBe('high');
     });
   });
+
+  describe('code-split era (2.1.242+, Bun 1.4 ESM output)', () => {
+    // From 2.1.242 the CLI is ~1372 ESM chunks that import each other by
+    // `/$bunfs/root/chunk-*.js`, so the three things this lane links — a schema, the
+    // union that references it, and the dispatch that routes it — land in DIFFERENT
+    // chunks. The lane resolves across them by export name, never by concatenating:
+    // chunks reuse minified local names, so a flat join would collide definitions.
+    //
+    // These three chunks model exactly that. The schemas are defined and exported
+    // under aliases in one chunk; the unions import them under fresh locals in a
+    // second; the dispatch handler and a call-site-only subtype are in a third — and
+    // that third chunk rebinds `A1` to an unrelated value, the collision a flat join
+    // would get wrong.
+    const schemasChunk = [
+      'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,$=()=>0;',
+      'var A1=Ee(()=>Se({subtype:xt("initialize"),x:$()}).describe("Initializes the SDK session."));',
+      'var A2=Ee(()=>Se({subtype:xt("set_model"),x:$()}).describe("Sets the active model."));',
+      'var B1=Ee(()=>Se({subtype:xt("hook_callback"),x:$()}).describe("Delivers a hook callback."));',
+      'var B2=Ee(()=>Se({subtype:xt("can_use_tool"),x:$()}));',
+      'export{A1 as e0,A2 as e1,B1 as e2,B2 as e3};',
+    ].join('\n');
+    const unionsChunk = [
+      'import{e0 as p,e1 as q,e2 as r,e3 as s}from"/$bunfs/root/chunk-schemas.js";',
+      'var Ee=(f)=>f,fs=(a)=>a;',
+      'var CLI=Ee(()=>fs([r(),s()]).describe("Control requests the agent loop originates and needs a reply to."));',
+      'var HOST=Ee(()=>fs([p(),q()]).describe("Control requests a client sends to drive the loop."));',
+    ].join('\n');
+    const dispatchChunk = [
+      // Same NAME as the schema chunk's local, a number here — a per-chunk scope must
+      // keep the two apart, which is exactly what a flat concatenation cannot.
+      'var A1=123;',
+      'class K{go(e,t){return this.request({subtype:"remote_control",enabled:e,name:t})}}',
+      'function h(e){' +
+        'if(e.request.subtype==="initialize")return 1;' +
+        'else if(e.request.subtype==="set_model")return 2;' +
+        'else if(e.request.subtype==="hook_callback")return 3;' +
+        'else if(e.request.subtype==="can_use_tool")return 4;' +
+        'else if(e.request.subtype==="remote_control")return 5;' +
+        'else if(e.request.subtype==="add_directory")return 6;' +
+        'return 0}',
+    ].join('\n');
+
+    it('resolves a union in one chunk against a schema imported from another', () => {
+      const found = bySymbol(
+        extractControlMessages([schemasChunk, unionsChunk, dispatchChunk], '2.1.245')
+      );
+
+      expect([...found.keys()].sort()).toEqual([
+        'add_directory',
+        'can_use_tool',
+        'hook_callback',
+        'initialize',
+        'remote_control',
+        'set_model',
+      ]);
+    });
+
+    it('carries direction across the chunk boundary from the importing union', () => {
+      const found = bySymbol(
+        extractControlMessages([schemasChunk, unionsChunk, dispatchChunk], '2.1.245')
+      );
+
+      // Direction is decided by the union chunk; membership resolves back to the
+      // schema chunk. Both sides must survive the crossing.
+      expect(found.get('can_use_tool')?.direction).toBe('cli_to_host');
+      expect(found.get('hook_callback')?.direction).toBe('cli_to_host');
+      expect(found.get('initialize')?.direction).toBe('host_to_cli');
+      expect(found.get('set_model')?.direction).toBe('host_to_cli');
+    });
+
+    it("keeps the schema's own description, defined in a different chunk from its union", () => {
+      const found = bySymbol(
+        extractControlMessages([schemasChunk, unionsChunk, dispatchChunk], '2.1.245')
+      );
+
+      expect(found.get('initialize')?.description).toBe('Initializes the SDK session.');
+    });
+
+    it('still publishes a call-site-only subtype from the dispatch chunk', () => {
+      const found = bySymbol(
+        extractControlMessages([schemasChunk, unionsChunk, dispatchChunk], '2.1.245')
+      );
+
+      const remote = found.get('remote_control');
+      expect(remote?.evidence).toBe('call_site');
+      expect(remote?.direction).toBeNull();
+    });
+
+    it('does not depend on chunk order', () => {
+      const forward = extractControlMessages([schemasChunk, unionsChunk, dispatchChunk], '2.1.245');
+      const shuffled = extractControlMessages(
+        [dispatchChunk, unionsChunk, schemasChunk],
+        '2.1.245'
+      );
+      expect(shuffled).toEqual(forward);
+    });
+
+    it('treats a one-element array as the single-bundle case, byte for byte', () => {
+      const asArray = extractControlMessages([bundle({})], '2.1.226');
+      const asString = extractControlMessages(bundle({}), '2.1.226');
+      expect(asArray).toEqual(asString);
+    });
+
+    it('resolves an import against the module it names, not an unrelated chunk reusing the export name', () => {
+      // The correctness this rests on: a union imports its members from a SPECIFIC
+      // module, and resolution is scoped to that module. Two unrelated chunks both
+      // export `dup`, for DIFFERENT subtypes; the union imports `dup` from chunk-a, so
+      // it must resolve to chunk-a's subtype, never chunk-b's. chunk-a is identified by
+      // the names imported from it (`a0` and `dup`), which only chunk-a exports together.
+      const chunkA = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var D=Ee(()=>Se({subtype:xt("cli_only")}).describe("A cli-only request."));',
+        'export{A1 as a0,D as dup};',
+      ].join('\n');
+      const chunkB = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var D=Ee(()=>Se({subtype:xt("wrong_subtype")}).describe("The one that must NOT win."));',
+        'export{A2 as b0,D as dup};',
+      ].join('\n');
+      const unions = [
+        'import{a0 as p,dup as r}from"/$bunfs/root/chunk-a.js";',
+        'var Ee=(f)=>f,fs=(a)=>a;',
+        'var U=Ee(()=>fs([p(),r()]).describe("Control requests a client sends to drive the loop."));',
+      ].join('\n');
+      const dispatch =
+        'function h(e){if(e.request.subtype==="initialize")return 1;' +
+        'else if(e.request.subtype==="cli_only")return 2;return 0}';
+
+      const found = bySymbol(extractControlMessages([chunkA, chunkB, unions, dispatch], '2.1.132'));
+
+      expect([...found.keys()].sort()).toEqual(['cli_only', 'initialize']);
+      expect(found.has('wrong_subtype')).toBe(false);
+    });
+
+    it('refuses when a control-request union loses a member to an unidentifiable source', () => {
+      // If two chunks export the exact set of names imported from a source, the source
+      // is unidentifiable — resolution must not guess. Dropping the member would be a
+      // SILENT partial loss: the two resolved members still clear the floor guards
+      // while the third subtype vanishes from the cache. The lane refuses instead.
+      const chunkA = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var D=Ee(()=>Se({subtype:xt("ambiguous_one")}).describe("A."));',
+        'export{A1 as e0,A2 as e1,D as amb};',
+      ].join('\n');
+      // A second chunk exports the SAME single name `amb`, so an import of just `amb`
+      // matches both chunks and cannot be attributed to either.
+      const chunkB = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var D=Ee(()=>Se({subtype:xt("ambiguous_two")}).describe("B."));',
+        'export{D as amb};',
+      ].join('\n');
+      const unions = [
+        'import{e0 as p,e1 as q}from"/$bunfs/root/chunk-a.js";',
+        'import{amb as r}from"/$bunfs/root/chunk-ambiguous.js";',
+        'var Ee=(f)=>f,fs=(a)=>a;',
+        'var U=Ee(()=>fs([p(),q(),r()]).describe("Control requests a client sends to drive the loop."));',
+      ].join('\n');
+      const dispatch =
+        'function h(e){if(e.request.subtype==="initialize")return 1;' +
+        'else if(e.request.subtype==="set_model")return 2;return 0}';
+
+      expect(() => extractControlMessages([chunkA, chunkB, unions, dispatch], '2.1.132')).toThrow(
+        /could not uniquely identify/i
+      );
+    });
+
+    it('refuses even when ambiguity leaves the control union with fewer than two resolved members', () => {
+      // The bypass the raw-array check closes: dropping the ambiguous member leaves a
+      // SINGLE resolved schema, which the `<2 members` filter would discard as a union
+      // — silently, with no refusal. The routed member is still positive evidence this
+      // was a control union, so the loss must refuse regardless of the count.
+      const chunkA = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var D=Ee(()=>Se({subtype:xt("one")}).describe("A."));',
+        'export{A1 as e0,D as amb};',
+      ].join('\n');
+      const chunkB = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var D=Ee(()=>Se({subtype:xt("two")}).describe("B."));',
+        'export{D as amb};',
+      ].join('\n');
+      const unions = [
+        'import{e0 as p}from"/$bunfs/root/chunk-a.js";',
+        'import{amb as r}from"/$bunfs/root/chunk-ambiguous.js";',
+        'var Ee=(f)=>f,fs=(a)=>a;',
+        'var U=Ee(()=>fs([p(),r()]).describe("Control requests a client sends to drive the loop."));',
+      ].join('\n');
+      const dispatch = 'function h(e){if(e.request.subtype==="initialize")return 1;return 0}';
+
+      expect(() => extractControlMessages([chunkA, chunkB, unions, dispatch], '2.1.132')).toThrow(
+        /could not uniquely identify/i
+      );
+    });
+
+    it('refuses even when a lossy union looks non-control, since the lost member may be the routed one', () => {
+      // The tail: a union whose RESOLVED members are all non-routed looks non-control —
+      // but the member that did not resolve could be the routed one, which would make it
+      // a control request. Its subtype is unknown, so refusing on any resolved schema +
+      // an unresolvable member is the only safe call. Here `status`/`away_summary`
+      // resolve (non-routed) while the routed `initialize` is the lost import.
+      const schemas = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var N1=Ee(()=>Se({subtype:xt("status")}).describe("Status."));',
+        'var N2=Ee(()=>Se({subtype:xt("away_summary")}).describe("Away."));',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'export{N1 as n1,N2 as n2,A1 as routed};',
+      ].join('\n');
+      // A second chunk also exports `routed`, so importing it alone is unidentifiable.
+      const dup = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var D=Ee(()=>Se({subtype:xt("z")}));',
+        'export{D as routed};',
+      ].join('\n');
+      const unions = [
+        'import{n1 as p,n2 as q}from"/$bunfs/root/chunk-a.js";',
+        'import{routed as r}from"/$bunfs/root/chunk-dup.js";',
+        'var Ee=(f)=>f,fs=(a)=>a;',
+        'var U=Ee(()=>fs([p(),q(),r()]).describe("Control requests a client sends to drive the loop."));',
+      ].join('\n');
+      // `initialize` is routed on the request path — but it is the unresolved member.
+      const dispatch = 'function h(e){if(e.request.subtype==="initialize")return 1;return 0}';
+
+      expect(() => extractControlMessages([schemas, dup, unions, dispatch], '2.1.132')).toThrow(
+        /could not uniquely identify/i
+      );
+    });
+
+    it('does not refuse an array of unresolved members with no resolved schema', () => {
+      // An array whose members none resolve to a schema is not a union of subtypes — it
+      // is the ordinary shape every build carries (arrays of imported components,
+      // handlers, and the like). It has no signal to act on, so it must NOT refuse.
+      const schemas = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'export{A1 as e0,A2 as e1};',
+      ].join('\n');
+      const unions = [
+        'import{e0 as p,e1 as q}from"/$bunfs/root/chunk-schemas.js";',
+        // Nothing exports g0/g1, so this source is unidentifiable and both are unresolved.
+        'import{g0 as x,g1 as y}from"/$bunfs/root/chunk-ghost.js";',
+        'var Ee=(f)=>f,fs=(a)=>a;',
+        'var C=Ee(()=>fs([p(),q()]).describe("Control requests a client sends to drive the loop."));',
+        'var X=Ee(()=>fs([x(),y()]));',
+      ].join('\n');
+      const dispatch =
+        'function h(e){if(e.request.subtype==="initialize")return 1;' +
+        'else if(e.request.subtype==="set_model")return 2;return 0}';
+
+      const found = bySymbol(extractControlMessages([schemas, unions, dispatch], '2.1.132'));
+
+      expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
+    });
+
+    it('does not fingerprint a chunk by a name it only RE-exports from another module', () => {
+      // `export{X as reY}from"m"` re-exports another module's schema. This chunk is not
+      // reY's real source, so it must not be identified as such — otherwise reY resolves
+      // to nothing (no local schema backs it) and its subtype is dropped silently.
+      // Skipping the re-export leaves reY unidentifiable, so the union is refused.
+      const schemas = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Init."));',
+        'export{A1 as e0};',
+      ].join('\n');
+      const facade = 'export{ghost as reY}from"/$bunfs/root/somewhere.js";';
+      const unions = [
+        'import{e0 as p}from"/$bunfs/root/chunk-schemas.js";',
+        'import{reY as r}from"/$bunfs/root/facade.js";',
+        'var Ee=(f)=>f,fs=(a)=>a;',
+        'var U=Ee(()=>fs([p(),r()]).describe("Control requests a client sends to drive the loop."));',
+      ].join('\n');
+      const dispatch = 'function h(e){if(e.request.subtype==="initialize")return 1;return 0}';
+
+      expect(() => extractControlMessages([schemas, facade, unions, dispatch], '2.1.132')).toThrow(
+        /could not uniquely identify/i
+      );
+    });
+
+    it('reads string-literal import and export specifier names', () => {
+      // ES2022 arbitrary module names: `export{A as "e0"}` / `import{"e0" as p}`. The
+      // real bundle uses identifiers, but the specifier reader must not choke on the
+      // string form, which is one minifier setting away.
+      const schemas = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'export{A1 as "e0",A2 as "e1"};',
+      ].join('\n');
+      const unions = [
+        'import{"e0" as p,"e1" as q}from"/$bunfs/root/chunk-schemas.js";',
+        'var Ee=(f)=>f,fs=(a)=>a;',
+        'var U=Ee(()=>fs([p(),q()]).describe("Control requests a client sends to drive the loop."));',
+      ].join('\n');
+      const dispatch =
+        'function h(e){if(e.request.subtype==="initialize")return 1;' +
+        'else if(e.request.subtype==="set_model")return 2;return 0}';
+
+      const found = bySymbol(extractControlMessages([schemas, unions, dispatch], '2.1.132'));
+
+      expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
+    });
+
+    it('ignores default and namespace import specifiers', () => {
+      // Only named imports (`import{E as L}`) carry a cross-chunk export name. A default
+      // or namespace specifier binds something else and must be skipped, not read as an
+      // alias.
+      const schemas = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'export{A1 as e0,A2 as e1};',
+      ].join('\n');
+      const unions = [
+        'import D from"/$bunfs/root/chunk-x.js";',
+        'import * as NS from"/$bunfs/root/chunk-y.js";',
+        'import{e0 as p,e1 as q}from"/$bunfs/root/chunk-schemas.js";',
+        'var Ee=(f)=>f,fs=(a)=>a;',
+        'var U=Ee(()=>fs([p(),q()]).describe("Control requests a client sends to drive the loop."));',
+      ].join('\n');
+      const dispatch =
+        'function h(e){if(e.request.subtype==="initialize")return 1;' +
+        'else if(e.request.subtype==="set_model")return 2;return 0}';
+
+      const found = bySymbol(extractControlMessages([schemas, unions, dispatch], '2.1.132'));
+
+      expect([...found.keys()].sort()).toEqual(['initialize', 'set_model']);
+    });
+
+    it('resolves a schema even when an unrelated chunk exports the same name as a non-schema', () => {
+      // Module identity makes this safe where a global name map could not: the schemas
+      // chunk is identified by the full set imported from it (`e0,e1,e2`), which the
+      // collider — exporting only `e2`, for something that is not a schema — does not
+      // match. So `e2` resolves to the schemas chunk's real subtype rather than being
+      // dropped or confused.
+      const schemas = [
+        'var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,jj=1;',
+        'var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes."));',
+        'var A2=Ee(()=>Se({subtype:xt("set_model")}).describe("Sets the model."));',
+        'var P=Ee(()=>Se({subtype:xt("third_subtype")}).describe("The third."));',
+        // `h0` is a NON-schema export of the same (identified) chunk — imported into the
+        // union below, it resolves to nothing and is dropped, never a subtype.
+        'export{A1 as e0,A2 as e1,P as e2,jj as h0};',
+      ].join('\n');
+      // A different chunk exports the SAME name `e2`, but for a non-schema binding.
+      const collider = ['var junk=1;', 'export{junk as e2};'].join('\n');
+      const unions = [
+        'import{e0 as p,e1 as q,e2 as r,h0 as h}from"/$bunfs/root/chunk-schemas.js";',
+        'var Ee=(f)=>f,fs=(a)=>a;',
+        'var U=Ee(()=>fs([p(),q(),r(),h()]).describe("Control requests a client sends to drive the loop."));',
+      ].join('\n');
+      const dispatch =
+        'function h(e){if(e.request.subtype==="initialize")return 1;' +
+        'else if(e.request.subtype==="set_model")return 2;return 0}';
+
+      // Below the split floor so the two-direction guard does not fire — the point here
+      // is cross-module resolution, not directions.
+      const found = bySymbol(
+        extractControlMessages([schemas, collider, unions, dispatch], '2.1.132')
+      );
+
+      expect([...found.keys()].sort()).toEqual(['initialize', 'set_model', 'third_subtype']);
+    });
+  });
 });

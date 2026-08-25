@@ -29,7 +29,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { extractControlMessages, type ControlMessageObservation } from './control-lane.js';
-import { sliceEmbeddedBundle } from './slice-bundle.js';
+import { sliceEmbeddedChunks } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
 import { runCli } from './lib.js';
 
@@ -135,7 +135,7 @@ export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryC
     'utf-8'
   );
   const symbols = extractBundleSymbols(bundle);
-  const controlMessages = extractControlMessages(sliceEmbeddedBundle(artifact, version), version);
+  const controlMessages = extractControlMessages(sliceEmbeddedChunks(artifact, version), version);
   return {
     version,
     source: 'binary',

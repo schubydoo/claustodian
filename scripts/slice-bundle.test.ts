@@ -2,7 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
-import { BUN_BANNER, looksLikeSource, sliceEmbeddedBundle } from './slice-bundle.js';
+import {
+  BUN_BANNER,
+  BUNFS_MODULE_ROOT,
+  looksLikeSource,
+  sliceEmbeddedBundle,
+  sliceEmbeddedChunks,
+} from './slice-bundle.js';
 
 /** Bytes that are not printable text, standing in for a compiled wrapper. */
 const wrapper = (n: number): Buffer => Buffer.alloc(n, 0);
@@ -116,5 +122,81 @@ describe('sliceEmbeddedBundle', () => {
     expect(() => sliceEmbeddedBundle(Buffer.alloc(9000, 0), 'empty')).toThrow(
       /no region .* begins with/
     );
+  });
+});
+
+/** A code-split chunk (2.1.242+): the bytecode banner, then whatever body follows. */
+function chunkRegion(body: string): string {
+  return `${BUN_BANNER} @bytecode\n${body}`;
+}
+
+describe('sliceEmbeddedChunks', () => {
+  it('returns npm-era source as a single element', () => {
+    const source = 'const a = 1;\n';
+    expect(sliceEmbeddedChunks(Buffer.from(source, 'utf-8'))).toEqual([source]);
+  });
+
+  it('returns the single-bundle era as one element, matching sliceEmbeddedBundle', () => {
+    const region = jsRegion(true, 2, 'cli');
+    const art = artifact(region);
+    expect(sliceEmbeddedChunks(art)).toEqual([sliceEmbeddedBundle(art)]);
+  });
+
+  it('delegates single-bundle refusals — differing regions with no chunk imports still throw', () => {
+    // No `from"/$bunfs/root/` import anywhere, so this is NOT the split era: two
+    // differing banner regions are the old ambiguity, and the refusal must fire.
+    const a = jsRegion(true, 2, 'aaa');
+    const b = jsRegion(true, 2, 'bbb');
+    expect(() => sliceEmbeddedChunks(artifact(a, b), '2.1.500')).toThrow(/not identical/);
+  });
+
+  it('returns every chunk in the code-split era, ignoring the size floor', () => {
+    // The split era is normal, not a refusal. One chunk imports another through the
+    // bunfs path — the era signal — and a legitimate chunk can be a few bytes, far
+    // below the single-bundle floor, because the protocol schemas live in small
+    // chunks. Both must come back.
+    const big = chunkRegion(`import{x as y}from"${BUNFS_MODULE_ROOT}aaaa.js";var z=1;`);
+    const tiny = chunkRegion('export{q as x};var q=2;');
+    // `xx` is a short printable run that does not open with the bytecode banner — it is
+    // scanned and rejected, and must not appear in the result.
+    const out = sliceEmbeddedChunks(artifact(big, 'xx', tiny), '2.1.245');
+    expect(out).toEqual([big, tiny]);
+  });
+
+  it('keeps a below-floor chunk that the single-bundle floor would have dropped', () => {
+    const importer = chunkRegion(`import{s as t}from"${BUNFS_MODULE_ROOT}bbbb.js";var u=1;`);
+    const small = chunkRegion('export{v as s};var v=0;'); // a few dozen bytes
+    const out = sliceEmbeddedChunks(artifact(importer, small), '2.1.245');
+    expect(out).toContain(small);
+  });
+
+  it('refuses a split-era artifact whose bunfs import carries no bytecode chunk region', () => {
+    // The era signal is present (a `from"/$bunfs/root/` import) but nothing opens with
+    // the bytecode banner — a shape this does not understand. It must refuse rather than
+    // return an empty chunk list that reads downstream as a vanished protocol.
+    const strayImport = `import{x as y}from"${BUNFS_MODULE_ROOT}zzzz.js";var z=1;`;
+    expect(() => sliceEmbeddedChunks(artifact(strayImport), '2.1.777')).toThrow(
+      /carries no .* chunk region/
+    );
+  });
+
+  it('detects the split era by import syntax, not the chunk filename shape', () => {
+    // The filenames are NOT stable: 2.1.242..245 used `chunk-<hash>.js`, 2.1.246 renamed
+    // them to `_<n>.js`. Detection keys on the `from"/$bunfs/root/` import, so a chunk
+    // importing from `_5.js` — no `chunk-` anywhere — is still the split era.
+    const importer = chunkRegion(`import{a as b}from"${BUNFS_MODULE_ROOT}_5.js";var c=1;`);
+    const other = chunkRegion('export{d as a};var d=2;');
+    const out = sliceEmbeddedChunks(artifact(importer, other), '2.1.246');
+    expect(out).toEqual([importer, other]);
+  });
+
+  it('keeps the single-bundle era off the split path when the root appears only in strings', () => {
+    // The pre-242 bundle references `/$bunfs/root/` in plain strings (a sourcemap path,
+    // an asset name) but never IMPORTS from it. Keying on `from"` keeps it on the
+    // single-bundle path — here a lone banner region with a bare-string reference.
+    const bundle = jsRegion(true, 2, 'cli') + `\n// see "${BUNFS_MODULE_ROOT}sourcemap.json"`;
+    const out = sliceEmbeddedChunks(artifact(bundle));
+    expect(out).toEqual([sliceEmbeddedBundle(artifact(bundle))]);
+    expect(out).toHaveLength(1);
   });
 });

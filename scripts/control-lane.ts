@@ -283,6 +283,16 @@ function propertyName(p: unknown): string | undefined {
   return undefined;
 }
 
+/**
+ * A specifier name, whether written as an identifier (`x`) or a string (`"x"`, the
+ * ES2022 arbitrary-module-name form). An import/export specifier name is always one or
+ * the other, so the identifier test is exhaustive — the else is the string case.
+ */
+function importOrExportName(n: unknown): string {
+  const node = n as Node;
+  return node.type === 'Identifier' ? (node.name as string) : (node.value as string);
+}
+
 function findProperty(obj: unknown, name: string): Node | undefined {
   /* v8 ignore next -- the sole caller dispatches here only for a node it has already proved is an ObjectExpression */
   if (!isNode(obj) || obj.type !== 'ObjectExpression') return undefined;
@@ -409,6 +419,30 @@ interface ArrayEntry {
   ancestors: readonly Node[];
 }
 
+/** A named import: the module it comes from and the export name within it. */
+interface ImportBinding {
+  /** The imported module specifier — `/$bunfs/root/chunk-<hash>.js` in this output. */
+  source: string;
+  /** The export name in that module (`import{E as L}` ⇒ E). */
+  name: string;
+}
+
+/**
+ * Everything one chunk's single walk yields. In the single-bundle era there is one
+ * of these and `importBindings`/`exportAlias` are empty; in the code-split era there
+ * is one per chunk and they are the edges that link a union in one chunk to the schema
+ * it references in another.
+ */
+interface ChunkCollection {
+  candidates: Candidate[];
+  schemaVariable: Map<string, string>;
+  arrays: ArrayEntry[];
+  /** Local name → the module and export it was imported from (`import{E as L}from"m"`). */
+  importBindings: Map<string, ImportBinding>;
+  /** Export name → the local it publishes (`export{L as E}` ⇒ E→L). */
+  exportAlias: Map<string, string>;
+}
+
 /**
  * Every object literal carrying a `subtype`, plus every dispatch comparison
  * against one. Enum-shaped subtypes (shape 4) are deliberately collected too, so
@@ -420,14 +454,12 @@ interface ArrayEntry {
  * full traversal was doing. Each array keeps three ancestors and nothing more,
  * so what is retained is O(arrays), not O(nodes).
  */
-function collectCandidates(root: Node): {
-  candidates: Candidate[];
-  schemaVariable: Map<string, string>;
-  arrays: ArrayEntry[];
-} {
+function collectCandidates(root: Node): ChunkCollection {
   const candidates: Candidate[] = [];
   const schemaVariable = new Map<string, string>();
   const arrays: ArrayEntry[] = [];
+  const importBindings = new Map<string, ImportBinding>();
+  const exportAlias = new Map<string, string>();
 
   walk(root, (node, ancestors) => {
     if (node.type === 'ObjectExpression') {
@@ -454,9 +486,42 @@ function collectCandidates(root: Node): {
       // here is equivalent and keeps the retained set to arrays that could matter.
       if ((node.elements as unknown[]).length < 2) return;
       arrays.push({ node, ancestors: ancestors.slice(-UNION_DESCRIPTION_HOPS) });
+      return;
+    }
+    // The two edges of the code-split graph (2.1.242+). Within a single bundle these
+    // never appear, so both maps stay empty and resolution collapses to the local
+    // `schemaVariable` — the pre-split behaviour exactly. `import{E as L}from"m"` binds
+    // local `L` to module `m`'s export `E`; `export{L as E}` publishes local `L` as `E`.
+    // A named specifier's names are always an Identifier or a string, so
+    // `importOrExportName` cannot be empty for one — asserted rather than re-checked.
+    if (node.type === 'ImportDeclaration') {
+      const source = importOrExportName(node.source);
+      for (const spec of node.specifiers as Node[]) {
+        // Named imports only; a default (`import x`) or namespace (`import * as x`)
+        // specifier binds no cross-chunk export name.
+        if (spec.type !== 'ImportSpecifier') continue;
+        importBindings.set(importOrExportName(spec.local), {
+          source,
+          name: importOrExportName(spec.imported),
+        });
+      }
+      return;
+    }
+    if (node.type === 'ExportNamedDeclaration') {
+      // A re-export facade (`export{X as Y}from"m"`) publishes another module's `Y`, not
+      // a local one. Registering it would let this chunk be fingerprinted as `Y`'s
+      // source and then resolve `Y` to nothing (no local schema backs it) — a silent
+      // drop. Skipping it instead leaves `Y`'s source unidentifiable, so a union
+      // importing `Y` is refused, not dropped. A plain `export{...}` has no `source`.
+      if (node.source != null) return;
+      // Every remaining specifier is an ExportSpecifier; a declaration-export (`export
+      // const x`) carries none, so the loop simply does not run for it.
+      for (const spec of node.specifiers as Node[]) {
+        exportAlias.set(importOrExportName(spec.exported), importOrExportName(spec.local));
+      }
     }
   });
-  return { candidates, schemaVariable, arrays };
+  return { candidates, schemaVariable, arrays, importBindings, exportAlias };
 }
 
 function collectFromObject(
@@ -571,6 +636,39 @@ interface Union {
   isControlRequest: boolean;
 }
 
+/**
+ * What a union member reference resolves to: a subtype, nothing (definitively not a
+ * schema), or an import whose source module could not be identified — the last told
+ * apart because dropping it from a control union loses a real subtype without a trace.
+ */
+interface MemberResolution {
+  subtype?: string;
+  unresolvedImport?: boolean;
+}
+
+/** `collectUnions`' result: the classified unions, plus the silent-loss signal. */
+interface CollectedUnions {
+  unions: Union[];
+  /**
+   * True when some array carried BOTH a resolved schema member AND a member imported
+   * from an unidentifiable module. A resolved schema is positive evidence the array is
+   * a zod union of subtypes, and the unresolvable member is one whose subtype was lost;
+   * the caller must refuse rather than let it vanish.
+   *
+   * Deliberately NOT gated on the array looking control-request: whether it is a
+   * control union may hinge on the very member that was lost (its subtype — hence
+   * whether it is routed — is unknown), so a routing test here would miss exactly the
+   * case where the lost member is the routed one. And it is flagged on the RAW array,
+   * before the `<2 members` discard, which the missing member could otherwise slip.
+   *
+   * The one loss it cannot see is an array with NO resolved schema member at all —
+   * indistinguishable from the ordinary non-schema arrays every build carries (arrays
+   * of imported components, handlers, and the like), so acting on it would refuse every
+   * release. That residue has no signal to key on.
+   */
+  lossyUnion: boolean;
+}
+
 /** An array element referencing a schema, bare or as a zero-argument thunk call. */
 function referencedName(element: unknown): string | undefined {
   if (!isNode(element)) return undefined;
@@ -589,18 +687,28 @@ function referencedName(element: unknown): string | undefined {
 /** Arrays whose elements resolve to two or more known schemas. */
 function collectUnions(
   arrays: readonly ArrayEntry[],
-  schemaVariable: Map<string, string>,
+  classify: (reference: string) => MemberResolution,
   requestDispatched: ReadonlySet<string>
-): Union[] {
+): CollectedUnions {
   const unions: Union[] = [];
+  let lossyUnion = false;
   for (const { node, ancestors } of arrays) {
     const elements = node.elements as unknown[];
     const members = new Set<string>();
+    let unresolvedImports = 0;
     for (const element of elements) {
       const reference = referencedName(element);
-      const symbol = reference ? schemaVariable.get(reference) : undefined;
-      if (symbol) members.add(symbol);
+      if (!reference) continue;
+      const resolved = classify(reference);
+      if (resolved.subtype !== undefined) members.add(resolved.subtype);
+      else if (resolved.unresolvedImport) unresolvedImports += 1;
     }
+    // Before any filter: a resolved schema member marks this as a union of subtypes,
+    // and an unresolvable import beside it is a member whose subtype was lost. Flagged
+    // here — not gated on the array looking control-request, since the lost member may
+    // be the one that would have made it so — so neither the `<2 members` discard nor
+    // the routing-majority test below can hide the loss.
+    if (unresolvedImports > 0 && members.size > 0) lossyUnion = true;
     if (members.size < 2) continue;
     // Majority, not "any": a stray shared name should not recruit a whole union
     // into the wrong family.
@@ -611,7 +719,7 @@ function collectUnions(
       isControlRequest: routed * 2 > members.size,
     });
   }
-  return unions;
+  return { unions, lossyUnion };
 }
 
 /** The `.describe()` on the call that consumes a union array. */
@@ -682,7 +790,12 @@ export function controlMessageConfidence(
 }
 
 /**
- * Extracts the `control_request` subtypes from one bundle's source.
+ * Extracts the `control_request` subtypes from a bundle.
+ *
+ * Takes ONE source in the single-bundle era, or the full list of chunk sources in
+ * the code-split era (2.1.242+, Bun 1.4's ESM `--compile` output). A single source is
+ * the one-chunk case: it has no imports or exports, cross-chunk resolution has nothing
+ * to do, and the output is identical to the pre-split path. See `sliceEmbeddedChunks`.
  *
  * Throws rather than returning an empty array at or above CONTROL_DISPATCH_FLOOR:
  * downstream, zero symbols reads as every symbol having been removed at once. The
@@ -690,16 +803,104 @@ export function controlMessageConfidence(
  * checks at the end of this function.
  */
 export function extractControlMessages(
-  source: string,
+  source: string | readonly string[],
   version: string
 ): ControlMessageObservation[] {
-  const program = parse(source);
-  const { candidates, schemaVariable, arrays } = collectCandidates(program);
+  const chunks = (typeof source === 'string' ? [source] : source).map((src) =>
+    collectCandidates(parse(src))
+  );
+
+  // Dispatches and subtype candidates are string literals, so they are chunk-agnostic
+  // and merge by concatenation. Only union membership crosses chunk boundaries.
+  const candidates = chunks.flatMap((chunk) => chunk.candidates);
 
   // The handler path first: union ownership is derived from it, so it has to
   // exist before the unions are classified.
   const requestDispatched = new Set(candidates.filter((c) => c.onRequestPath).map((c) => c.symbol));
-  const unions = collectUnions(arrays, schemaVariable, requestDispatched);
+
+  // Link the chunks by MODULE IDENTITY, so a union imports its members from the exact
+  // module it names. A cross-chunk import is `import{E as L}from"/$bunfs/root/chunk-*.js"`,
+  // which names its source — but chunks carry no such name of their OWN anywhere in
+  // their source, so the source string cannot be matched to a parsed chunk directly.
+  //
+  // It can be matched structurally: the module a name is imported FROM must export that
+  // name, so the chunk that exports every name imported from a given source IS that
+  // source. That fingerprint is what keeps an unrelated chunk reusing an export name
+  // from ever perturbing a resolution — the lookup is scoped to one module, not global.
+  const schemaExportsOf = chunks.map((chunk) => {
+    const map = new Map<string, string>();
+    for (const [exported, local] of chunk.exportAlias) {
+      const subtype = chunk.schemaVariable.get(local);
+      if (subtype !== undefined) map.set(exported, subtype);
+    }
+    return map;
+  });
+  const namesBySource = new Map<string, Set<string>>();
+  for (const chunk of chunks) {
+    for (const { source, name } of chunk.importBindings.values()) {
+      const names = namesBySource.get(source);
+      if (names) names.add(name);
+      else namesBySource.set(source, new Set([name]));
+    }
+  }
+  // A source resolves only when EXACTLY ONE chunk exports every name imported from it.
+  // Zero or several is an unidentifiable module: its imports are left unresolved rather
+  // than guessed at, which the union/dispatch floors below still guard against en masse.
+  const schemaExportsBySource = new Map<string, Map<string, string>>();
+  for (const [source, names] of namesBySource) {
+    const wanted = [...names];
+    let matchIndex = -1;
+    let matchCount = 0;
+    for (let i = 0; i < chunks.length && matchCount < 2; i += 1) {
+      if (wanted.every((n) => (chunks[i] as ChunkCollection).exportAlias.has(n))) {
+        matchIndex = i;
+        matchCount += 1;
+      }
+    }
+    if (matchCount === 1)
+      schemaExportsBySource.set(source, schemaExportsOf[matchIndex] as Map<string, string>);
+  }
+
+  // Each chunk's unions resolve against that chunk's own scope: a member reference is
+  // a local schema, an import resolved against the module it names, or an import whose
+  // module could not be identified — the last kept distinct because dropping it from a
+  // control union silently loses a subtype. In the single-bundle era there are no
+  // imports and this is a plain local lookup.
+  const collected = chunks.map((chunk) =>
+    collectUnions(
+      chunk.arrays,
+      (reference): MemberResolution => {
+        const localSubtype = chunk.schemaVariable.get(reference);
+        if (localSubtype !== undefined) return { subtype: localSubtype };
+        const binding = chunk.importBindings.get(reference);
+        if (!binding) return {};
+        const exportsForSource = schemaExportsBySource.get(binding.source);
+        if (exportsForSource === undefined) return { unresolvedImport: true };
+        const subtype = exportsForSource.get(binding.name);
+        return subtype !== undefined ? { subtype } : {};
+      },
+      requestDispatched
+    )
+  );
+
+  // A schema union that lost a member to an UNIDENTIFIABLE import source is a silent
+  // partial loss: the members that did resolve can still clear the union and direction
+  // floors below while a real subtype vanishes from the cache with no refusal. The
+  // source could not be pinned to one module, so its schema cannot be resolved — and
+  // per this lane's contract an unknown is refused, never dropped. It is not gated on
+  // the union looking control-request, because the lost member may be the one that
+  // would have made it so.
+  if (collected.some((c) => c.lossyUnion)) {
+    throw new Error(
+      `control lane: a schema union at ${version} imports a member from a module the chunk ` +
+        `graph could not uniquely identify, so its subtype cannot be resolved. Refusing ` +
+        `rather than dropping it silently — the union's other members would still clear the ` +
+        `floor guards while a real subtype vanishes, and it cannot be ruled out as a control ` +
+        `request.`
+    );
+  }
+  const unions = collected.flatMap((c) => c.unions);
+
   const controlMembers = new Set(
     unions.filter((u) => u.isControlRequest).flatMap((u) => [...u.members])
   );

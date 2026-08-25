@@ -141,7 +141,7 @@ describe('resolveVersion', () => {
 
 describe('buildCacheRecord', () => {
   it('treats a slicer refusal as deterministic, not as a transient failure', async () => {
-    // The finding this closes. `sliceEmbeddedBundle` joined the extraction path after
+    // The finding this closes. `sliceEmbeddedChunks` joined the extraction path after
     // the classifier was written and throws its own `slice-bundle:` prefix, so its
     // refusals were falling into the tolerated bucket — CI would warn and continue
     // with NO cache entry for the release, which is the outcome the exit code exists

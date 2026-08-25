@@ -52,6 +52,25 @@ import { createHash } from 'node:crypto';
 /** The Bun compiled-bundle banner, byte-identical across every version measured. */
 export const BUN_BANNER = '// @bun';
 
+/** The virtual-filesystem root every embedded ES module sits under. */
+export const BUNFS_MODULE_ROOT = '/$bunfs/root/';
+
+/**
+ * The marker of the ESM code-split era: an ES-module import whose source is under the
+ * bunfs root. From 2.1.242 the release is no longer ONE `// @bun` bundle but ~1400
+ * `// @bun @bytecode` ES-module chunks that import each other with statements like
+ * `import{X as Y}from"/$bunfs/root/_123.js"`.
+ *
+ * ⚠️ Keyed on the `from"` import syntax, NOT on the chunk filename. The filenames are
+ * NOT stable — 2.1.242..245 named them `chunk-<hash>.js`, 2.1.246 renamed them to
+ * `_<n>.js` — so matching a filename shape would silently miss a future rename. The
+ * `from"` prefix is also what keeps the single-bundle era out: that bundle references
+ * the same root in plain strings (a sourcemap path, an asset name) but never imports
+ * from it, so it carries the root 0 times AS AN IMPORT. Matched as a substring on the
+ * raw bytes, not decoded — same reason as the banner test.
+ */
+export const BUNFS_CHUNK_IMPORT = `from"${BUNFS_MODULE_ROOT}`;
+
 /** The banner as bytes, so a run can be tested without decoding it. */
 const BANNER_BYTES = Buffer.from(BUN_BANNER, 'utf-8');
 
@@ -203,4 +222,80 @@ export function sliceEmbeddedBundle(bytes: Uint8Array, label = 'artifact'): stri
   }
 
   return Buffer.from(bytes.subarray(first.start, first.end)).toString('utf-8');
+}
+
+/** The bytecode banner a code-split chunk opens with, as bytes for a decode-free test. */
+const BYTECODE_BANNER_BYTES = Buffer.from(`${BUN_BANNER} @bytecode`, 'utf-8');
+
+/** Every maximal printable run that opens with the bytecode banner, floor or not. */
+function bytecodeChunkRuns(bytes: Uint8Array): Array<{ start: number; end: number }> {
+  const runs: Array<{ start: number; end: number }> = [];
+  const opensWithBytecodeBanner = (start: number, end: number): boolean => {
+    if (end - start < BYTECODE_BANNER_BYTES.length) return false;
+    for (let i = 0; i < BYTECODE_BANNER_BYTES.length; i += 1) {
+      if (bytes[start + i] !== BYTECODE_BANNER_BYTES[i]) return false;
+    }
+    return true;
+  };
+  let start = -1;
+  for (let i = 0; i <= bytes.length; i += 1) {
+    if (i < bytes.length && isPrintable(bytes[i] as number)) {
+      if (start === -1) start = i;
+      continue;
+    }
+    if (start !== -1 && opensWithBytecodeBanner(start, i)) runs.push({ start, end: i });
+    start = -1;
+  }
+  return runs;
+}
+
+/**
+ * The CLI's parseable source as one OR MORE chunks, for the AST lanes.
+ *
+ * WHY THIS EXISTS ALONGSIDE `sliceEmbeddedBundle`. Through 2.1.241 the compiled CLI
+ * was a single embedded bundle, and `sliceEmbeddedBundle` returns exactly that. From
+ * 2.1.242 the release is Bun ESM code-splitting: ~1400 `// @bun @bytecode` chunks
+ * that import each other from under `/$bunfs/root/`. No one chunk is "the CLI" —
+ * schemas, the unions that reference them, and the dispatch that routes them land in
+ * DIFFERENT chunks — so a single-region slice cannot serve the AST lane at all. The
+ * split era is normal now, not the "several banner regions disagree" refusal that
+ * `sliceEmbeddedBundle` still (correctly) throws in the single-bundle era.
+ *
+ * The AST lane resolves cross-chunk references itself; this only has to hand it the
+ * full set of chunk sources. Concatenating them here would be wrong — Bun reuses
+ * minified local names across chunks, so a flat join collides definitions.
+ *
+ * ⚠️ NO SIZE FLOOR in the split era. The floor separated the one CLI bundle from
+ * marker-sized noise when there was one bundle to find; here a legitimate chunk can
+ * be a few hundred bytes (a lone schema), and the control-protocol schemas live in
+ * exactly those small chunks. The floor would drop them. Selection is instead by the
+ * bytecode banner, which is a positive signal every chunk carries and the one
+ * non-chunk banner region (an HTML-entity blob opening `// @bun\n`) does not.
+ *
+ * Returns a single-element array in the npm and single-bundle eras, so a caller can
+ * treat every era uniformly and the one-chunk case reproduces the pre-242 behaviour
+ * exactly.
+ */
+export function sliceEmbeddedChunks(bytes: Uint8Array, label = 'artifact'): string[] {
+  if (looksLikeSource(bytes)) {
+    return [Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength).toString('utf-8')];
+  }
+
+  // Decode-free era detection: the split era is the ONLY one whose chunks import each
+  // other through the bunfs virtual filesystem. A single scan of the raw bytes avoids
+  // decoding tens of MiB to answer a yes/no question.
+  const isSplitEra = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength).includes(
+    BUNFS_CHUNK_IMPORT
+  );
+  if (!isSplitEra) return [sliceEmbeddedBundle(bytes, label)];
+
+  const runs = bytecodeChunkRuns(bytes);
+  if (runs.length === 0) {
+    throw new Error(
+      `slice-bundle: ${label} imports a module under "${BUNFS_MODULE_ROOT}" but carries no ` +
+        `"${BUN_BANNER} @bytecode" chunk region. Refusing — this is the code-split ` +
+        `era shape with no chunk to extract, not a shape to guess at.`
+    );
+  }
+  return runs.map((r) => Buffer.from(bytes.subarray(r.start, r.end)).toString('utf-8'));
 }
