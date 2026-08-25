@@ -1313,11 +1313,11 @@
       "first_seen": "2.0.43",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
       "description": "Show options when rate limit is reached",
       "description_source": "binary",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
     },
     {

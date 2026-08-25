@@ -721,14 +721,14 @@
     {
       "symbol": "--yes",
       "type": "cli_flag",
-      "description": "Accept the command that a plugin with a `command` source runs, without the confirmation prompt. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
+      "description": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
       "doc_min_version": null,
       "doc_page": "plugins-reference",
       "scope_descriptions": {
-        "plugin install": "Accept the command that a plugin with a `command` source runs, without the confirmation prompt. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
+        "plugin install": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
         "plugin prune": "Skip the confirmation prompt. Required when stdin or stdout is not a TTY",
         "plugin uninstall": "Skip the `--prune` confirmation prompt. Required when stdin or stdout is not a TTY",
-        "plugin update": "Accept the command that a plugin with a `command` source runs, without the confirmation prompt. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal"
+        "plugin update": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal"
       }
     },
     {
@@ -818,7 +818,7 @@
     {
       "symbol": "/cd",
       "type": "command",
-      "description": "Move this session to a new working directory, keeping the conversation and its prompt cache. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Claude Code prompts you to trust the workspace if you haven't worked in it before, and `--resume` finds the moved session afterward. To grant access to an extra directory without moving the session, use `/add-dir`. Restrict or disable `/cd` targets with `Cd` permission rules. Requires Claude Code v2.1.169 or later",
+      "description": "Move this session to a new working directory, keeping the conversation and its prompt cache. Type a partial path to see matching directory suggestions; press `Tab` to accept one. The suggestions require Claude Code v2.1.206 or later. Claude Code prompts you to trust the workspace if you haven't worked in it before, and `--resume` finds the moved session afterward. To grant access to an extra directory without moving the session, use `/add-dir`. Restrict or disable `/cd` targets with `Cd` permission rules. Requires Claude Code v2.1.169 or later",
       "doc_min_version": "2.1.169",
       "doc_page": "commands"
     },
@@ -839,7 +839,7 @@
     {
       "symbol": "/clear",
       "type": "command",
-      "description": "Start a new conversation with empty context. Pass a name to label the previous conversation in the `/resume` picker. To free up context while continuing the same conversation, use `/compact` instead. Resume the previous conversation with `/resume`, or, in the same Claude Code process, restore it from the rewind menu's previous-session entry. Aliases: `/reset`, `/new`",
+      "description": "Start a new conversation with empty context. Pass a name to label the previous conversation in the `/resume` picker. To free up context while continuing the same conversation, use `/compact` instead. Resume the previous conversation with `/resume`, or, in the same Claude Code process, restore it from the rewind menu's previous-session entry. The rewind entry requires Claude Code v2.1.191 or later. Aliases: `/reset`, `/new`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -867,7 +867,7 @@
     {
       "symbol": "/config",
       "type": "command",
-      "description": "Open the Settings interface to adjust theme, model, output style, and other preferences. From v2.1.181, pass one or more `key=value` pairs to set a setting directly without opening the interface, for example `/config thinking=false`. From v2.1.182, named shorthand keys are also accepted, such as `/config theme=dark` or `/config model=sonnet`. The `key=value` form also works in non-interactive mode (`-p`) and from the Claude mobile app via Remote Control. Run `/config --help` to list every settable key with its options. Alias: `/settings`",
+      "description": "Open the Settings interface to adjust theme, model, output style, and other preferences. From v2.1.181, pass one or more `key=value` pairs to set a setting directly without opening the interface, for example `/config thinking=false`. From v2.1.182, named shorthand keys are also accepted, such as `/config theme=dark` or `/config model=sonnet`. The `key=value` form also works in non-interactive mode (`-p`) and from the Claude mobile app via Remote Control. The `key=value` form can't turn on a setting that needs your confirmation in the panel, such as `autoContinueAtUsageLimit`, though it can turn one off. Run `/config --help` to list the keys it accepts. Alias: `/settings`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1194,6 +1194,13 @@
       "doc_page": "commands"
     },
     {
+      "symbol": "/rate-limit-options",
+      "type": "command",
+      "description": "Show ways to keep working when a claude.ai usage limit blocks a request: wait and continue automatically when the limit resets, add usage credits, or upgrade your plan. Claude Code can also open this menu on its own when you hit a limit at your own terminal. See Turn automatic continue off. Requires a claude.ai subscription. Doesn't appear in the command menu; type it in full. The wait-and-continue rows require Claude Code v2.1.234 or later",
+      "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
       "symbol": "/recap",
       "type": "command",
       "description": "Generate a one-line summary of the current session on demand. See Session recap for the automatic recap that appears after you've been away",
@@ -1329,7 +1336,7 @@
     {
       "symbol": "/skills",
       "type": "command",
-      "description": "List available skills. Type to filter the list by name. Press `t` to sort by token count. Press `Space` to cycle a skill's visibility to Claude and the `/` menu, then `Enter` to save",
+      "description": "List available skills. Type to filter the list by name. Press `t` to sort by token count. Press `Space` to cycle a skill's visibility to Claude and the `/` menu",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1441,7 +1448,7 @@
     {
       "symbol": "/usage",
       "type": "command",
-      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Team, or Enterprise plan, includes a breakdown of usage by skill, subagent, plugin, and MCP server. See the cost tracking guide for details. `/cost` and `/stats` are aliases",
+      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. `/cost` and `/stats` are aliases",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1627,6 +1634,13 @@
       "doc_min_version": null,
       "doc_page": "settings-reference",
       "category": "global-config"
+    },
+    {
+      "symbol": "autoContinueAtUsageLimit",
+      "type": "config_key",
+      "description": "After a claude.ai usage limit stops your session, wait in the open session and continue the task automatically after the reset. See Turn automatic continue off. Requires Claude Code v2.1.234 or later.",
+      "doc_min_version": "2.1.234",
+      "doc_page": "settings-reference"
     },
     {
       "symbol": "autoInstallIdeExtension",
@@ -1850,7 +1864,7 @@
     {
       "symbol": "disableCommandPluginSources",
       "type": "config_key",
-      "description": "Block the `command` plugin source, which installs a plugin by running a marketplace-declared command on the user's machine. When you set it to `true`, Claude Code never runs the command, doesn't install or update command-sourced plugins, and stops loading the ones already installed. Set it to `false` to allow them explicitly. Requires Claude Code v2.1.229 or later.",
+      "description": "Block the `command` plugin source, which installs a plugin by running a marketplace-declared command on the user's machine. When you set it to `true`, Claude Code never runs the command, doesn't install or update command-sourced plugins, and stops loading the ones already installed. Set it to `false` to allow them explicitly. Whenever it blocks command sources, whether you set it to `true` or leave it unset under `allowManagedHooksOnly`, it also blocks marketplace `headersHelper` commands, except for a marketplace that managed settings themselves declare. Requires Claude Code v2.1.229 or later, and the `headersHelper` block requires v2.1.238 or later.",
       "doc_min_version": "2.1.229",
       "doc_page": "settings-reference"
     },
@@ -1858,6 +1872,13 @@
       "symbol": "disableDeepLinkRegistration",
       "type": "config_key",
       "description": "Stop Claude Code from registering the `claude-cli://` protocol handler with the operating system, which it otherwise does after you send the first prompt of an interactive session. Deep links let external tools open a Claude Code session with a pre-filled prompt. Set this in environments where protocol handler registration is restricted or managed separately.",
+      "doc_min_version": null,
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "disableDesktopLocalSessions",
+      "type": "config_key",
+      "description": "Turn off Code sessions that run on the device in the desktop app, for deployments where developers should work on remote machines over SSH. In the Code tab, the **Local** environment stays in the environment dropdown but is grayed out and can't be selected, with a tooltip saying your organization turned it off; on Windows the WSL entry is grayed out the same way, though whether WSL sessions run on a managed device at all is governed separately. New sessions default to the first SSH connection if one is configured, and the app refuses to start or resume a session on the device, including an SSH connection back to the same machine. SSH sessions to other hosts and cloud sessions are unaffected. The desktop app reads this key; the terminal CLI ignores it.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -2150,6 +2171,13 @@
       "doc_page": "settings-reference"
     },
     {
+      "symbol": "modelPicker",
+      "type": "config_key",
+      "description": "List the models the `/model` picker offers, in the order you write them and under labels you choose, so the picker lists the models your organization runs, after the built-in lineup or instead of it. Each row's `model` is taken verbatim, so it accepts anything `--model` accepts: an alias such as `opus`, an Anthropic model ID, or a provider-format ID for Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or an LLM gateway. Requires Claude Code v2.1.242 or later.",
+      "doc_min_version": "2.1.242",
+      "doc_page": "settings-reference"
+    },
+    {
       "symbol": "otelHeadersHelper",
       "type": "config_key",
       "description": "Run your own command to generate the headers Claude Code sends with OpenTelemetry exports, for backends whose tokens rotate. Claude Code runs it at startup and periodically after that, and expects a JSON object of string header values on stdout.",
@@ -2302,6 +2330,13 @@
       "type": "config_key",
       "description": "On macOS and Linux, place a corporate launcher command in front of the background processes Claude Code starts. Claude Code runs the launcher with its own command line appended, so the launcher must exec into Claude Code; see Run Claude Code behind a corporate launcher for the launcher contract. Requires Claude Code v2.1.210 or later.",
       "doc_min_version": "2.1.210",
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "promptCacheTtl",
+      "type": "config_key",
+      "description": "Choose how long the prompt cache holds the main conversation. This key applies to your interactive, `-p`, and Agent SDK turns, together with the helpers Claude Code runs inline with them. The one-hour lifetime keeps the cache warm across longer breaks, and the API bills each cache write at a higher rate than at the five-minute lifetime. Requires Claude Code v2.1.242 or later.",
+      "doc_min_version": "2.1.242",
       "doc_page": "settings-reference"
     },
     {
@@ -2781,6 +2816,13 @@
       "doc_page": "settings-reference"
     },
     {
+      "symbol": "subagentPromptCacheTtl",
+      "type": "config_key",
+      "description": "Choose how long the prompt cache holds the requests Claude Code makes outside the main conversation. This key applies to subagents, workflows, and Claude Code's own background and helper requests, such as compaction and session titles. The one-hour lifetime keeps the cache warm across longer breaks, and the API bills each cache write at a higher rate than at the five-minute lifetime. Requires Claude Code v2.1.242 or later.",
+      "doc_min_version": "2.1.242",
+      "doc_page": "settings-reference"
+    },
+    {
       "symbol": "subagentStatusLine",
       "type": "config_key",
       "description": "When Claude runs subagents, Claude Code lists them in a task display below the prompt, one row per subagent showing `name · description · token count`. This key lets you run your own command to rewrite those rows, for example to show each subagent's context usage as a percentage. On each refresh, Claude Code sends the visible rows as one JSON object on stdin, with a `tasks` array carrying each subagent's `id`, `name`, `status`, `model`, `tokenCount`, and more, and replaces the row for each `id` you write back as a `{\"id\", \"content\"}` line. Rows you don't write back keep the default rendering.",
@@ -2938,8 +2980,8 @@
     {
       "symbol": "worktree.bgIsolation",
       "type": "config_key",
-      "description": "Choose how background sessions isolate their file edits. With `\"worktree\"`, Claude Code blocks `Edit` and `Write` in the main checkout until the session calls `EnterWorktree`; with `\"none\"`, background jobs edit the working copy directly. Set `\"none\"` for a repository where git worktrees are impractical. Requires Claude Code v2.1.143 or later.",
-      "doc_min_version": "2.1.143",
+      "description": "Choose how background sessions isolate their file edits. With `\"worktree\"`, Claude Code blocks `Edit` and `Write` in the main checkout until the session calls `EnterWorktree`; with `\"none\"`, background jobs edit the working copy directly. Set `\"none\"` for a repository where git worktrees are impractical.",
+      "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
@@ -3650,6 +3692,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_BEDROCK_CONTENT_TYPE_DEFAULT",
+      "type": "env_var",
+      "description": "Set to `1` to stop Claude Code from treating an Amazon Bedrock streaming response with a missing or empty `Content-Type` header as the binary `application/vnd.amazon.eventstream` format. Amazon Bedrock always sends that header, so when it's absent, a proxy stripped it and by default Claude Code decodes the body as the binary format anyway. Set this variable only when the proxy strips the header and also re-emits the body as server-sent events; Claude Code then reads the body as server-sent events instead. Requires Claude Code v2.1.239 or later",
+      "doc_min_version": "2.1.239",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_BEDROCK_CONTENT_TYPE_GUARD",
       "type": "env_var",
       "description": "Set to `1` to skip the check that an Amazon Bedrock streaming response carries the `application/vnd.amazon.eventstream` content-type. Without this variable, a response with a different content-type fails with an error naming that content-type, which means a gateway or proxy is transforming the response. Set it only when the gateway rewrites the `Content-Type` header but passes the binary event-stream body through unmodified; if the body itself was transformed, requests fail with `Truncated event message received` instead. Requires Claude Code v2.1.208 or later",
@@ -4315,6 +4364,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_PROMPT_CACHE_TTL",
+      "type": "env_var",
+      "description": "Set `5m` or `1h`, the only values Claude Code accepts, to choose the prompt cache TTL for the main conversation: your interactive, `-p`, and SDK turns, plus the helpers that run inline with them. Takes precedence over the `promptCacheTtl` setting and over `ENABLE_PROMPT_CACHING_1H`, and `FORCE_PROMPT_CACHING_5M` overrides it. The API bills 1-hour cache writes at a higher rate. Requires Claude Code v2.1.242 or later",
+      "doc_min_version": "2.1.242",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_PROPAGATE_TRACEPARENT",
       "type": "env_var",
       "description": "Set to `1` to propagate W3C trace context when `ANTHROPIC_BASE_URL` points at a custom proxy. Propagation covers the `traceparent` header on model and HTTP MCP requests and the `TRACEPARENT` environment variable for Bash, PowerShell, and hook subprocesses. By default, propagation is enabled only when connected directly to the Anthropic API. Added in v2.1.152. See Traces (beta)",
@@ -4515,6 +4571,13 @@
       "type": "env_var",
       "description": "The model Claude Code uses for all subagents, agent teams, and agents in a workflow. Accepts an alias such as `haiku` or a full model name, and takes precedence over the per-invocation `model` parameter and the subagent definition's `model` frontmatter. See Model configuration. Setting it to `inherit` is the same as leaving it unset; before v2.1.196, `inherit` was an override that forced every subagent onto the main conversation's model",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL",
+      "type": "env_var",
+      "description": "Set `5m` or `1h`, the only values Claude Code accepts, to choose the prompt cache TTL for requests outside the main conversation, such as subagents, workflows, and background work. Takes precedence over the `subagentPromptCacheTtl` setting and over `ENABLE_PROMPT_CACHING_1H`, and `FORCE_PROMPT_CACHING_5M` overrides it. The API bills 1-hour cache writes at a higher rate. Requires Claude Code v2.1.242 or later",
+      "doc_min_version": "2.1.242",
       "doc_page": "env-vars"
     },
     {
@@ -4954,7 +5017,7 @@
     {
       "symbol": "ENABLE_PROMPT_CACHING_1H",
       "type": "env_var",
-      "description": "Set to `1` to request a 1-hour prompt cache TTL instead of the default 5 minutes. Intended for API key, Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS users. Subscription users within included usage receive 1-hour TTL automatically. Subscription users drawing on usage credits can set it to keep the 1-hour TTL. 1-hour cache writes are billed at a higher rate",
+      "description": "Set to `1` to request a 1-hour prompt cache TTL instead of the default 5 minutes. Intended for API key, Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS users. Subscription users within included usage receive the 1-hour TTL automatically on the main conversation. Subscription users drawing on usage credits can set it to keep the 1-hour TTL. 1-hour cache writes are billed at a higher rate. To choose the TTL per request bucket instead, use `CLAUDE_CODE_PROMPT_CACHE_TTL` and `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL`, which take precedence over this variable",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4996,7 +5059,7 @@
     {
       "symbol": "FORCE_PROMPT_CACHING_5M",
       "type": "env_var",
-      "description": "Set to `1` to force the 5-minute prompt cache TTL even when 1-hour TTL would otherwise apply. Overrides `ENABLE_PROMPT_CACHING_1H`",
+      "description": "Set to `1` to force the 5-minute prompt cache TTL even when 1-hour TTL would otherwise apply. Overrides `CLAUDE_CODE_PROMPT_CACHE_TTL`, `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL`, `ENABLE_PROMPT_CACHING_1H`, and the `promptCacheTtl` and `subagentPromptCacheTtl` settings",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
