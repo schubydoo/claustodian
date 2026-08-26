@@ -31,7 +31,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { extractControlMessages } from './control-lane.js';
-import { sliceEmbeddedBundle } from './slice-bundle.js';
+import { sliceEmbeddedChunks } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
 import { compareVersionsAsc, runCli } from './lib.js';
 import type { ControlMessageObservation } from './control-lane.js';
@@ -239,7 +239,7 @@ export async function main(argv: string[]): Promise<number> {
       // The compiled era hands us an executable, which no parser can read. Slice the
       // embedded bundle out for the AST lane; the npm era is already source, and
       // `src` is what the regex lanes keep seeing either way.
-      const parseable = result.bytes ? sliceEmbeddedBundle(result.bytes, version) : result.src;
+      const parseable = result.bytes ? sliceEmbeddedChunks(result.bytes, version) : result.src;
       controlMessages = extractControlMessages(parseable, version);
     } catch (error) {
       controlFailures.push({ version, reason: (error as Error).message });
