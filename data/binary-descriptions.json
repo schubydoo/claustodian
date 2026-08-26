@@ -471,6 +471,12 @@
         "description": "When resuming, create a new session ID instead of reusing the original (use with --resume or --continue)"
       }
     ],
+    "cli_flag:--forward-home-settings": [
+      {
+        "from": "2.1.246",
+        "description": "Whether this launch sends this machine's settings (CLAUDE.md, rules, output styles, preferences, portable permission rules) into the cloud session it creates or attaches to: false = not this launch; true = yes for this launch, standing in for the machine's stored choice (not saved). Requires --cloud or --environment."
+      }
+    ],
     "cli_flag:--forward-subagent-text": [
       {
         "from": "2.1.211",
@@ -3351,6 +3357,12 @@
         "description": "Host-asserted context shown to the auto-mode permission classifier alongside this tool call's result. In the live session the classifier may weigh a user statement relayed here as user intent (it can satisfy a consent bar a user turn would satisfy, never a hard boundary); values restored from saved session state are treated as unverified context only. Relay discipline is the host's obligation: put ONLY genuine user statements in intent-bearing positions \\u2014 never tool output or model text dressed as one. Capped at 2000 UTF-16 code units, a budget shared across all hooks that contribute to one call (surrogate-pair-safe; emoji and other astral characters count as two). Honored on synchronous hook responses only: an async hook's late response arrives after the result message is frozen and this field in it is silently ignored. Security note: do not copy untrusted tool output or third-party text into it blindly \\u2014 content placed here reaches the permission classifier with host-application framing. Applies only to calls the classifier transcript shows: read-only lookups the transcript omits (file reads, searches), inner REPL calls, and remote-engine shells produce no per-result line, and context attached to them is silently unused. Not a delivery channel: it is bound to a single call id and sized for a short assertion, not for relaying messages or events. Rewrite integrity: if this assertion describes output you are rewriting, return it in the SAME hook result as the rewrite \\u2014 it is then dropped automatically if your rewrite is rejected or superseded by a later hook's rewrite; assertions returned without a rewrite are never invalidated by other hooks' rewrites, so a non-rewriting hook should assert only what holds regardless of other hooks' rewrites \\u2014 hosts that need an assertion bound to exact output bytes should make it in the hook that produces those bytes. (Do NOT return an identity rewrite just to pair an assertion: hooks run in parallel on the ORIGINAL output, so an identity rewrite competes last-write-wins with sibling rewrites and can clobber a real redaction.)"
       }
     ],
+    "config_key:permissions.commands": [
+      {
+        "from": "2.1.246",
+        "description": "Path to a command file or skill directory, relative to the plugin root. When set, the commands/ directory is not auto-loaded \\u2014 list its files here if you want both."
+      }
+    ],
     "config_key:permissions.defaultMode": [
       {
         "from": "1.0.54",
@@ -3989,6 +4001,12 @@
       {
         "from": "2.1.219",
         "description": "When safeguards flag a message, automatically switch to a different model to keep chatting. When off, your session will pause instead."
+      }
+    ],
+    "config_key:syncClaudeAiPlugins": [
+      {
+        "from": "2.1.246",
+        "description": "Set to false to turn off syncing of the plugins you have enabled on claude.ai. In your user settings (or managed settings): nothing more is downloaded, previously synced plugins (~/.claude/plugins/synced) are hidden from every session started afterwards and moved to ~/.claude/plugins/.trash at the next launch (deleted after cleanupPeriodDays; re-downloaded, not restored, if you re-enable). In .claude/settings.local.json or --settings: downloads stop and synced plugins are hidden for sessions in that workspace or invocation only (nothing is moved). Not read from project settings (.claude/settings.json). Only false is honored \\u2014 the feature is enabled server-side for your account, so setting true does not turn it on early. While it is on, synced plugins load in every session like plugins you installed yourself (a plugin you installed with the same name takes precedence), are re-synced at each launch, and are removed when you disable them on claude.ai. Only applies when signed in with your Claude account."
       }
     ],
     "config_key:syncClaudeAiSkills": [

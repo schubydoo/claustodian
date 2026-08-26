@@ -1279,6 +1279,19 @@
       "category": "cli"
     },
     {
+      "symbol": "--forward-home-settings",
+      "type": "cli_flag",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Whether this launch sends this machine's settings (CLAUDE.md, rules, output styles, preferences, portable permission rules) into the cloud session it creates or attaches to: false = not this launch; true = yes for this launch, standing in for the machine's stored choice (not saved). Requires --cloud or --environment.",
+      "source_url": null,
+      "category": "cli-internal",
+      "description_source": "binary"
+    },
+    {
       "symbol": "--forward-subagent-text",
       "type": "cli_flag",
       "first_seen": "2.1.211",
@@ -1570,6 +1583,18 @@
       "description": "Specify input format for print mode (options: `text`, `stream-json`)",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "category": "cli"
+    },
+    {
+      "symbol": "--inspect",
+      "type": "cli_flag",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "cli"
     },
     {
@@ -2907,6 +2932,18 @@
       "description_source": "binary",
       "source_url": null,
       "category": "cli-internal"
+    },
+    {
+      "symbol": "--seq-floor",
+      "type": "cli_flag",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli"
     },
     {
       "symbol": "--server-option",
@@ -5885,6 +5922,30 @@
       "category": "settings"
     },
     {
+      "symbol": "autoCompactWindow.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "autoCompactWindow.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
       "symbol": "autoConnectIde",
       "type": "config_key",
       "first_seen": "2.1.226",
@@ -6186,6 +6247,30 @@
       "description_source": "binary"
     },
     {
+      "symbol": "breakReminder.breakThresholdMinutes.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "breakReminder.breakThresholdMinutes.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
       "symbol": "breakReminder.enabled",
       "type": "config_key",
       "first_seen": "2.1.149",
@@ -6210,6 +6295,30 @@
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
+    },
+    {
+      "symbol": "breakReminder.intervalMinutes.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "breakReminder.intervalMinutes.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
     },
     {
       "symbol": "breakReminder.message",
@@ -6288,6 +6397,30 @@
       "description": "Set how many days Claude Code keeps session transcripts and other application data before deleting them. Claude Code runs the deletion as a background sweep after a session starts, as long as it can safely determine the retention period.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
+    },
+    {
+      "symbol": "cleanupPeriodDays.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "cleanupPeriodDays.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "settings"
     },
     {
@@ -6750,6 +6883,54 @@
       "category": "settings"
     },
     {
+      "symbol": "env.tool_input",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "env.tool_name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "env.tool_response",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "env.tool_use_id",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
       "symbol": "externalEditorContext",
       "type": "config_key",
       "first_seen": "2.1.226",
@@ -6839,6 +7020,30 @@
       "description": "Set the probability that the session quality survey appears when a session is eligible for it. Set `0` to keep the survey from appearing.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
+    },
+    {
+      "symbol": "feedbackSurveyRate.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "feedbackSurveyRate.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "settings"
     },
     {
@@ -7508,6 +7713,19 @@
       "provenance": "binary",
       "confidence": "medium",
       "description": "Host-asserted context shown to the auto-mode permission classifier alongside this tool call's result. In the live session the classifier may weigh a user statement relayed here as user intent (it can satisfy a consent bar a user turn would satisfy, never a hard boundary); values restored from saved session state are treated as unverified context only. Relay discipline is the host's obligation: put ONLY genuine user statements in intent-bearing positions \\u2014 never tool output or model text dressed as one. Capped at 2000 UTF-16 code units, a budget shared across all hooks that contribute to one call (surrogate-pair-safe; emoji and other astral characters count as two). Honored on synchronous hook responses only: an async hook's late response arrives after the result message is frozen and this field in it is silently ignored. Security note: do not copy untrusted tool output or third-party text into it blindly \\u2014 content placed here reaches the permission classifier with host-application framing. Applies only to calls the classifier transcript shows: read-only lookups the transcript omits (file reads, searches), inner REPL calls, and remote-engine shells produce no per-result line, and context attached to them is silently unused. Not a delivery channel: it is bound to a single call id and sized for a short assertion, not for relaying messages or events. Rewrite integrity: if this assertion describes output you are rewriting, return it in the SAME hook result as the rewrite \\u2014 it is then dropped automatically if your rewrite is rejected or superseded by a later hook's rewrite; assertions returned without a rewrite are never invalidated by other hooks' rewrites, so a non-rewriting hook should assert only what holds regardless of other hooks' rewrites \\u2014 hosts that need an assertion bound to exact output bytes should make it in the hook that produces those bytes. (Do NOT return an identity rewrite just to pair an assertion: hooks run in parallel on the ORIGINAL output, so an identity rewrite competes last-write-wins with sibling rewrites and can clobber a real redaction.)",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "permissions.commands",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Path to a command file or skill directory, relative to the plugin root. When set, the commands/ directory is not auto-loaded \\u2014 list its files here if you want both.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -8396,6 +8614,30 @@
       "category": "settings"
     },
     {
+      "symbol": "sandbox.network.httpProxyPort.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "sandbox.network.httpProxyPort.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
       "symbol": "sandbox.network.socksProxyPort",
       "type": "config_key",
       "first_seen": "2.1.63",
@@ -8406,6 +8648,30 @@
       "description": "Point the sandbox at your own SOCKS5 proxy instead of the one Claude Code runs. When unset, Claude Code starts its own proxy for SOCKS traffic.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
+    },
+    {
+      "symbol": "sandbox.network.socksProxyPort.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "sandbox.network.socksProxyPort.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "settings"
     },
     {
@@ -8574,6 +8840,30 @@
       "category": "settings"
     },
     {
+      "symbol": "skillListingBudgetFraction.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "skillListingBudgetFraction.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
       "symbol": "skillListingMaxDescChars",
       "type": "config_key",
       "first_seen": "2.1.105",
@@ -8584,6 +8874,30 @@
       "description": "Each turn, Claude sees a listing of your skills that shows each skill's `description` and `when_to_use` text. This key caps how many characters of that text Claude Code shows per skill; longer text is cut at the cap.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
+    },
+    {
+      "symbol": "skillListingMaxDescChars.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "skillListingMaxDescChars.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "settings"
     },
     {
@@ -8880,6 +9194,30 @@
       "category": "settings"
     },
     {
+      "symbol": "statusLine.padding.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "statusLine.padding.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
       "symbol": "statusLine.refreshInterval",
       "type": "config_key",
       "first_seen": "2.1.97",
@@ -8891,6 +9229,30 @@
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
+    },
+    {
+      "symbol": "statusLine.refreshInterval.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "statusLine.refreshInterval.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
     },
     {
       "symbol": "statusLine.type",
@@ -9098,6 +9460,19 @@
       "category": "settings"
     },
     {
+      "symbol": "syncClaudeAiPlugins",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Set to false to turn off syncing of the plugins you have enabled on claude.ai. In your user settings (or managed settings): nothing more is downloaded, previously synced plugins (~/.claude/plugins/synced) are hidden from every session started afterwards and moved to ~/.claude/plugins/.trash at the next launch (deleted after cleanupPeriodDays; re-downloaded, not restored, if you re-enable). In .claude/settings.local.json or --settings: downloads stop and synced plugins are hidden for sessions in that workspace or invocation only (nothing is moved). Not read from project settings (.claude/settings.json). Only false is honored \\u2014 the feature is enabled server-side for your account, so setting true does not turn it on early. While it is on, synced plugins load in every session like plugins you installed yourself (a plugin you installed with the same name takes precedence), are re-synced at each launch, and are removed when you disable them on claude.ai. Only applies when signed in with your Claude account.",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
       "symbol": "syncClaudeAiSkills",
       "type": "config_key",
       "first_seen": "2.1.234",
@@ -9240,6 +9615,30 @@
       "source_url": null,
       "category": "settings-internal",
       "description_source": "binary"
+    },
+    {
+      "symbol": "totalTokensReminderBudget.name",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "totalTokensReminderBudget.permission_policy",
+      "type": "config_key",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
     },
     {
       "symbol": "tui",
@@ -12798,6 +13197,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_BREEZY_HORIZON",
+      "type": "env_var",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_BRIDGE_MCP_CARRIER",
       "type": "env_var",
       "first_seen": "2.1.239",
@@ -13037,6 +13448,18 @@
       "symbol": "CLAUDE_CODE_COORDINATOR_MODE",
       "type": "env_var",
       "first_seen": "2.1.152",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_COORDINATOR_WORKER_CHECKIN_SECONDS",
+      "type": "env_var",
+      "first_seen": "2.1.246",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -16153,6 +16576,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_PLUGIN_ATTRIBUTION",
+      "type": "env_var",
+      "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_PLUGIN_BINARY_ASSETS",
       "type": "env_var",
       "first_seen": "2.1.196",
@@ -17928,6 +18363,18 @@
       "symbol": "CLAUDE_CODE_TODO_REMINDER_MODE",
       "type": "env_var",
       "first_seen": "2.1.178",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_TOOL_MEMORY_CGROUP_EXCLUDE",
+      "type": "env_var",
+      "first_seen": "2.1.246",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
