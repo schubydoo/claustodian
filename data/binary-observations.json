@@ -12,6 +12,7 @@
     "2.1.239",
     "2.1.238",
     "2.1.237",
+    "2.1.236",
     "2.1.235",
     "2.1.234",
     "2.1.233",
@@ -6563,7 +6564,7 @@
     {
       "symbol": "ANTHROPIC_DEFAULT_MODEL",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "last_seen": "2.1.246",
       "removed_in": null
     },
@@ -8110,7 +8111,7 @@
     {
       "symbol": "CLAUDE_CODE_ARTIFACT_TYPES",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "last_seen": "2.1.246",
       "removed_in": null
     },
@@ -9615,7 +9616,7 @@
     {
       "symbol": "CLAUDE_CODE_HARBOR_KITE_PACING_OFF",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "last_seen": "2.1.246",
       "removed_in": null
     },
@@ -10791,7 +10792,7 @@
     {
       "symbol": "CLAUDE_CODE_SILENT_TURN_REMINDER",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "last_seen": "2.1.246",
       "removed_in": null
     },
@@ -10805,7 +10806,7 @@
     {
       "symbol": "CLAUDE_CODE_SILENT_TURN_REMINDER_TURNS",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "last_seen": "2.1.246",
       "removed_in": null
     },
@@ -11337,7 +11338,7 @@
     {
       "symbol": "CLAUDE_CODE_TOASTY_THIMBLE",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "last_seen": "2.1.246",
       "removed_in": null
     },
@@ -11414,7 +11415,7 @@
     {
       "symbol": "CLAUDE_CODE_TUI_TRIAL",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "last_seen": "2.1.246",
       "removed_in": null
     },

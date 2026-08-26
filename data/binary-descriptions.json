@@ -1353,7 +1353,7 @@
         "description": "Set up and customise auto mode — environment context, plus optional rule tweaks"
       },
       {
-        "from": "2.1.237",
+        "from": "2.1.236",
         "description": "Teach auto mode about your environment, plus optional rule tweaks"
       }
     ],
