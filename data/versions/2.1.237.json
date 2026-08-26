@@ -9481,7 +9481,7 @@
     {
       "symbol": "register_device_hooks",
       "type": "control_message",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "first_seen_estimated": true,
       "removed_in": null,
       "status": "active",
@@ -11860,7 +11860,7 @@
     {
       "symbol": "CLAUDE_CODE_ARTIFACT_TYPES",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -14113,7 +14113,7 @@
     {
       "symbol": "CLAUDE_CODE_HARBOR_KITE_PACING_OFF",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -15990,7 +15990,7 @@
     {
       "symbol": "CLAUDE_CODE_SILENT_TURN_REMINDER",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -16002,7 +16002,7 @@
     {
       "symbol": "CLAUDE_CODE_SILENT_TURN_REMINDER_TURNS",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -16843,7 +16843,7 @@
     {
       "symbol": "CLAUDE_CODE_TOASTY_THIMBLE",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -16952,7 +16952,7 @@
     {
       "symbol": "CLAUDE_CODE_TUI_TRIAL",
       "type": "env_var",
-      "first_seen": "2.1.237",
+      "first_seen": "2.1.236",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",

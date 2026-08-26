@@ -3543,8 +3543,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set up and customise auto mode — environment context, plus optional rule tweaks",
-      "description_source": "binary",
+      "description": "Draft `autoMode.environment` entries from your project and recent sessions, then review the draft and save it to your user settings. Requires a Pro, Max, or Team plan and Claude Code v2.1.228 or later. On native Windows, requires v2.1.233 or later",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
     },
@@ -9479,6 +9479,22 @@
       "direction": "host_to_cli"
     },
     {
+      "symbol": "register_device_hooks",
+      "type": "control_message",
+      "first_seen": "2.1.236",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "@internal Registers this device's hooks with the worker — unrelated to device registration or bind. Sent by a claude --cloud device client after it attaches to a cloud session (never as an initial event of the create): names, by opaque id, which of the user's own hooks the worker should ask this device to run over hook_callback, and which vetted templates to run in the container. The worker rejects requests over 64 KiB with invalid_registration. Error replies use the standard error response with a message that starts with a code token and a colon: hook_forwarding_disabled (off for this session; not retryable, nothing stored), hook_forwarding_not_ready (retry after a short backoff), invalid_registration, or stale_worker_epoch (re-read the worker epoch and re-send). A worker that predates the request answers with the usual unsupported-subtype error.",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": "host_to_cli"
+    },
+    {
       "symbol": "register_repo_root",
       "type": "control_message",
       "first_seen": "2.1.166",
@@ -11842,6 +11858,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_ARTIFACT_TYPES",
+      "type": "env_var",
+      "first_seen": "2.1.236",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_ARTIFACT_VIEWER_BASE_URL",
       "type": "env_var",
       "first_seen": "2.1.229",
@@ -14083,6 +14111,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_HARBOR_KITE_PACING_OFF",
+      "type": "env_var",
+      "first_seen": "2.1.236",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_HERON_TALLOW",
       "type": "env_var",
       "first_seen": "2.1.217",
@@ -15936,6 +15976,30 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SILENT_TURN_REMINDER",
+      "type": "env_var",
+      "first_seen": "2.1.236",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SILENT_TURN_REMINDER_TURNS",
+      "type": "env_var",
+      "first_seen": "2.1.236",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SIMPLE",
       "type": "env_var",
       "first_seen": "2.1.48",
@@ -16765,6 +16829,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_TOASTY_THIMBLE",
+      "type": "env_var",
+      "first_seen": "2.1.236",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_TODO_REMINDER_MODE",
       "type": "env_var",
       "first_seen": "2.1.178",
@@ -16853,6 +16929,18 @@
       "symbol": "CLAUDE_CODE_TUI_JUST_SWITCHED",
       "type": "env_var",
       "first_seen": "2.1.110",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_TUI_TRIAL",
+      "type": "env_var",
+      "first_seen": "2.1.236",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
