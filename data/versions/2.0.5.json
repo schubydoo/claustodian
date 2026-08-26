@@ -2319,7 +2319,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable.",
+      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, Claude-drafted feedback, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"

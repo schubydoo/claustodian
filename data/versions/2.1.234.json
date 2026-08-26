@@ -3583,7 +3583,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "**Skill.** Orchestrate large-scale changes across a codebase in parallel. Researches the codebase, decomposes the work into 5 to 30 independent units, and presents a plan. Once approved, spawns one background subagent per unit in an isolated git worktree. Each subagent implements its unit, runs tests, and opens a pull request. Requires a git repository. Example: `/batch migrate src/ from Solid to React`",
+      "description": "**Skill.** Orchestrate large-scale changes across a codebase in parallel. Researches the codebase, decomposes the work into 5 to 30 independent units, and presents a plan. Once approved, spawns one background subagent per unit in an isolated git worktree. Each subagent implements its unit, runs tests, and opens a pull request. Requires a git repository. Example: `/batch migrate src/ from JavaScript to TypeScript`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4149,7 +4149,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Send product feedback about Claude Code. Opens the same dialog as `/bug`, with the same consent step, sending rules, and mid-turn behavior",
+      "description": "Send product feedback about Claude Code. Opens the same dialog as `/bug`, with the same consent step, sending rules, and mid-turn behavior. In sessions with Claude-drafted feedback, `/feedback` with no argument opens the drafts queue instead, where you review, edit, send, or discard the drafts Claude queued; the queue includes an option to write a new report in the dialog. With an argument, and for `/bug` always, the dialog opens directly",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6702,13 +6702,13 @@
       "type": "config_key",
       "first_seen": "2.1.212",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Model-drafted feedback (the SendFeedback tool). \"notify\" (default) shows a one-line notice when a draft is queued; \"quiet\" shows only the footer counter; \"off\" disables the tool entirely so drafts are never queued.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Control Claude-drafted feedback: whether Claude can queue feedback drafts for you to review, and whether Claude Code shows a card when Claude queues one.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "feedbackSurveyRate",
@@ -8207,8 +8207,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Replace or extend the spinner tips, the short hints Claude Code rotates through while Claude works, with your own strings, such as a team reminder to run a review skill. Set `excludeDefault` to `true` and list at least one tip to show only your tips; when it's `false` or absent, or `tips` is empty, Claude Code keeps the built-in tips and adds yours.",
-      "description_source": "docs",
+      "description": "Override spinner tips. tips: array of tip strings. excludeDefault: if true, only show custom tips (default: false).",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -12796,7 +12796,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
+      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, Claude-drafted feedback, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -15690,11 +15690,12 @@
       "type": "env_var",
       "first_seen": "2.1.212",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `0` to turn off Claude-drafted feedback for a session. Set to `1` to turn it on where your account already has access; the variable can't grant access itself, and the other switches that turn feedback off, such as `DISABLE_FEEDBACK_COMMAND` and the `feedbackDrafts` setting's `off` value, still apply",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -18101,7 +18102,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable the `/feedback` command. Also disables `/bug` and `/share`, which report through the same path; before v2.1.212 they were aliases of `/feedback`, so the command was disabled under every name. The older name `DISABLE_BUG_COMMAND` is also accepted",
+      "description": "Set to `1` to disable the `/feedback` command and Claude-drafted feedback. Also disables `/bug` and `/share`, which report through the same path; before v2.1.212 they were aliases of `/feedback`, so the command was disabled under every name. The older name `DISABLE_BUG_COMMAND` is also accepted",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
