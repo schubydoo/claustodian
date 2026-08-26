@@ -3395,6 +3395,12 @@
         "description": "Disable the ability to bypass permission prompts"
       }
     ],
+    "config_key:permissions.hooks": [
+      {
+        "from": "2.1.247",
+        "description": "Path to file with additional hooks (in addition to those in hooks/hooks.json, if it exists), relative to the plugin root"
+      }
+    ],
     "config_key:permissions.updatedMCPToolOutput": [
       {
         "from": "2.1.242",
@@ -3945,6 +3951,22 @@
       {
         "from": "2.1.45",
         "description": "Override spinner tips. tips: array of tip strings. excludeDefault: if true, only show custom tips (default: false)."
+      },
+      {
+        "from": "2.1.247",
+        "description": "Add your organization's own tips to the spinner tip rotation. tips: strings or {id, text, cooldownSessions?, priority?} objects; tipsFile: a JSON file of the same; label: prefix shown before your tips; excludeDefault: if true, only show your tips (default: false)."
+      }
+    ],
+    "config_key:spinnerTipsOverride.label": [
+      {
+        "from": "2.1.247",
+        "description": "Prefix shown before your tips in the spinner (default \"Tip\")"
+      }
+    ],
+    "config_key:spinnerTipsOverride.tipsFile": [
+      {
+        "from": "2.1.247",
+        "description": "Absolute or ~/ local path to a JSON file holding an array of tips (same shapes as `tips`); honored from user, --settings and on-disk managed settings only. Read once per CLI process (restart to pick up edits)."
       }
     ],
     "config_key:spinnerVerbs": [
