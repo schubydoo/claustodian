@@ -1380,12 +1380,11 @@
     {
       "symbol": "--help",
       "type": "cli_flag",
-      "first_seen": "2.1.200",
-      "first_seen_estimated": true,
+      "first_seen": "2.0.12",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Display help for command",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
@@ -3455,7 +3454,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Accept the command that a plugin with a `command` source runs, without the confirmation prompt. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
+      "description": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
@@ -3702,7 +3701,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Move this session to a new working directory, keeping the conversation and its prompt cache. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Claude Code prompts you to trust the workspace if you haven't worked in it before, and `--resume` finds the moved session afterward. To grant access to an extra directory without moving the session, use `/add-dir`. Restrict or disable `/cd` targets with `Cd` permission rules. Requires Claude Code v2.1.169 or later",
+      "description": "Move this session to a new working directory, keeping the conversation and its prompt cache. Type a partial path to see matching directory suggestions; press `Tab` to accept one. The suggestions require Claude Code v2.1.206 or later. Claude Code prompts you to trust the workspace if you haven't worked in it before, and `--resume` finds the moved session afterward. To grant access to an extra directory without moving the session, use `/add-dir`. Restrict or disable `/cd` targets with `Cd` permission rules. Requires Claude Code v2.1.169 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3767,7 +3766,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Start a new conversation with empty context. Pass a name to label the previous conversation in the `/resume` picker. To free up context while continuing the same conversation, use `/compact` instead. Resume the previous conversation with `/resume`, or, in the same Claude Code process, restore it from the rewind menu's previous-session entry. Aliases: `/reset`, `/new`",
+      "description": "Start a new conversation with empty context. Pass a name to label the previous conversation in the `/resume` picker. To free up context while continuing the same conversation, use `/compact` instead. Resume the previous conversation with `/resume`, or, in the same Claude Code process, restore it from the rewind menu's previous-session entry. The rewind entry requires Claude Code v2.1.191 or later. Aliases: `/reset`, `/new`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3860,7 +3859,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open the Settings interface to adjust theme, model, output style, and other preferences. From v2.1.181, pass one or more `key=value` pairs to set a setting directly without opening the interface, for example `/config thinking=false`. From v2.1.182, named shorthand keys are also accepted, such as `/config theme=dark` or `/config model=sonnet`. The `key=value` form also works in non-interactive mode (`-p`) and from the Claude mobile app via Remote Control. Run `/config --help` to list every settable key with its options. Alias: `/settings`",
+      "description": "Open the Settings interface to adjust theme, model, output style, and other preferences. From v2.1.181, pass one or more `key=value` pairs to set a setting directly without opening the interface, for example `/config thinking=false`. From v2.1.182, named shorthand keys are also accepted, such as `/config theme=dark` or `/config model=sonnet`. The `key=value` form also works in non-interactive mode (`-p`) and from the Claude mobile app via Remote Control. The `key=value` form can't turn on a setting that needs your confirmation in the panel, such as `autoContinueAtUsageLimit`, though it can turn one off. Run `/config --help` to list the keys it accepts. Alias: `/settings`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4592,7 +4591,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Manage allow, ask, and deny rules for tool permissions. Opens an interactive dialog where you can view rules by scope, add or remove rules, manage working directories, and review recent auto mode denials. When you run it while Claude is responding, Claude Code opens the dialog immediately and applies your changes starting with Claude's next tool call in the same turn. Before v2.1.234, Claude Code queued the command until the turn finished. Alias: `/allowed-tools`",
+      "description": "Manage allow, ask, and deny rules for tool permissions. Opens an interactive dialog where you can view rules by scope, add or remove rules, manage working directories, and review recent auto mode denials. You can also view and edit auto mode classifier rules from the dialog's **Auto mode** tab. When you run it while Claude is responding, Claude Code opens the dialog immediately and applies your changes starting with Claude's next tool call in the same turn. Before v2.1.234, Claude Code queued the command until the turn finished. Alias: `/allowed-tools`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4759,11 +4758,11 @@
       "first_seen": "2.0.43",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Show options when rate limit is reached",
-      "description_source": "binary",
-      "source_url": null,
+      "description": "Show ways to keep working when a claude.ai usage limit blocks a request: wait and continue automatically when the limit resets, add usage credits, or upgrade your plan. Claude Code can also open this menu on its own when you hit a limit at your own terminal. See Turn automatic continue off. Requires a claude.ai subscription. Doesn't appear in the command menu; type it in full. The wait-and-continue rows require Claude Code v2.1.234 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
     },
     {
@@ -5086,7 +5085,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "List available skills. Type to filter the list by name. Press `t` to sort by token count. Press `Space` to cycle a skill's visibility to Claude and the `/` menu, then `Enter` to save",
+      "description": "List available skills. Type to filter the list by name. Press `t` to sort by token count. Press `Space` to cycle a skill's visibility to Claude and the `/` menu",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5372,7 +5371,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Team, or Enterprise plan, includes a breakdown of usage by skill, subagent, plugin, and MCP server. See the cost tracking guide for details. `/cost` and `/stats` are aliases",
+      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. `/cost` and `/stats` are aliases",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5812,13 +5811,13 @@
       "type": "config_key",
       "first_seen": "2.1.234",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "When a claude.ai usage limit stops your session, wait for the limit to reset and continue the task automatically. When off, the limit dialog offers the wait as a choice instead.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "After a claude.ai usage limit stops your session, wait in the open session and continue the task automatically after the reset. See Turn automatic continue off. Requires Claude Code v2.1.234 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "autoDreamEnabled",
@@ -6338,8 +6337,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn off the Artifact tool, which publishes session output as a private web page on claude.ai, for everyone your settings reach, such as an organization through managed settings. To turn the tool off just for yourself, use `enableArtifact` instead, which the **Artifacts** toggle in `/config` writes to your user settings.",
-      "description_source": "docs",
+      "description": "Disable the Artifact tool (also via CLAUDE_CODE_DISABLE_ARTIFACT).",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -6404,7 +6403,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Block the `command` plugin source, which installs a plugin by running a marketplace-declared command on the user's machine. When you set it to `true`, Claude Code never runs the command, doesn't install or update command-sourced plugins, and stops loading the ones already installed. Set it to `false` to allow them explicitly. Requires Claude Code v2.1.229 or later.",
+      "description": "Block the `command` plugin source, which installs a plugin by running a marketplace-declared command on the user's machine. When you set it to `true`, Claude Code never runs the command, doesn't install or update command-sourced plugins, and stops loading the ones already installed. Set it to `false` to allow them explicitly. Whenever it blocks command sources, whether you set it to `true` or leave it unset under `allowManagedHooksOnly`, it also blocks marketplace `headersHelper` commands, except for a marketplace that managed settings themselves declare.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6574,8 +6573,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn the Artifact tool on or off for yourself. When unset, the default follows the feature's availability for your account. The **Artifacts** row in `/config` writes this key, so you don't usually edit it by hand. To turn artifacts off for everyone from managed settings, use `disableArtifact` instead. Requires Claude Code v2.1.196 or later.",
-      "description_source": "docs",
+      "description": "Enable or disable the Artifact tool for this user. Unset defaults to enabled once the feature is available.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -8873,7 +8872,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose how background sessions isolate their file edits. With `\"worktree\"`, Claude Code blocks `Edit` and `Write` in the main checkout until the session calls `EnterWorktree`; with `\"none\"`, background jobs edit the working copy directly. Set `\"none\"` for a repository where git worktrees are impractical. Requires Claude Code v2.1.143 or later.",
+      "description": "Choose how background sessions isolate their file edits. With `\"worktree\"`, Claude Code blocks `Edit` and `Write` in the main checkout until the session calls `EnterWorktree`; with `\"none\"`, background jobs edit the working copy directly. Set `\"none\"` for a repository where git worktrees are impractical.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -18532,7 +18531,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to request a 1-hour prompt cache TTL instead of the default 5 minutes. Intended for API key, Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS users. Subscription users within included usage receive 1-hour TTL automatically. Subscription users drawing on usage credits can set it to keep the 1-hour TTL. 1-hour cache writes are billed at a higher rate",
+      "description": "Set to `1` to request a 1-hour prompt cache TTL instead of the default 5 minutes. Intended for API key, Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS users. Subscription users within included usage receive the 1-hour TTL automatically on the main conversation. Subscription users drawing on usage credits can set it to keep the 1-hour TTL. 1-hour cache writes are billed at a higher rate.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -18647,7 +18646,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to force the 5-minute prompt cache TTL even when 1-hour TTL would otherwise apply. Overrides `ENABLE_PROMPT_CACHING_1H`",
+      "description": "Set to `1` to force the 5-minute prompt cache TTL even when 1-hour TTL would otherwise apply.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"

@@ -699,6 +699,12 @@
         "description": "Cross-session messaging server path: a Unix domain socket on Mac/Linux, a \\\\.\\pipe\\ name on Windows (defaults to an auto-generated path)"
       }
     ],
+    "cli_flag:--mocks": [
+      {
+        "from": "2.1.242",
+        "description": "Mock stand-ins for MCP servers, from <eval dir>/mocks/ (record | off; default: record — off spawns the real servers, gated by --allow-tools as usual)"
+      }
+    ],
     "cli_flag:--model": [
       {
         "from": "1.0.0",
@@ -733,6 +739,12 @@
       {
         "from": "2.0.71",
         "description": "Disable Claude in Chrome integration"
+      }
+    ],
+    "cli_flag:--no-home-settings": [
+      {
+        "from": "2.1.242",
+        "description": "Don't send this machine's settings (CLAUDE.md, rules, output styles, preferences, portable permission rules) into the cloud session this launch creates or attaches to. Requires --cloud or --environment."
       }
     ],
     "cli_flag:--no-post": [
@@ -1491,6 +1503,12 @@
         "description": "Start a new session with empty context; previous session stays on disk (resumable with /resume)"
       }
     ],
+    "command:/cloud-plugins": [
+      {
+        "from": "2.1.242",
+        "description": "Choose whether cloud sessions use the plugins enabled on this machine"
+      }
+    ],
     "command:/color": [
       {
         "from": "2.1.7",
@@ -2019,6 +2037,12 @@
       {
         "from": "2.0.12",
         "description": "Manage Claude Code plugins"
+      }
+    ],
+    "command:/plugin-types": [
+      {
+        "from": "2.1.242",
+        "description": "Write claude-code-mcp.d.ts: the inputs of the connected MCP tools, for typing a plugin against this session"
       }
     ],
     "command:/powerup": [
@@ -2887,6 +2911,10 @@
       {
         "from": "2.1.172",
         "description": "Disable the Artifact tool (also via CLAUDE_CODE_DISABLE_ARTIFACT)."
+      },
+      {
+        "from": "2.1.242",
+        "description": "Deprecated: use enableArtifact: false. Still honored \\u2014 true disables the Artifact tool; false is ignored."
       }
     ],
     "config_key:disableAutoMode": [
@@ -2989,6 +3017,10 @@
       {
         "from": "2.1.198",
         "description": "Enable or disable the Artifact tool for this user. Unset defaults to enabled once the feature is available."
+      },
+      {
+        "from": "2.1.242",
+        "description": "Turn the Artifact tool on or off. Off in any of managed, --settings, or user settings wins; project and local settings can only turn it off. Unset defaults to on once the feature is available."
       }
     ],
     "config_key:enableWorkflows": [
@@ -3231,6 +3263,36 @@
         "description": "Override mapping from Anthropic model ID (e.g. \"claude-opus-4-6\") to provider-specific model ID (e.g. a Bedrock inference profile ARN). Typically set in managed settings by enterprise administrators."
       }
     ],
+    "config_key:modelPicker": [
+      {
+        "from": "2.1.242",
+        "description": "Curate the /model picker: an ordered list of models with your own labels, independent of the built-in lineup and of Claude Code releases. availableModels still applies to these rows. Honored from managed, --settings/SDK, and user settings only (not from a project checkout); the highest-precedence of those that defines modelPicker wins outright (no merging across sources). Typically set in managed settings by enterprise administrators."
+      }
+    ],
+    "config_key:modelPicker.options": [
+      {
+        "from": "2.1.242",
+        "description": "Rows to show in the /model picker, in order."
+      }
+    ],
+    "config_key:modelPricing.multiplier.branch": [
+      {
+        "from": "2.1.242",
+        "description": "The branch a commit landed on (from the commit summary line git prints per commit) or a push updated (from the ref-update line git prints per pushed ref, e.g. `HEAD -> other`). Commit and push events carry it; a command that pushed several branches emits one push event per branch. A best-effort hint: absent whenever attribution is uncertain (a push whose output was redirected still emits, with no branch; a push that also updated a ref whose name could not be carried emits a nameless event beside the named ones), and never a required key."
+      }
+    ],
+    "config_key:modelPricing.multiplier.cwd": [
+      {
+        "from": "2.1.242",
+        "description": "The directory the shell was in when the command finished (so an inner cd is reflected; a git -C target is not) \\u2014 a hint about where to look, never proof of what moved: confirm against the repository itself."
+      }
+    ],
+    "config_key:modelPricing.multiplier.kind": [
+      {
+        "from": "2.1.242",
+        "description": "What class of mutation was observed. New kinds may be added \\u2014 treat an unrecognized kind exactly like a recognized one (something changed, go look)."
+      }
+    ],
     "config_key:modelSettings": [
       {
         "from": "2.1.239",
@@ -3283,6 +3345,12 @@
         "description": "List of permission rules that should always prompt for confirmation"
       }
     ],
+    "config_key:permissions.classifierContext": [
+      {
+        "from": "2.1.242",
+        "description": "Host-asserted context shown to the auto-mode permission classifier alongside this tool call's result. In the live session the classifier may weigh a user statement relayed here as user intent (it can satisfy a consent bar a user turn would satisfy, never a hard boundary); values restored from saved session state are treated as unverified context only. Relay discipline is the host's obligation: put ONLY genuine user statements in intent-bearing positions \\u2014 never tool output or model text dressed as one. Capped at 2000 UTF-16 code units, a budget shared across all hooks that contribute to one call (surrogate-pair-safe; emoji and other astral characters count as two). Honored on synchronous hook responses only: an async hook's late response arrives after the result message is frozen and this field in it is silently ignored. Security note: do not copy untrusted tool output or third-party text into it blindly \\u2014 content placed here reaches the permission classifier with host-application framing. Applies only to calls the classifier transcript shows: read-only lookups the transcript omits (file reads, searches), inner REPL calls, and remote-engine shells produce no per-result line, and context attached to them is silently unused. Not a delivery channel: it is bound to a single call id and sized for a short assertion, not for relaying messages or events. Rewrite integrity: if this assertion describes output you are rewriting, return it in the SAME hook result as the rewrite \\u2014 it is then dropped automatically if your rewrite is rejected or superseded by a later hook's rewrite; assertions returned without a rewrite are never invalidated by other hooks' rewrites, so a non-rewriting hook should assert only what holds regardless of other hooks' rewrites \\u2014 hosts that need an assertion bound to exact output bytes should make it in the hook that produces those bytes. (Do NOT return an identity rewrite just to pair an assertion: hooks run in parallel on the ORIGINAL output, so an identity rewrite competes last-write-wins with sibling rewrites and can clobber a real redaction.)"
+      }
+    ],
     "config_key:permissions.defaultMode": [
       {
         "from": "1.0.54",
@@ -3313,6 +3381,18 @@
       {
         "from": "1.0.54",
         "description": "Disable the ability to bypass permission prompts"
+      }
+    ],
+    "config_key:permissions.updatedMCPToolOutput": [
+      {
+        "from": "2.1.242",
+        "description": "Replaces the output for MCP tools only. Prefer updatedToolOutput, which works for all tools"
+      }
+    ],
+    "config_key:permissions.updatedToolOutput": [
+      {
+        "from": "2.1.242",
+        "description": "Replaces the tool output before it is sent to the model"
       }
     ],
     "config_key:plansDirectory": [
@@ -3417,6 +3497,12 @@
       {
         "from": "2.1.210",
         "description": "Corporate launcher argv prefix for the background-agent supervisor, the sessions and workers it hosts, and the other covered background processes listed in the Claude Code corporate-launcher documentation. Equivalent to the CLAUDE_CODE_PROCESS_WRAPPER environment variable, which takes precedence when set. Honored from managed settings, a --settings/SDK-supplied settings file, and user settings, in that precedence order; project and local settings are ignored."
+      }
+    ],
+    "config_key:promptCacheTtl": [
+      {
+        "from": "2.1.242",
+        "description": "Prompt cache TTL for the main conversation (interactive, -p and SDK turns, plus the helpers that run inline with it): \"5m\" or \"1h\". Unset = automatic: 1 hour on a Claude subscription within its usage limits, 5 minutes on an API key, Bedrock, Vertex or Foundry. 1-hour cache writes are billed at a higher rate; the cache stays warm across longer breaks. The CLAUDE_CODE_PROMPT_CACHE_TTL environment variable takes precedence."
       }
     ],
     "config_key:promptSuggestionEnabled": [
