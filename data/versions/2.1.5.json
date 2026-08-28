@@ -1471,8 +1471,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "List available skills. Type to filter the list by name. Press `t` to sort by token count. Press `Space` to cycle a skill's visibility to Claude and the `/` menu",
-      "description_source": "docs",
+      "description": "List available skills",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -1718,7 +1718,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allowlist the MCP servers people can use. Claude Code blocks any server that doesn't match an entry, whichever settings file or `.mcp.json` defined it, including servers from `managed-mcp.json`. Built-in servers such as Claude in Chrome, IDE-provided servers, and servers the CLI itself configures are exempt from the allowlist; the denylist still applies to them.",
+      "description": "Allowlist the MCP servers people can use. Claude Code blocks any server that doesn't match an entry wherever it's defined, including plugin servers, servers passed with `--mcp-config`, and servers from `managed-mcp.json`. Built-in servers such as Claude in Chrome, the `ide` server Claude Code connects to in a running VS Code or JetBrains IDE, and servers the CLI itself configures are exempt from the allowlist, and the denylist still applies to them. In-process `type: \"sdk\"` servers, which the app that started the session registers, are exempt from both lists.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -1874,7 +1874,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Block specific MCP servers. Claude Code refuses to load a matching server in every scope, including servers from `managed-mcp.json` and claude.ai connectors.",
+      "description": "Block specific MCP servers. Claude Code refuses to load a matching server wherever it's defined, including plugin servers, servers passed with `--mcp-config`, servers from `managed-mcp.json`, and the claude.ai connectors it fetches itself. In-process `type: \"sdk\"` servers, which the app that started the session registers, are exempt.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -4362,11 +4362,11 @@
       "first_seen": "2.0.36",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` to hide the `/usage-credits` command that lets users purchase additional usage beyond rate limits",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
