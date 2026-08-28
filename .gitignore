@@ -1,5 +1,6 @@
 # Local Claude Code settings / agent state
 /.claude/
+/.worktreeinclude
 /.serena/
 /CLAUDE.local.md
 
