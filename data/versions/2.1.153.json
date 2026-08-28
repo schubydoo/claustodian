@@ -1124,7 +1124,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Limit the number of agentic turns (print mode only). Exits with an error when the limit is reached. No limit by default. With `--input-format stream-json`, a message sent while Claude is working stays queued and runs as its own turn, with its own limit, when the limit ends the current one",
+      "description": "Limit the number of agentic turns (print mode only). Exits with an error when the limit is reached. No limit by default. With `--input-format stream-json`, a message still queued when the limit ends a turn stays queued and starts a new turn with its own limit",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli-internal"
@@ -1709,11 +1709,11 @@
       "first_seen": "2.1.51",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "How the server creates sessions.<br />• `same-dir` (default): all sessions share the current working directory, so they can conflict if editing the same files.<br />• `worktree`: each on-demand session gets its own git worktree. Requires a git repository.<br />• `session`: single-session mode. Serves exactly one session and rejects additional connections. Set at startup only.<br />Press `w` at runtime to toggle between `same-dir` and `worktree`.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/remote-control.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "remote-control"
@@ -3111,7 +3111,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Re-scan skill and command directories so skills added or changed on disk during the session become available without restarting. Reports how many skills are available and how many were added or removed. Added in v2.1.152",
+      "description": "Re-scan skill and command directories so skills added or changed on disk during the session become available without restarting. Reports how many skills are available and how many were added or removed",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3306,7 +3306,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "**Skill.** Review the changed code for cleanup opportunities and apply the fixes. Four review agents run in parallel, covering reuse of existing helpers, simplification, efficiency, and whether the change is at the right level of abstraction.",
+      "description": "**Skill.** Review the changed code for cleanup opportunities and apply the fixes. Four review agents run in parallel, covering reuse of existing helpers, simplification, efficiency, and whether the change is at the right level of abstraction. The review doesn't look for correctness bugs. Use `/code-review` to find bugs. Pass a path or PR reference to review a specific target",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3319,7 +3319,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "List available skills. Type to filter the list by name. Press `t` to sort by token count. Press `Space` to cycle a skill's visibility to Claude and the `/` menu",
+      "description": "List available skills. Type to filter the list by name, description, or source. Press `t` to sort by token count, `Space` or `Enter` to cycle a skill's visibility to Claude and the `/` menu, and `Esc` to save and close. You can't cycle plugin skills, skills whose frontmatter sets `disable-model-invocation: true`, or skills with a `skillOverrides` entry in managed settings or the `--settings` flag",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3749,7 +3749,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Make managed settings the only source of `allow`, `ask`, and `deny` permission rules. Claude Code then ignores rules in user, project, local, and `--settings` files, ignores `--allowedTools`, hides the always-allow choices in permission prompts, and stops saving new rules.",
+      "description": "Make managed settings the only source of `allow`, `ask`, and `deny` permission rules. Claude Code then ignores rules in user, project, local, and `--settings` files, ignores `--allowedTools`, hides the always-allow choices in permission prompts, and stops saving new rules. When parent settings from an embedding host apply, Claude Code treats them as part of the managed tier: it keeps their `deny` and `ask` rules and drops their `allow` rules and `additionalDirectories`.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -3788,7 +3788,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allowlist the MCP servers people can use. Claude Code blocks any server that doesn't match an entry, whichever settings file or `.mcp.json` defined it, including servers from `managed-mcp.json`. Built-in servers such as Claude in Chrome, IDE-provided servers, and servers the CLI itself configures are exempt from the allowlist; the denylist still applies to them.",
+      "description": "Allowlist the MCP servers people can use. Claude Code blocks any server that doesn't match an entry wherever it's defined, including plugin servers, servers passed with `--mcp-config`, and servers from `managed-mcp.json`. Built-in servers such as Claude in Chrome, the `ide` server Claude Code connects to in a running VS Code or JetBrains IDE, and servers the CLI itself configures are exempt from the allowlist, and the denylist still applies to them. In-process `type: \"sdk\"` servers, which the app that started the session registers, are exempt from both lists.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -4269,7 +4269,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Block specific MCP servers. Claude Code refuses to load a matching server in every scope, including servers from `managed-mcp.json` and claude.ai connectors.",
+      "description": "Block specific MCP servers. Claude Code refuses to load a matching server wherever it's defined, including plugin servers, servers passed with `--mcp-config`, servers from `managed-mcp.json`, and the claude.ai connectors it fetches itself. In-process `type: \"sdk\"` servers, which the app that started the session registers, are exempt.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -5320,7 +5320,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Honor only the `allowRead` entries that come from managed settings, so developers can't re-open read access to paths your organization blocked. `denyRead` entries still merge from every settings file.",
+      "description": "Honor only the `allowRead` entries that come from managed settings, so developers can't re-open read access to paths your organization blocked. Claude Code still merges `denyRead` entries from every settings file the session loads.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6255,7 +6255,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Have Claude Code on WSL read managed settings from the Windows policy chain, with HKLM and the Windows managed settings file taking priority over `/etc/claude-code` and HKCU below it. While the chain is on, Claude Code reads `/etc/claude-code` only when no managed settings file or drop-in under `C:\\Program Files\\ClaudeCode\\` delivers a policy key other than `wslInheritsWindowsSettings` itself. Set it to extend the policy you already deploy on Windows to WSL sessions on the same machine, so they follow the same rules as host sessions. Claude Code honors it only when set in the HKLM registry key or in a managed settings file or drop-in under `C:\\Program Files\\ClaudeCode\\`, both of which require Windows admin to write.",
+      "description": "Have Claude Code on WSL read managed settings from the Windows policy chain, with HKLM and the Windows managed settings file taking priority over `/etc/claude-code` and HKCU below it. While the chain is on, Claude Code reads `/etc/claude-code` only when no managed settings file or drop-in under `C:\\Program Files\\ClaudeCode\\` delivers a policy key. Set it to extend the policy you already deploy on Windows to WSL sessions on the same machine, so they follow the same rules as host sessions. Claude Code honors it only when set in the HKLM registry key or in a managed settings file or drop-in under `C:\\Program Files\\ClaudeCode\\`, both of which require Windows admin to write.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -11859,11 +11859,11 @@
       "first_seen": "2.0.36",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` to hide the `/usage-credits` command that lets users purchase additional usage beyond rate limits",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -12092,7 +12092,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `false` to disable claude.ai MCP servers in Claude Code. Enabled by default for logged-in users.",
+      "description": "Set to `false` to stop Claude Code from fetching claude.ai MCP servers. Enabled by default for logged-in users.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
