@@ -30,6 +30,15 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   filtering `type: "env_var"` no longer see these six; the binary lane still observes
   them raw and withholds them at publication, so no genuine Claude Code var is lost.
 
+- **`--all` now records `respawn` among its scopes.** `claude respawn <id>|--all`
+  accepts `--all`, but the background-session subcommands are hand-rolled parsers the
+  binary scope lane could not read — they string-compare the argument instead of
+  using `case"--flag":` labels, and since 2.1.242 sit outside the modules that lane
+  partitions on. A new `extractBgSubcommandScopes` reads them (the guard rejecting
+  every other dash-led token is the complete accepted set), and `respawn` joins
+  `--all`'s curated scopes. A consumer asking "is `--all` accepted under `respawn`?"
+  now gets yes instead of a false no.
+
 ## 2026-08-22
 
 ### Fixed

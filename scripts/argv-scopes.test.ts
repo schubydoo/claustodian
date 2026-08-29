@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
-import { extractSwitchCaseScopes } from './argv-scopes.js';
+import { extractBgSubcommandScopes, extractSwitchCaseScopes } from './argv-scopes.js';
 
 /** An esbuild module: header, bodies, and whatever usage text it prints. */
 const mod = (ns: string, body: string): string => `var ${ns}={};ut(${ns},{main:()=>x});${body}`;
@@ -148,5 +148,64 @@ describe('extractSwitchCaseScopes', () => {
     const scopes = extractSwitchCaseScopes(src);
     expect(scopes.get('--capacity')).toEqual(['self-hosted-runner']);
     expect(scopes.size).toBe(1);
+  });
+});
+
+/** A background-session subcommand parser: one positional, and an "unknown option"
+ *  guard that rejects every dash-led token except `flags`, printing its own usage
+ *  banner inside that guard block — the real `respawn`/`rm`/… shape. */
+const bgParser = (path: string, flags: readonly string[]): string => {
+  const usage = `Usage: claude ${path} <id>${flags.map((f) => `|${f}`).join('')}`;
+  const chain = flags.map((f) => `&&e!=="${f}"`).join('');
+  return (
+    `async function h(e){if(e==="--help"){process.stdout.write(\`${usage}\`);return}` +
+    `if(e?.startsWith("-")${chain}){process.stderr.write(\`unknown option '\${e}'\n${usage}\`),process.exitCode=1;return}}`
+  );
+};
+
+describe('extractBgSubcommandScopes', () => {
+  it('scopes a flag from the guard that rejects every other dash-led token', () => {
+    // `claude respawn <id>|--all`: the guard proves `--all` is the complete
+    // accepted set, and the banner in its own block names the invocation.
+    expect(extractBgSubcommandScopes(bgParser('respawn', ['--all'])).get('--all')).toEqual([
+      'respawn',
+    ]);
+  });
+
+  it('reads the path across a `<id>|--all` banner the case-label lane cannot end on', () => {
+    // USAGE_BANNER stops the path at `[`, a newline, or a backtick; these banners
+    // put `<` right after the path, so the case-label lane never matched them.
+    expect([...extractBgSubcommandScopes(bgParser('respawn', ['--all'])).keys()]).toEqual([
+      '--all',
+    ]);
+  });
+
+  it('contributes nothing for a subcommand that accepts no flags', () => {
+    // `attach`/`logs`/`stop`/`rm` take only a positional id: the guard has no
+    // `!==` exception, so there is no accepted flag to scope.
+    expect(extractBgSubcommandScopes(bgParser('rm', [])).size).toBe(0);
+  });
+
+  it('scopes every flag named in the guard chain', () => {
+    const scopes = extractBgSubcommandScopes(bgParser('x', ['--all', '--force']));
+    expect(scopes.get('--all')).toEqual(['x']);
+    expect(scopes.get('--force')).toEqual(['x']);
+  });
+
+  it('unions the subcommands that accept the same flag', () => {
+    const src = bgParser('respawn', ['--all']) + bgParser('prune', ['--all']);
+    expect(extractBgSubcommandScopes(src).get('--all')).toEqual(['prune', 'respawn']);
+  });
+
+  it('ignores a generic startsWith("-") check with no accepted flag and no banner', () => {
+    // The ordinary arg guards elsewhere in the bundle: no `!==` exception, no usage
+    // string — they must not manufacture a scope.
+    expect(extractBgSubcommandScopes('if(o?.startsWith("-")){throw Error("bad")}').size).toBe(0);
+  });
+
+  it('reads a multi-word invocation path', () => {
+    expect(
+      extractBgSubcommandScopes(bgParser('plugin marketplace add', ['--scope'])).get('--scope')
+    ).toEqual(['plugin marketplace add']);
   });
 });

@@ -100,7 +100,13 @@
  */
 export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--ablation', ['plugin eval']],
-  ['--all', ['agents', 'plugin disable', 'project purge']],
+  // `respawn` is from the background-subcommand parser, not the 2.1.226 help
+  // sweep: `claude respawn <id>|--all` accepts `--all`, proved by
+  // `extractBgSubcommandScopes` (scripts/argv-scopes.ts). It is curated here rather
+  // than published from the binary lane because `--all` is a commander
+  // registration elsewhere, and backfill-binary withholds binary scopes from a
+  // strong-evidence flag; curation UNIONS, which is the only safe direction.
+  ['--all', ['agents', 'plugin disable', 'project purge', 'respawn']],
   ['--allow-tools', ['plugin eval']],
   ['--author', ['plugin init']],
   ['--author-email', ['plugin init']],

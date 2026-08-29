@@ -141,3 +141,57 @@ export function extractSwitchCaseScopes(src: string): Map<string, string[]> {
   }
   return out;
 }
+
+/**
+ * Scopes proved from the BACKGROUND-SESSION subcommands' hand-rolled parsers
+ * (`respawn`, `attach`, `logs`, `stop`, `rm`), which `extractSwitchCaseScopes`
+ * cannot see.
+ *
+ * Two reasons it cannot: those parsers do not use `case"--flag":` labels — they
+ * string-compare the single argument — and since the 2.1.242 ESM/bun-compiled
+ * layout their code sits OUTSIDE the esbuild namespace modules the containment
+ * above partitions on (measured: the case-label lane returns 0 flags from 2.1.242
+ * on). This lane needs neither: the evidence is a single statement.
+ *
+ * A background subcommand takes one positional and rejects every other dash-led
+ * token, printing its OWN usage banner in the SAME guard block:
+ *
+ *   if(e?.startsWith("-")&&e!=="--all"){process.stderr.write(`unknown option '${e}'
+ *   Usage: claude respawn <id>|--all`);…}
+ *
+ * The `&&e!=="--flag"` chain is the COMPLETE accepted-flag set — anything else
+ * dash-led is rejected right there — and the banner naming the invocation is
+ * inside the guard's own consequent, so this is containment by one statement, not
+ * a proximity guess. A guard with no `!==` exception accepts no flags (`attach`,
+ * `logs`, `stop`, `rm` take only a positional id) and contributes nothing.
+ *
+ * NOTE the `<`/`|` in the terminator: `USAGE_BANNER` above stops the path at `[`
+ * (for `[options]`), a newline, or a backtick — but these banners read
+ * `<id>|--all`, so the path is followed by `<`, which that pattern cannot end on.
+ *
+ * This is a DISCOVERY lane: its findings are curated into `SYMBOL_SCOPES`, because
+ * a background subcommand's flag is often ALSO a commander registration elsewhere
+ * (`--all` is `agents` / `plugin disable` / `project purge` too), and
+ * `backfill-binary` withholds binary scopes from a strong-evidence flag to avoid
+ * narrowing it. Curation UNIONS, which is the only safe direction here.
+ */
+const BG_SUBCOMMAND_GUARD =
+  /([A-Za-z_$][\w$]*)\?\.startsWith\("-"\)((?:&&\1!=="--[a-z][a-z0-9-]*")+)\)\{[\s\S]{0,160}?Usage:\s*claude\s+([a-z][a-z0-9 -]*?)\s*(?:[[<|]|\\n|\n|`)/g;
+
+export function extractBgSubcommandScopes(src: string): Map<string, string[]> {
+  const out = new Map<string, string[]>();
+  for (const m of src.matchAll(BG_SUBCOMMAND_GUARD)) {
+    // Groups 1-3 are all non-optional, so a match always populates them.
+    const path = m[3]!.trim();
+    for (const fm of m[2]!.matchAll(/!=="(--[a-z][a-z0-9-]*)"/g)) {
+      const flag = fm[1]!;
+      const paths = out.get(flag) ?? [];
+      if (!paths.includes(path)) {
+        paths.push(path);
+        paths.sort();
+      }
+      out.set(flag, paths);
+    }
+  }
+  return out;
+}
