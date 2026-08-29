@@ -465,6 +465,28 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
         walk(inlineBody, path, depth + 1, viaFactory);
         continue;
       }
+      // A two-argument keyed combinator — `record(keySchema,valueSchema)` /
+      // `map(...)` — passed its schemas INLINE: `Pe(i(),i())`, first argument a
+      // call and a comma at the argument top level. It keys on caller-supplied
+      // names, so it has no fixed sub-keys to enumerate, exactly like the `env` and
+      // `hooks` record schemas the resolver already yields nothing for.
+      //
+      // Skip it BEFORE resolving the callee, because the callee name is minified
+      // and reused across module scopes: resolving it can land on an unrelated
+      // object literal and send the walk chasing phantom keys. At 2.1.251 the
+      // record builder `function Pe(){return new kn({type:"record"…})}` and two
+      // unrelated `Pe=m(()=>…)` lazy objects were all minified to `Pe`, so
+      // `modelOverrides:Pe(i(),i())` resolved to an object 1.9 MB away and the walk
+      // invented a `modelOverrides.enabled.pricing_tiers…` cycle until the depth
+      // guard refused the whole version.
+      //
+      // Deliberately narrow to the TWO-arg form. A one-arg combinator (`array`,
+      // `H(i())`) resolves to a non-object and already yields no children, so it
+      // needs no help here — and matching it would change what a same-named
+      // collision currently descends into elsewhere (`permissions.args:H(i())` at
+      // 2.1.248/250), i.e. edit committed history rather than fix this break.
+      if (/^\s*[A-Za-z_$][\w$]*\(\s*[A-Za-z_$][\w$]*\((?:[^()]|\([^()]*\))*\)\s*,/.test(value))
+        continue;
       // Not an inline object, but it may still REFERENCE a sub-schema binding.
       // Both forms occur and they look different: called (`permissions:zWl(e)`)
       // and chained (`read:H10.optional()`). Matching only the called form is
