@@ -1189,6 +1189,38 @@ export const PROMOTED_BINARY_SYMBOLS: ReadonlyMap<string, BinaryPromotion> = new
       description_source: 'help',
     },
   ],
+  // The 2.1.251 depth-exhaustive `claude <path> --help` walk (see
+  // scripts/symbol-scopes.ts), ~25 releases past the 2.1.226 capture. It read the
+  // deeper `Options:` blocks the depth-three note above warned were never mined for
+  // descriptions, and picked up flags added since the last audit. `--eval-dir` is
+  // deliberately NOT here, for the reason `--api-url` above is not: it names a
+  // DIFFERENT directory under `plugin eval` (the eval-cases dir to run) than under
+  // `plugin eval init` (the dir to write cases into), so one `type:symbol` record
+  // cannot hold both descriptions — it stays needs_review.
+  [
+    'cli_flag:--mocks',
+    {
+      description:
+        'Mock stand-ins for MCP servers, from <eval dir>/mocks/ (record | off; default: record — off spawns the real servers, gated by --allow-tools as usual)',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--no-post',
+    {
+      description:
+        'Do not post the findings to the PR (the default; accepted for parity with the /ultrareview and /code-review ultra flags)',
+      description_source: 'help',
+    },
+  ],
+  [
+    'cli_flag:--post',
+    {
+      description:
+        "Post the finished review's findings to the PR as you (PR targets only; one plain comment, not a review)",
+      description_source: 'help',
+    },
+  ],
 ]);
 
 /** The audit promotion for a binary symbol, if a maintainer confirmed it. */

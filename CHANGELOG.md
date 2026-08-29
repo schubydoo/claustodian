@@ -20,6 +20,15 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ### Fixed
 
+- **Three commander flags promoted from `needs_review` to `active`.** The 2.1.251
+  `--help` walk confirmed `--mocks` (`plugin eval`), `--post` and `--no-post`
+  (`ultrareview`) as genuine, user-facing flags carrying their own first-party
+  descriptions, so they join `PROMOTED_BINARY_SYMBOLS` — `status: "active"`,
+  `confidence: "high"`, `description_source: "help"`. `--eval-dir` was left
+  `needs_review`: it names a different directory under `plugin eval` (the eval-cases
+  dir to run) than under `plugin eval init` (the dir to write cases into), and one
+  `type:symbol` record cannot hold both — the same bar `--api-url` is held to.
+
 - **Five commander-flag scopes a fresh `--help` walk found.** The curated scope table
   was captured at 2.1.226; a full `claude <path> --help` walk ~25 releases later
   surfaced commander flags whose scope only help can resolve (the binary lanes see
