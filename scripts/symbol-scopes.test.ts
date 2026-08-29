@@ -19,8 +19,22 @@ describe('scopesFor', () => {
       'plugin marketplace list',
       'ultrareview',
     ]);
-    expect(scopesFor('cli_flag', '--all')).toEqual(['agents', 'plugin disable', 'project purge']);
+    expect(scopesFor('cli_flag', '--all')).toEqual([
+      'agents',
+      'plugin disable',
+      'project purge',
+      'respawn',
+    ]);
     expect(scopesFor('cli_flag', '--config')).toEqual(['gateway', 'plugin install']);
+  });
+
+  it('carries the background-subcommand scope proved by extractBgSubcommandScopes', () => {
+    // `claude respawn <id>|--all` accepts `--all`. It is curated (not published from
+    // the binary lane) because `--all` is a commander registration elsewhere and
+    // backfill withholds binary scopes from strong-evidence flags. The scope must be
+    // a UNION with its commander invocations, never a replacement.
+    expect(scopesFor('cli_flag', '--all')).toContain('respawn');
+    expect(scopesFor('cli_flag', '--all')).toContain('agents');
   });
 
   it('records the sub-subcommand that owns a flag, not its parent', () => {
