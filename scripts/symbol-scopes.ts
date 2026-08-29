@@ -97,6 +97,16 @@
  * which a single `plugin` entry could express. Twelve flags the first sweep
  * missed entirely (`--client-secret`, `--callback-port`, `--sso`, …) are here
  * because sub-subcommand help was never read.
+ *
+ * REFRESHED against a full `claude <path> --help` walk at 2.1.251, ~25 releases on
+ * from the 2.1.226 capture: `--eval-dir` (`plugin eval` + `plugin eval init`),
+ * `--mocks` (`plugin eval`), `--post` / `--no-post` (`ultrareview`) were added, and
+ * `--yes` gained `plugin install` / `plugin update`. `--remote` was DELIBERATELY not
+ * added despite appearing under `plugin tag --help`: it is a `.hideHelp()` top-level
+ * flag (`hidden_eras` from 1.0.68, a deprecated `--cloud` alias), so scoping it would
+ * falsely assert it is rejected on bare `claude` — the hidden-top-level trap this
+ * doc warns of. The `remote-control` and `self-hosted-runner` entries stay: their
+ * help is auth-gated or argv-dispatched, so a walk cannot reach them.
  */
 export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--ablation', ['plugin eval']],
@@ -125,6 +135,7 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--dry-run', ['import', 'plugin prune', 'plugin tag', 'project purge']],
   ['--email', ['auth login']],
   ['--env', ['mcp add']],
+  ['--eval-dir', ['plugin eval', 'plugin eval init']],
   ['--force', ['install', 'plugin init', 'plugin tag']],
   ['--header', ['mcp add']],
   ['--interactive', ['plugin eval init', 'project purge']],
@@ -146,11 +157,14 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--label', ['auto-mode defaults']],
   ['--max-cost-usd', ['plugin eval']],
   ['--message', ['plugin tag']],
+  ['--mocks', ['plugin eval']],
   ['--no-browser', ['mcp login']],
+  ['--no-post', ['ultrareview']],
   ['--no-publish', ['plugin eval']],
   ['--no-sandbox', ['remote-control']],
   ['--no-scaffold', ['plugin eval']],
   ['--output-dir', ['plugin eval']],
+  ['--post', ['ultrareview']],
   ['--prune', ['plugin uninstall']],
   ['--publish-report', ['plugin eval']],
   ['--push', ['plugin tag']],
@@ -185,7 +199,18 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--timeout', ['ultrareview']],
   ['--transport', ['mcp add']],
   ['--with', ['plugin init']],
-  ['--yes', ['auto-mode reset', 'import', 'plugin prune', 'plugin uninstall', 'project purge']],
+  [
+    '--yes',
+    [
+      'auto-mode reset',
+      'import',
+      'plugin install',
+      'plugin prune',
+      'plugin uninstall',
+      'plugin update',
+      'project purge',
+    ],
+  ],
 ]);
 
 /**

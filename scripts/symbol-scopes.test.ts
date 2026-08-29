@@ -83,6 +83,19 @@ describe('scopesFor', () => {
     expect(scopesFor('cli_flag', '--sparse')).toEqual(['plugin marketplace add']);
   });
 
+  it('carries the commander-flag scopes a 2.1.251 --help walk added after 2.1.226', () => {
+    // The table was captured at 2.1.226; a full walk ~25 releases on found commander
+    // flags whose scope only `claude <path> --help` can resolve, each a false "no"
+    // until now: `claude ultrareview --post`, `claude plugin eval --mocks`, etc.
+    expect(scopesFor('cli_flag', '--eval-dir')).toEqual(['plugin eval', 'plugin eval init']);
+    expect(scopesFor('cli_flag', '--mocks')).toEqual(['plugin eval']);
+    expect(scopesFor('cli_flag', '--post')).toEqual(['ultrareview']);
+    expect(scopesFor('cli_flag', '--no-post')).toEqual(['ultrareview']);
+    // `--yes` was present but INCOMPLETE — the walk added `plugin install` / `update`.
+    expect(scopesFor('cli_flag', '--yes')).toContain('plugin install');
+    expect(scopesFor('cli_flag', '--yes')).toContain('plugin update');
+  });
+
   it('leaves a HIDDEN top-level flag unscoped, however a subcommand reuses the name', () => {
     // The sweep excludes what bare `claude --help` accepts, but a `.hideHelp()`
     // flag never appears there and so is never excluded. `--remote` is hidden
@@ -161,7 +174,14 @@ describe('SYMBOL_SCOPES table', () => {
     // the evidence rather than deleting a true scope to get green.
     // Keyed by `flag|parent|child`, not by flag: exempting a whole flag would also
     // wave through a second, unrelated prefix pair on it.
-    const EVIDENCED_PARENT_AND_CHILD = new Set<string>([]);
+    const EVIDENCED_PARENT_AND_CHILD = new Set<string>([
+      // `--eval-dir` is registered on BOTH `plugin eval` (the directory of eval
+      // cases to RUN, "below the plugin") and `plugin eval init` (the directory to
+      // WRITE cases into, "below the current directory") — same name, different
+      // command and description, both accepted. Verified against 2.1.251
+      // `plugin eval --help` and `plugin eval init --help`.
+      '--eval-dir|plugin eval|plugin eval init',
+    ]);
     for (const [flag, scopes] of SYMBOL_SCOPES) {
       for (const a of scopes) {
         for (const b of scopes) {

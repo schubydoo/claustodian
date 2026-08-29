@@ -20,6 +20,17 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ### Fixed
 
+- **Five commander-flag scopes a fresh `--help` walk found.** The curated scope table
+  was captured at 2.1.226; a full `claude <path> --help` walk ~25 releases later
+  surfaced commander flags whose scope only help can resolve (the binary lanes see
+  hand-rolled parsers, not commander registrations). `--eval-dir` (`plugin eval` and
+  `plugin eval init`), `--mocks` (`plugin eval`), and `--post` / `--no-post`
+  (`ultrareview`) gained scopes, and `--yes` gained `plugin install` / `plugin update`.
+  Each was a false "no" — a consumer asking "is `--post` accepted under `ultrareview`?"
+  now gets yes. `--remote` was deliberately left unscoped despite appearing under
+  `plugin tag --help`: it is a hidden top-level flag (a deprecated `--cloud` alias), so
+  scoping it would falsely claim `claude --remote` is rejected.
+
 - **Dropped six non–Claude Code env vars the changelog lane pulled from prose.** The
   changelog names external-tool, shell, and OS variables incidentally in backticks,
   and the broad `env_var` pattern seeded them as symbols: `GH_TOKEN` / `GITHUB_TOKEN`
