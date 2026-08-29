@@ -143,6 +143,33 @@ describe('extractSymbols', () => {
     expect(extractSymbols('export `PATH=/usr/bin` before running')).toEqual([]);
   });
 
+  it('drops external-tool, shell-builtin, and OS temp vars named incidentally (2.1.251)', () => {
+    // The 2.1.251 changelog names non-Claude-Code tokens in prose: the gh CLI /
+    // GitHub Actions auth convention, and bash builtins used only as arithmetic-
+    // assignment EXAMPLES. Neither is Claude Code's own surface.
+    expect(
+      extractSymbols(
+        'call the GitHub API directly (via `gh auth token`, `GH_TOKEN`, or `GITHUB_TOKEN`)'
+      )
+    ).toEqual([]);
+    expect(
+      extractSymbols(
+        'assign an arithmetic expression to an integer shell variable (e.g. `OPTIND=1`/`0`, `RANDOM=2+2`)'
+      )
+    ).toEqual([]);
+    // The temp-dir bullet drops the OS vars `TMPDIR`/`TMP`/`TEMP` but MUST keep the
+    // real Claude Code vars it names alongside them — proving the drop is targeted,
+    // not the whole bullet going empty.
+    expect(
+      extractSymbols(
+        'no longer set `CLAUDE_CONFIG_DIR`, `CLAUDE_CODE_TMPDIR`, or `TMPDIR`/`TMP`/`TEMP`'
+      )
+    ).toEqual([
+      { symbol: 'CLAUDE_CONFIG_DIR', type: 'env_var' },
+      { symbol: 'CLAUDE_CODE_TMPDIR', type: 'env_var' },
+    ]);
+  });
+
   it('orders results by first appearance across all three patterns', () => {
     const symbols = extractSymbols('First `/compact`, then `--turbo`, then `OTEL_LOG_LEVEL`.');
     expect(symbols.map((s) => s.symbol)).toEqual(['/compact', '--turbo', 'OTEL_LOG_LEVEL']);

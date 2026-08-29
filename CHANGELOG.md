@@ -16,6 +16,20 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-08-28
+
+### Fixed
+
+- **Dropped six non–Claude Code env vars the changelog lane pulled from prose.** The
+  changelog names external-tool, shell, and OS variables incidentally in backticks,
+  and the broad `env_var` pattern seeded them as symbols: `GH_TOKEN` / `GITHUB_TOKEN`
+  (the `gh` CLI / GitHub Actions auth convention), `OPTIND` / `RANDOM` (bash builtins
+  shown only as arithmetic-assignment examples in a permission-check bugfix), and
+  `TMPDIR` / `TEMP` (OS temp-dir vars a bullet says Claude Code no longer sets). They
+  now join the changelog-lane denylist alongside `PATH`/`HOME`/`GIT_DIR`. Consumers
+  filtering `type: "env_var"` no longer see these six; the binary lane still observes
+  them raw and withholds them at publication, so no genuine Claude Code var is lost.
+
 ## 2026-08-22
 
 ### Fixed

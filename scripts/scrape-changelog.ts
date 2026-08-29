@@ -310,10 +310,26 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   '--git-dir',
   'GIT_DIR',
   'GIT_WORK_TREE',
+  // The `gh` CLI / GitHub Actions auth-token convention, from the 2.1.251 bullet
+  // "call the GitHub API directly (via `gh auth token`, `GH_TOKEN`, or
+  // `GITHUB_TOKEN`)". Claude Code's GitHub integration reads these, but they are
+  // the external tool's primitives — not Claude Code's own surface — the same
+  // ownership line the git primitives above sit on.
+  'GH_TOKEN',
+  'GITHUB_TOKEN',
+  // Shell (bash) built-in variables named only as EXAMPLES, from the 2.1.251
+  // bugfix bullet "auto-approving commands that assign an arithmetic expression to
+  // an integer shell variable (e.g. `OPTIND=1`/`0`, `RANDOM=2+2`)". They match via
+  // the pattern's optional `=<value>` form; neither is a Claude Code variable.
+  'OPTIND',
+  'RANDOM',
   // OS/shell environment variables Claude Code reads but does not own; the
-  // changelog names them incidentally ("a stale `PATH`"). NO_COLOR / FORCE_COLOR
-  // (genuinely respected) and TRACEPARENT / TRACESTATE (OTEL context) stay
-  // published; AI_AGENT is ambiguous and left as-is.
+  // changelog names them incidentally ("a stale `PATH`"; and the 2.1.251 bullet
+  // "no longer set `CLAUDE_CONFIG_DIR`, `CLAUDE_CODE_TMPDIR`, or `TMPDIR`/`TMP`/
+  // `TEMP`"). NO_COLOR / FORCE_COLOR (genuinely respected) and TRACEPARENT /
+  // TRACESTATE (OTEL context) stay published; AI_AGENT is ambiguous and left
+  // as-is. (`TMP` needs no entry — at 3 chars it is below the env_var pattern's
+  // 4-character floor and never matches.)
   'PATH',
   'HOME',
   'LANG',
@@ -322,6 +338,8 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   'OLDPWD',
   'DIRSTACK',
   'XDG_DATA_HOME',
+  'TMPDIR',
+  'TEMP',
 ]);
 
 /**
