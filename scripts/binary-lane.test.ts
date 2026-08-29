@@ -75,10 +75,10 @@ describe('audit promotions', () => {
   // promote/demote a symbol, update these counts.
   const entries = [...PROMOTED_BINARY_SYMBOLS.entries()];
 
-  it('holds the 108 audited promotions (39 binary + 69 help)', () => {
-    expect(PROMOTED_BINARY_SYMBOLS.size).toBe(108);
+  it('holds the 111 audited promotions (39 binary + 72 help)', () => {
+    expect(PROMOTED_BINARY_SYMBOLS.size).toBe(111);
     expect(entries.filter(([, p]) => p.description_source === 'binary')).toHaveLength(39);
-    expect(entries.filter(([, p]) => p.description_source === 'help')).toHaveLength(69);
+    expect(entries.filter(([, p]) => p.description_source === 'help')).toHaveLength(72);
   });
 
   it('leaves the six unresolvable runner flags unpromoted', () => {
