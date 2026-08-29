@@ -230,17 +230,26 @@ export async function main(argv: string[]): Promise<number> {
       unverified.push(version);
       continue;
     }
-    const symbols = extractBundleSymbols(result.src);
+    // The compiled era hands us an executable, which no parser can read. Slice the
+    // embedded bundle into its chunks for the AST lane AND the switch-case scope
+    // lane, both of which need the code-split's per-parser chunks from 2.1.242 on;
+    // the npm era is already source (one chunk), and the flat `src` is what the
+    // other regex lanes keep seeing either way. A slice refusal is fatal to the
+    // control lane exactly as before, so it lands in `controlFailures`.
+    let chunks: readonly string[];
+    try {
+      chunks = result.bytes ? sliceEmbeddedChunks(result.bytes, version) : [result.src];
+    } catch (error) {
+      controlFailures.push({ version, reason: (error as Error).message });
+      continue;
+    }
+    const symbols = extractBundleSymbols(result.src, chunks);
     // Deliberately uninitialised: the catch `continue`s, so an initial value would
     // never be read, and a default of `[]` here is exactly the silent-zero this lane
     // exists to refuse.
     let controlMessages: ControlMessageObservation[];
     try {
-      // The compiled era hands us an executable, which no parser can read. Slice the
-      // embedded bundle out for the AST lane; the npm era is already source, and
-      // `src` is what the regex lanes keep seeing either way.
-      const parseable = result.bytes ? sliceEmbeddedChunks(result.bytes, version) : result.src;
-      controlMessages = extractControlMessages(parseable, version);
+      controlMessages = extractControlMessages(chunks, version);
     } catch (error) {
       controlFailures.push({ version, reason: (error as Error).message });
       continue;

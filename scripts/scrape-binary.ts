@@ -130,12 +130,15 @@ export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryC
   // Two different inputs on purpose. The regex lanes read the artifact decoded and
   // unsliced, exactly as they always have — changing that would change published
   // data. The AST lane cannot read an executable at all, so it gets the embedded
-  // bundle; for an npm-era artifact that is a pass-through.
+  // bundle; for an npm-era artifact that is a pass-through. The switch-case scope
+  // lane also needs the chunks — from 2.1.242 each subcommand parser is its own
+  // chunk — so they are computed once and shared with both.
   const bundle = Buffer.from(artifact.buffer, artifact.byteOffset, artifact.byteLength).toString(
     'utf-8'
   );
-  const symbols = extractBundleSymbols(bundle);
-  const controlMessages = extractControlMessages(sliceEmbeddedChunks(artifact, version), version);
+  const chunks = sliceEmbeddedChunks(artifact, version);
+  const symbols = extractBundleSymbols(bundle, chunks);
+  const controlMessages = extractControlMessages(chunks, version);
   return {
     version,
     source: 'binary',

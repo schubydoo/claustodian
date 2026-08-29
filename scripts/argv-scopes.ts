@@ -90,44 +90,60 @@ function moduleIndexAt(headers: readonly number[], offset: number): number {
  * era whose few modules carry no banners at all — absence yields no scope, which
  * leaves those flags withheld exactly as they are today.
  */
-export function extractSwitchCaseScopes(src: string): Map<string, string[]> {
-  const headers: number[] = [];
-  for (const m of src.matchAll(MODULE_HEADER)) {
-    headers.push(m.index);
-  }
+export function extractSwitchCaseScopes(input: string | readonly string[]): Map<string, string[]> {
+  // One CHUNK is the containment unit's home. Pre-2.1.242 the compiled CLI is a
+  // single bundle (one chunk) partitioned into esbuild namespace modules by
+  // MODULE_HEADER; from 2.1.242 the Bun ESM code-split makes each parser its OWN
+  // `// @bun @bytecode` chunk (see slice-bundle.ts), which carries NO namespace
+  // header — so a header-less chunk IS one module. Passing the chunk list restores
+  // the containment the split era erased; a plain string is the pre-split single
+  // chunk. Module keys are `chunkIndex:moduleIndex`, unique across chunks; `null`
+  // marks a preamble occurrence (text before the first header of a MULTI-module
+  // chunk), which is not a module and disqualifies the flag.
+  const chunks = typeof input === 'string' ? [input] : input;
 
-  const bannersByModule = new Map<number, Set<string>>();
-  for (const m of src.matchAll(USAGE_BANNER)) {
-    // USAGE_BANNER group 1 is non-optional, so a match always populates it.
-    const path = m[1]!;
-    const mod = moduleIndexAt(headers, m.index);
-    let set = bannersByModule.get(mod);
-    if (!set) bannersByModule.set(mod, (set = new Set()));
-    set.add(path);
-  }
+  const bannersByModule = new Map<string, Set<string>>();
+  const modulesByFlag = new Map<string, Set<string | null>>();
 
-  const modulesByFlag = new Map<string, Set<number>>();
-  for (const m of src.matchAll(CASE_LABEL)) {
-    // CASE_LABEL group 2 is non-optional, so a match always populates it.
-    const flag = m[2]!;
-    let set = modulesByFlag.get(flag);
-    if (!set) modulesByFlag.set(flag, (set = new Set()));
-    set.add(moduleIndexAt(headers, m.index));
-  }
+  chunks.forEach((chunk, ci) => {
+    const headers: number[] = [];
+    for (const m of chunk.matchAll(MODULE_HEADER)) headers.push(m.index);
+    // A chunk with headers is the single pre-split bundle: partition by them, and
+    // `-1` (before the first) is preamble → no module. A chunk with none is a
+    // split-era ES module, whole and indivisible → everything is module 0.
+    const keyFor = (pos: number): string | null => {
+      if (headers.length === 0) return `${ci}:0`;
+      const mi = moduleIndexAt(headers, pos);
+      return mi < 0 ? null : `${ci}:${mi}`;
+    };
+
+    for (const m of chunk.matchAll(USAGE_BANNER)) {
+      // USAGE_BANNER group 1 is non-optional, so a match always populates it.
+      const key = keyFor(m.index);
+      if (key === null) continue; // a preamble banner belongs to no module
+      let set = bannersByModule.get(key);
+      if (!set) bannersByModule.set(key, (set = new Set()));
+      set.add(m[1]!);
+    }
+    for (const m of chunk.matchAll(CASE_LABEL)) {
+      // CASE_LABEL group 2 is non-optional, so a match always populates it.
+      let set = modulesByFlag.get(m[2]!);
+      if (!set) modulesByFlag.set(m[2]!, (set = new Set()));
+      set.add(keyFor(m.index));
+    }
+  });
 
   const out = new Map<string, string[]>();
   for (const [flag, modules] of modulesByFlag) {
     const scopes = new Set<string>();
     let complete = true;
-    for (const mod of modules) {
-      // -1 is the text before the first module header. That is a preamble, not a
-      // module, so containment proves nothing there: a banner and a parser both
-      // landing in it are not thereby related. Treat it as unscoped.
-      if (mod < 0) {
+    for (const key of modules) {
+      // Preamble: a banner and a parser both landing in it are not thereby related.
+      if (key === null) {
         complete = false;
         break;
       }
-      const banners = bannersByModule.get(mod);
+      const banners = bannersByModule.get(key);
       // No banner: an unscoped parser (a slash command, or a pre-2.1.224 bundle).
       // More than one: the module bundles several parsers and containment can no
       // longer say which owns the label. Either way the flag's scope is unknown.
