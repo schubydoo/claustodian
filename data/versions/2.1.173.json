@@ -113,8 +113,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Define custom subagents dynamically via JSON. Accepts the fields listed for CLI-defined subagents",
-      "description_source": "docs",
+      "description": "JSON object defining custom agents (e.g. '{\"reviewer\": {\"description\": \"Reviews code\", \"prompt\": \"You are a code reviewer\"}}')",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -2703,8 +2703,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Set the effort level: `low` to `xhigh`, `max`, `ultracode`, or `auto`; `status` prints it. `max` and `ultracode` are session-only; the `ultracode` key persists. Works in `-p` outside the effort hold",
-      "description_source": "docs",
+      "description": "Set effort level for model usage",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2768,8 +2768,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Toggle fast mode on or off. Availability in non-interactive mode with `-p` is limited; see Toggle fast mode.",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3274,11 +3273,11 @@
       "first_seen": "2.1.132",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
-      "description": "Open Claude FM lo-fi radio in your browser. Prints the stream URL when no browser is available. Not available on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or Claude Platform on AWS",
+      "description": "Open Claude FM lo-fi radio in your browser. Prints the stream URL when no browser is available",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -4939,7 +4938,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Block CLI startup until Claude Code has freshly fetched server-managed settings. If the fetch fails, Claude Code exits instead of continuing with cached or no settings. When the key is unset, startup continues without waiting for remote settings. A Cloud gateway session always waits, and exits if the gateway can't be reached. Set it when your environment can't accept even a brief window in which a session runs without its managed policy.",
+      "description": "Block CLI startup until Claude Code has freshly fetched server-managed settings. If the fetch fails, Claude Code exits instead of continuing with cached or no settings. Set it when your environment can't accept even a brief window in which a session runs without its managed policy.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -5693,7 +5692,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Add paths where sandboxed commands can write, beyond the working directory and the session temp directory. Use it when a subprocess such as `kubectl` or a build tool needs to write outside the project.",
+      "description": "Add paths where sandboxed commands can write, beyond the working directory, the directories you've added with `--add-dir` or `/add-dir`, and the session temp directory. Use it when a subprocess such as `kubectl` or a build tool needs to write outside the project.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8689,7 +8688,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Timeout in milliseconds for the byte-level streaming idle watchdog only; when set, it takes precedence over `CLAUDE_STREAM_IDLE_TIMEOUT_MS` for that watchdog and leaves the event-level watchdog unchanged. Claude Code clamps this variable to between 10 seconds and 30 minutes.",
+      "description": "Timeout in milliseconds for the byte-level streaming idle watchdog; when set, it takes precedence over `CLAUDE_STREAM_IDLE_TIMEOUT_MS` for that watchdog and leaves the event-level watchdog unchanged. Claude Code clamps this variable to between 10 seconds and 30 minutes.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -12906,7 +12905,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to enable the byte-level streaming idle watchdog on Amazon Bedrock `vnd.amazon.eventstream` responses. Off by default. Configure the timeout with `CLAUDE_STREAM_IDLE_TIMEOUT_MS`",
+      "description": "Set to `1` to enable the byte-level streaming idle watchdog on Amazon Bedrock `vnd.amazon.eventstream` responses, which also enables the first-byte deadline on Bedrock streaming requests. Off by default. Configure the timeout with `CLAUDE_STREAM_IDLE_TIMEOUT_MS`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -13946,6 +13945,30 @@
       "category": "other"
     },
     {
+      "symbol": "GH_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.6",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
+    },
+    {
+      "symbol": "GITHUB_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.6",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "ci"
+    },
+    {
       "symbol": "HTTPS_PROXY",
       "type": "env_var",
       "first_seen": "0.2.32",
@@ -14042,7 +14065,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024; see `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Fable 5, which cannot have thinking turned off; on third-party providers, `0` omits the `thinking` parameter instead. Nonzero values are ignored on adaptive reasoning models unless `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` is set",
+      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024; see `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Fable 5, which cannot have thinking turned off; on third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5. Nonzero values are ignored on adaptive reasoning models unless `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` is set",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -14474,6 +14497,18 @@
       "category": "other"
     },
     {
+      "symbol": "TEMP",
+      "type": "env_var",
+      "first_seen": "0.2.76",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
+    },
+    {
       "symbol": "TEST_ENABLE_SESSION_PERSISTENCE",
       "type": "env_var",
       "first_seen": "1.0.106",
@@ -14483,6 +14518,18 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "other"
+    },
+    {
+      "symbol": "TMPDIR",
+      "type": "env_var",
+      "first_seen": "1.0.125",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
