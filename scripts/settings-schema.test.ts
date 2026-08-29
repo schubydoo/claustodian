@@ -134,6 +134,32 @@ describe('extractSettingsKeys — sub-schema references', () => {
       'Q=v.object({apiKeyHelper:v.string(),env:IU4.optional()})';
     expect(paths(src)).toEqual(['apiKeyHelper', 'env']);
   });
+
+  it('does not descend a two-arg inline record even when its builder name collides', () => {
+    // A `record(keySchema,valueSchema)` passed inline — `Pe(i(),i())` — keys on
+    // caller-supplied names and has no fixed sub-keys. It is skipped WITHOUT
+    // resolving the callee, which matters because the callee name is minified and
+    // reused: at 2.1.251 the record builder and an unrelated `Pe=m(()=>v.object(…))`
+    // lazy object were both named `Pe`, so resolving it descended into that object
+    // and invented a `modelOverrides.enabled.pricing_tiers…` cycle until the depth
+    // guard refused the whole version. The two-arg record shape is decisive on its
+    // own — the collision binding here would descend if the callee were resolved.
+    const src =
+      'Q=v.object({apiKeyHelper:v.string(),modelOverrides:Pe(i(),i()).optional()});' +
+      'Pe=Se(()=>v.object({enabled:v.boolean(),pricing_tiers:v.string()}))';
+    expect(paths(src)).toEqual(['apiKeyHelper', 'modelOverrides']);
+  });
+
+  it('still descends a single-argument reference — the record guard is two-arg only', () => {
+    // The guard is deliberately narrow. A one-arg call (`array(elementSchema)`, or a
+    // sub-schema factory taking a context arg) is NOT a keyed record, so it is left
+    // to normal resolution — widening the guard to one arg would change what a
+    // same-named collision descends into elsewhere (e.g. `permissions.args:H(i())`).
+    const src =
+      'Wrap=Se(()=>v.object({allow:v.string(),deny:v.string()}));' +
+      'Q=v.object({apiKeyHelper:v.string(),sub:Wrap(inner()).optional()})';
+    expect(paths(src)).toEqual(['apiKeyHelper', 'sub', 'sub.allow', 'sub.deny']);
+  });
 });
 
 describe('extractSettingsKeys — depth accounting at the object top level', () => {
