@@ -155,6 +155,10 @@
       {
         "from": "2.1.187",
         "description": "Start the session as a background agent and return immediately (manage with `claude agents`)"
+      },
+      {
+        "from": "2.1.251",
+        "description": "Start the session in the background and return immediately. Prints the id that `claude attach`, `logs`, `stop` and `rm` take; `claude agents` lists them"
       }
     ],
     "cli_flag:--bare": [
@@ -173,6 +177,10 @@
       {
         "from": "2.1.187",
         "description": "Start the session as a background agent and return immediately (manage with `claude agents`)"
+      },
+      {
+        "from": "2.1.251",
+        "description": "Start the session in the background and return immediately. Prints the id that `claude attach`, `logs`, `stop` and `rm` take; `claude agents` lists them"
       }
     ],
     "cli_flag:--brief": [
