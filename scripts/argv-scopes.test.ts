@@ -208,4 +208,23 @@ describe('extractBgSubcommandScopes', () => {
       extractBgSubcommandScopes(bgParser('plugin marketplace add', ['--scope'])).get('--scope')
     ).toEqual(['plugin marketplace add']);
   });
+
+  it('does not borrow a neighbouring block’s banner when its own block prints none', () => {
+    // A guard with an accepted flag but NO usage in its own block, immediately
+    // followed by an unrelated subcommand's banner. Containment is the guard's own
+    // write template, so `--foo` stays unscoped rather than crossing the brace and
+    // inheriting `other`. A byte-window match would mis-scope it.
+    const src =
+      'if(e?.startsWith("-")&&e!=="--foo"){throw Error("bad")}' +
+      'console.log(`Usage: claude other <id>|--bar`)';
+    expect(extractBgSubcommandScopes(src).has('--foo')).toBe(false);
+  });
+
+  it('reads a banner past a long message without a byte limit cutting it off', () => {
+    // The banner sits after a long human message in the same write template. A fixed
+    // byte window would silently miss it; the string-literal bound does not.
+    const long = 'x'.repeat(400);
+    const src = `if(e?.startsWith("-")&&e!=="--all"){process.stderr.write(\`${long} Usage: claude respawn <id>|--all\`)}`;
+    expect(extractBgSubcommandScopes(src).get('--all')).toEqual(['respawn']);
+  });
 });

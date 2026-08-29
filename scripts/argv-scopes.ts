@@ -169,6 +169,14 @@ export function extractSwitchCaseScopes(src: string): Map<string, string[]> {
  * (for `[options]`), a newline, or a backtick — but these banners read
  * `<id>|--all`, so the path is followed by `<`, which that pattern cannot end on.
  *
+ * CONTAINMENT is the guard's own `process.stderr.write(`…`)` template, not a byte
+ * window: the banner is required to sit inside that one backtick literal, which
+ * cannot span into a sibling block. A blind `[\s\S]{0,N}` after the guard would do
+ * two wrong things a completeness contract cannot tolerate — cross the guard's
+ * closing brace and borrow a neighbouring subcommand's banner, or miss a banner
+ * that sits past N. The `${e}` the message interpolates carries `{`/`}`, so the
+ * bound has to be the string literal, not brace-balance.
+ *
  * This is a DISCOVERY lane: its findings are curated into `SYMBOL_SCOPES`, because
  * a background subcommand's flag is often ALSO a commander registration elsewhere
  * (`--all` is `agents` / `plugin disable` / `project purge` too), and
@@ -176,7 +184,7 @@ export function extractSwitchCaseScopes(src: string): Map<string, string[]> {
  * narrowing it. Curation UNIONS, which is the only safe direction here.
  */
 const BG_SUBCOMMAND_GUARD =
-  /([A-Za-z_$][\w$]*)\?\.startsWith\("-"\)((?:&&\1!=="--[a-z][a-z0-9-]*")+)\)\{[\s\S]{0,160}?Usage:\s*claude\s+([a-z][a-z0-9 -]*?)\s*(?:[[<|]|\\n|\n|`)/g;
+  /([A-Za-z_$][\w$]*)\?\.startsWith\("-"\)((?:&&\1!=="--[a-z][a-z0-9-]*")+)\)\{[^`{}]{0,40}process\.std(?:out|err)\.write\(`(?:[^`\\]|\\.)*?Usage:\s*claude\s+([a-z][a-z0-9 -]*?)\s*(?:[[<|`]|\\n|\n)/g;
 
 export function extractBgSubcommandScopes(src: string): Map<string, string[]> {
   const out = new Map<string, string[]>();
