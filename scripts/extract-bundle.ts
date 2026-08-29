@@ -707,8 +707,18 @@ export function extractSkillCommands(src: string): Map<string, string | undefine
   return out;
 }
 
-/** Full extraction: every own-evidenced symbol, sorted by type then symbol. */
-export function extractBundleSymbols(src: string): BundleSymbol[] {
+/**
+ * Full extraction: every own-evidenced symbol, sorted by type then symbol.
+ *
+ * `scopeChunks` is the artifact split into its `// @bun @bytecode` chunks (one
+ * element in the pre-2.1.242 single-bundle and npm eras). ONLY the switch-case
+ * scope lane reads it — every other lane reads the flat `src`, byte-for-byte as
+ * before — because from 2.1.242 each subcommand parser lives in its own chunk and
+ * scope containment cannot see across the code-split without them (see
+ * scripts/argv-scopes.ts). Omitted, it defaults to `[src]`, which reproduces the
+ * single-bundle behaviour for callers (and tests) that do not have the bytes.
+ */
+export function extractBundleSymbols(src: string, scopeChunks?: readonly string[]): BundleSymbol[] {
   const symbols: BundleSymbol[] = [];
   const envReads = extractEnvVars(src);
   for (const [symbol, category] of envReads) {
@@ -749,7 +759,7 @@ export function extractBundleSymbols(src: string): BundleSymbol[] {
   // Scope only attaches to `argv-switch` evidence. The stronger paths are already
   // top-level or already curated, and a flag they proved must not be narrowed by a
   // subcommand parser that happens to accept the same name.
-  const switchScopes = extractSwitchCaseScopes(src);
+  const switchScopes = extractSwitchCaseScopes(scopeChunks ?? src);
   const hiddenFlags = extractHiddenFlags(src);
   for (const [symbol, evidence] of flags) {
     const description = flagDescriptions.get(symbol);

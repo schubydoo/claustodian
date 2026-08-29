@@ -39,6 +39,17 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   `--all`'s curated scopes. A consumer asking "is `--all` accepted under `respawn`?"
   now gets yes instead of a false no.
 
+- **Subcommand `scopes` restored for the code-split era (2.1.242+).** The binary scope
+  lane containment keyed on esbuild namespace-module headers, which the 2.1.242 Bun
+  ESM code-split removed — each subcommand parser became its own `// @bun @bytecode`
+  chunk — so the lane returned nothing from 2.1.242 on, and the ~47 `self-hosted-runner`
+  flags kept their scopes only through `binary-observations` persisting the last
+  pre-split reading. The lane now partitions by chunk (a header-less chunk is itself
+  one module), mirroring the control lane's 2.1.242 fix. Pre-split output is
+  unchanged; from 2.1.242 the scopes are read live again, so a switch-case flag first
+  seen in the split era — previously withheld for want of a complete scope — now
+  publishes with its owning subcommand.
+
 ## 2026-08-22
 
 ### Fixed

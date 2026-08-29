@@ -151,6 +151,61 @@ describe('extractSwitchCaseScopes', () => {
   });
 });
 
+/** A code-split-era chunk: a banner and a parser with NO esbuild namespace header,
+ *  the shape each subcommand parser takes as its own `// @bun @bytecode` chunk. */
+const chunk = (path: string, flags: readonly string[]): string => banner(path) + parser(flags);
+
+describe('extractSwitchCaseScopes — code-split era (2.1.242+)', () => {
+  it('scopes a flag to its own header-less chunk’s banner', () => {
+    // From 2.1.242 each parser is its own chunk with no `var NS={};…` header, so the
+    // chunk itself is the module. The pre-split module-header path returned 0 here.
+    const chunks = [chunk('self-hosted-runner orchestrator', ['--min-idle'])];
+    expect(extractSwitchCaseScopes(chunks).get('--min-idle')).toEqual([
+      'self-hosted-runner orchestrator',
+    ]);
+  });
+
+  it('unions a flag across the chunks that accept it', () => {
+    const chunks = [
+      chunk('self-hosted-runner', ['--api-url']),
+      chunk('self-hosted-runner orchestrator', ['--api-url']),
+    ];
+    expect(extractSwitchCaseScopes(chunks).get('--api-url')).toEqual([
+      'self-hosted-runner',
+      'self-hosted-runner orchestrator',
+    ]);
+  });
+
+  it('withholds a flag that also appears in a bannerless chunk', () => {
+    // THE `--help` CASE across chunks: it is a case label in decode-token AND in a
+    // bannerless slash-command chunk. Scoping it would publish that `claude --help`
+    // does not work; the bannerless occurrence disqualifies it.
+    const chunks = [
+      chunk('self-hosted-runner decode-token', ['--help', '--no-verify']),
+      parser(['--help']),
+    ];
+    const scopes = extractSwitchCaseScopes(chunks);
+    expect(scopes.has('--help')).toBe(false);
+    expect(scopes.get('--no-verify')).toEqual(['self-hosted-runner decode-token']);
+  });
+
+  it('withholds a flag whose single chunk carries more than one banner', () => {
+    const chunks = [
+      banner('self-hosted-runner setup') +
+        banner('self-hosted-runner doctor') +
+        parser(['--force']),
+    ];
+    expect(extractSwitchCaseScopes(chunks).has('--force')).toBe(false);
+  });
+
+  it('keeps preamble handling for a multi-module chunk (the single-bundle era)', () => {
+    // A string with headers is still the one pre-split bundle: a parser BEFORE the
+    // first header sits in preamble, not a module, so it stays unscoped.
+    const src = banner('daemon') + parser(['--foo']) + mod('A5h', 'let a=1;');
+    expect(extractSwitchCaseScopes([src]).has('--foo')).toBe(false);
+  });
+});
+
 /** A background-session subcommand parser: one positional, and an "unknown option"
  *  guard that rejects every dash-led token except `flags`, printing its own usage
  *  banner inside that guard block — the real `respawn`/`rm`/… shape. */
