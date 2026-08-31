@@ -9142,7 +9142,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Name of the Anthropic profile to authenticate with, such as one created by `ant auth login` or by signing in to a Console account without an API key. The named profile ranks above your `/login` credential. See authentication precedence",
+      "description": "Name of the Anthropic profile to authenticate with, such as one created by `ant auth login` or by signing in to a Console account without an API key. See authentication precedence",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
