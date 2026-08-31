@@ -2862,7 +2862,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Configure terminal keybindings for Shift+Enter and other shortcuts. Only visible in terminals that need it, like VS Code, Cursor, Devin Desktop, Alacritty, or Zed",
+      "description": "Install a Shift+Enter keybinding for newlines in VS Code, Cursor, Devin Desktop, Alacritty, or Zed. In Apple Terminal, enable Option+Enter for newlines and turn off the audible bell instead. In iTerm2, turn on clipboard access so that `/copy` works",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3096,7 +3096,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Make the managed allowlist the only one that applies. Claude Code then reads `allowedMcpServers` from managed settings alone and ignores allowlists in user, project, and local settings; `deniedMcpServers` still merges from every file, so users can still block servers for themselves. Administrators set it so a user's own settings can't broaden what the managed allowlist permits.",
+      "description": "Make the managed allowlist the only one that applies. Claude Code then reads `allowedMcpServers` from managed settings alone and ignores allowlists in user, project, and local settings; `deniedMcpServers` still merges from every settings scope, so users can still block servers for themselves. Administrators set it so a user's own settings can't broaden what the managed allowlist permits.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -3460,7 +3460,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Keep an effort level across sessions. Lower levels are faster and cheaper on straightforward tasks, and higher levels reason more deeply on complex problems. Claude Code writes this key to your user settings when you run `/effort low`, `medium`, `high`, or `xhigh` in an interactive session on your machine. In a `-p` run, the Agent SDK, or a session attached to a remote worker, `/effort` applies to that session only. The message `/effort` prints says which happened.",
+      "description": "Set a default effort level for models you haven't saved a level for. Lower levels are faster and cheaper on straightforward tasks, and higher levels reason more deeply on complex problems.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -3627,7 +3627,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "From a managed source, require claude.ai account logins to belong to one Anthropic organization, a single UUID, or to any of several, an array. From any settings file, a single UUID also pre-selects that organization during a claude.ai or Claude Console login; an array pre-selects nothing.",
+      "description": "From a managed source, require claude.ai account logins to belong to one Anthropic organization, given as a single UUID, or to any of several organizations, given as an array. From any settings file, Claude Code also uses a single UUID to pre-select that organization during a claude.ai or Claude Console login, and pre-selects nothing for an array. If you set the key in any settings file, Claude Code also stops offering the keyless Console sign-in in the sessions that file applies to and creates an API key instead.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -3900,7 +3900,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Store the non-sensitive answers you give a plugin's `userConfig` configuration dialog, keyed by plugin ID. Claude Code writes this key to your user settings when you fill in the dialog, so you don't need to edit it by hand. Sensitive options go to the macOS Keychain instead, or to `~/.claude/.credentials.json` on platforms without a supported keychain.",
+      "description": "Store the non-sensitive answers you give a plugin's `userConfig` configuration dialog, keyed by plugin ID. Claude Code writes this key to your user settings when you fill in the dialog, so you don't need to edit it by hand. Claude Code stores sensitive options in the macOS Keychain instead, falling back to `~/.claude/.credentials.json` when the Keychain rejects the write; on platforms without a supported keychain, it stores them in `~/.claude/.credentials.json`.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -4095,7 +4095,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Control which paths sandboxed commands can read and write. By default they can write to the working directory, any directories you add with `--add-dir`, and the session temp directory, and can read the rest of the filesystem, including credential files. Widen or narrow that with the four path lists, or switch the filesystem layer off with `disabled`. See Filesystem isolation for the default boundaries.",
+      "description": "Control which paths sandboxed commands can read and write. By default they can write to the working directory, the session temp directory, and directories you add with `--add-dir`, `/add-dir`, or `permissions.additionalDirectories`, and can read the rest of the filesystem, including credential files. Widen or narrow that with the four path lists, or switch the filesystem layer off with `disabled`. See Filesystem isolation for the default boundaries.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -4108,7 +4108,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Honor only the `allowRead` entries that come from managed settings, so developers can't re-open read access to paths your organization blocked. Claude Code still merges `denyRead` entries from every settings file the session loads.",
+      "description": "Honor only the `allowRead` entries that come from managed settings, so developers can't re-open read access to paths your organization blocked. Claude Code still merges `denyRead` entries from every settings scope the session loads.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -4134,7 +4134,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Add paths where sandboxed commands can write, beyond the working directory, the directories you've added with `--add-dir` or `/add-dir`, and the session temp directory. Use it when a subprocess such as `kubectl` or a build tool needs to write outside the project.",
+      "description": "Add paths where sandboxed commands can write, beyond the working directory, the session temp directory, and the directories you've added with `--add-dir`, `/add-dir`, or `permissions.additionalDirectories`. Use it when a subprocess such as `kubectl` or a build tool needs to write outside the project.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -5602,11 +5602,12 @@
       "type": "env_var",
       "first_seen": "2.0.70",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "OTLP endpoint for detailed beta tracing: with `ENABLE_BETA_TRACING_DETAILED=1`, logs and traces go there instead of to the configured exporters. Set it in your shell, user settings, or managed settings. Ignored in project and local settings",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
     },
     {
@@ -6595,7 +6596,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the effort level for supported models. Values: `low`, `medium`, `high`, `xhigh`, `max`, or `auto` to use the model default. Available levels depend on the model. Takes precedence over `/effort` and the `effortLevel` setting. See Adjust effort level",
+      "description": "Set the effort level for supported models. Values: `low`, `medium`, `high`, `xhigh`, `max`, or `auto` to use the model default. Available levels depend on the model.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -8161,7 +8162,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Override the configuration directory (default: `~/.claude`). All settings, session history, and plugins are stored under this path, as are credentials on Linux and Windows; on macOS, credentials are in the system Keychain. Useful for running multiple accounts side by side: for example, `alias claude-work='CLAUDE_CONFIG_DIR=~/.claude-work claude'`",
+      "description": "Override the configuration directory (default: `~/.claude`). All settings, session history, and plugins are stored under this path. For credentials, see where Claude Code stores credentials. Useful for running multiple accounts side by side: for example, `alias claude-work='CLAUDE_CONFIG_DIR=~/.claude-work claude'`. Set it in your shell, user settings, or managed settings. Ignored in project and local settings",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -8683,12 +8684,13 @@
       "type": "env_var",
       "first_seen": "2.0.70",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1`, together with `BETA_TRACING_ENDPOINT`, to turn on detailed beta tracing, which adds content-bearing span attributes and the `claude_code.hook` span. Interactive CLI sessions also require your organization to be allowlisted for the beta. Both variables are ignored in project and local settings",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
     },
     {
       "symbol": "ENABLE_CLAUDEAI_MCP_SERVERS",
