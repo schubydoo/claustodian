@@ -23,7 +23,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Enable the server-side advisor tool for this session with a model alias, `fable`, `opus`, or `sonnet`, or a full model ID. Takes precedence over the `advisorModel` setting for the session. `fable` requires Fable 5 access",
+      "description": "Enable the server-side advisor tool for this session with a model alias, `fable`, `opus`, or `sonnet`, or a full model ID. Takes precedence over the `advisorModel` setting for the session. `fable` requires Fable access",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli-internal"
@@ -1055,7 +1055,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Sets the model for the current session with an alias for the latest model (`sonnet`, `opus`, `haiku`, or `fable`) or a model's full name. Overrides the `model` setting and `ANTHROPIC_MODEL`",
+      "description": "Sets the model for the current session with a model alias such as `sonnet`, `opus`, `haiku`, or `fable`, or a model's full name. Overrides the `model` setting and `ANTHROPIC_MODEL`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -3331,8 +3331,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Make managed settings the only source of `allow`, `ask`, and `deny` permission rules. Claude Code then ignores rules in user, project, local, and `--settings` files, ignores `--allowedTools`, hides the always-allow choices in permission prompts, and stops saving new rules. When parent settings from an embedding host apply, Claude Code treats them as part of the managed tier: it keeps their `deny` and `ask` rules and drops their `allow` rules and `additionalDirectories`.",
-      "description_source": "docs",
+      "description": "When true (and set in managed settings), only permission rules (allow/deny/ask) from managed settings are respected. User, project, local, and CLI argument permission rules are ignored.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -5869,7 +5869,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Custom headers to add to requests (`Name: Value` format, newline-separated for multiple headers). If a name or value contains a character an HTTP header can't carry, such as a curly quote or a zero-width space, Claude Code fails the request with an error that identifies the pair by position.",
+      "description": "Custom headers to add to requests (`Name: Value` format, newline-separated for multiple headers). If a name or value contains a character an HTTP header can't carry, such as a curly quote or a zero-width space, the request fails with an error that identifies the pair by position.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -6036,11 +6036,11 @@
       "first_seen": "2.0.45",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "API key for Microsoft Foundry authentication (see Microsoft Foundry)",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -6739,7 +6739,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set the auto-compact window in tokens, from `100000` to `1000000`. Accepts a plain integer such as `500000` only: a value like `500k` reads as `500` and clamps to the 100K minimum.",
+      "description": "Set the auto-compact window in tokens, from `100000` to `1000000`. Accepts a plain integer such as `500000` only: a value like `500k` reads as `500` and clamps to the 100K minimum. The effective window is also capped at the model's context window.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -7011,7 +7011,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable 1M context window support. When set, 1M model variants are unavailable in the model picker, and Claude Code holds sessions on models with a native 1M window, such as Sonnet 5 and Fable 5, to a 200K window; see Extended context for how the hold is enforced. Useful for enterprise environments with compliance requirements. For its role in correcting the window for an unrecognized `[1m]` model ID, see Correct the window for a gateway or custom model ID",
+      "description": "Set to `1` to disable 1M context window support. When set, 1M model variants are unavailable in the model picker, and Claude Code holds sessions on models with a native 1M window, such as Sonnet 5 and the Fable models, to a 200K window; see Extended context for how the hold is enforced. Useful for enterprise environments with compliance requirements. For its role in correcting the window for an unrecognized `[1m]` model ID, see Correct the window for a gateway or custom model ID",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -7024,7 +7024,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable adaptive reasoning on Opus 4.6 and Sonnet 4.6 and fall back to the fixed thinking budget controlled by `MAX_THINKING_TOKENS`. Has no effect on Fable 5, Sonnet 5, or Opus 4.7 and later, which always use adaptive reasoning",
+      "description": "Set to `1` to disable adaptive reasoning on Opus 4.6 and Sonnet 4.6 and fall back to the fixed thinking budget controlled by `MAX_THINKING_TOKENS`. Has no effect on Fable models, Sonnet 5, or Opus 4.7 and later, which always use adaptive reasoning",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -7295,7 +7295,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to omit the `thinking` parameter from API requests entirely. This is a compatibility option for proxies and gateways that reject the parameter. The variable's behavior is unchanged from earlier versions; on models that think by default, omitting the parameter means the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead, which is also ineffective on Fable 5 since it cannot have thinking turned off. On third-party providers, `0` likewise omits the parameter, so the two variables behave the same there",
+      "description": "Set to `1` to omit the `thinking` parameter from API requests entirely. This is a compatibility option for proxies and gateways that reject the parameter. The variable's behavior is unchanged from earlier versions; on models that think by default, omitting the parameter means the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead, which is also ineffective on Fable models since they can't have thinking turned off. On third-party providers, `0` likewise omits the parameter, so the two variables behave the same there",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -8787,7 +8787,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to strip Anthropic and cloud provider credentials from subprocess environments (Bash tool, hooks, MCP stdio servers). The parent Claude process keeps these credentials for API calls, but child processes cannot read them, reducing exposure to prompt injection attacks that attempt to exfiltrate secrets via shell expansion. On Linux, this also runs Bash subprocesses in an isolated PID namespace so they cannot read host process environments via `/proc`; as a side effect, `ps`, `pgrep`, and `kill` cannot see or signal host processes. `claude-code-action` sets this automatically when `allowed_non_write_users` is configured",
+      "description": "Set to `1` to strip credentials from subprocess environments (Bash tool, hooks, MCP stdio servers): Anthropic and cloud provider credentials, any other variable that Claude Code recognizes as a credential, and credentials embedded in package registry URLs. The parent Claude process keeps these credentials for API calls, but child processes cannot read them, reducing exposure to prompt injection attacks that attempt to exfiltrate secrets via shell expansion. On Linux, this also runs Bash subprocesses in an isolated PID namespace so they cannot read host process environments via `/proc`; as a side effect, `ps`, `pgrep`, and `kill` cannot see or signal host processes. `claude-code-action` sets this automatically when `allowed_non_write_users` is configured",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -9688,7 +9688,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events do not include user data like code, file paths, or bash commands.",
+      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events don't include user data like code, file paths, or bash commands.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -9851,7 +9851,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to make every model stop retrying with a repeated-overload error when no fallback model is configured. **Setting it to `0` or `false` still enables this**, unlike most on/off variables; unset the variable to restore the default retry behavior. Without it, models Claude Code recognizes as Opus, Fable 5, or Mythos models stop retrying this way when you authenticate with an API key or a third-party provider rather than a Claude subscription.",
+      "description": "Set to any non-empty value, such as `1`, to make every model stop retrying with a repeated-overload error when no fallback model is configured. **Setting it to `0` or `false` still enables this**, unlike most on/off variables; unset the variable to restore the default retry behavior. Without it, models Claude Code recognizes as Opus, Fable, or Mythos models stop retrying this way when you authenticate with an API key or a third-party provider rather than a Claude subscription.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -10017,7 +10017,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024; see `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Fable 5, which cannot have thinking turned off; on third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5. Nonzero values are ignored on adaptive reasoning models unless `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` is set",
+      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024; see `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Fable models, which can't have thinking turned off; on third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5. Nonzero values are ignored on adaptive reasoning models unless `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` is set",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"

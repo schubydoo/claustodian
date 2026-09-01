@@ -2513,7 +2513,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Custom headers to add to requests (`Name: Value` format, newline-separated for multiple headers). If a name or value contains a character an HTTP header can't carry, such as a curly quote or a zero-width space, Claude Code fails the request with an error that identifies the pair by position.",
+      "description": "Custom headers to add to requests (`Name: Value` format, newline-separated for multiple headers). If a name or value contains a character an HTTP header can't carry, such as a curly quote or a zero-width space, the request fails with an error that identifies the pair by position.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -2563,11 +2563,11 @@
       "first_seen": "2.0.45",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "API key for Microsoft Foundry authentication (see Microsoft Foundry)",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -4127,7 +4127,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events do not include user data like code, file paths, or bash commands.",
+      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events don't include user data like code, file paths, or bash commands.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -4249,7 +4249,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to make every model stop retrying with a repeated-overload error when no fallback model is configured. **Setting it to `0` or `false` still enables this**, unlike most on/off variables; unset the variable to restore the default retry behavior. Without it, models Claude Code recognizes as Opus, Fable 5, or Mythos models stop retrying this way when you authenticate with an API key or a third-party provider rather than a Claude subscription.",
+      "description": "Set to any non-empty value, such as `1`, to make every model stop retrying with a repeated-overload error when no fallback model is configured. **Setting it to `0` or `false` still enables this**, unlike most on/off variables; unset the variable to restore the default retry behavior. Without it, models Claude Code recognizes as Opus, Fable, or Mythos models stop retrying this way when you authenticate with an API key or a third-party provider rather than a Claude subscription.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -4351,7 +4351,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024; see `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Fable 5, which cannot have thinking turned off; on third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5.",
+      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024; see `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Fable models, which can't have thinking turned off; on third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
