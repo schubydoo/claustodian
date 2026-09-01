@@ -159,6 +159,10 @@
       {
         "from": "2.1.251",
         "description": "Start the session in the background and return immediately. Prints the id that `claude attach`, `logs`, `stop` and `rm` take; `claude agents` lists them"
+      },
+      {
+        "from": "2.1.257",
+        "description": "Start the session in the background and return immediately. Prints the id that `claude attach`, `logs`, `stop` and `rm` take; `claude agents` lists them. With --resume <session-id>, continues that session in the background under the same ID, or starts a copy and says so when the session is already running"
       }
     ],
     "cli_flag:--bare": [
@@ -181,6 +185,10 @@
       {
         "from": "2.1.251",
         "description": "Start the session in the background and return immediately. Prints the id that `claude attach`, `logs`, `stop` and `rm` take; `claude agents` lists them"
+      },
+      {
+        "from": "2.1.257",
+        "description": "Start the session in the background and return immediately. Prints the id that `claude attach`, `logs`, `stop` and `rm` take; `claude agents` lists them. With --resume <session-id>, continues that session in the background under the same ID, or starts a copy and says so when the session is already running"
       }
     ],
     "cli_flag:--brief": [
@@ -543,6 +551,12 @@
       {
         "from": "1.0.109",
         "description": "Include partial message chunks as they arrive (only works with --print and --output-format=stream-json)"
+      }
+    ],
+    "cli_flag:--inherit-permission-mode": [
+      {
+        "from": "2.1.257",
+        "description": "Permission mode carried from a parent session, used only when nothing else configures one"
       }
     ],
     "cli_flag:--init": [
@@ -1151,6 +1165,12 @@
       {
         "from": "2.0.12",
         "description": "Read system prompt from a file"
+      }
+    ],
+    "cli_flag:--system-prompt-snapshot": [
+      {
+        "from": "2.1.257",
+        "description": "Record the system prompt once per conversation and reuse it verbatim on every request and resume (recommended: on). By default it is on for the built-in prompt, and passing --system-prompt or --append-system-prompt turns it off so the given text applies fresh each launch. on: an existing record in the conversation is sent as-is (a later launch's different --system-prompt/--append-system-prompt is ignored until compaction); otherwise the prompt is rendered with the append included, sent, and recorded. off: never record. No effect where system-prompt recording is not yet enabled."
       }
     ],
     "cli_flag:--tag": [
@@ -2579,6 +2599,10 @@
       {
         "from": "2.1.10",
         "description": "When true (and set in managed settings), only permission rules (allow/deny/ask) from managed settings are respected. User, project, local, and CLI argument permission rules are ignored."
+      },
+      {
+        "from": "2.1.257",
+        "description": "When true (and set in managed settings), permission rules from user, project, local, and --settings files and allow rules from --allowedTools are ignored; only managed settings can add allow rules through settings. --disallowedTools and other deny and ask rules from the command line or the current session still apply."
       }
     ],
     "config_key:allowedHttpHookUrls": [
@@ -3365,6 +3389,12 @@
         "description": "List of permission rules that should always prompt for confirmation"
       }
     ],
+    "config_key:permissions.blockReadsOutsideWorkingDirectories": [
+      {
+        "from": "2.1.257",
+        "description": "Refuse file-tool reads (Read, Grep, Glob, LSP) outside the working directories in every permission mode; true in any settings source wins. Also set when the user picks \"block\" on the one-time auto-mode prompt for a read outside the working directories."
+      }
+    ],
     "config_key:permissions.classifierContext": [
       {
         "from": "2.1.242",
@@ -4087,6 +4117,18 @@
       {
         "from": "2.1.119",
         "description": "Color theme for the UI"
+      }
+    ],
+    "config_key:timeFormat": [
+      {
+        "from": "2.1.257",
+        "description": "Clock format for times shown in the UI: \"auto\" (default, follows the locale), \"12-hour\", \"24-hour\", \"24-hour-utc\" (\"18:05Z\"), or a strftime pattern such as \"%H:%M\" (any value containing \"%\"; other values read as \"auto\"). A pattern replaces the time everywhere; message timestamps show only the pattern, so include %Y-%m-%d for the date. /config offers the presets; a pattern is set here."
+      }
+    ],
+    "config_key:timeZone": [
+      {
+        "from": "2.1.257",
+        "description": "IANA time zone for times shown in the UI, e.g. \"UTC\" or \"Europe/Dublin\". Default: the system time zone. An unknown name falls back to the system time zone."
       }
     ],
     "config_key:todoFeatureEnabled": [
