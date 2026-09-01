@@ -10670,13 +10670,13 @@
       "type": "config_key",
       "first_seen": "2.1.257",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Clock format for times shown in the UI: \"auto\" (default, follows the locale), \"12-hour\", \"24-hour\", \"24-hour-utc\" (\"18:05Z\"), or a strftime pattern such as \"%H:%M\" (any value containing \"%\"; other values read as \"auto\"). A pattern replaces the time everywhere; message timestamps show only the pattern, so include %Y-%m-%d for the date. /config offers the presets; a pattern is set here.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Choose how Claude Code writes the times it shows in the interface, such as the `done 6:05 PM` at the end of each turn duration message and the timestamps in the transcript viewer. To pick a preset, run `/config` and set **Time format**. Requires Claude Code v2.1.257 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "timeFormat.event_type",
@@ -10695,13 +10695,13 @@
       "type": "config_key",
       "first_seen": "2.1.257",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "IANA time zone for times shown in the UI, e.g. \"UTC\" or \"Europe/Dublin\". Default: the system time zone. An unknown name falls back to the system time zone.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Show the times in the interface in a time zone other than your system's. Set it to an IANA time zone name, such as `\"UTC\"` or `\"Europe/Dublin\"`. The times that `timeFormat` controls then show in this zone. If `timeFormat` is `\"24-hour-utc\"`, times stay in UTC and Claude Code ignores this key. `/config` has no row for this key, so set it in a settings file. Requires Claude Code v2.1.257 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "todoFeatureEnabled",
@@ -19602,7 +19602,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "The default model for subagents, agent team teammates, and workflow agents that aren't assigned a model another way. Accepts an alias such as `haiku` or a full model name. Two sources take precedence over it: a model Claude passes when it spawns the agent, and a `model` field in the agent's definition, including `inherit`. See Choose a model for the full order. Setting it to `inherit` is the same as leaving it unset. Before v2.1.251, this variable overrode both the per-invocation model and the definition's `model` field",
+      "description": "The default model for subagents, agent team teammates, and workflow agents that aren't assigned a model another way. Accepts an alias such as `haiku` or a full model name. Two sources take precedence over it: a model Claude passes when it spawns the agent, and a `model` field in the agent's definition, including `inherit`. To change that, set `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`. See Choose a model for the full order. Setting it to `inherit` is the same as leaving it unset. Before v2.1.251, this variable overrode both the per-invocation model and the definition's `model` field",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -19615,8 +19615,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added `CLAUDE_CODE_SUBAGENT_MODEL_FORCE` to apply `CLAUDE_CODE_SUBAGENT_MODEL` (or the main model) to every subagent, ignoring per-spawn and agent-definition model overrides",
-      "description_source": "changelog",
+      "description": "Set to `1` to force one model onto subagents, teammates, and workflow agents. Choose a model says which model that is. Requires Claude Code v2.1.257 or later",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },

@@ -2943,6 +2943,20 @@
       "doc_page": "settings-reference"
     },
     {
+      "symbol": "timeFormat",
+      "type": "config_key",
+      "description": "Choose how Claude Code writes the times it shows in the interface, such as the `done 6:05 PM` at the end of each turn duration message and the timestamps in the transcript viewer. To pick a preset, run `/config` and set **Time format**. Requires Claude Code v2.1.257 or later.",
+      "doc_min_version": "2.1.257",
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "timeZone",
+      "type": "config_key",
+      "description": "Show the times in the interface in a time zone other than your system's. Set it to an IANA time zone name, such as `\"UTC\"` or `\"Europe/Dublin\"`. The times that `timeFormat` controls then show in this zone. If `timeFormat` is `\"24-hour-utc\"`, times stay in UTC and Claude Code ignores this key. `/config` has no row for this key, so set it in a settings file. Requires Claude Code v2.1.257 or later.",
+      "doc_min_version": "2.1.257",
+      "doc_page": "settings-reference"
+    },
+    {
       "symbol": "tui",
       "type": "config_key",
       "description": "Choose the terminal UI renderer. Use `\"fullscreen\"` for the flicker-free alt-screen renderer with virtualized scrollback, or `\"default\"` for the classic main-screen renderer. Running `/tui fullscreen` or `/tui default` writes this key for you.",
@@ -4653,8 +4667,15 @@
     {
       "symbol": "CLAUDE_CODE_SUBAGENT_MODEL",
       "type": "env_var",
-      "description": "The default model for subagents, agent team teammates, and workflow agents that aren't assigned a model another way. Accepts an alias such as `haiku` or a full model name. Two sources take precedence over it: a model Claude passes when it spawns the agent, and a `model` field in the agent's definition, including `inherit`. See Choose a model for the full order. Setting it to `inherit` is the same as leaving it unset. Before v2.1.251, this variable overrode both the per-invocation model and the definition's `model` field",
+      "description": "The default model for subagents, agent team teammates, and workflow agents that aren't assigned a model another way. Accepts an alias such as `haiku` or a full model name. Two sources take precedence over it: a model Claude passes when it spawns the agent, and a `model` field in the agent's definition, including `inherit`. To change that, set `CLAUDE_CODE_SUBAGENT_MODEL_FORCE`. See Choose a model for the full order. Setting it to `inherit` is the same as leaving it unset. Before v2.1.251, this variable overrode both the per-invocation model and the definition's `model` field",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SUBAGENT_MODEL_FORCE",
+      "type": "env_var",
+      "description": "Set to `1` to force one model onto subagents, teammates, and workflow agents. Choose a model says which model that is. Requires Claude Code v2.1.257 or later",
+      "doc_min_version": "2.1.257",
       "doc_page": "env-vars"
     },
     {
