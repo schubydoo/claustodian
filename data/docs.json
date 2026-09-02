@@ -1581,7 +1581,7 @@
     {
       "symbol": "allowManagedPermissionRulesOnly",
       "type": "config_key",
-      "description": "Make managed settings the only source of `allow`, `ask`, and `deny` permission rules. Claude Code then ignores rules in user, project, local, and `--settings` files, ignores `--allowedTools`, hides the always-allow choices in permission prompts, and stops saving new rules. When parent settings from an embedding host apply, Claude Code treats them as part of the managed tier: it keeps their `deny` and `ask` rules and drops their `allow` rules and `additionalDirectories`.",
+      "description": "Make managed settings the only settings source of permission rules. Claude Code then ignores `allow`, `ask`, and `deny` rules in user, project, local, and `--settings` files, ignores `--allowedTools`, hides the always-allow choices in permission prompts, and stops saving new rules.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -2257,7 +2257,7 @@
     {
       "symbol": "permissionExplainerEnabled",
       "type": "config_key",
-      "description": "When Claude asks permission to run a Bash or PowerShell command, you can press `Ctrl+E` on the prompt to get a model-generated explanation of the command: what it does, why Claude is running it, and what could go wrong, labeled **Low risk**, **Med risk**, or **High risk**. Claude Code asks the model for the explanation only when you press the shortcut, and showing it doesn't run the command. Set this key to `false` to turn the shortcut off.",
+      "description": "Removed in v2.1.257, together with the `Ctrl+E` command explanation on Bash and PowerShell permission prompts. Setting it has no effect on current versions.",
       "doc_min_version": null,
       "doc_page": "settings-reference",
       "category": "global-config"
@@ -3484,7 +3484,7 @@
     {
       "symbol": "CLAUDE_ASYNC_AGENT_STALL_TIMEOUT_MS",
       "type": "env_var",
-      "description": "Stall timeout in milliseconds for background subagents. Default `600000` (10 minutes). The timer resets on each streaming progress event; if no progress arrives within the window, the subagent is aborted and the task is marked failed, surfacing any partial result to the parent",
+      "description": "Stall timeout in milliseconds for subagents. Default `600000` (10 minutes); if you raise `CLAUDE_STREAM_IDLE_TIMEOUT_MS` while the stream watchdog is on, the default rises with it, as Handle slow or stalled API responses describes. The timer resets on each streaming progress event; if no progress arrives within the window, Claude Code aborts the subagent and reports the stall to the parent",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3808,6 +3808,13 @@
       "type": "env_var",
       "description": "Set to `1` to disable the skills and workflows included with Claude Code: bundled skills and workflows are removed entirely, while built-in commands like `/init` stay typable but are hidden from the model. `/doctor` stays typable like the built-in commands; hide it with `DISABLE_DOCTOR_COMMAND` instead. Skills from plugins, `.claude/skills/`, and `.claude/commands/` are unaffected. Equivalent to the `disableBundledSkills` setting",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_CFC_PROMPT",
+      "type": "env_var",
+      "description": "Set to `1` to keep the Claude in Chrome browser tools available while omitting the Chrome section of the system prompt and the `/claude-in-chrome` bundled skill. For hosts that embed Claude Code and supply their own browser guidance. Requires Claude Code v2.1.257 or later",
+      "doc_min_version": "2.1.257",
       "doc_page": "env-vars"
     },
     {
