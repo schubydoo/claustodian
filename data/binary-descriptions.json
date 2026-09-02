@@ -849,6 +849,12 @@
         "description": "MCP tool to use for permission prompts (only works with --print)"
       }
     ],
+    "cli_flag:--permission-prompts": [
+      {
+        "from": "2.1.259",
+        "description": "Who answers permission prompts with --print: \"host\" (the SDK host or --permission-prompt-tool) or \"none\" (nobody: anything that would prompt is denied automatically; the permission mode still decides everything else)"
+      }
+    ],
     "cli_flag:--plan-mode-instructions": [
       {
         "from": "2.1.118",
@@ -1247,6 +1253,10 @@
       {
         "from": "2.1.120",
         "description": "Maximum minutes to wait for the review to finish (default: 30)"
+      },
+      {
+        "from": "2.1.259",
+        "description": "Maximum minutes to wait for the review to finish (default: 45)"
       }
     ],
     "cli_flag:--tmux": [
@@ -2077,6 +2087,10 @@
       {
         "from": "2.1.242",
         "description": "Write claude-code-mcp.d.ts: the inputs of the connected MCP tools, for typing a plugin against this session"
+      },
+      {
+        "from": "2.1.259",
+        "description": "Write claude-code.d.ts and claude-code-mcp.d.ts: the plugin API's TypeScript declarations and the inputs of the connected MCP tools, for typing a hooks module against this session"
       }
     ],
     "command:/powerup": [
@@ -2615,6 +2629,10 @@
       {
         "from": "2.0.22",
         "description": "Enterprise allowlist of MCP servers that can be used. Applies to all scopes including enterprise servers from managed-mcp.json. If undefined, all servers are allowed. If empty array, no servers are allowed. Denylist takes precedence - if a server is on both lists, it is denied."
+      },
+      {
+        "from": "2.1.259",
+        "description": "Enterprise allowlist of the MCP servers users may use. Governs servers users add (user, project and local config, --mcp-config, agent frontmatter, plugins, claude.ai connectors); servers the organization itself delivers (managedMcpServers, and managed-mcp.json entries that use no ${VAR} expansion) are allowed without being listed; a managed-mcp.json entry that uses ${VAR} expansion is still checked against this list. If undefined, all servers are allowed. If empty array, users can use no servers of their own. Denylist takes precedence - if a server is on both lists, it is denied."
       }
     ],
     "config_key:alwaysThinkingEnabled": [
@@ -3627,6 +3645,18 @@
       {
         "from": "2.1.119",
         "description": "Start Remote Control bridge automatically each session"
+      }
+    ],
+    "config_key:remoteTools": [
+      {
+        "from": "2.1.259",
+        "description": "@internal How this computer serves tool calls to cloud sessions"
+      }
+    ],
+    "config_key:remoteTools.allowUnattendedServing": [
+      {
+        "from": "2.1.259",
+        "description": "@internal When false in managed or user settings, a cloud session in auto mode may not run commands on this computer without a person approving each one, whatever consent the computer has given; a project, local or --settings value is ignored. Default: true."
       }
     ],
     "config_key:requiredMaximumVersion": [

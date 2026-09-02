@@ -4086,8 +4086,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allowlist the MCP servers people can use. Claude Code blocks any server that doesn't match an entry wherever it's defined, including plugin servers, servers passed with `--mcp-config`, and servers from `managed-mcp.json`. Built-in servers such as Claude in Chrome, the `ide` server Claude Code connects to in a running VS Code or JetBrains IDE, and servers the CLI itself configures are exempt from the allowlist, and the denylist still applies to them. In-process `type: \"sdk\"` servers, which the app that started the session registers, are exempt from both lists.",
-      "description_source": "docs",
+      "description": "Enterprise allowlist of MCP servers that can be used. Applies to all scopes including enterprise servers from managed-mcp.json. If undefined, all servers are allowed. If empty array, no servers are allowed. Denylist takes precedence - if a server is on both lists, it is denied.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -8466,7 +8466,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Stall timeout in milliseconds for background subagents. Default `600000` (10 minutes). The timer resets on each streaming progress event; if no progress arrives within the window, the subagent is aborted and the task is marked failed, surfacing any partial result to the parent",
+      "description": "Stall timeout in milliseconds for subagents. Default `600000` (10 minutes); if you raise `CLAUDE_STREAM_IDLE_TIMEOUT_MS` while the stream watchdog is on, the default rises with it, as Handle slow or stalled API responses describes. The timer resets on each streaming progress event; if no progress arrives within the window, Claude Code aborts the subagent and reports the stall to the parent",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
