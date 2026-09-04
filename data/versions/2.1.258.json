@@ -1675,6 +1675,9 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
+      "scope_descriptions": {
+        "plugin list": "Output as JSON"
+      },
       "scopes": [
         "agents",
         "auth status",
@@ -1743,22 +1746,6 @@
       "category": "cli",
       "scopes": [
         "plugin eval"
-      ]
-    },
-    {
-      "symbol": "--kill-session-after-min",
-      "type": "cli_flag",
-      "first_seen": "2.1.224",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "binary",
-      "confidence": "high",
-      "description": "SIGTERM a session child after N min wall-clock (runaway backstop). If a turn is in flight at the deadline, the kill is deferred until the turn finishes, with a hard cap of 15 min past the deadline (override: SELF_HOSTED_RUNNER_MAX_LIFETIME_GRACE_MS, in ms). Default: never. Max: 10080.",
-      "description_source": "help",
-      "source_url": null,
-      "category": "cli",
-      "scopes": [
-        "self-hosted-runner"
       ]
     },
     {
@@ -2792,12 +2779,12 @@
       "first_seen": "2.0.63",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Restore files to state at the specified user message and exit (requires --resume)",
-      "description_source": "binary",
-      "source_url": null,
-      "category": "cli-internal"
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "--routine",
@@ -3190,11 +3177,11 @@
       "first_seen": "2.1.145",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Treat warnings as errors (exit 1). Use in CI to fail on unrecognized fields, missing metadata, and other issues that the runtime tolerates.",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Treat warnings as errors and exit 1 on them. Use in CI to catch issues the runtime tolerates, such as unrecognized fields",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin validate"
@@ -8470,13 +8457,13 @@
       "type": "config_key",
       "first_seen": "2.1.257",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Refuse file-tool reads (Read, Grep, Glob, LSP) outside the working directories in every permission mode; true in any settings source wins. Also set when the user picks \"block\" on the one-time auto-mode prompt for a read outside the working directories.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Stop Claude from reading paths outside the session's working directories with the Read, Grep, Glob, and LSP tools, in every permission mode including `bypassPermissions`. A Bash command that reads a matching path through a file command Claude Code recognizes, such as `cat`, prompts you even in auto mode and `bypassPermissions` mode. Requires Claude Code v2.1.257 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "permissions.classifierContext",
@@ -8888,7 +8875,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Point the PR links Claude Code renders, in the footer badge and in tool-result summaries, at an internal code-review tool instead of `github.com`. Claude Code substitutes `{host}`, `{owner}`, `{repo}`, `{number}`, and `{url}` from the `gh`-reported PR URL. The GitLab merge request badge keeps its GitLab URL.",
+      "description": "Point the PR links Claude Code renders, in the footer badge and in tool-result summaries, at an internal code-review tool instead of `github.com`. Claude Code substitutes `{host}`, `{owner}`, `{repo}`, `{number}`, and `{url}` from the PR URL. The GitLab merge request badge keeps its GitLab URL.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -12468,11 +12455,11 @@
       "first_seen": "2.1.170",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Model ID that the `fable` alias resolves to, and the ID Claude Code recognizes as a Fable model for automatic model fallback on third-party providers. See Model configuration",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -15808,7 +15795,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, Claude-drafted feedback, release notes, gateway model discovery refreshes, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
+      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, Claude-drafted feedback, release notes, the PR and MR status badge checks, gateway model discovery refreshes, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -19616,7 +19603,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to force one model onto subagents, teammates, and workflow agents. Choose a model says which model that is. Requires Claude Code v2.1.257 or later",
+      "description": "Set to `1` to force one model onto subagents, teammates, and workflow agents. Run every subagent on one model says which model that is. Requires Claude Code v2.1.257 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"

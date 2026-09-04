@@ -2289,6 +2289,12 @@
         "description": "Reconfigure Amazon Bedrock authentication, region, or model pins"
       }
     ],
+    "command:/setup-claude": [
+      {
+        "from": "2.1.260",
+        "description": "Guided setup — pick a role, install a plugin, try a skill, connect tools"
+      }
+    ],
     "command:/setup-cowork": [
       {
         "from": "2.1.199",
@@ -3639,6 +3645,18 @@
       {
         "from": "2.1.169",
         "description": "Default environment ID to use for cloud sessions"
+      }
+    ],
+    "config_key:remoteControl": [
+      {
+        "from": "2.1.260",
+        "description": "@internal Remote Control (`claude remote-control`) options"
+      }
+    ],
+    "config_key:remoteControl.shareHostProfile": [
+      {
+        "from": "2.1.260",
+        "description": "@internal What a Remote Control environment reports about this machine when it registers: 'off' reports nothing, 'basic' the OS, architecture and detected developer tools, 'full' also the names of MCP servers configured on this machine (never a repository's .mcp.json). When unset, the level comes from the feature rollout, which may be any of the three. Managed, --settings and user settings choose the level (the most restrictive wins); project and local settings can only lower it, never raise it. Read when Remote Control starts; lowering it later applies from the next registration, raising it from the next start."
       }
     ],
     "config_key:remoteControlAtStartup": [
