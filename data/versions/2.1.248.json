@@ -4192,7 +4192,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open an interactive diff viewer showing uncommitted changes and per-turn diffs. Use left/right arrows to switch between the current git diff and individual Claude turns, and up/down to browse files. Press Enter to open the selected file's diff, scroll it with up/down or PageUp/PageDown, and press Esc to return to the file list. Claude Code computes these diffs from raw git blob content, so diff drivers and `textconv` filters configured in `.gitattributes` or git config don't apply. Before v2.1.222, workspace-configured drivers and filters could rewrite the viewer's output. The open viewer also refreshes automatically when the repository's git state changes outside the session, such as a branch switch or commit in another terminal; the auto-refresh requires Claude Code v2.1.198 or later",
+      "description": "Review the changes in your working tree, including the edits Claude has made so far. See Review changes with /diff",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5231,13 +5231,13 @@
       "type": "command",
       "first_seen": "2.1.198",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Show which loaded skills are unused and costing context",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `/skill-doctor` to show which loaded skills go unused and what they cost in context, so you can prune them",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
     },
     {
       "symbol": "/skills",
@@ -5877,30 +5877,6 @@
       "category": "settings"
     },
     {
-      "symbol": "askUserQuestionTimeout.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "askUserQuestionTimeout.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "attribution",
       "type": "config_key",
       "first_seen": "2.0.62",
@@ -5976,30 +5952,6 @@
       "description": "Set how full the context window gets before Claude Code compacts automatically.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "autoCompactWindow.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "autoCompactWindow.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -6187,30 +6139,6 @@
       "category": "settings"
     },
     {
-      "symbol": "autoUpdatesChannel.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "autoUpdatesChannel.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "autoUploadSessions",
       "type": "config_key",
       "first_seen": "2.1.119",
@@ -6328,30 +6256,6 @@
       "description_source": "binary"
     },
     {
-      "symbol": "breakReminder.breakThresholdMinutes.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "breakReminder.breakThresholdMinutes.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "breakReminder.enabled",
       "type": "config_key",
       "first_seen": "2.1.149",
@@ -6376,30 +6280,6 @@
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
-    },
-    {
-      "symbol": "breakReminder.intervalMinutes.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "breakReminder.intervalMinutes.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
     },
     {
       "symbol": "breakReminder.message",
@@ -6481,30 +6361,6 @@
       "category": "settings"
     },
     {
-      "symbol": "cleanupPeriodDays.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "cleanupPeriodDays.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "companyAnnouncements",
       "type": "config_key",
       "first_seen": "2.0.32",
@@ -6531,30 +6387,6 @@
       "category": "settings"
     },
     {
-      "symbol": "crossSessionInbound.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "crossSessionInbound.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "daemonColdStart",
       "type": "config_key",
       "first_seen": "2.1.120",
@@ -6566,30 +6398,6 @@
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
-    },
-    {
-      "symbol": "daemonColdStart.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "daemonColdStart.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
     },
     {
       "symbol": "defaultShell",
@@ -6605,30 +6413,6 @@
       "category": "settings"
     },
     {
-      "symbol": "defaultShell.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "defaultShell.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "defaultView",
       "type": "config_key",
       "first_seen": "2.1.108",
@@ -6640,30 +6424,6 @@
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
-    },
-    {
-      "symbol": "defaultView.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "defaultView.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
     },
     {
       "symbol": "deniedMcpServers",
@@ -6702,30 +6462,6 @@
       "description": "Set the deadline for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, for the approval dialog for a held cross-session message, and for the mid-session Fable usage-credits consent prompt in a session that may have nobody at the terminal. When no answer arrives before the deadline, Claude Code cancels the dialog and continues with its no-action default. Requires Claude Code v2.1.224 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "dialogExpiry.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "dialogExpiry.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -6795,30 +6531,6 @@
       "category": "settings"
     },
     {
-      "symbol": "disableAutoMode.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "disableAutoMode.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "disableBrowserExternalNavigation",
       "type": "config_key",
       "first_seen": "2.1.226",
@@ -6882,30 +6594,6 @@
       "description": "Stop Claude Code from registering the `claude-cli://` protocol handler with the operating system, which it otherwise does after you send the first prompt of an interactive session. Deep links let external tools open a Claude Code session with a pre-filled prompt. Set this in environments where protocol handler registration is restricted or managed separately.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "disableDeepLinkRegistration.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "disableDeepLinkRegistration.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -7028,30 +6716,6 @@
       "category": "settings"
     },
     {
-      "symbol": "editorMode.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "editorMode.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "effortLevel",
       "type": "config_key",
       "first_seen": "2.1.72",
@@ -7062,30 +6726,6 @@
       "description": "Set a default effort level for models you haven't saved a level for. Lower levels are faster and cheaper on straightforward tasks, and higher levels reason more deeply on complex problems.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "effortLevel.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "effortLevel.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -7193,54 +6833,6 @@
       "category": "settings"
     },
     {
-      "symbol": "env.tool_input",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "env.tool_name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "env.tool_response",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "env.tool_use_id",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "externalEditorContext",
       "type": "config_key",
       "first_seen": "2.1.226",
@@ -7320,30 +6912,6 @@
       "category": "settings"
     },
     {
-      "symbol": "feedbackDrafts.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "feedbackDrafts.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "feedbackSurveyRate",
       "type": "config_key",
       "first_seen": "2.1.76",
@@ -7354,30 +6922,6 @@
       "description": "Set the probability that the session quality survey appears when a session is eligible for it. Set `0` to keep the survey from appearing.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "feedbackSurveyRate.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "feedbackSurveyRate.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -7431,30 +6975,6 @@
       "category": "settings"
     },
     {
-      "symbol": "fileSuggestion.type.color",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "fileSuggestion.type.subtype",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "footerLinksRegexes",
       "type": "config_key",
       "first_seen": "2.1.176",
@@ -7491,30 +7011,6 @@
       "description": "Restrict which kind of account people can log in with. Set `\"claudeai\"` to allow only claude.ai accounts, `\"console\"` to allow only Claude Console accounts, or `\"gateway\"` to send people to a cloud gateway instead of a first-party login. Administrators set it in managed settings and pair it with `forceLoginOrgUUID` to keep developers' claude.ai logins inside one organization. If you set it to `\"claudeai\"` or `\"console\"` in any settings file, Claude Code also stops offering the keyless Console sign-in in the sessions that file applies to.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "forceLoginMethod.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "forceLoginMethod.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -7567,54 +7063,6 @@
       "description": "Run your own commands, prompts, agents, HTTP requests, or MCP tools as hooks at points in Claude Code's lifecycle, such as before a tool call or when a session starts; the hooks reference lists every event, its payload, and its exit codes. Each event maps to a list of matcher groups, and each group lists the handlers to run when the matcher applies.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "hooks.new_conversation_id",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "hooks.session_id",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "hooks.type",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "hooks.uuid",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -7690,33 +7138,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose which convention `Ctrl+W` follows in the prompt input. Set it to `\"readline\"` to make `Ctrl+W` delete back to the previous whitespace, as Bash does, so a path or a `--flag=value` goes in one press. Requires Claude Code v2.1.238 or later.",
-      "description_source": "docs",
+      "description": "Which conventions the prompt's word-editing keys follow: \"readline\" matches Bash and other readline programs (Ctrl+W deletes back to the previous whitespace; Alt+F and Alt+D stop at the end of the current word and Ctrl+Y can paste back what Alt+D deleted; for Alt+B, Alt+F, Alt+D, Ctrl/Option+Arrow and Option/Ctrl+Backspace a word is a run of letters and digits, so punctuation separates words); \"classic\" (default) keeps Claude Code's long-standing behavior (Ctrl+W deletes the previous word; the word keys use Unicode word segmentation, so foo_bar and 3.14 are one word)",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "keybindingFlavor.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "keybindingFlavor.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -7743,30 +7167,6 @@
       "description": "Choose whether Claude Code applies only the highest-priority managed source your organization delivers, or combines every admin source it delivers. By default Claude Code takes the highest-priority source that carries a policy key and ignores the rest. A policy key is any settings key other than this one and `wslInheritsWindowsSettings`. So once server-managed settings or an MDM policy deliver a policy key, a `managed-settings.json` file contributes only the keys Claude Code reads from every admin source. With `\"merge\"`, every admin source you deliver contributes its keys to one combined policy. Requires Claude Code v2.1.242 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "managedSourcesBehavior.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "managedSourcesBehavior.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -7872,93 +7272,6 @@
       "category": "settings"
     },
     {
-      "symbol": "modelPricing.multiplier.branch",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "The branch a commit landed on (from the commit summary line git prints per commit) or a push updated (from the ref-update line git prints per pushed ref, e.g. `HEAD -> other`). Commit and push events carry it; a command that pushed several branches emits one push event per branch. A best-effort hint: absent whenever attribution is uncertain (a push whose output was redirected still emits, with no branch; a push that also updated a ref whose name could not be carried emits a nameless event beside the named ones), and never a required key.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
-    },
-    {
-      "symbol": "modelPricing.multiplier.cwd",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "The directory the shell was in when the command finished (so an inner cd is reflected; a git -C target is not) \\u2014 a hint about where to look, never proof of what moved: confirm against the repository itself.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
-    },
-    {
-      "symbol": "modelPricing.multiplier.kind",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "What class of mutation was observed. New kinds may be added \\u2014 treat an unrecognized kind exactly like a recognized one (something changed, go look).",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
-    },
-    {
-      "symbol": "modelPricing.multiplier.session_id",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "modelPricing.multiplier.subtype",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "modelPricing.multiplier.type",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "modelPricing.multiplier.uuid",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "modelPricing.overrides",
       "type": "config_key",
       "first_seen": "2.1.242",
@@ -7974,30 +7287,6 @@
       "symbol": "modelProposedGoals",
       "type": "config_key",
       "first_seen": "2.1.227",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "modelProposedGoals.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "modelProposedGoals.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -8059,30 +7348,6 @@
       "category": "settings"
     },
     {
-      "symbol": "parentSettingsBehavior.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "parentSettingsBehavior.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "permissionExplainerEnabled",
       "type": "config_key",
       "first_seen": "2.1.226",
@@ -8106,18 +7371,6 @@
       "description": "Control which tools Claude can use without asking, which ones always prompt, and which ones are blocked, and set the permission mode a session starts in. Every `permissions.*` key below nests under this object.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.additionalContext",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -8147,234 +7400,6 @@
       "category": "settings"
     },
     {
-      "symbol": "permissions.args",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.arm",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.available",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.eligible",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.event_props",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.event_props.billing_path",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.event_props.billing_period",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.event_props.extra_usage_state",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.event_props.surface",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.event_props.tenure_bucket",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.event_props.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.in_experiment",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.ineligible_reason",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.next_available_at",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.resets_per_week",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.resets_per_week.data",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.resets_per_week.toolUseID",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.resets_per_week.type",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.args.weekly_resets_at",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "permissions.ask",
       "type": "config_key",
       "first_seen": "1.0.73",
@@ -8386,44 +7411,6 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
-    },
-    {
-      "symbol": "permissions.classifierContext",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Host-asserted context shown to the auto-mode permission classifier alongside this tool call's result. In the live session the classifier may weigh a user statement relayed here as user intent (it can satisfy a consent bar a user turn would satisfy, never a hard boundary); values restored from saved session state are treated as unverified context only. Relay discipline is the host's obligation: put ONLY genuine user statements in intent-bearing positions \\u2014 never tool output or model text dressed as one. Capped at 2000 UTF-16 code units, a budget shared across all hooks that contribute to one call (surrogate-pair-safe; emoji and other astral characters count as two). Honored on synchronous hook responses only: an async hook's late response arrives after the result message is frozen and this field in it is silently ignored. Security note: do not copy untrusted tool output or third-party text into it blindly \\u2014 content placed here reaches the permission classifier with host-application framing. Applies only to calls the classifier transcript shows: read-only lookups the transcript omits (file reads, searches), inner REPL calls, and remote-engine shells produce no per-result line, and context attached to them is silently unused. Not a delivery channel: it is bound to a single call id and sized for a short assertion, not for relaying messages or events. Rewrite integrity: if this assertion describes output you are rewriting, return it in the SAME hook result as the rewrite \\u2014 it is then dropped automatically if your rewrite is rejected or superseded by a later hook's rewrite; assertions returned without a rewrite are never invalidated by other hooks' rewrites, so a non-rewriting hook should assert only what holds regardless of other hooks' rewrites \\u2014 hosts that need an assertion bound to exact output bytes should make it in the hook that produces those bytes. (Do NOT return an identity rewrite just to pair an assertion: hooks run in parallel on the ORIGINAL output, so an identity rewrite competes last-write-wins with sibling rewrites and can clobber a real redaction.)",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
-    },
-    {
-      "symbol": "permissions.command",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.commands",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Path to a command file or skill directory, relative to the plugin root. When set, the commands/ directory is not auto-loaded \\u2014 list its files here if you want both.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
     },
     {
       "symbol": "permissions.defaultMode",
@@ -8475,153 +7462,6 @@
       "description": "Prevent anyone from entering `bypassPermissions` mode. Claude Code then rejects the `--dangerously-skip-permissions` flag, and ignores an agent definition's `permissionMode: bypassPermissions`, so the subagent runs with the parent session's permission mode.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.env",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.headers",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.hookEventName",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.hooks",
-      "type": "config_key",
-      "first_seen": "2.1.247",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Path to file with additional hooks (in addition to those in hooks/hooks.json, if it exists), relative to the plugin root",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
-    },
-    {
-      "symbol": "permissions.httpUrl",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.timeout",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.timeout.data",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.timeout.toolUseID",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.timeout.type",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.updatedMCPToolOutput",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Replaces the output for MCP tools only. Prefer updatedToolOutput, which works for all tools",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
-    },
-    {
-      "symbol": "permissions.updatedToolOutput",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Replaces the tool output before it is sent to the model",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
-    },
-    {
-      "symbol": "permissions.url",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -8781,30 +7621,6 @@
       "category": "settings"
     },
     {
-      "symbol": "preferredNotifChannel.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "preferredNotifChannel.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "prefersReducedMotion",
       "type": "config_key",
       "first_seen": "2.1.30",
@@ -8841,30 +7657,6 @@
       "description": "Choose how long the prompt cache holds the main conversation. This key applies to your interactive, `-p`, and Agent SDK turns, together with the helpers Claude Code runs inline with them. The one-hour lifetime keeps the cache warm across longer breaks, and the API bills each cache write at a higher rate than at the five-minute lifetime. Requires Claude Code v2.1.242 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "promptCacheTtl.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "promptCacheTtl.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -9466,30 +8258,6 @@
       "category": "settings"
     },
     {
-      "symbol": "sandbox.network.httpProxyPort.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "sandbox.network.httpProxyPort.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "sandbox.network.socksProxyPort",
       "type": "config_key",
       "first_seen": "2.1.63",
@@ -9500,30 +8268,6 @@
       "description": "Point the sandbox at your own SOCKS5 proxy instead of the one Claude Code runs. When unset, Claude Code starts its own proxy for SOCKS traffic.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "sandbox.network.socksProxyPort.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "sandbox.network.socksProxyPort.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -9692,30 +8436,6 @@
       "category": "settings"
     },
     {
-      "symbol": "skillListingBudgetFraction.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "skillListingBudgetFraction.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "skillListingMaxDescChars",
       "type": "config_key",
       "first_seen": "2.1.105",
@@ -9726,30 +8446,6 @@
       "description": "Each turn, Claude sees a listing of your skills that shows each skill's `description` and `when_to_use` text. This key caps how many characters of that text Claude Code shows per skill; longer text is cut at the cap.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "skillListingMaxDescChars.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "skillListingMaxDescChars.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -9983,30 +8679,6 @@
       "category": "settings"
     },
     {
-      "symbol": "spinnerVerbs.mode.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "spinnerVerbs.mode.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "spinnerVerbs.verbs",
       "type": "config_key",
       "first_seen": "2.1.23",
@@ -10096,30 +8768,6 @@
       "category": "settings"
     },
     {
-      "symbol": "statusLine.padding.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "statusLine.padding.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "statusLine.refreshInterval",
       "type": "config_key",
       "first_seen": "2.1.97",
@@ -10133,57 +8781,9 @@
       "description_source": "binary"
     },
     {
-      "symbol": "statusLine.refreshInterval.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "statusLine.refreshInterval.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "statusLine.type",
       "type": "config_key",
       "first_seen": "1.0.64",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "statusLine.type.color",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "statusLine.type.subtype",
-      "type": "config_key",
-      "first_seen": "2.1.242",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -10288,30 +8888,6 @@
       "category": "settings"
     },
     {
-      "symbol": "subagentPromptCacheTtl.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "subagentPromptCacheTtl.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "subagentStatusLine",
       "type": "config_key",
       "first_seen": "2.1.105",
@@ -10340,30 +8916,6 @@
       "symbol": "subagentStatusLine.type",
       "type": "config_key",
       "first_seen": "2.1.105",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "subagentStatusLine.type.color",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "subagentStatusLine.type.subtype",
-      "type": "config_key",
-      "first_seen": "2.1.242",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -10452,30 +9004,6 @@
       "category": "settings"
     },
     {
-      "symbol": "teammateMode.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "teammateMode.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "terminalProgressBarEnabled",
       "type": "config_key",
       "first_seen": "2.1.119",
@@ -10541,30 +9069,6 @@
       "description_source": "binary"
     },
     {
-      "symbol": "totalTokensReminder.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "totalTokensReminder.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "totalTokensReminderAfterUserTurn",
       "type": "config_key",
       "first_seen": "2.1.202",
@@ -10591,30 +9095,6 @@
       "description_source": "binary"
     },
     {
-      "symbol": "totalTokensReminderBudget.name",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "totalTokensReminderBudget.permission_policy",
-      "type": "config_key",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "tui",
       "type": "config_key",
       "first_seen": "2.1.110",
@@ -10625,30 +9105,6 @@
       "description": "Choose the terminal UI renderer. Use `\"fullscreen\"` for the flicker-free alt-screen renderer with virtualized scrollback, or `\"default\"` for the classic main-screen renderer. Running `/tui fullscreen` or `/tui default` writes this key for you.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "tui.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "tui.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -10701,30 +9157,6 @@
       "description": "Set the transcript view Claude Code starts in: `\"default\"`, `\"verbose\"`, or `\"focus\"`. When set, it overrides both the sticky `/focus` selection and the `verbose` setting.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "viewMode.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "viewMode.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -10792,30 +9224,6 @@
       "description_source": "binary"
     },
     {
-      "symbol": "voice.mode.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "voice.mode.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "voiceEnabled",
       "type": "config_key",
       "first_seen": "2.1.108",
@@ -10868,30 +9276,6 @@
       "category": "settings"
     },
     {
-      "symbol": "workflowSizeGuideline.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "workflowSizeGuideline.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "worktree",
       "type": "config_key",
       "first_seen": "2.1.38",
@@ -10918,30 +9302,6 @@
       "category": "settings"
     },
     {
-      "symbol": "worktree.baseRef.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "worktree.baseRef.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "worktree.bgIsolation",
       "type": "config_key",
       "first_seen": "2.1.143",
@@ -10952,30 +9312,6 @@
       "description": "Choose how background sessions isolate their file edits. With `\"worktree\"`, Claude Code blocks `Edit` and `Write` in the main checkout until the session calls `EnterWorktree`; with `\"none\"`, background jobs edit the working copy directly. Set `\"none\"` for a repository where git worktrees are impractical.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
-    },
-    {
-      "symbol": "worktree.bgIsolation.scope",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "worktree.bgIsolation.tier",
-      "type": "config_key",
-      "first_seen": "2.1.248",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "settings"
     },
     {
@@ -21565,6 +19901,18 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
+    },
+    {
+      "symbol": "GOOGLE_APPLICATION_CREDENTIALS",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cloud"
     },
     {
       "symbol": "HTTPS_PROXY",

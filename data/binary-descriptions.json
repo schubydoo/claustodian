@@ -99,6 +99,12 @@
         "description": "Append a system prompt to every Task-tool subagent's system prompt, propagated to nested subagents (only works with --print). Implies CLAUDE_CODE_ENABLE_APPEND_SUBAGENT_PROMPT=1."
       }
     ],
+    "cli_flag:--append-subagent-system-prompt-file": [
+      {
+        "from": "2.1.261",
+        "description": "Read a system prompt from a file and append it to every Task-tool subagent's system prompt (only works with --print)"
+      }
+    ],
     "cli_flag:--append-system-prompt": [
       {
         "from": "0.2.117",
@@ -143,6 +149,12 @@
       {
         "from": "2.1.8",
         "description": "Include available plugins from marketplaces (requires --json)"
+      }
+    ],
+    "cli_flag:--await-initialize": [
+      {
+        "from": "2.1.261",
+        "description": "Read the initialize control request from stdin during startup so its launch-scoped fields (plugins) apply exactly like their command-line flags. Pass it only from the process that writes that request as the first stdin line at spawn (only works with --input-format=stream-json)"
       }
     ],
     "cli_flag:--ax-screen-reader": [
@@ -2821,6 +2833,12 @@
         "description": "Render screen-reader friendly output (flat text, no decorative borders or animations). Overridden by the CLAUDE_AX_SCREEN_READER env var and the --ax-screen-reader CLI flag."
       }
     ],
+    "config_key:bashOutputMaxChars": [
+      {
+        "from": "2.1.261",
+        "description": "How many characters of a successful Bash or PowerShell command's output Claude receives inline (default 30000; values clamp to 4000-128000). Output past this is saved to a file and Claude receives a short preview plus the path. When set, this also replaces BASH_MAX_OUTPUT_LENGTH, which on its own only sizes the read-back window."
+      }
+    ],
     "config_key:blockedMarketplaces": [
       {
         "from": "2.0.72",
@@ -3295,6 +3313,10 @@
       {
         "from": "2.1.239",
         "description": "Which conventions the prompt's word-editing keys follow: \"readline\" matches Bash and other readline programs (Ctrl+W deletes back to the previous whitespace; Alt+F and Alt+D stop at the end of the current word and Ctrl+Y can paste back what Alt+D deleted; for Alt+B, Alt+F, Alt+D, Ctrl/Option+Arrow and Option/Ctrl+Backspace a word is a run of letters and digits, so punctuation separates words); \"classic\" (default) keeps Claude Code's long-standing behavior (Ctrl+W deletes the previous word; the word keys use Unicode word segmentation, so foo_bar and 3.14 are one word)"
+      },
+      {
+        "from": "2.1.261",
+        "description": "Deprecated: no longer has any effect. The prompt's word-editing keys always follow Bash (readline) conventions."
       }
     ],
     "config_key:language": [
@@ -3341,24 +3363,6 @@
       {
         "from": "2.1.242",
         "description": "Rows to show in the /model picker, in order."
-      }
-    ],
-    "config_key:modelPricing.multiplier.branch": [
-      {
-        "from": "2.1.242",
-        "description": "The branch a commit landed on (from the commit summary line git prints per commit) or a push updated (from the ref-update line git prints per pushed ref, e.g. `HEAD -> other`). Commit and push events carry it; a command that pushed several branches emits one push event per branch. A best-effort hint: absent whenever attribution is uncertain (a push whose output was redirected still emits, with no branch; a push that also updated a ref whose name could not be carried emits a nameless event beside the named ones), and never a required key."
-      }
-    ],
-    "config_key:modelPricing.multiplier.cwd": [
-      {
-        "from": "2.1.242",
-        "description": "The directory the shell was in when the command finished (so an inner cd is reflected; a git -C target is not) \\u2014 a hint about where to look, never proof of what moved: confirm against the repository itself."
-      }
-    ],
-    "config_key:modelPricing.multiplier.kind": [
-      {
-        "from": "2.1.242",
-        "description": "What class of mutation was observed. New kinds may be added \\u2014 treat an unrecognized kind exactly like a recognized one (something changed, go look)."
       }
     ],
     "config_key:modelSettings": [
@@ -3419,18 +3423,6 @@
         "description": "Refuse file-tool reads (Read, Grep, Glob, LSP) outside the working directories in every permission mode; true in any settings source wins. Also set when the user picks \"block\" on the one-time auto-mode prompt for a read outside the working directories."
       }
     ],
-    "config_key:permissions.classifierContext": [
-      {
-        "from": "2.1.242",
-        "description": "Host-asserted context shown to the auto-mode permission classifier alongside this tool call's result. In the live session the classifier may weigh a user statement relayed here as user intent (it can satisfy a consent bar a user turn would satisfy, never a hard boundary); values restored from saved session state are treated as unverified context only. Relay discipline is the host's obligation: put ONLY genuine user statements in intent-bearing positions \\u2014 never tool output or model text dressed as one. Capped at 2000 UTF-16 code units, a budget shared across all hooks that contribute to one call (surrogate-pair-safe; emoji and other astral characters count as two). Honored on synchronous hook responses only: an async hook's late response arrives after the result message is frozen and this field in it is silently ignored. Security note: do not copy untrusted tool output or third-party text into it blindly \\u2014 content placed here reaches the permission classifier with host-application framing. Applies only to calls the classifier transcript shows: read-only lookups the transcript omits (file reads, searches), inner REPL calls, and remote-engine shells produce no per-result line, and context attached to them is silently unused. Not a delivery channel: it is bound to a single call id and sized for a short assertion, not for relaying messages or events. Rewrite integrity: if this assertion describes output you are rewriting, return it in the SAME hook result as the rewrite \\u2014 it is then dropped automatically if your rewrite is rejected or superseded by a later hook's rewrite; assertions returned without a rewrite are never invalidated by other hooks' rewrites, so a non-rewriting hook should assert only what holds regardless of other hooks' rewrites \\u2014 hosts that need an assertion bound to exact output bytes should make it in the hook that produces those bytes. (Do NOT return an identity rewrite just to pair an assertion: hooks run in parallel on the ORIGINAL output, so an identity rewrite competes last-write-wins with sibling rewrites and can clobber a real redaction.)"
-      }
-    ],
-    "config_key:permissions.commands": [
-      {
-        "from": "2.1.246",
-        "description": "Path to a command file or skill directory, relative to the plugin root. When set, the commands/ directory is not auto-loaded \\u2014 list its files here if you want both."
-      }
-    ],
     "config_key:permissions.defaultMode": [
       {
         "from": "1.0.54",
@@ -3461,24 +3453,6 @@
       {
         "from": "1.0.54",
         "description": "Disable the ability to bypass permission prompts"
-      }
-    ],
-    "config_key:permissions.hooks": [
-      {
-        "from": "2.1.247",
-        "description": "Path to file with additional hooks (in addition to those in hooks/hooks.json, if it exists), relative to the plugin root"
-      }
-    ],
-    "config_key:permissions.updatedMCPToolOutput": [
-      {
-        "from": "2.1.242",
-        "description": "Replaces the output for MCP tools only. Prefer updatedToolOutput, which works for all tools"
-      }
-    ],
-    "config_key:permissions.updatedToolOutput": [
-      {
-        "from": "2.1.242",
-        "description": "Replaces the tool output before it is sent to the model"
       }
     ],
     "config_key:plansDirectory": [
@@ -4133,6 +4107,12 @@
       {
         "from": "2.0.74",
         "description": "Whether to disable syntax highlighting in diffs"
+      }
+    ],
+    "config_key:taskOutputMaxChars": [
+      {
+        "from": "2.1.261",
+        "description": "How many characters of a background task's output the TaskOutput tool hands Claude inline (default 32000; values clamp to 4000-128000). Longer output is cut to its most recent characters with the path of the full output file, except that a shell command still running returns its first characters up to this size. When set, this also replaces TASK_MAX_OUTPUT_LENGTH, which on its own only sizes that window."
       }
     ],
     "config_key:teammateMode": [

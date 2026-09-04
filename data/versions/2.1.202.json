@@ -3025,8 +3025,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "View uncommitted changes and per-turn diffs",
-      "description_source": "binary",
+      "description": "Review the changes in your working tree, including the edits Claude has made so far. See Review changes with /diff",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3985,13 +3985,13 @@
       "type": "command",
       "first_seen": "2.1.198",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Show which loaded skills are unused and costing context",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `/skill-doctor` to show which loaded skills go unused and what they cost in context, so you can prune them",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
     },
     {
       "symbol": "/skills",
@@ -15534,6 +15534,18 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
+    },
+    {
+      "symbol": "GOOGLE_APPLICATION_CREDENTIALS",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cloud"
     },
     {
       "symbol": "HTTPS_PROXY",

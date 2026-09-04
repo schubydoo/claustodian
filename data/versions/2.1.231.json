@@ -3991,7 +3991,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open an interactive diff viewer showing uncommitted changes and per-turn diffs. Use left/right arrows to switch between the current git diff and individual Claude turns, and up/down to browse files. Press Enter to open the selected file's diff, scroll it with up/down or PageUp/PageDown, and press Esc to return to the file list. Claude Code computes these diffs from raw git blob content, so diff drivers and `textconv` filters configured in `.gitattributes` or git config don't apply. Before v2.1.222, workspace-configured drivers and filters could rewrite the viewer's output. The open viewer also refreshes automatically when the repository's git state changes outside the session, such as a branch switch or commit in another terminal; the auto-refresh requires Claude Code v2.1.198 or later",
+      "description": "Review the changes in your working tree, including the edits Claude has made so far. See Review changes with /diff",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5016,13 +5016,13 @@
       "type": "command",
       "first_seen": "2.1.198",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Show which loaded skills are unused and costing context",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `/skill-doctor` to show which loaded skills go unused and what they cost in context, so you can prune them",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
     },
     {
       "symbol": "/skills",
@@ -18134,6 +18134,18 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
+    },
+    {
+      "symbol": "GOOGLE_APPLICATION_CREDENTIALS",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cloud"
     },
     {
       "symbol": "HTTPS_PROXY",

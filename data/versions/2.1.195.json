@@ -2751,8 +2751,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "View uncommitted changes and per-turn diffs",
-      "description_source": "binary",
+      "description": "Review the changes in your working tree, including the edits Claude has made so far. See Review changes with /diff",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -14777,6 +14777,18 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
+    },
+    {
+      "symbol": "GOOGLE_APPLICATION_CREDENTIALS",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cloud"
     },
     {
       "symbol": "HTTPS_PROXY",
