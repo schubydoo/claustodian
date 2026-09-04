@@ -99,6 +99,12 @@
         "description": "Append a system prompt to every Task-tool subagent's system prompt, propagated to nested subagents (only works with --print). Implies CLAUDE_CODE_ENABLE_APPEND_SUBAGENT_PROMPT=1."
       }
     ],
+    "cli_flag:--append-subagent-system-prompt-file": [
+      {
+        "from": "2.1.261",
+        "description": "Read a system prompt from a file and append it to every Task-tool subagent's system prompt (only works with --print)"
+      }
+    ],
     "cli_flag:--append-system-prompt": [
       {
         "from": "0.2.117",
@@ -143,6 +149,12 @@
       {
         "from": "2.1.8",
         "description": "Include available plugins from marketplaces (requires --json)"
+      }
+    ],
+    "cli_flag:--await-initialize": [
+      {
+        "from": "2.1.261",
+        "description": "Read the initialize control request from stdin during startup so its launch-scoped fields (plugins) apply exactly like their command-line flags. Pass it only from the process that writes that request as the first stdin line at spawn (only works with --input-format=stream-json)"
       }
     ],
     "cli_flag:--ax-screen-reader": [
@@ -2821,6 +2833,12 @@
         "description": "Render screen-reader friendly output (flat text, no decorative borders or animations). Overridden by the CLAUDE_AX_SCREEN_READER env var and the --ax-screen-reader CLI flag."
       }
     ],
+    "config_key:bashOutputMaxChars": [
+      {
+        "from": "2.1.261",
+        "description": "How many characters of a successful Bash or PowerShell command's output Claude receives inline (default 30000; values clamp to 4000-128000). Output past this is saved to a file and Claude receives a short preview plus the path. When set, this also replaces BASH_MAX_OUTPUT_LENGTH, which on its own only sizes the read-back window."
+      }
+    ],
     "config_key:blockedMarketplaces": [
       {
         "from": "2.0.72",
@@ -3295,6 +3313,10 @@
       {
         "from": "2.1.239",
         "description": "Which conventions the prompt's word-editing keys follow: \"readline\" matches Bash and other readline programs (Ctrl+W deletes back to the previous whitespace; Alt+F and Alt+D stop at the end of the current word and Ctrl+Y can paste back what Alt+D deleted; for Alt+B, Alt+F, Alt+D, Ctrl/Option+Arrow and Option/Ctrl+Backspace a word is a run of letters and digits, so punctuation separates words); \"classic\" (default) keeps Claude Code's long-standing behavior (Ctrl+W deletes the previous word; the word keys use Unicode word segmentation, so foo_bar and 3.14 are one word)"
+      },
+      {
+        "from": "2.1.261",
+        "description": "Deprecated: no longer has any effect. The prompt's word-editing keys always follow Bash (readline) conventions."
       }
     ],
     "config_key:language": [
@@ -3311,6 +3333,66 @@
       {
         "from": "1.0.54",
         "description": "Enable learn mode for educational responses"
+      }
+    ],
+    "config_key:managedMcpServers.version.error": [
+      {
+        "from": "2.1.261",
+        "description": "Set if syntax check failed"
+      }
+    ],
+    "config_key:managedMcpServers.version.runId": [
+      {
+        "from": "2.1.261",
+        "description": "Local workflow run identifier for resumeFromRunId. Absent for remote_launched (the CCR session URL is the resume handle there) and on transcripts written before this field existed."
+      }
+    ],
+    "config_key:managedMcpServers.version.scriptPath": [
+      {
+        "from": "2.1.261",
+        "description": "Path to the persisted workflow script for this invocation. Editable via Write/Edit; pass back as `scriptPath` to re-run without resending the script."
+      }
+    ],
+    "config_key:managedMcpServers.version.sessionUrl": [
+      {
+        "from": "2.1.261",
+        "description": "CCR session URL when status is remote_launched"
+      }
+    ],
+    "config_key:managedMcpServers.version.status.pool_id": [
+      {
+        "from": "2.1.261",
+        "description": "Tagged environment id (ccpool_\\u2026)."
+      }
+    ],
+    "config_key:managedMcpServers.version.taskType": [
+      {
+        "from": "2.1.261",
+        "description": "TaskType of the registered background task \\u2014 'local_workflow' for in-process runs, 'remote_agent' when remote:true dispatches to CCR. Set on all new writes; absent only on transcripts written before this field existed."
+      }
+    ],
+    "config_key:managedMcpServers.version.taskType.pool_id": [
+      {
+        "from": "2.1.261",
+        "description": "Tagged environment id (ccpool_\\u2026)."
+      }
+    ],
+    "config_key:managedMcpServers.version.transcriptDir": [
+      {
+        "from": "2.1.261",
+        "description": "Directory where subagent transcripts are written during execution"
+      }
+    ],
+    "config_key:managedMcpServers.version.warning": [
+      {
+        "from": "2.1.261",
+        "description": "Non-blocking heads-up (e.g. local git state diverges from the pushed branch the cloud session will clone)"
+      }
+    ],
+    "config_key:managedMcpServers.version.workflowName": [
+      {
+        "from": "2.1.261",
+        "description": "meta.name from the workflow script \\u2014 same value as task_started.workflow_name. Set on all new writes; absent only on transcripts written before this field existed."
       }
     ],
     "config_key:minimumVersion": [
@@ -4133,6 +4215,12 @@
       {
         "from": "2.0.74",
         "description": "Whether to disable syntax highlighting in diffs"
+      }
+    ],
+    "config_key:taskOutputMaxChars": [
+      {
+        "from": "2.1.261",
+        "description": "How many characters of a background task's output the TaskOutput tool hands Claude inline (default 32000; values clamp to 4000-128000). Longer output is cut to its most recent characters with the path of the full output file, except that a shell command still running returns its first characters up to this size. When set, this also replaces TASK_MAX_OUTPUT_LENGTH, which on its own only sizes that window."
       }
     ],
     "config_key:teammateMode": [
