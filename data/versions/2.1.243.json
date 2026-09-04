@@ -4127,7 +4127,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open an interactive diff viewer showing uncommitted changes and per-turn diffs. Use left/right arrows to switch between the current git diff and individual Claude turns, and up/down to browse files. Press Enter to open the selected file's diff, scroll it with up/down or PageUp/PageDown, and press Esc to return to the file list. Claude Code computes these diffs from raw git blob content, so diff drivers and `textconv` filters configured in `.gitattributes` or git config don't apply. Before v2.1.222, workspace-configured drivers and filters could rewrite the viewer's output. The open viewer also refreshes automatically when the repository's git state changes outside the session, such as a branch switch or commit in another terminal; the auto-refresh requires Claude Code v2.1.198 or later",
+      "description": "Review the changes in your working tree, including the edits Claude has made so far. See Review changes with /diff",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5166,13 +5166,13 @@
       "type": "command",
       "first_seen": "2.1.198",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Show which loaded skills are unused and costing context",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `/skill-doctor` to show which loaded skills go unused and what they cost in context, so you can prune them",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
     },
     {
       "symbol": "/skills",
@@ -6883,30 +6883,6 @@
       "category": "settings"
     },
     {
-      "symbol": "fileSuggestion.type.color",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "fileSuggestion.type.subtype",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "footerLinksRegexes",
       "type": "config_key",
       "first_seen": "2.1.176",
@@ -6998,54 +6974,6 @@
       "category": "settings"
     },
     {
-      "symbol": "hooks.new_conversation_id",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "hooks.session_id",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "hooks.type",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "hooks.uuid",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "httpHookAllowedEnvVars",
       "type": "config_key",
       "first_seen": "2.1.63",
@@ -7118,8 +7046,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose which convention `Ctrl+W` follows in the prompt input. Set it to `\"readline\"` to make `Ctrl+W` delete back to the previous whitespace, as Bash does, so a path or a `--flag=value` goes in one press. Requires Claude Code v2.1.238 or later.",
-      "description_source": "docs",
+      "description": "Which conventions the prompt's word-editing keys follow: \"readline\" matches Bash and other readline programs (Ctrl+W deletes back to the previous whitespace; Alt+F and Alt+D stop at the end of the current word and Ctrl+Y can paste back what Alt+D deleted; for Alt+B, Alt+F, Alt+D, Ctrl/Option+Arrow and Option/Ctrl+Backspace a word is a run of letters and digits, so punctuation separates words); \"classic\" (default) keeps Claude Code's long-standing behavior (Ctrl+W deletes the previous word; the word keys use Unicode word segmentation, so foo_bar and 3.14 are one word)",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7252,93 +7180,6 @@
       "category": "settings"
     },
     {
-      "symbol": "modelPricing.multiplier.branch",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "The branch a commit landed on (from the commit summary line git prints per commit) or a push updated (from the ref-update line git prints per pushed ref, e.g. `HEAD -> other`). Commit and push events carry it; a command that pushed several branches emits one push event per branch. A best-effort hint: absent whenever attribution is uncertain (a push whose output was redirected still emits, with no branch; a push that also updated a ref whose name could not be carried emits a nameless event beside the named ones), and never a required key.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
-    },
-    {
-      "symbol": "modelPricing.multiplier.cwd",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "The directory the shell was in when the command finished (so an inner cd is reflected; a git -C target is not) \\u2014 a hint about where to look, never proof of what moved: confirm against the repository itself.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
-    },
-    {
-      "symbol": "modelPricing.multiplier.kind",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "What class of mutation was observed. New kinds may be added \\u2014 treat an unrecognized kind exactly like a recognized one (something changed, go look).",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
-    },
-    {
-      "symbol": "modelPricing.multiplier.session_id",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "modelPricing.multiplier.subtype",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "modelPricing.multiplier.type",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "modelPricing.multiplier.uuid",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "modelPricing.overrides",
       "type": "config_key",
       "first_seen": "2.1.242",
@@ -7441,18 +7282,6 @@
       "category": "settings"
     },
     {
-      "symbol": "permissions.additionalContext",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "permissions.additionalDirectories",
       "type": "config_key",
       "first_seen": "1.0.27",
@@ -7490,19 +7319,6 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
-    },
-    {
-      "symbol": "permissions.classifierContext",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Host-asserted context shown to the auto-mode permission classifier alongside this tool call's result. In the live session the classifier may weigh a user statement relayed here as user intent (it can satisfy a consent bar a user turn would satisfy, never a hard boundary); values restored from saved session state are treated as unverified context only. Relay discipline is the host's obligation: put ONLY genuine user statements in intent-bearing positions \\u2014 never tool output or model text dressed as one. Capped at 2000 UTF-16 code units, a budget shared across all hooks that contribute to one call (surrogate-pair-safe; emoji and other astral characters count as two). Honored on synchronous hook responses only: an async hook's late response arrives after the result message is frozen and this field in it is silently ignored. Security note: do not copy untrusted tool output or third-party text into it blindly \\u2014 content placed here reaches the permission classifier with host-application framing. Applies only to calls the classifier transcript shows: read-only lookups the transcript omits (file reads, searches), inner REPL calls, and remote-engine shells produce no per-result line, and context attached to them is silently unused. Not a delivery channel: it is bound to a single call id and sized for a short assertion, not for relaying messages or events. Rewrite integrity: if this assertion describes output you are rewriting, return it in the SAME hook result as the rewrite \\u2014 it is then dropped automatically if your rewrite is rejected or superseded by a later hook's rewrite; assertions returned without a rewrite are never invalidated by other hooks' rewrites, so a non-rewriting hook should assert only what holds regardless of other hooks' rewrites \\u2014 hosts that need an assertion bound to exact output bytes should make it in the hook that produces those bytes. (Do NOT return an identity rewrite just to pair an assertion: hooks run in parallel on the ORIGINAL output, so an identity rewrite competes last-write-wins with sibling rewrites and can clobber a real redaction.)",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
     },
     {
       "symbol": "permissions.defaultMode",
@@ -7555,44 +7371,6 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
-    },
-    {
-      "symbol": "permissions.hookEventName",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "permissions.updatedMCPToolOutput",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Replaces the output for MCP tools only. Prefer updatedToolOutput, which works for all tools",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
-    },
-    {
-      "symbol": "permissions.updatedToolOutput",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Replaces the tool output before it is sent to the model",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
     },
     {
       "symbol": "plansDirectory",
@@ -8897,30 +8675,6 @@
       "category": "settings"
     },
     {
-      "symbol": "statusLine.type.color",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "statusLine.type.subtype",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
       "symbol": "strictKnownMarketplaces",
       "type": "config_key",
       "first_seen": "2.0.55",
@@ -9044,30 +8798,6 @@
       "symbol": "subagentStatusLine.type",
       "type": "config_key",
       "first_seen": "2.1.105",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "subagentStatusLine.type.color",
-      "type": "config_key",
-      "first_seen": "2.1.242",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "settings"
-    },
-    {
-      "symbol": "subagentStatusLine.type.subtype",
-      "type": "config_key",
-      "first_seen": "2.1.242",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -19829,6 +19559,18 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
+    },
+    {
+      "symbol": "GOOGLE_APPLICATION_CREDENTIALS",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cloud"
     },
     {
       "symbol": "HTTPS_PROXY",
