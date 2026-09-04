@@ -711,12 +711,15 @@ export function extractSkillCommands(src: string): Map<string, string | undefine
  * Full extraction: every own-evidenced symbol, sorted by type then symbol.
  *
  * `scopeChunks` is the artifact split into its `// @bun @bytecode` chunks (one
- * element in the pre-2.1.242 single-bundle and npm eras). ONLY the switch-case
- * scope lane reads it — every other lane reads the flat `src`, byte-for-byte as
- * before — because from 2.1.242 each subcommand parser lives in its own chunk and
- * scope containment cannot see across the code-split without them (see
- * scripts/argv-scopes.ts). Omitted, it defaults to `[src]`, which reproduces the
- * single-bundle behaviour for callers (and tests) that do not have the bytes.
+ * element in the pre-2.1.242 single-bundle and npm eras). Two lanes read it and
+ * every other lane reads the flat `src`, byte-for-byte as before. The switch-case
+ * scope lane needs it because from 2.1.242 each subcommand parser lives in its
+ * own chunk and scope containment cannot see across the code-split (see
+ * scripts/argv-scopes.ts). The settings lane needs it because each chunk minifies
+ * its own names, so a sub-schema factory can only be resolved inside the chunk
+ * that binds it (see scripts/settings-schema.ts). Omitted, it defaults to `[src]`,
+ * which reproduces the single-bundle behaviour for callers (and tests) that do
+ * not have the bytes.
  */
 export function extractBundleSymbols(src: string, scopeChunks?: readonly string[]): BundleSymbol[] {
   const symbols: BundleSymbol[] = [];
@@ -810,7 +813,7 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
   // returning a partial set when the schema is present but unwalkable, and that
   // is deliberate: a shrunken key set is indistinguishable downstream from ~230
   // keys being deleted upstream. Failing the whole version is the safe answer.
-  for (const key of extractSettingsKeys(src)) {
+  for (const key of extractSettingsKeys(scopeChunks ?? src)) {
     symbols.push({
       symbol: key.path,
       type: 'config_key',
