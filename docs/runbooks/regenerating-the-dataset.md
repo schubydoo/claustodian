@@ -174,6 +174,32 @@ one thing that cannot get it.
 
 Regeneration is ~24 minutes. Review is worth more than the 24 minutes.
 
+### Prefer the bot for a bounded correction
+
+A manual data PR is the last resort. When an extractor fix changes the binary
+evidence for a known range of releases, let the bot rewrite those caches instead:
+
+```bash
+gh workflow run update-from-changelog.yml \
+  -f version="2.1.242 2.1.243 2.1.245 2.1.246" \
+  -f force=true
+```
+
+- `version` takes several versions, space- or comma-separated. Pass the whole range
+  in one dispatch. The bot rebuilds its branch from `main` on every run, so a second
+  dispatch overwrites the first and two backfill PRs cannot be open at once.
+- `force` re-scrapes a version that is already in `binary-cache/`. Without it a cached
+  version is skipped and the run changes nothing.
+- The PR title names the versions scraped. `latest.json` follows the changelog tip
+  whichever binaries were scraped. Put the tip in the list, or make sure that its
+  binary is already cached. Otherwise the newest snapshot claims binary evidence it
+  does not have until the next run.
+- Each version is one CDN download (~250 MB). The eight permanent CDN gaps cannot be
+  scraped this way.
+
+Use the full local regeneration above only when the range is unbounded, for example
+a fix that changes every era.
+
 ⚠️ **If the regeneration introduces a `type` the site has never published, ship the
 site row first.** `scripts/site-types.test.ts` runs on every PR and fails when a type
 in `data/latest.json` lacks a `TYPE_LABELS` row, a legend chip, or a `.t-<type>`

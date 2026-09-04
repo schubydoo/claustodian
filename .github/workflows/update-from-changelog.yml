@@ -16,9 +16,14 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Claude Code version to scrape the binary for (e.g. 2.1.214). Defaults to data/index.json latest.'
+        description: 'Claude Code version(s) to scrape the binary for, space- or comma-separated (e.g. 2.1.214, or 2.1.242 2.1.243 2.1.245). Defaults to data/index.json latest.'
         required: false
         type: string
+      force:
+        description: 'Re-scrape versions already in binary-cache/ (after an extractor fix). Without it a cached version is skipped, so a backfill of history is a no-op.'
+        required: false
+        type: boolean
+        default: false
   repository_dispatch:
     types: [new-release]
 
@@ -60,34 +65,95 @@ jobs:
       # because the step gained a failure mode that must NOT be tolerated: a control-
       # lane refusal is deterministic and drops the release's whole cache entry.
       # `continue-on-error` cannot tell the two apart — it swallows every non-zero.
-      - name: Scrape the new release's binary into the cache
+      #
+      # A manual dispatch may name SEVERAL versions, with `force` to re-scrape ones
+      # already cached. That is how history is corrected after an extractor fix: one
+      # run, one PR, oldest to newest. Dispatching one version per run does not work
+      # for that — the branch is rebuilt from main each run, so a second dispatch
+      # overwrites the first, and a cached version is skipped without `force`.
+      - name: Scrape the release binaries into the cache
+        id: scrape
         env:
-          # Via env, never interpolated into the shell command — the input is
+          # Via env, never interpolated into the shell command — the inputs are
           # attacker-controllable (workflow_dispatch), so `${{ }}` in `run:` would
-          # be a template-injection sink. scrape-binary also re-validates it as a
-          # strict major.minor.patch. Empty (e.g. repository_dispatch) → index latest.
+          # be a template-injection sink. Each version is checked here as a strict
+          # major.minor.patch and re-validated by scrape-binary. Empty (e.g.
+          # repository_dispatch) → index latest.
           INPUT_VERSION: ${{ inputs.version }}
+          INPUT_FORCE: ${{ inputs.force }}
         run: |
-          set +e
-          if [ -n "$INPUT_VERSION" ]; then
-            npm run scrape-binary -- --version "$INPUT_VERSION"
-          else
-            npm run scrape-binary
+          scrape() {
+            set +e
+            npm run scrape-binary -- "$@"
+            code=$?
+            set -e
+            # 2 is a control-lane refusal: deterministic, recurs on retry, and it drops
+            # this release's WHOLE cache entry rather than just its control symbols.
+            # Fatal. Anything else is treated as the transient CDN failure this step has
+            # always tolerated: warn, and let the re-distill reproduce existing evidence.
+            if [ "$code" = "2" ]; then
+              echo "::error::an extraction lane refused this release; its binary cache entry was not written"
+              exit 2
+            fi
+            if [ "$code" != "0" ]; then
+              # A forced run corrects history. A version it fails to rewrite keeps
+              # its OLD evidence, and a green PR carrying the other versions would
+              # read as the whole range corrected. Fatal. Without force the failure
+              # is the transient CDN hiccup this step has always tolerated: warn,
+              # and let the re-distill reproduce the existing evidence.
+              if [ "$INPUT_FORCE" = "true" ]; then
+                echo "::error::binary scrape failed (exit $code) during a forced correction; the range would be left partly corrected"
+                exit "$code"
+              fi
+              echo "::warning::binary scrape failed (exit $code) — treating as transient; evidence unchanged"
+              return 1
+            fi
+          }
+          scraped=""
+          skipped=""
+          failed=""
+          # Commas become spaces, then the list is word-split on purpose.
+          # shellcheck disable=SC2046
+          set -- $(printf '%s' "$INPUT_VERSION" | tr ',' ' ')
+          if [ -n "$INPUT_VERSION" ] && [ "$#" -eq 0 ]; then
+            echo "::error::the version input holds separators but no version: '$INPUT_VERSION'"
+            exit 1
           fi
-          code=$?
-          set -e
-          # 2 is a control-lane refusal: deterministic, recurs on retry, and it drops
-          # this release's WHOLE cache entry rather than just its control symbols.
-          # Fatal. Anything else is treated as the transient CDN failure this step has
-          # always tolerated: warn, and let the re-distill reproduce existing evidence.
-          if [ "$code" = "2" ]; then
-            echo "::error::an extraction lane refused this release; its binary cache entry was not written"
-            exit 2
+          if [ "$#" -eq 0 ]; then
+            # No explicit list (repository_dispatch): the index latest, as before.
+            set -- "$(node -p "require('./data/index.json').latest" | tr -d '\n')"
           fi
-          if [ "$code" != "0" ]; then
-            echo "::warning::binary scrape failed (exit $code) — treating as transient; evidence unchanged"
-          fi
-          exit 0
+          # Reject the whole list before downloading anything, so a typo in the
+          # last entry does not cost the earlier downloads.
+          for v in "$@"; do
+            if ! printf '%s\n' "$v" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+              echo "::error::not a strict major.minor.patch version: $v"
+              exit 1
+            fi
+          done
+          for v in "$@"; do
+            # scrape-binary skips a cached version without --force and exits 0.
+            # Name that outcome; do not report the version as freshly scraped.
+            if [ "$INPUT_FORCE" != "true" ] && [ -e "binary-cache/$v.json" ]; then
+              echo "::notice::$v is already in binary-cache/; pass force=true to re-scrape it"
+              skipped="$skipped $v"
+              continue
+            fi
+            if [ "$INPUT_FORCE" = "true" ]; then
+              scrape --version "$v" --force
+              scraped="$scraped $v"
+            elif scrape --version "$v"; then
+              scraped="$scraped $v"
+            else
+              failed="$failed $v"
+            fi
+          done
+          {
+            echo "scraped=${scraped# }"
+            echo "skipped=${skipped# }"
+            echo "failed=${failed# }"
+            echo "force=$INPUT_FORCE"
+          } >> "$GITHUB_OUTPUT"
       # Re-distill data/binary-observations.json + binary-descriptions.json from the
       # committed cache (no binaries needed). Runs every time so the evidence always
       # matches the cache, whether or not the scrape step above added a version.
@@ -115,19 +181,53 @@ jobs:
       - name: Read Claude Code version
         id: cc-version
         run: echo "version=$(node -p "require('./data/latest.json').claudeCodeVersion" | tr -d '\n')" >> "$GITHUB_OUTPUT"
+      # The title says what the run DID, not only where the dataset ended up. A
+      # backfill of several versions used to be titled as an ordinary update, and
+      # `latest.json` is always the changelog tip whichever binaries were scraped, so
+      # the title was the only place the re-scraped versions could be read from —
+      # and it did not carry them.
+      - name: Compose pull request title
+        id: pr-title
+        env:
+          SCRAPED: ${{ steps.scrape.outputs.scraped }}
+          FORCE: ${{ steps.scrape.outputs.force }}
+          VERSION: ${{ steps.cc-version.outputs.version }}
+        run: |
+          # shellcheck disable=SC2086 # word-split the space-separated list on purpose
+          set -- $SCRAPED
+          title="chore(data): update dataset for Claude Code v$VERSION"
+          if [ "$#" -ge 1 ] && { [ "$#" -gt 1 ] || [ "$FORCE" = "true" ]; }; then
+            first=$1
+            for last in "$@"; do :; done
+            span=$first
+            unit=binary
+            if [ "$first" != "$last" ]; then
+              span="$first to $last"
+              unit=binaries
+            fi
+            title="chore(data): re-scrape $# $unit ($span), dataset at Claude Code v$VERSION"
+          fi
+          echo "title=$title" >> "$GITHUB_OUTPUT"
       - name: Open pull request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ steps.app-token.outputs.token }}
           branch: bot/changelog-update
           base: main
-          title: 'chore(data): update dataset for Claude Code v${{ steps.cc-version.outputs.version }}'
-          commit-message: 'chore(data): update dataset for Claude Code v${{ steps.cc-version.outputs.version }}'
+          title: ${{ steps.pr-title.outputs.title }}
+          commit-message: ${{ steps.pr-title.outputs.title }}
           body: |
             Automated update from the official `CHANGELOG.md`
             (`provenance: changelog`, `confidence: high`).
 
             Latest Claude Code version in this run: **v${{ steps.cc-version.outputs.version }}**.
+
+            Binaries scraped into `binary-cache/` in this run: `${{ steps.scrape.outputs.scraped || 'none' }}`
+            (force re-scrape of cached versions: `${{ steps.scrape.outputs.force }}`).
+            Requested but already cached, left as they were: `${{ steps.scrape.outputs.skipped || 'none' }}`.
+            Requested but not scraped, transient failure, old evidence kept: `${{ steps.scrape.outputs.failed || 'none' }}`.
+            `latest.json` follows the changelog tip regardless of which binaries were
+            scraped; only the versions scraped in this run have fresh binary evidence.
 
             Generated by `npm run scrape -- --all`. Review the diff before merge.
           labels: automated, changelog
