@@ -9,7 +9,8 @@ import {
 } from './settings-schema.js';
 
 /** Paths only, for terse assertions. */
-const paths = (src: string): string[] => extractSettingsKeys(src).map((k) => k.path);
+const paths = (src: string | readonly string[]): string[] =>
+  extractSettingsKeys(src).map((k) => k.path);
 
 describe('extractSettingsKeys — namespaced era (0.2.123 → 2.1.223)', () => {
   it('reads top-level keys and their descriptions off the schema root', () => {
@@ -159,6 +160,115 @@ describe('extractSettingsKeys — sub-schema references', () => {
       'Wrap=Se(()=>v.object({allow:v.string(),deny:v.string()}));' +
       'Q=v.object({apiKeyHelper:v.string(),sub:Wrap(inner()).optional()})';
     expect(paths(src)).toEqual(['apiKeyHelper', 'sub', 'sub.allow', 'sub.deny']);
+  });
+
+  it('resolves a builder declared as a plain function to no children', () => {
+    // zod's `enum` is `function Dr(e,t){let r=…;return new X({type:"enum"…})}` — a
+    // declaration whose body does not open with `return`. It is a definition, so
+    // the reference is not unresolvable; it is just not an object literal.
+    const src =
+      'function Dr(e,t){let r=e;return new Gxn({type:"enum",entries:r})}' +
+      'Q=v.object({apiKeyHelper:v.string(),defaultMode:Dr(["default","plan"]).optional()})';
+    expect(paths(src)).toEqual(['apiKeyHelper', 'defaultMode']);
+  });
+});
+
+describe('extractSettingsKeys — code-split era (2.1.242 →)', () => {
+  // From 2.1.242 the bundle is a list of ES-module chunks, each minifying its own
+  // names, linked by `import{E as L}from"/$bunfs/root/chunk-x.js"`. The walk gets
+  // the list and must resolve every name inside the chunk that binds it.
+  const ROOT = '/$bunfs/root/';
+
+  it('resolves a name inside the schema chunk, not a same-named binding in another chunk', () => {
+    // At 2.1.261 `Ne` was the union builder in the settings chunk and an unrelated
+    // lazy object `{jws,receivedAt}` in a login chunk. Walking the flat
+    // concatenation resolved `theme:Ne([…])` to the login object and published
+    // `theme.jws`.
+    const login =
+      'Ne=m(()=>v.object({jws:v.string(),receivedAt:v.number()}));export{Ne as tokenShape}';
+    const settings =
+      'function Ne(e,r){return new As({type:"union",options:e})}' +
+      'Q=v.object({apiKeyHelper:v.string(),theme:Ne([v.enum(["light","dark"]),v.string()]).optional()})';
+    expect(paths([login, settings])).toEqual(['apiKeyHelper', 'theme']);
+    // The same text as one flat string is exactly the defect.
+    expect(paths(login + ';' + settings)).toContain('theme.jws');
+  });
+
+  it('resolves an imported sub-schema through the module that exports it', () => {
+    // `hooks:dN()` at 2.1.248 imports `dN` from another chunk. The source string
+    // names no chunk directly; the chunk that exports every name imported from
+    // that source IS the module. The exported name is the module's local `H10`.
+    // A side-effect import (`import{}from"…"`) and an empty export list bind
+    // nothing and must not trip the parse.
+    const schema =
+      `import{}from"${ROOT}chunk-side.js";import{P as dN}from"${ROOT}chunk-a.js";` +
+      'Q=v.object({apiKeyHelper:v.string(),hooks:dN().optional()})';
+    const other = 'dN=m(()=>v.object({wrong:v.string()}));export{dN as unrelated};export{}';
+    const hooks =
+      'H10=m(()=>v.object({PreToolUse:v.string(),PostToolUse:v.string()}));export{H10 as P}';
+    expect(paths([other, schema, hooks])).toEqual([
+      'apiKeyHelper',
+      'hooks',
+      'hooks.PreToolUse',
+      'hooks.PostToolUse',
+    ]);
+  });
+
+  it('follows a re-exported name one module further', () => {
+    const schema =
+      `import{P as dN}from"${ROOT}chunk-a.js";` + 'Q=v.object({apiKeyHelper:v.string(),sub:dN()})';
+    const facade = `import{R as P}from"${ROOT}chunk-b.js";export{P}`;
+    const real = 'R=m(()=>v.object({inner:v.string()}));export{R}';
+    expect(paths([schema, facade, real])).toEqual(['apiKeyHelper', 'sub', 'sub.inner']);
+  });
+
+  it('throws rather than looping when re-exports form a cycle', () => {
+    // Each chunk also exports a name of its own, so both modules identify
+    // uniquely and the walk genuinely hops between them.
+    const schema =
+      `import{P as dN,Ax}from"${ROOT}chunk-a.js";` +
+      'Q=v.object({apiKeyHelper:v.string(),sub:dN()})';
+    const a = `import{P as R,Bx}from"${ROOT}chunk-b.js";Ax=1;export{R as P,Ax}`;
+    const b = `import{P as R,Ax}from"${ROOT}chunk-a.js";Bx=1;export{R as P,Bx}`;
+    expect(() => extractSettingsKeys([schema, a, b])).toThrow(/re-exports in a cycle/);
+  });
+
+  it('throws when the imported module cannot be identified', () => {
+    // Zero chunks export the name: the source is unidentifiable. Guessing would
+    // resolve against whatever chunk happens to reuse the name — the very defect.
+    const schema =
+      `import{P as dN}from"${ROOT}chunk-a.js";` + 'Q=v.object({apiKeyHelper:v.string(),sub:dN()})';
+    expect(() => extractSettingsKeys([schema, 'dN=m(()=>v.object({wrong:v.string()}))'])).toThrow(
+      SettingsSchemaError
+    );
+    // Several chunks export it: equally unidentifiable.
+    const twin = 'P=m(()=>v.object({a:v.string()}));export{P}';
+    expect(() => extractSettingsKeys([schema, twin, twin])).toThrow(/cannot identify uniquely/);
+  });
+
+  it('walks a gated fragment in the chunk that holds it, resolving there', () => {
+    const settings = 'Q=v.object({apiKeyHelper:v.string().optional()})';
+    const feature =
+      'Vm=m(()=>v.object({allow:v.string()}));' +
+      'N={autoMode:{buildGate:()=>!0,shape:()=>({autoMode:Vm().optional()})}}';
+    // A same-named `Vm` in the settings chunk must not be what the fragment resolves.
+    const keys = extractSettingsKeys([
+      `Vm=m(()=>v.object({wrong:v.string()}));${settings}`,
+      feature,
+    ]);
+    expect(keys.map((k) => k.path)).toEqual(['apiKeyHelper', 'autoMode', 'autoMode.allow']);
+  });
+
+  it('does not register an import spelled inside a string literal', () => {
+    // Only a statement-position `import{…}from"…"` binds a name.
+    const settings =
+      `T='import{Ne}from"${ROOT}chunk-z.js"';` +
+      'Ne=m(()=>v.object({allow:v.string()}));Q=v.object({apiKeyHelper:v.string(),sub:Ne()})';
+    expect(paths([settings, 'Ne=m(()=>v.object({wrong:v.string()}));export{Ne}'])).toEqual([
+      'apiKeyHelper',
+      'sub',
+      'sub.allow',
+    ]);
   });
 });
 

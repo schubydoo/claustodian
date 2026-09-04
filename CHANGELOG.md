@@ -16,6 +16,28 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-09-04
+
+### Fixed
+
+- **Settings keys resolve inside their own module from 2.1.242 on.** The binary
+  settings lane walks the embedded zod schema. It follows each sub-schema reference
+  to its definition by minified name. Since the 2.1.242 code-split, every chunk
+  minifies its own names. The lane still searched the flat concatenation, so a
+  reference sometimes landed on an unrelated object in another chunk. Every dataset
+  regenerated since then carried phantom `config_key` records built that way, for
+  example `hooks.session_id` (2.1.242), `cleanupPeriodDays.permission_policy`
+  (2.1.246), `viewMode.tier` and `permissions.args.event_props.*` (2.1.248),
+  `policyHelper.name` (2.1.251), `theme.event_type` (2.1.257) and
+  `modelSettings.agentId` (2.1.260). The same mis-resolution dropped
+  `permissions.allow`, `deny`, `ask`, `defaultMode`, `disableBypassPermissionsMode`
+  and `additionalDirectories` from every snapshot between 2.1.242 and 2.1.256. The
+  lane now takes the chunk list and walks the schema in the chunk that declares it.
+  An imported name resolves in the module that exports it, matched by the
+  module-identity fingerprint the control lane already uses. Output before 2.1.242
+  is unchanged. **No data ships in this change.** The regeneration that removes the
+  phantoms and restores the six `permissions.*` keys is a separate data PR.
+
 ## 2026-08-28
 
 ### Fixed

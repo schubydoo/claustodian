@@ -24,6 +24,11 @@
  * either would have silently returned zero keys the moment 2.1.224 shipped,
  * which reads downstream as ~225 simultaneous removals.
  *
+ * A third change, at 2.1.242, is not an emission era but a SCOPE one: the
+ * bundle became a graph of ES-module chunks, each with its own minified names.
+ * The walk takes the chunk list and resolves every reference inside the chunk
+ * that binds it (see `Scope`); the emission rules above are unchanged.
+ *
  * HARD-FAIL, NEVER SHRINK. Every failure path throws rather than returning a
  * partial set. A settings schema that is present but only partly walked is
  * indistinguishable, downstream, from keys being deleted upstream — and a
@@ -302,8 +307,152 @@ function describeKey(
 }
 
 /**
- * Where a sub-schema factory's object body begins, or -1 when the factory
- * resolves to something that is not an object literal.
+ * One module scope the walk resolves names in: a `// @bun @bytecode` chunk of the
+ * code-split era, or the whole bundle before it.
+ *
+ * From 2.1.242 the compiled release is ~1400 ES-module chunks that import each
+ * other from under `/$bunfs/root/`, and each chunk minifies its OWN top-level
+ * names. `Ne` is the zod union builder in the settings chunk and an unrelated
+ * lazy object in another, so a name means nothing outside the chunk that binds
+ * it. Resolving a factory across the flat concatenation is what invented
+ * `theme.jws` at 2.1.261, `viewMode.tier` at 2.1.248 and `hooks.session_id` at
+ * 2.1.242 — and lost `permissions.allow` for fifteen releases while it sat
+ * plainly in the source.
+ */
+interface Scope {
+  src: string;
+  /** Position in the chunk list — the cache key, since chunks carry no name. */
+  index: number;
+  /** Local name → the module and export it came from (`import{E as L}from"m"` ⇒ L → m, E). */
+  imports: Map<string, { source: string; name: string }>;
+  /** Exported name → local binding (`export{L as E}` ⇒ E → L). */
+  exports: Map<string, string>;
+}
+
+/** The chunk list with, per source string, every name any chunk imports from it. */
+interface ModuleGraph {
+  scopes: Scope[];
+  namesBySource: Map<string, Set<string>>;
+  /** Source string → the one chunk that is that module, or null when unidentifiable. */
+  sourceCache: Map<string, Scope | null>;
+  /** `<scope index>\0<name>` → the name's candidate definitions in that scope. */
+  defCache: Map<string, RegExpExecArray[]>;
+}
+
+/**
+ * A chunk's cross-chunk import and export statements. Anchored at a statement
+ * boundary so the same text inside a string literal cannot register a binding. A
+ * re-export facade (`export{X as Y}from"m"`) is not an export of this chunk and is
+ * deliberately not matched — see `moduleOf`.
+ */
+const IMPORT_STATEMENT = /(?:^|[;\n])import\{([^}]*)\}from"([^"]+)"/g;
+const EXPORT_STATEMENT = /(?:^|[;\n])export\{([^}]*)\}(?!from")/g;
+
+/** `a as b` → [a, b]; `a` → [a, a]. */
+function aliasPair(spec: string): [string, string] | undefined {
+  const [left, right] = spec.trim().split(/\s+as\s+/);
+  if (!left) return undefined;
+  return [left, right ?? left];
+}
+
+function moduleGraph(chunks: readonly string[]): ModuleGraph {
+  const scopes = chunks.map((src, index): Scope => {
+    const imports = new Map<string, { source: string; name: string }>();
+    const exports = new Map<string, string>();
+    for (const m of src.matchAll(IMPORT_STATEMENT)) {
+      for (const spec of (m[1] as string).split(',')) {
+        const pair = aliasPair(spec);
+        if (pair) imports.set(pair[1], { source: m[2] as string, name: pair[0] });
+      }
+    }
+    for (const m of src.matchAll(EXPORT_STATEMENT)) {
+      for (const spec of (m[1] as string).split(',')) {
+        const pair = aliasPair(spec);
+        if (pair) exports.set(pair[1], pair[0]);
+      }
+    }
+    return { src, index, imports, exports };
+  });
+  const namesBySource = new Map<string, Set<string>>();
+  for (const scope of scopes) {
+    for (const { source, name } of scope.imports.values()) {
+      const names = namesBySource.get(source);
+      if (names) names.add(name);
+      else namesBySource.set(source, new Set([name]));
+    }
+  }
+  return { scopes, namesBySource, sourceCache: new Map(), defCache: new Map() };
+}
+
+/**
+ * The chunk that IS the module a source string names, or null.
+ *
+ * Chunks carry no filename of their own, so the source cannot be matched by name.
+ * It is matched structurally, the same way the control lane links its chunks: the
+ * module a name is imported FROM must export that name, so the chunk exporting
+ * every name imported from a given source is that source. Zero or several
+ * matches is an unidentifiable module, and the caller refuses rather than guesses.
+ */
+function moduleOf(source: string, graph: ModuleGraph): Scope | null {
+  const cached = graph.sourceCache.get(source);
+  if (cached !== undefined) return cached;
+  const wanted = [...(graph.namesBySource.get(source) as Set<string>)];
+  let match: Scope | null = null;
+  let count = 0;
+  for (const scope of graph.scopes) {
+    if (!wanted.every((n) => scope.exports.has(n))) continue;
+    match = scope;
+    if (++count > 1) break;
+  }
+  const resolved = count === 1 ? match : null;
+  graph.sourceCache.set(source, resolved);
+  return resolved;
+}
+
+/**
+ * Where a sub-schema factory's object body begins, and in which scope. `body` is
+ * -1 when the factory resolves to something that is not an object literal.
+ *
+ * A name bound by an import is followed to the module it names and resolved
+ * THERE, under the local name that module exports it as — never searched for in
+ * the referencing chunk, where the same spelling may bind something unrelated.
+ * A module that only re-exports the name hops once more. Everything else is a
+ * local binding and resolves within its own chunk, exactly as the pre-split
+ * bundle did within its single scope.
+ */
+function resolveFactory(
+  scope: Scope,
+  name: string,
+  path: string,
+  refAt: number,
+  graph: ModuleGraph,
+  hops = 0
+): { scope: Scope; body: number } {
+  const binding = scope.imports.get(name);
+  if (!binding) return { scope, body: factoryBodyStart(scope, name, path, refAt, graph.defCache) };
+  if (hops >= MAX_DEPTH) {
+    throw new SettingsSchemaError(
+      `settings schema: sub-schema factory ${name}() for "${path}" re-exports in a cycle. ` +
+        `Refusing to emit a partial key set.`
+    );
+  }
+  const target = moduleOf(binding.source, graph);
+  if (target === null) {
+    throw new SettingsSchemaError(
+      `settings schema: sub-schema factory ${name}() for "${path}" is imported from a module ` +
+        `the chunk graph cannot identify uniquely. Refusing to emit a partial key set ` +
+        `(it would read as removals downstream).`
+    );
+  }
+  // `moduleOf` accepted `target` only because it exports every name imported from
+  // this source, and `binding.name` is one of them.
+  const local = target.exports.get(binding.name) as string;
+  return resolveFactory(target, local, path, 0, graph, hops + 1);
+}
+
+/**
+ * Where a sub-schema factory's object body begins within ONE scope, or -1 when
+ * the factory resolves to something that is not an object literal.
  *
  * Sub-schemas are emitted either as a memoized lazy binding
  * (`NAME=Se(()=>Xt({…}))`) or a plain declaration
@@ -323,12 +472,13 @@ function describeKey(
  * name `record` is deliberate: the tree-shaken era has no readable type names.
  */
 function factoryBodyStart(
-  src: string,
+  scope: Scope,
   name: string,
   path: string,
   refAt: number,
   cache: Map<string, RegExpExecArray[]>
 ): number {
+  const { src } = scope;
   const id = escapeRegExp(name);
   const patterns = [
     // memoized lazy binding — `NAME=Se(()=>Xt({…}))`
@@ -337,6 +487,11 @@ function factoryBodyStart(
     `function ${id}\\([^)]{0,40}\\)\\{return\\s*`,
     // direct binding — `NAME=Rt(qt(),Xt({…}))`, how the early eras emit `env`
     `(?<![\\w$])${id}\\s*=\\s*`,
+    // any other declaration — `function NAME(e,t){let r=…`, a zod builder such
+    // as `enum` whose body does not open with `return`. It is a definition, so
+    // the name is not unresolvable; it is just not an object literal. Last tier,
+    // because it can only say "no children", never find any.
+    `function ${id}\\(`,
   ];
   // Minified names are reused across module scopes, so "first match in 20 MB" can
   // resolve to an unrelated binding — that is how `sandbox.filesystem` went missing
@@ -346,14 +501,15 @@ function factoryBodyStart(
   // Memoized per bundle: without this, every key rescans the whole 20 MB source
   // for its callee, and the tree-shaken era routes every leaf's builder through
   // here — O(keys x bundle) for no gain, since a name's definitions never move.
-  let all = cache.get(name);
+  const cacheKey = `${scope.index}\0${name}`;
+  let all = cache.get(cacheKey);
   if (all === undefined) {
     all = [];
     for (const pattern of patterns) {
       all = [...src.matchAll(new RegExp(pattern, 'g'))] as RegExpExecArray[];
       if (all.length > 0) break;
     }
-    cache.set(name, all);
+    cache.set(cacheKey, all);
   }
   const def = all.filter((m) => m.index < refAt).at(-1) ?? all.find((m) => m.index >= refAt);
   if (!def) {
@@ -366,15 +522,6 @@ function factoryBodyStart(
   return objectBodyStart(src.slice(bodyAt, bodyAt + 80), bodyAt);
 }
 
-/**
- * Every configurable key in the bundle's settings schema.
- *
- * Returns `[]` when the bundle has no settings schema at all (before 0.2.123).
- * Throws `SettingsSchemaError` when a schema IS present but cannot be walked in
- * full — an unrecognised emission shape, an unreachable root, an unresolvable
- * sub-schema factory, or a root that yields nothing. Callers must let that
- * propagate and fail the version.
- */
 /** A `shape:()=>({` member — either a gated settings fragment or zod's own. */
 const SHAPE_FACTORY = /shape\s*:\s*\(\)\s*=>\s*\(\{/g;
 
@@ -422,14 +569,40 @@ function gatedFragments(src: string): { bodyStart: number }[] {
   return out;
 }
 
-export function extractSettingsKeys(src: string): SettingsKey[] {
-  const anchorMatch = ANCHOR_RE.exec(src);
-  if (!anchorMatch) return []; // no settings schema in this era — legitimately empty
+/**
+ * Every configurable key in the bundle's settings schema.
+ *
+ * `source` is the bundle, or from 2.1.242 the list of its `// @bun @bytecode`
+ * chunks in bundle order. A chunk list is walked by module: the schema root is
+ * found in the first chunk that declares an anchor key, and every sub-schema
+ * reference resolves inside the chunk that binds it. Passing the flat
+ * concatenation instead would resolve minified names across ~1400 unrelated
+ * scopes — see `Scope`. A single string is one scope with no imports, which is
+ * the pre-split bundle and the npm tarball exactly as before.
+ *
+ * Returns `[]` when the bundle has no settings schema at all (before 0.2.123).
+ * Throws `SettingsSchemaError` when a schema IS present but cannot be walked in
+ * full — an unrecognised emission shape, an unreachable root, an unresolvable
+ * sub-schema factory, or a root that yields nothing. Callers must let that
+ * propagate and fail the version.
+ */
+export function extractSettingsKeys(source: string | readonly string[]): SettingsKey[] {
+  const graph = moduleGraph(typeof source === 'string' ? [source] : source);
+  let anchorScope: Scope | undefined;
+  let anchorMatch: RegExpExecArray | null = null;
+  for (const scope of graph.scopes) {
+    anchorMatch = ANCHOR_RE.exec(scope.src);
+    if (anchorMatch) {
+      anchorScope = scope;
+      break;
+    }
+  }
+  if (!anchorMatch || !anchorScope) return []; // no settings schema in this era — legitimately empty
 
   // String.prototype.split never returns an empty array.
   const anchorKey = anchorMatch[0].split(':')[0]!;
   const anchorValueAt = anchorMatch.index + anchorKey.length + 1;
-  const root = schemaRootStart(src, anchorMatch.index, anchorKey, anchorValueAt);
+  const root = schemaRootStart(anchorScope.src, anchorMatch.index, anchorKey, anchorValueAt);
   if (root === -1) {
     throw new SettingsSchemaError(
       'settings schema: found an anchor key but could not reach the enclosing schema root. ' +
@@ -439,8 +612,14 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
 
   const keys: SettingsKey[] = [];
   const alias = anchorMatch[1];
-  const defCache = new Map<string, RegExpExecArray[]>();
-  const walk = (start: number, prefix: string, depth: number, viaFactory?: string): void => {
+  const walk = (
+    scope: Scope,
+    start: number,
+    prefix: string,
+    depth: number,
+    viaFactory?: string
+  ): void => {
+    const { src } = scope;
     if (depth > MAX_DEPTH) {
       // Returning here would drop every key below this point while reporting
       // success — the exact silent shrink this module exists to prevent. The cap
@@ -462,7 +641,7 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
 
       const inlineBody = objectBodyStart(value, valueStart);
       if (inlineBody !== -1) {
-        walk(inlineBody, path, depth + 1, viaFactory);
+        walk(scope, inlineBody, path, depth + 1, viaFactory);
         continue;
       }
       // A two-argument keyed combinator — `record(keySchema,valueSchema)` /
@@ -498,11 +677,11 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
       // which is a schema type, not a sub-schema to descend into. The tree-shaken
       // era has no alias, so every candidate is resolved and judged by its body.
       if (!name || name === alias) continue;
-      const body = factoryBodyStart(src, name, path, valueStart, defCache);
-      if (body !== -1) walk(body, path, depth + 1, name);
+      const factory = resolveFactory(scope, name, path, valueStart, graph);
+      if (factory.body !== -1) walk(factory.scope, factory.body, path, depth + 1, name);
     }
   };
-  walk(root, '', 0);
+  walk(anchorScope, root, '', 0);
 
   // Feature-gated fragments contribute top-level keys the root walk cannot reach:
   // they live in a separate registry (`{autoMode:{buildGate:()=>!0,shape:()=>({…})}}`)
@@ -511,8 +690,13 @@ export function extractSettingsKeys(src: string): SettingsKey[] {
   // `disableDeepLinkRegistration`, `voiceEnabled`, `axScreenReader` and
   // `defaultView` — five of which settings.md documents, which is how the gap
   // surfaced.
+  // Every chunk is scanned: a fragment lives wherever its feature's module does,
+  // and each is walked in its own scope.
   const rootCount = keys.length;
-  for (const { bodyStart } of gatedFragments(src)) walk(bodyStart, '', 1, 'gated-fragment');
+  for (const scope of graph.scopes) {
+    for (const { bodyStart } of gatedFragments(scope.src))
+      walk(scope, bodyStart, '', 1, 'gated-fragment');
+  }
 
   // A bundle can embed the same module graph twice — 2.1.113 carries two copies of
   // the fragment registry, so every gated key was collected twice. A duplicate from
