@@ -10,7 +10,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Add additional working directories for Claude to read and edit files. Grants file access; most `.claude/` configuration is not discovered from these directories. Validates each path exists as a directory. To persist these directories across sessions, set `permissions.additionalDirectories` in settings",
+      "description": "Add additional working directories for Claude to read and edit files. Grants file access; Claude Code doesn't discover most `.claude/` configuration from these directories. Validates that each path exists as a directory. You can't add most network paths, such as `\\\\server\\share`. To persist these directories across sessions, set `permissions.additionalDirectories` in settings",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -3864,7 +3864,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths. Read and Edit deny rules apply to Claude's built-in file tools and to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`; they don't apply to arbitrary subprocesses, so for OS-level enforcement enable the sandbox.",
+      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths. Read and Edit deny rules apply to Claude's built-in file tools, to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`, and to the targets of Bash redirections such as `> file` and `< file`; they don't apply to arbitrary subprocesses, so for OS-level enforcement enable the sandbox.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -4020,7 +4020,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Let Claude retry a command outside the sandbox with the `dangerouslyDisableSandbox` parameter after the sandbox blocks it. Set it to `false` so Claude Code ignores that parameter completely and every command must run sandboxed or appear in `excludedCommands`, which the `/sandbox` **Overrides** tab shows as **Strict sandbox mode**. Use `false` in managed settings for policies that require strict sandboxing.",
+      "description": "Let Claude retry a command outside the sandbox with the `dangerouslyDisableSandbox` parameter after the sandbox blocks it. Set it to `false` so Claude Code ignores that parameter completely and every command Claude runs must be sandboxed or appear in `excludedCommands`. The `/sandbox` **Overrides** tab shows that state as **Strict sandbox mode**. Use `false` in managed settings for policies that require strict sandboxing.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -5583,7 +5583,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum number of characters of bash output that Claude Code reads back into a command's result (default: 30000; maximum: 150000). See Output limits",
+      "description": "Maximum number of characters of bash output that Claude Code reads back into a command's result (default: 30000; maximum: 150000).",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -6485,7 +6485,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, Claude-drafted feedback, release notes, the PR and MR status badge checks, gateway model discovery refreshes, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
+      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, Claude-drafted feedback, release notes, the PR and MR status badge checks, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`. Doesn't affect gateway model discovery, which has its own opt-in",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -9255,7 +9255,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum number of characters in subagent output before truncation (default: 32000, maximum: 160000). When truncated, the full output is saved to disk and the path is included in the truncated response",
+      "description": "Maximum number of characters of a background task's output that the `TaskOutput` tool keeps (default: 32000; maximum: 160000).",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"

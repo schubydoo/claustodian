@@ -19,7 +19,7 @@
     {
       "symbol": "--add-dir",
       "type": "cli_flag",
-      "description": "Add additional working directories for Claude to read and edit files. Grants file access; most `.claude/` configuration is not discovered from these directories. Validates each path exists as a directory. To persist these directories across sessions, set `permissions.additionalDirectories` in settings",
+      "description": "Add additional working directories for Claude to read and edit files. Grants file access; Claude Code doesn't discover most `.claude/` configuration from these directories. Validates that each path exists as a directory. You can't add most network paths, such as `\\\\server\\share`. To persist these directories across sessions, set `permissions.additionalDirectories` in settings",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -77,6 +77,13 @@
       "type": "cli_flag",
       "description": "Append custom text to the end of every subagent's system prompt, nested subagents included, apart from a forked subagent, which reuses the conversation's own prompt. Only applies in non-interactive mode with `-p`. Requires Claude Code v2.1.205 or later",
       "doc_min_version": "2.1.205",
+      "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--append-subagent-system-prompt-file",
+      "type": "cli_flag",
+      "description": "Load text from a file and append it to subagent system prompts. An alternative to `--append-subagent-system-prompt` for text too long to pass on the command line. The two flags can't be combined. Only applies in non-interactive mode with `-p`. Requires Claude Code v2.1.261 or later",
+      "doc_min_version": "2.1.261",
       "doc_page": "cli-reference"
     },
     {
@@ -759,7 +766,7 @@
     {
       "symbol": "/add-dir",
       "type": "command",
-      "description": "Add a working directory for file access during the current session. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Most `.claude/` configuration is not discovered from the added directory. A successful add runs your `DirectoryAdded` hooks. When you run it while Claude is responding, Claude Code asks you to confirm the directory right away, and once you confirm, Claude's next tool call in the same turn can access it. Before v2.1.234, Claude Code queued the command until the turn finished",
+      "description": "Add a working directory for file access during the current session. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Most `.claude/` configuration isn't discovered from the added directory. You can't add most network paths, such as `\\\\server\\share`. After a successful add, your `DirectoryAdded` hooks run. When you run it while Claude is responding, Claude Code asks you to confirm the directory right away, and once you confirm, Claude's next tool call in the same turn can access it. Before v2.1.234, Claude Code queued the command until the turn finished",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1366,6 +1373,13 @@
       "doc_page": "commands"
     },
     {
+      "symbol": "/skill-doctor",
+      "type": "command",
+      "description": "Show what each of your skills costs in context and how often it gets used, so you can find skills to turn off. Requires Claude Code v2.1.252 or later and feature-flag fetching",
+      "doc_min_version": "2.1.252",
+      "doc_page": "commands"
+    },
+    {
       "symbol": "/skills",
       "type": "command",
       "description": "List available skills. Type to filter the list by name, description, or source. Press `t` to sort by token count, `Space` or `Enter` to cycle a skill's visibility to Claude and the `/` menu, and `Esc` to save and close. You can't cycle plugin skills, skills whose frontmatter sets `disable-model-invocation: true`, or skills with a `skillOverrides` entry in managed settings or the `--settings` flag",
@@ -1764,6 +1778,13 @@
       "type": "config_key",
       "description": "Render screen-reader friendly output: flat text without decorative borders or animations. Screen-reader mode uses the classic renderer, so the `tui` setting has no effect while it is active; attached background sessions still render fullscreen. Requires Claude Code v2.1.181 or later.",
       "doc_min_version": "2.1.181",
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "bashOutputMaxChars",
+      "type": "config_key",
+      "description": "Set how many characters of a successful Bash or PowerShell command's output Claude receives inline. When output passes the limit, Claude Code saves it to a file and Claude receives a short preview plus the file's path. Raise the limit when command output, such as a verbose build or a full test-suite log, routinely overflows the default and you want Claude to read it without opening the file. Requires Claude Code v2.1.261 or later.",
+      "doc_min_version": "2.1.261",
       "doc_page": "settings-reference"
     },
     {
@@ -2191,8 +2212,8 @@
     {
       "symbol": "keybindingFlavor",
       "type": "config_key",
-      "description": "Choose which convention `Ctrl+W` follows in the prompt input. Set it to `\"readline\"` to make `Ctrl+W` delete back to the previous whitespace, as Bash does, so a path or a `--flag=value` goes in one press. Requires Claude Code v2.1.238 or later.",
-      "doc_min_version": "2.1.238",
+      "description": "Deprecated since v2.1.261 and has no effect. The prompt's word-editing keys always follow readline conventions, as in Bash. Claude Code still accepts `keybindingFlavor`, so a settings file that sets it stays valid.",
+      "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
@@ -2325,7 +2346,7 @@
     {
       "symbol": "permissions.deny",
       "type": "config_key",
-      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths. Read and Edit deny rules apply to Claude's built-in file tools and to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`; they don't apply to arbitrary subprocesses, so for OS-level enforcement enable the sandbox.",
+      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths. Read and Edit deny rules apply to Claude's built-in file tools, to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`, and to the targets of Bash redirections such as `> file` and `< file`; they don't apply to arbitrary subprocesses, so for OS-level enforcement enable the sandbox.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -2493,7 +2514,7 @@
     {
       "symbol": "sandbox.allowUnsandboxedCommands",
       "type": "config_key",
-      "description": "Let Claude retry a command outside the sandbox with the `dangerouslyDisableSandbox` parameter after the sandbox blocks it. Set it to `false` so Claude Code ignores that parameter completely and every command must run sandboxed or appear in `excludedCommands`, which the `/sandbox` **Overrides** tab shows as **Strict sandbox mode**. Use `false` in managed settings for policies that require strict sandboxing.",
+      "description": "Let Claude retry a command outside the sandbox with the `dangerouslyDisableSandbox` parameter after the sandbox blocks it. Set it to `false` so Claude Code ignores that parameter completely and every command Claude runs must be sandboxed or appear in `excludedCommands`. The `/sandbox` **Overrides** tab shows that state as **Strict sandbox mode**. Use `false` in managed settings for policies that require strict sandboxing.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -2929,6 +2950,13 @@
       "type": "config_key",
       "description": "Claude Code colors code by language in the diffs, code blocks, and file previews it shows in the terminal, with its built-in highlighter; no plugin or language server is involved. Set this key to `true` to show them as plain text instead, for example if the colors clash with your terminal theme or slow a screen reader.",
       "doc_min_version": null,
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "taskOutputMaxChars",
+      "type": "config_key",
+      "description": "Set how many characters of a background task's output Claude receives inline when Claude reads the task with the `TaskOutput` tool. When a finished task's output is longer, Claude receives the most recent characters. Raise the limit when your background tasks routinely produce more output than the default. Requires Claude Code v2.1.261 or later.",
+      "doc_min_version": "2.1.261",
       "doc_page": "settings-reference"
     },
     {
@@ -3453,7 +3481,7 @@
     {
       "symbol": "BASH_MAX_OUTPUT_LENGTH",
       "type": "env_var",
-      "description": "Maximum number of characters of bash output that Claude Code reads back into a command's result (default: 30000; maximum: 150000). See Output limits",
+      "description": "Maximum number of characters of bash output that Claude Code reads back into a command's result (default: 30000; maximum: 150000). If you set the `bashOutputMaxChars` setting, Claude Code ignores this variable. See Output limits",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3929,7 +3957,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC",
       "type": "env_var",
-      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, Claude-drafted feedback, release notes, the PR and MR status badge checks, gateway model discovery refreshes, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`",
+      "description": "Set to any non-empty value, such as `1`, to disable nonessential network traffic: auto-updates, telemetry, error reporting, the `/feedback` command, Claude-drafted feedback, release notes, the PR and MR status badge checks, and availability checks such as the fast mode check. It also stops the background runs of plugin `command` sources, which are local commands rather than network traffic, because they can trigger dependency installs. **Setting it to `0` or `false` still disables this traffic**, unlike most on/off variables; unset the variable to allow it again. Also disables feature-flag fetching, which makes Remote Control and the other features that need feature-flag fetching unavailable. Official plugin marketplace auto-install isn't covered; disable it with `CLAUDE_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL`. Doesn't affect gateway model discovery, which has its own opt-in",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4013,7 +4041,7 @@
     {
       "symbol": "CLAUDE_CODE_ENABLE_APPEND_SUBAGENT_PROMPT",
       "type": "env_var",
-      "description": "Set to `1` to enable appending extra text to the end of the system prompt of every subagent other than a forked subagent. The `--append-subagent-system-prompt` flag supplies the appended text and sets this variable automatically, so you don't need to set it yourself. Requires Claude Code v2.1.205 or later",
+      "description": "Set to `1` to enable appending extra text to the end of the system prompt of every subagent other than a forked subagent. The `--append-subagent-system-prompt` and `--append-subagent-system-prompt-file` flags supply the appended text and set this variable automatically, so you don't need to set it yourself. Requires Claude Code v2.1.205 or later",
       "doc_min_version": "2.1.205",
       "doc_page": "env-vars"
     },
@@ -4461,7 +4489,7 @@
     {
       "symbol": "CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS",
       "type": "env_var",
-      "description": "Ceiling in milliseconds on continuous idle waiting after the final turn in non-interactive mode with the `-p` flag, while background subagents and workflows whose result is part of the output finish. Each turn that handles queued background results starts the count again. Default: `600000`, or 10 minutes. When idle waiting reaches the ceiling, Claude Code stops waiting for the remaining background tasks and exits. Set to `0` to wait indefinitely. This cap is separate from the five-second grace period that applies to plain background shells. Requires Claude Code v2.1.182 or later",
+      "description": "Ceiling in milliseconds on idle waiting for background subagents and workflows after the final turn in non-interactive mode with the `-p` flag. Idle waiting starts over each time Claude takes a turn to handle a background result. Default: `600000`, or 10 minutes. When idle waiting reaches the ceiling, Claude Code stops waiting for the remaining background tasks and exits. Set to `0` to wait indefinitely. This cap is separate from the five-second grace period that applies to plain background shells. Requires Claude Code v2.1.182 or later",
       "doc_min_version": "2.1.182",
       "doc_page": "env-vars"
     },
@@ -5455,7 +5483,7 @@
     {
       "symbol": "TASK_MAX_OUTPUT_LENGTH",
       "type": "env_var",
-      "description": "Maximum number of characters in subagent output before truncation (default: 32000, maximum: 160000). When truncated, the full output is saved to disk and the path is included in the truncated response",
+      "description": "Maximum number of characters of a background task's output that the `TaskOutput` tool keeps (default: 32000; maximum: 160000). If you set the `taskOutputMaxChars` setting, Claude Code ignores this variable",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
