@@ -10,7 +10,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Add additional working directories for Claude to read and edit files. Grants file access; most `.claude/` configuration is not discovered from these directories. Validates each path exists as a directory. To persist these directories across sessions, set `permissions.additionalDirectories` in settings",
+      "description": "Add additional working directories for Claude to read and edit files. Grants file access; Claude Code doesn't discover most `.claude/` configuration from these directories. Validates that each path exists as a directory. You can't add most network paths, such as `\\\\server\\share`. To persist these directories across sessions, set `permissions.additionalDirectories` in settings",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1351,7 +1351,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum number of characters of bash output that Claude Code reads back into a command's result (default: 30000; maximum: 150000). See Output limits",
+      "description": "Maximum number of characters of bash output that Claude Code reads back into a command's result (default: 30000; maximum: 150000).",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
