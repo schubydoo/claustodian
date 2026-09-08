@@ -850,8 +850,8 @@
     {
       "symbol": "/cd",
       "type": "command",
-      "description": "Move this session to a new working directory, keeping the conversation. Type a partial path to see matching directory suggestions; press `Tab` to accept one. The suggestions require Claude Code v2.1.206 or later. For what Claude Code applies from the new directory as soon as you move, and how `/cd` differs from `/add-dir`, see Move the session to another directory. Requires Claude Code v2.1.169 or later",
-      "doc_min_version": "2.1.169",
+      "description": "Move this session to a new working directory, keeping the conversation. Type a partial path to see matching directory suggestions; press `Tab` to accept one. The suggestions require Claude Code v2.1.206 or later. For what Claude Code applies from the new directory as soon as you move, and how `/cd` differs from `/add-dir`, see Move the session to another directory",
+      "doc_min_version": null,
       "doc_page": "commands"
     },
     {
@@ -3075,8 +3075,8 @@
     {
       "symbol": "workflowKeywordTriggerEnabled",
       "type": "config_key",
-      "description": "Choose whether typing the keyword `ultracode` in a prompt triggers a dynamic workflow. Set it to `false` to type the word without triggering one. Requires Claude Code v2.1.157 or later.",
-      "doc_min_version": "2.1.157",
+      "description": "Choose whether typing the keyword `ultracode` in a prompt triggers a dynamic workflow. Set it to `false` to type the word without triggering one.",
+      "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
@@ -3229,7 +3229,7 @@
     {
       "symbol": "ANTHROPIC_CUSTOM_MODEL_OPTION_NAME",
       "type": "env_var",
-      "description": "Display name for the custom model entry in the `/model` picker. Defaults to the model ID when not set",
+      "description": "Display name for the custom model entry in the `/model` picker. When not set, the entry shows the model's name if Claude Code recognizes the ID, and the model ID otherwise",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3250,14 +3250,14 @@
     {
       "symbol": "ANTHROPIC_DEFAULT_FABLE_MODEL_DESCRIPTION",
       "type": "env_var",
-      "description": "Display description for the pinned Fable model in the `/model` picker. Defaults to `Custom Fable model` when not set. See Model configuration",
+      "description": "Display description for the pinned Fable model in the `/model` picker. When not set, the row shows a default description that begins `Custom Fable model`. See Model configuration",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
       "symbol": "ANTHROPIC_DEFAULT_FABLE_MODEL_NAME",
       "type": "env_var",
-      "description": "Display name for the pinned Fable model in the `/model` picker. Defaults to the model ID when not set. See Model configuration",
+      "description": "Display name for the pinned Fable model in the `/model` picker. When not set, the row shows the model's name if Claude Code recognizes the pinned ID, and the pinned ID otherwise. See Model configuration",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3278,14 +3278,14 @@
     {
       "symbol": "ANTHROPIC_DEFAULT_HAIKU_MODEL_DESCRIPTION",
       "type": "env_var",
-      "description": "Display description for the pinned Haiku model in the `/model` picker. Defaults to `Custom Haiku model` when not set. See Model configuration",
+      "description": "Display description for the pinned Haiku model in the `/model` picker. When not set, the row shows a default description that begins `Custom Haiku model`. See Model configuration",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
       "symbol": "ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME",
       "type": "env_var",
-      "description": "Display name for the pinned Haiku model in the `/model` picker. Defaults to the model ID when not set. See Model configuration",
+      "description": "Display name for the pinned Haiku model in the `/model` picker. When not set, the row shows the model's name if Claude Code recognizes the pinned ID, and the pinned ID otherwise. See Model configuration",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3313,14 +3313,14 @@
     {
       "symbol": "ANTHROPIC_DEFAULT_OPUS_MODEL_DESCRIPTION",
       "type": "env_var",
-      "description": "Display description for the pinned Opus model in the `/model` picker. When not set, defaults to `Custom Opus model`, or `Custom Opus model (1M context)` if the pinned model ID has the `[1m]` suffix and `CLAUDE_CODE_DISABLE_1M_CONTEXT` isn't turned on. See Model configuration",
+      "description": "Display description for the pinned Opus model in the `/model` picker. When not set, the row shows a default description that begins `Custom Opus model`. See Model configuration",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
       "symbol": "ANTHROPIC_DEFAULT_OPUS_MODEL_NAME",
       "type": "env_var",
-      "description": "Display name for the pinned Opus model in the `/model` picker. Defaults to the model ID when not set. See Model configuration",
+      "description": "Display name for the pinned Opus model in the `/model` picker. When not set, the row shows the model's name if Claude Code recognizes the pinned ID, and the pinned ID otherwise. See Model configuration",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3341,14 +3341,14 @@
     {
       "symbol": "ANTHROPIC_DEFAULT_SONNET_MODEL_DESCRIPTION",
       "type": "env_var",
-      "description": "Display description for the pinned Sonnet model in the `/model` picker. When not set, defaults to `Custom Sonnet model`, or `Custom Sonnet model (1M context)` if the pinned model ID has the `[1m]` suffix and `CLAUDE_CODE_DISABLE_1M_CONTEXT` isn't turned on. See Model configuration",
+      "description": "Display description for the pinned Sonnet model in the `/model` picker. When not set, the row shows a default description that begins `Custom Sonnet model`. See Model configuration",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
       "symbol": "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME",
       "type": "env_var",
-      "description": "Display name for the pinned Sonnet model in the `/model` picker. Defaults to the model ID when not set. See Model configuration",
+      "description": "Display name for the pinned Sonnet model in the `/model` picker. When not set, the row shows the model's name if Claude Code recognizes the pinned ID, and the pinned ID otherwise. See Model configuration",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3453,8 +3453,8 @@
     {
       "symbol": "API_FORCE_IDLE_TIMEOUT",
       "type": "env_var",
-      "description": "Override the 5-minute body idle timeout that aborts a streaming model response when no bytes arrive. Set to `0` to turn the timeout off, for example when a slow gateway or local model pauses longer than 5 minutes between chunks, or `1` to keep it on for every provider. When unset, the timeout is active on providers other than the direct Anthropic API and Claude Platform on AWS. The stream watchdogs run independently of it and abort a long silent pause even when you set `0` here. Requires Claude Code v2.1.169 or later",
-      "doc_min_version": "2.1.169",
+      "description": "Override the 5-minute body idle timeout that aborts a streaming model response when no bytes arrive. Set to `0` to turn the timeout off, for example when a slow gateway or local model pauses longer than 5 minutes between chunks, or `1` to keep it on for every provider. When unset, the timeout is active on providers other than the direct Anthropic API and Claude Platform on AWS. The stream watchdogs run independently of it and abort a long silent pause even when you set `0` here",
+      "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
@@ -4811,7 +4811,7 @@
     {
       "symbol": "CLAUDE_CODE_TMPDIR",
       "type": "env_var",
-      "description": "Override the temp directory used for internal temp files. Claude Code appends `/claude-{uid}/` on Unix or `/claude/` on Windows to this path. Default: `/tmp` on macOS, `os.tmpdir()` on Linux and Windows. As of v2.1.161, on macOS and Linux, sandboxed Bash subprocesses receive a short fallback `$TMPDIR` under the system default when your override is a long path, since some tools fail when temp paths get too long. Unsandboxed Bash commands inherit your shell's `$TMPDIR` unchanged. Claude Code's own temp files always use your override. Set it in your shell, user settings, or managed settings. Ignored in project and local settings",
+      "description": "Override the temp directory used for internal temp files. Claude Code appends `/claude-{uid}/` on Unix or `/claude/` on Windows to this path. Default: `/tmp` on macOS, `os.tmpdir()` on Linux and Windows. On macOS and Linux, sandboxed Bash subprocesses receive a short fallback `$TMPDIR` under the system default when your override is a long path, since some tools fail when temp paths get too long. Unsandboxed Bash commands inherit your shell's `$TMPDIR` unchanged. Claude Code's own temp files always use your override. Set it in your shell, user settings, or managed settings. Ignored in project and local settings",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -5574,7 +5574,7 @@
     {
       "symbol": "VERTEX_REGION_CLAUDE_4_8_OPUS",
       "type": "env_var",
-      "description": "Override region for Claude Opus 4.8 when using Google Cloud's Agent Platform. Added in v2.1.154",
+      "description": "Override region for Claude Opus 4.8 when using Google Cloud's Agent Platform",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },

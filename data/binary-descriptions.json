@@ -121,6 +121,12 @@
         "description": "Read system prompt from a file and append to the default system prompt"
       }
     ],
+    "cli_flag:--attach-serve": [
+      {
+        "from": "2.1.265",
+        "description": "Attach a serve-only helper to a bound cloud session (spawned by the desktop app; not for interactive use)."
+      }
+    ],
     "cli_flag:--auth-token": [
       {
         "from": "2.1.64",
@@ -479,6 +485,10 @@
       {
         "from": "2.1.160",
         "description": "Enable automatic fallback to specified model(s) when the default model is overloaded or not available. Accepts a comma-separated list to try each in order. Re-tries the primary at the start of each user turn. (only works with --print)"
+      },
+      {
+        "from": "2.1.265",
+        "description": "Enable automatic fallback to specified model(s) when the default model is overloaded or not available. Accepts a comma-separated list to try each in order. Re-tries the primary at the start of each user turn."
       }
     ],
     "cli_flag:--file": [
@@ -1189,6 +1199,10 @@
       {
         "from": "2.1.257",
         "description": "Record the system prompt once per conversation and reuse it verbatim on every request and resume (recommended: on). By default it is on for the built-in prompt, and passing --system-prompt or --append-system-prompt turns it off so the given text applies fresh each launch. on: an existing record in the conversation is sent as-is (a later launch's different --system-prompt/--append-system-prompt is ignored until compaction); otherwise the prompt is rendered with the append included, sent, and recorded. off: never record. No effect where system-prompt recording is not yet enabled."
+      },
+      {
+        "from": "2.1.265",
+        "description": "Record the system prompt once per conversation and reuse it verbatim on every request and resume. on (the default): the prompt is rendered on the conversation's first request — a --system-prompt or --append-system-prompt included — sent, and recorded; every later request and resume sends the record as-is, even when a later launch passes different text, until the conversation is compacted. off: never record; the prompt is rendered fresh every request (for iterating on prompt text). No effect where system-prompt recording is not yet enabled."
       }
     ],
     "cli_flag:--tag": [
@@ -3507,6 +3521,10 @@
       {
         "from": "2.1.234",
         "description": "@internal Per-OS variant of policyHelper, keyed by platform: macos, linux, windows, wsl, plus an optional \"default\" entry that is a STATIC settings payload (a JSON object of managed settings, not a helper). Each per-OS entry carries a helper \\u2014 a \"path\", or an inline \"script\" + \"interpreter\" delivered to a fixed interpreter over stdin, either with timeoutMs/refreshIntervalMs \\u2014 its own static \"defaultSettings\" payload, or both; an entry may be payload-only. Selection for a platform walks its chain (the platform's own entry; on wsl the linux entry next): the first helper on the chain wins over policyHelper; if no helper is configured \\u2014 or the selected helper fails at startup or refresh \\u2014 the first payload applies (the chain's \"defaultSettings\" in platform-specific-first order, then the top-level \"default\", applied with no process spawned; unrecognized platforms reach only \"default\"); with no payload either, policyHelper. Honored only from admin-controlled policy sources."
+      },
+      {
+        "from": "2.1.265",
+        "description": "@internal Per-OS variant of policyHelper, keyed by platform: macos, linux, windows, wsl, plus an optional \"default\" entry that is a STATIC settings payload (a JSON object of managed settings, not a helper). Each per-OS entry carries a helper \\u2014 a \"path\", or an inline \"script\" + \"interpreter\" delivered to a fixed interpreter over stdin, either with timeoutMs/refreshIntervalMs \\u2014 its own static \"defaultSettings\" payload, or both; an entry may be payload-only. Selection for a platform walks its chain (the platform's own entry; on wsl the linux entry next): the first helper on the chain wins over policyHelper; if no helper is configured \\u2014 or the selected helper fails at startup or refresh \\u2014 the first payload applies (the chain's \"defaultSettings\" in platform-specific-first order, then the top-level \"default\", applied with no process spawned; unrecognized platforms reach only \"default\"); with no payload either, policyHelper. Honored from admin-controlled policy sources, and from remote managed settings \\u2014 a payload of plain policy as delivered, like any other remote key; a helper, or a payload carrying anything the managed-settings approval dialog lists, only once the settings are verified this session and approved there (policyHelper itself is never honored from remote)."
       }
     ],
     "config_key:prUrlTemplate": [
