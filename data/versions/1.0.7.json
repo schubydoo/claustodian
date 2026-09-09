@@ -471,7 +471,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Install the Claude GitHub App for a repository, with an optional step to set up GitHub Actions workflows and secrets. Walks you through selecting a repo and configuring the integration",
+      "description": "Install the Claude GitHub App for a repository, with an optional step to set up GitHub Actions workflows and secrets. Walks you through selecting a repo and configuring the integration. Works only with github.com repositories. When your repository's git remote is on gitlab.com or bitbucket.org, the command prints a notice and exits instead of starting setup. To run Claude Code from GitLab pipelines, see GitLab CI/CD",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -808,7 +808,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths. Read and Edit deny rules apply to Claude's built-in file tools, to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`, and to the targets of Bash redirections such as `> file` and `< file`; they don't apply to arbitrary subprocesses, so for OS-level enforcement enable the sandbox.",
+      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths. Read and Edit deny rules apply to Claude's built-in file tools, to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`, and to the targets of Bash redirections such as `> file` and `< file`; they don't apply to a command that reads files without naming them, such as `grep -r pattern .`, or to arbitrary subprocesses, so for OS-level enforcement enable the sandbox.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -925,7 +925,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "GCP project ID for Google Cloud's Agent Platform requests. Overridden by `GCLOUD_PROJECT`, `GOOGLE_CLOUD_PROJECT`, or the project in your `GOOGLE_APPLICATION_CREDENTIALS` credential file. See Google Cloud's Agent Platform",
+      "description": "GCP project ID that Google Cloud's Agent Platform requests are addressed to. See Configure GCP credentials",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -1456,7 +1456,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Fixed token budget for extended thinking.",
+      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
