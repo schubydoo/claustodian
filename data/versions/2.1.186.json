@@ -271,7 +271,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Start the session as a background agent and return immediately. Prints the session ID and management commands. Combine with `--exec` to run a shell command as a background job instead of a Claude session, or with `--agent` to run a specific subagent. Cannot be combined with `-p`/`--print`; see the error reference",
+      "description": "Start the session as a background agent and return immediately. Prints the session ID and management commands. Combine with `--exec` to run a shell command as a background job instead of a Claude session, or with `--agent` to run a specific subagent. Can't be combined with `-p`/`--print`; see the error reference",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -310,7 +310,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Start the session as a background agent and return immediately. Prints the session ID and management commands. Combine with `--exec` to run a shell command as a background job instead of a Claude session, or with `--agent` to run a specific subagent. Cannot be combined with `-p`/`--print`; see the error reference",
+      "description": "Start the session as a background agent and return immediately. Prints the session ID and management commands. Combine with `--exec` to run a shell command as a background job instead of a Claude session, or with `--agent` to run a specific subagent. Can't be combined with `-p`/`--print`; see the error reference",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -502,8 +502,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Load the most recent conversation in the current directory, skipping background sessions, sessions created with `claude -p` or the Agent SDK, and sessions whose first prompt was `/loop`. `claude -p --continue` includes `-p`, SDK, and `/loop` sessions. Includes sessions that added this directory with `/add-dir`",
-      "description_source": "docs",
+      "description": "Continue the most recent conversation in the current directory",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -715,7 +715,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Deny rules. A bare tool name removes the matching tools from Claude's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only matching calls. A rule naming `EndConversation` can't remove it while any other tool remains",
+      "description": "Deny rules. A bare tool name removes the matching tools from Claude's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only calls that match as written. A rule naming `EndConversation` can't remove it while any other tool remains",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1457,8 +1457,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Load a plugin from a directory or `.zip` archive for this session only. Each flag takes one path. Repeat the flag for multiple plugins: `--plugin-dir A --plugin-dir B.zip`",
-      "description_source": "docs",
+      "description": "Load a plugin from a directory or .zip for this session only (repeatable: --plugin-dir A --plugin-dir B.zip)",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -2304,8 +2304,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Enable or disable the advisor tool, which consults a second model for guidance at key moments during a task. Accepts `fable`, `opus`, `sonnet`, or a full model ID. `fable` requires Fable access. Without an argument, opens a picker",
-      "description_source": "docs",
+      "description": "Let Claude consult a stronger model at key moments",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2541,7 +2541,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "**Skill.** Review the current diff, or a PR number, branch, or path you pass, for correctness bugs and cleanup opportunities. Pass `--fix` to apply findings, `--comment` to post them as inline GitHub PR comments, or `ultra` to run a deep cloud review.",
+      "description": "**Skill.** Review the current diff, or a PR number, branch, or path you pass, for correctness bugs and cleanup opportunities. Pass `--fix` to apply findings, `--comment` to post them on the GitHub PR or GitLab merge request, or `ultra` to run a deep cloud review.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3025,7 +3025,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Install the Claude GitHub App for a repository, with an optional step to set up GitHub Actions workflows and secrets. Walks you through selecting a repo and configuring the integration",
+      "description": "Install the Claude GitHub App for a repository, with an optional step to set up GitHub Actions workflows and secrets. Walks you through selecting a repo and configuring the integration. Works only with github.com repositories. When your repository's git remote is on gitlab.com or bitbucket.org, the command prints a notice and exits instead of starting setup. To run Claude Code from GitLab pipelines, see GitLab CI/CD",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3415,8 +3415,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Reload all active plugins to apply pending changes without restarting. Reports counts for each reloaded component and flags any load errors. When the reload would change which MCP tools are loaded and invalidate the prompt cache, the command warns and skips unless you pass `--force`",
-      "description_source": "docs",
+      "description": "Activate pending plugin changes in the current session",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -4651,8 +4651,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Block specific MCP servers. Claude Code refuses to load a matching server wherever it's defined, including plugin servers, servers passed with `--mcp-config`, servers from `managed-mcp.json`, and the claude.ai connectors it fetches itself. In-process `type: \"sdk\"` servers, which the app that started the session registers, are exempt.",
-      "description_source": "docs",
+      "description": "Enterprise denylist of MCP servers that are explicitly blocked. If a server is on the denylist, it will be blocked across all scopes including enterprise. Denylist takes precedence over allowlist - if a server is on both lists, it is denied.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -5351,7 +5351,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths. Read and Edit deny rules apply to Claude's built-in file tools, to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`, and to the targets of Bash redirections such as `> file` and `< file`; they don't apply to arbitrary subprocesses, so for OS-level enforcement enable the sandbox.",
+      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths. Read and Edit deny rules apply to Claude's built-in file tools, to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`, and to the targets of Bash redirections such as `> file` and `< file`; they don't apply to a command that reads files without naming them, such as `grep -r pattern .`, or to arbitrary subprocesses, so for OS-level enforcement enable the sandbox.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -5494,7 +5494,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Point the PR links Claude Code renders, in the footer badge and in tool-result summaries, at an internal code-review tool instead of `github.com`. Claude Code substitutes `{host}`, `{owner}`, `{repo}`, `{number}`, and `{url}` from the PR URL. The GitLab merge request badge keeps its GitLab URL.",
+      "description": "Point the PR links Claude Code renders, in the footer badge and in tool-result summaries, at an internal code-review tool instead of `github.com`. Claude Code substitutes `{host}`, `{owner}`, `{repo}`, `{number}`, and `{url}` from the PR URL. GitLab merge request links on both surfaces keep their GitLab URL.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6192,8 +6192,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Show or hide the turn duration message after each response, such as \"Cooked for 1m 6s\". Appears in `/config` as **Show turn duration**.",
-      "description_source": "docs",
+      "description": "Show \"Cooked for Nm Ns\" after each assistant turn",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -6573,7 +6573,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Some terminals can show a progress indicator on the tab or in the taskbar for the program running in them. While Claude is working, Claude Code reports an in-progress state to the terminal and clears it when the turn ends, so you can see from another tab or window whether Claude is still busy. It does so only in terminals that support the indicator: ConEmu, Ghostty 1.2.0 or later, and iTerm2 3.6.6 or later. Set this key to `false` to stop reporting it. Appears in `/config` as **Terminal progress bar**.",
+      "description": "Some terminals can show a progress indicator on the tab or in the taskbar for the program running in them. While Claude is working, Claude Code reports an in-progress state to the terminal, so you can see from another tab or window whether the session is still busy. The indicator stays visible after the turn ends while background subagents or dynamic workflows are still running, and clears once the session is idle.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6651,7 +6651,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Start sessions with ultracode on. With it on, Claude plans a workflow for each substantive task instead of waiting for you to ask. Claude plans workflows only when dynamic workflows are enabled for you and your model supports `xhigh` effort. Either way, `ultracode: true` runs the session at `xhigh` effort. Claude Code reads this key but never writes it: `/effort ultracode` turns ultracode on for the current session only.",
+      "description": "Start sessions with ultracode on. With it on, Claude plans a workflow for each substantive task instead of waiting for you to ask. Claude plans workflows only when dynamic workflows are enabled for you, your model supports `xhigh` effort, and no effort cap below `xhigh` applies. Either way, `ultracode: true` runs the session at `xhigh` effort, or at the cap when an effort cap is lower. Claude Code reads this key but never writes it: `/effort ultracode` turns ultracode on for the current session only.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8210,7 +8210,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "GCP project ID for Google Cloud's Agent Platform requests. Overridden by `GCLOUD_PROJECT`, `GOOGLE_CLOUD_PROJECT`, or the project in your `GOOGLE_APPLICATION_CREDENTIALS` credential file. See Google Cloud's Agent Platform",
+      "description": "GCP project ID that Google Cloud's Agent Platform requests are addressed to. See Configure GCP credentials",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -9185,7 +9185,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `0` to stop Claude Code from opening the browser automatically when a new artifact is published. Republishing an existing artifact does not open the browser regardless of this setting",
+      "description": "Set to `0` to stop Claude Code from opening the browser automatically when a new artifact is published",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -10109,7 +10109,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to omit the `thinking` parameter from API requests entirely. This is a compatibility option for proxies and gateways that reject the parameter. The variable's behavior is unchanged from earlier versions; on models that think by default, omitting the parameter means the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead, which is also ineffective on Fable models since they can't have thinking turned off. On third-party providers, `0` likewise omits the parameter, so the two variables behave the same there",
+      "description": "Set to `1` to omit the `thinking` parameter from API requests entirely. This is a compatibility option for proxies and gateways that reject the parameter. On models that think by default, omitting the parameter means the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead. Neither variable turns thinking off on Fable models, which can't have thinking turned off. On third-party providers, `MAX_THINKING_TOKENS=0` likewise omits the parameter, so the two variables behave the same there",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -13055,7 +13055,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Deadline in milliseconds for dialogs Claude Code forwards to a remote client, such as a Remote Control or SDK host, and for the approval dialog for a held cross-session message, before Claude Code cancels them; permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by it. Also bounds the mid-session Fable usage-credits consent prompt in a session that may be running unattended. Control inbound messages and non-interactive sessions cover the full held-message expiry rules, including the cases where the deadline doesn't apply.",
+      "description": "Deadline in milliseconds before Claude Code cancels a dialog it forwards to a remote client such as a Remote Control or SDK host, or the approval dialog for a held cross-session message; permission prompts and `AskUserQuestion` questions use their own flows and aren't governed by it.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -13580,11 +13580,12 @@
       "type": "env_var",
       "first_seen": "2.1.119",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set by Claude Code in each background session to that session's `~/.claude/jobs/<id>` directory. Shell commands that the session runs inherit it. Write scratch files to `$CLAUDE_JOB_DIR/tmp`. Claude's `Write` and `Edit` calls there don't prompt for permission, and the directory is removed when the session is deleted",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -13901,8 +13902,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum lifetime in milliseconds for a background shell command that a subagent started. Default `3600000` (60 minutes). When you set `0`, Claude Code applies the default instead of removing the cap. When the subagent runs in the foreground, Claude Code also ends the command when that subagent gives its final response, regardless of this cap. See the background command lifetime rules. Claude Code doesn't cap main-session background commands this way. For the memory-pressure limit that covers them, see How backgrounding works",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
@@ -14468,7 +14468,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to make every model stop retrying with a repeated-overload error when no fallback model is configured. **Setting it to `0` or `false` still enables this**, unlike most on/off variables; unset the variable to restore the default retry behavior. Without it, models Claude Code recognizes as Opus, Fable, or Mythos models stop retrying this way when you authenticate with an API key or a third-party provider rather than a Claude subscription. As of v2.1.160, a configured fallback model chain triggers on repeated overload errors for any primary model, so this variable does not affect switching to a fallback model",
+      "description": "Set to any non-empty value, such as `1`, to make Claude Code stop retrying on repeated overload errors for every model when no fallback model is configured. **Setting it to `0` or `false` still enables this**, unlike most on/off variables; unset the variable to restore the default retry behavior. Without it, Claude Code stops retrying this way on models it recognizes as Opus, Fable, or Mythos models when you authenticate with an API key or a third-party provider rather than a Claude subscription. On Claude Code v2.1.160 or later, Claude Code switches to your configured fallback model chain on repeated overload errors for any primary model, so this variable doesn't affect switching to a fallback model",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -14519,7 +14519,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Set to `1` to enable clickable OSC 8 hyperlinks when your terminal supports them but isn't auto-detected, or `0` to disable them. When unset, Claude Code enables hyperlinks only when it detects terminal support. Claude Code parses this value as a number, not a Boolean, so a value such as `false`, `no`, or `off` enables hyperlinks rather than disabling them. Claude Code renders the footer PR or merge request badge as a hyperlink even when it can't detect terminal support, such as over SSH. Set `0` to render the badge as plain text",
+      "description": "Set to `1` to enable clickable OSC 8 hyperlinks when your terminal supports them but isn't auto-detected, or `0` to disable them. When unset, Claude Code enables hyperlinks only when it detects terminal support. Claude Code parses this value as a number, not a Boolean, so a value such as `false`, `no`, or `off` enables hyperlinks rather than disabling them. The footer PR or merge request badge renders as a hyperlink even when Claude Code can't detect terminal support, such as over SSH. Set `0` to render the badge as plain text",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -14645,7 +14645,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Number of times Claude Code retries when the model's response fails validation against the `--json-schema` in non-interactive mode with the `-p` flag. The same retry count applies when a workflow subagent's structured output fails validation. Defaults to 5",
+      "description": "Number of attempts Claude Code allows when the model's response fails validation against the `--json-schema` in non-interactive mode with the `-p` flag; after that many failed attempts with no valid output, the run fails. The same cap applies when a workflow subagent's structured output fails validation. Defaults to 5, a first attempt plus four retries",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -14658,7 +14658,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024; see `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Fable models, which can't have thinking turned off; on third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5. Nonzero values are ignored on adaptive reasoning models unless `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` is set",
+      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024. See `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Fable models, which can't have thinking turned off. On third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5. Claude Code ignores nonzero values on adaptive reasoning models, except on the models where `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` turns adaptive reasoning off",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
