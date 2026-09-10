@@ -268,7 +268,7 @@
     {
       "symbol": "--effort",
       "type": "cli_flag",
-      "description": "Set the effort level for the current session. Options: `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`. Available levels depend on the model. `ultracode` starts the session at `xhigh` effort with ultracode turned on, and requires Claude Code v2.1.203 or later. Overrides the `modelSettings` and `effortLevel` settings for this session and does not persist",
+      "description": "Set the effort level for the current session. Options: `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`. Available levels depend on the model. `ultracode` requests `xhigh` effort with ultracode turned on, and requires Claude Code v2.1.203 or later. Overrides the `modelSettings` and `effortLevel` settings for this session and does not persist",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -692,6 +692,13 @@
       "type": "cli_flag",
       "description": "Load system prompt from a file, replacing the default prompt",
       "doc_min_version": null,
+      "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--system-prompt-snapshot",
+      "type": "cli_flag",
+      "description": "Pass `off` to rebuild the system prompt on every request instead of reusing the prompt recorded on the conversation's first request, for example while you iterate on `--append-system-prompt` text across `--continue` runs. Requires Claude Code v2.1.257 or later",
+      "doc_min_version": "2.1.257",
       "doc_page": "cli-reference"
     },
     {
@@ -2135,7 +2142,7 @@
     {
       "symbol": "forceLoginGatewayUrl",
       "type": "config_key",
-      "description": "Set the gateway URL the `/login` Cloud gateway screen connects to, so people reach your cloud gateway without typing its address. The screen has no URL field: with this key set, it shows your gateway URL and connects when the person presses Enter; without it, it tells them to contact their IT administrator. When `forceLoginMethod` is unset, this key alone opens the Cloud gateway screen. `forceLoginMethod: \"gateway\"` also opens it and removes the login-method picker, and a `claudeai` or `console` value there takes precedence over this key. Set both keys so the screen connects instead of showing an error.",
+      "description": "Set the gateway URL the `/login` Cloud gateway screen connects to, so people reach your cloud gateway without typing its address. The screen has no URL field: with this key set, it shows your gateway URL and connects when the person presses Enter; without it, it tells them to contact their IT administrator.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -2240,7 +2247,7 @@
     {
       "symbol": "maxEffortLevel",
       "type": "config_key",
-      "description": "Cap the effort level a session can use, leaving lower levels available. Any higher level runs at the cap instead, including one from `/effort`, the `/model` picker, `--effort`, `CLAUDE_CODE_EFFORT_LEVEL`, or the model's own default. Claude Code applies the cap itself before each request, so it holds on every provider, including Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry. Requires Claude Code v2.1.267 or later.",
+      "description": "Cap the effort level a session can use, leaving lower levels available. Any higher level runs at the cap instead, including one from `/effort`, the `/model` picker, `--effort`, `CLAUDE_CODE_EFFORT_LEVEL`, a skill's or subagent's `effort` frontmatter, or the model's own default. Claude Code applies the cap itself before each request, so it holds on every provider, including Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry. Requires Claude Code v2.1.267 or later.",
       "doc_min_version": "2.1.267",
       "doc_page": "settings-reference"
     },
@@ -2296,7 +2303,7 @@
     {
       "symbol": "outputStyle",
       "type": "config_key",
-      "description": "Select an output style by name. An output style is a saved set of instructions that Claude Code adds to the system prompt to change Claude's role, tone, and output format, such as the built-in Explanatory and Learning styles or one you wrote yourself.",
+      "description": "Select an output style by name. An output style is a saved set of instructions that changes Claude's role, tone, and output format, such as the built-in Explanatory and Learning styles or one you wrote yourself.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },

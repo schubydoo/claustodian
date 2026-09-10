@@ -2683,6 +2683,12 @@
         "description": "Path to a script that outputs authentication values"
       }
     ],
+    "config_key:appendPlugins": [
+      {
+        "from": "2.1.268",
+        "description": "Managed plugins (plugin@marketplace ids that managed enabledPlugins sets true) whose hooks run last among plugins, innermost, in the listed order: the last id listed sits just above the built-in plugins and sees each event as every other plugin left it. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources."
+      }
+    ],
     "config_key:attribution": [
       {
         "from": "2.0.62",
@@ -3273,6 +3279,12 @@
         "description": "When set in managed settings, the CLI blocks startup until remote managed settings are freshly fetched, and exits if the fetch fails"
       }
     ],
+    "config_key:gatewayInternalNetworks": [
+      {
+        "from": "2.1.268",
+        "description": "IPv4 CIDR blocks (at most 4, each /8 to /32, not overlapping) your Cloud gateway sits in: the public block your organization numbers its internal network from, which lets /login reach a gateway there. A block must lie entirely outside private space, where /login accepts a gateway without this key. /login accepts a gateway inside a listed block over a direct connection only, and only when this machine's own address on that connection is inside the same block, so /login must happen from a machine whose own address is inside the block (not through a proxy, VPN pool, container or NAT segment outside it). A bar against copied settings files, not proof of location. Honored only from admin-controlled managed settings (MDM / managed-settings.json / policy helper); ignored in user, project, and remote-delivered settings."
+      }
+    ],
     "config_key:gcpAuthRefresh": [
       {
         "from": "2.1.72",
@@ -3563,6 +3575,12 @@
       {
         "from": "2.1.30",
         "description": "Reduce or disable animations for accessibility (spinner shimmer, flash effects, etc.)"
+      }
+    ],
+    "config_key:prependPlugins": [
+      {
+        "from": "2.1.268",
+        "description": "Managed plugins (plugin@marketplace ids that managed enabledPlugins sets true) whose hooks run first, outermost, in the listed order: the first id listed sees every event before any other plugin and every result after it. Managed plugins not listed here or in appendPlugins follow the listed ones; user, project and marketplace plugins come after those; then appendPlugins; then the built-in plugins. The bundled sec-default@builtin seats itself outermost (on a machine with managed settings and for Team and Enterprise organizations) unless this list is set, in which case list sec-default@builtin where it should sit or leave it out. Any other id that is not an enabled managed plugin is skipped; an id listed in both keys is prepended. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources."
       }
     ],
     "config_key:proactive": [
