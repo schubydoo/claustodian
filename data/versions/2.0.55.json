@@ -1734,7 +1734,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Select an output style by name. An output style is a saved set of instructions that Claude Code adds to the system prompt to change Claude's role, tone, and output format, such as the built-in Explanatory and Learning styles or one you wrote yourself.",
+      "description": "Select an output style by name. An output style is a saved set of instructions that changes Claude's role, tone, and output format, such as the built-in Explanatory and Learning styles or one you wrote yourself.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"

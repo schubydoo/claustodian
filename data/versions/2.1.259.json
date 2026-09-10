@@ -1027,7 +1027,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the effort level for the current session. Options: `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`. Available levels depend on the model. `ultracode` starts the session at `xhigh` effort with ultracode turned on, and requires Claude Code v2.1.203 or later. Overrides the `modelSettings` and `effortLevel` settings for this session and does not persist",
+      "description": "Set the effort level for the current session. Options: `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`. Available levels depend on the model. `ultracode` requests `xhigh` effort with ultracode turned on, and requires Claude Code v2.1.203 or later. Overrides the `modelSettings` and `effortLevel` settings for this session and does not persist",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -3256,13 +3256,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.257",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "Record the system prompt once per conversation and reuse it verbatim on every request and resume (recommended: on). By default it is on for the built-in prompt, and passing --system-prompt or --append-system-prompt turns it off so the given text applies fresh each launch. on: an existing record in the conversation is sent as-is (a later launch's different --system-prompt/--append-system-prompt is ignored until compaction); otherwise the prompt is rendered with the append included, sent, and recorded. off: never record. No effect where system-prompt recording is not yet enabled.",
-      "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "category": "cli"
     },
     {
       "symbol": "--tag",
@@ -7056,7 +7056,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set the gateway URL the `/login` Cloud gateway screen connects to, so people reach your cloud gateway without typing its address. The screen has no URL field: with this key set, it shows your gateway URL and connects when the person presses Enter; without it, it tells them to contact their IT administrator. When `forceLoginMethod` is unset, this key alone opens the Cloud gateway screen. `forceLoginMethod: \"gateway\"` also opens it and removes the login-method picker, and a `claudeai` or `console` value there takes precedence over this key. Set both keys so the screen connects instead of showing an error.",
+      "description": "Set the gateway URL the `/login` Cloud gateway screen connects to, so people reach your cloud gateway without typing its address. The screen has no URL field: with this key set, it shows your gateway URL and connects when the person presses Enter; without it, it tells them to contact their IT administrator.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7403,7 +7403,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Select an output style by name. An output style is a saved set of instructions that Claude Code adds to the system prompt to change Claude's role, tone, and output format, such as the built-in Explanatory and Learning styles or one you wrote yourself.",
+      "description": "Select an output style by name. An output style is a saved set of instructions that changes Claude's role, tone, and output format, such as the built-in Explanatory and Learning styles or one you wrote yourself.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
