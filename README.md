@@ -12,6 +12,7 @@
 [![codecov](https://codecov.io/gh/schubydoo/claustodian/branch/main/graph/badge.svg)](https://codecov.io/gh/schubydoo/claustodian)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/schubydoo/claustodian/badge)](https://scorecard.dev/viewer/?uri=github.com/schubydoo/claustodian)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14130/badge)](https://www.bestpractices.dev/projects/14130)
+[![Greptile: The War on Bugs](https://www.greptile.com/badge.svg)](https://www.greptile.com/?utm_source=oss_badge&utm_medium=readme&utm_campaign=greptile_for_open_source)
 [![Code: Apache-2.0](https://img.shields.io/badge/code-Apache--2.0-blue.svg)](LICENSE)
 [![Data: CC BY 4.0](https://img.shields.io/badge/data-CC--BY--4.0-blue.svg)](LICENSE-DATA)
 
