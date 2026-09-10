@@ -41,6 +41,7 @@
     "scrape": "tsx scripts/scrape-changelog.ts",
     "find-removals": "tsx scripts/find-removals.ts",
     "diff": "tsx scripts/diff-snapshots.ts",
+    "check-auto-merge": "tsx scripts/check-auto-merge.ts",
     "coverage": "tsx scripts/check-coverage.ts",
     "generate-exports": "tsx scripts/generate-exports.ts",
     "build-catalog": "tsx scripts/build-catalog.ts"
