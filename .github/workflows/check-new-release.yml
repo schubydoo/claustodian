@@ -46,7 +46,10 @@ jobs:
         with:
           client-id: ${{ secrets.CLAUSTODIAN_CI_CLIENT_ID }}
           private-key: ${{ secrets.CLAUSTODIAN_CI_APP_PRIVATE_KEY }}
-          permission-actions: write
+          # A repository_dispatch event (POST /repos/{repo}/dispatches) needs
+          # Contents: write. GITHUB_TOKEN cannot send a dispatch that triggers a
+          # run, so the App token is still required.
+          permission-contents: write
       - name: Trigger update workflow
         if: steps.compare.outputs.new == 'true'
         env:
@@ -59,12 +62,15 @@ jobs:
             echo "::error::New release detected but the claustodian-ci App secrets are not set; cannot trigger update-from-changelog."
             exit 1
           fi
-          # auto_merge=true marks this as the automated hourly path, so the update
-          # workflow may auto-merge the PR if its guard clears. Manual dispatches
-          # omit it and default off.
-          gh workflow run update-from-changelog.yml --repo "$GITHUB_REPOSITORY" \
-            --field version="$NEW_VERSION" \
-            --field auto_merge=true
+          # Send a repository_dispatch event, NOT a workflow_dispatch. This is the
+          # automated origin the update workflow gates auto-merge on: a manual
+          # caller can start the update workflow (workflow_dispatch) but cannot
+          # produce a repository_dispatch from the Actions UI, so a manual run can
+          # never auto-merge. The version rides in client_payload; jq builds the
+          # JSON so $NEW_VERSION is never spliced into a string.
+          jq -nc --arg v "$NEW_VERSION" \
+            '{event_type: "new-release", client_payload: {version: $v}}' \
+            | gh api "repos/$GITHUB_REPOSITORY/dispatches" --input -
 
   # Announce a failed detector run as a deduplicated GitHub issue, so a silently
   # broken hourly poll (a missing App secret, a feed change) is visible without
