@@ -1,0 +1,37 @@
+# Opens (or updates) a single deduplicated issue when an automated pipeline job
+# fails, so a broken hourly bot is visible without watching the Actions tab. One
+# open issue per workflow: the first failure opens it, later failures comment the
+# run URL onto the same issue instead of piling up new ones. Close the issue once
+# fixed; the next failure opens a fresh one.
+#
+# The calling job MUST grant `issues: write` and check out the repo first (this is
+# a local composite action). It uses the job's GITHUB_TOKEN, no App token needed.
+name: Report CI failure
+description: Open or update a deduplicated ci-failure issue for the current workflow.
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        WORKFLOW: ${{ github.workflow }}
+      run: |
+        set -euo pipefail
+        title="CI failure: $WORKFLOW"
+        # Idempotent: creates the label on first use, updates it thereafter.
+        gh label create ci-failure --repo "$GITHUB_REPOSITORY" --color B60205 \
+          --description "Automated pipeline failure" --force
+        # Exact title match via jq --arg, so the workflow name is never spliced
+        # into a query string. head -1 in case two somehow exist.
+        existing="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+          --label ci-failure --json number,title \
+          | jq -r --arg t "$title" '.[] | select(.title == $t) | .number' | head -1)"
+        body="Workflow **$WORKFLOW** failed. Run log: $RUN_URL"
+        if [ -n "$existing" ]; then
+          gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+        else
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" \
+            --label ci-failure --body "$body"
+        fi

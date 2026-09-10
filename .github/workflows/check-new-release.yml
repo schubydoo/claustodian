@@ -61,3 +61,19 @@ jobs:
           fi
           gh workflow run update-from-changelog.yml --repo "$GITHUB_REPOSITORY" \
             --field version="$NEW_VERSION"
+
+  # Announce a failed detector run as a deduplicated GitHub issue, so a silently
+  # broken hourly poll (a missing App secret, a feed change) is visible without
+  # watching the Actions tab.
+  notify-failure:
+    needs: check
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/report-ci-failure
