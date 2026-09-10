@@ -59,8 +59,12 @@ jobs:
             echo "::error::New release detected but the claustodian-ci App secrets are not set; cannot trigger update-from-changelog."
             exit 1
           fi
+          # auto_merge=true marks this as the automated hourly path, so the update
+          # workflow may auto-merge the PR if its guard clears. Manual dispatches
+          # omit it and default off.
           gh workflow run update-from-changelog.yml --repo "$GITHUB_REPOSITORY" \
-            --field version="$NEW_VERSION"
+            --field version="$NEW_VERSION" \
+            --field auto_merge=true
 
   # Announce a failed detector run as a deduplicated GitHub issue, so a silently
   # broken hourly poll (a missing App secret, a feed change) is visible without
@@ -76,4 +80,4 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: ./.github/actions/report-ci-failure
+      - uses: $/.github/actions/report-ci-failure

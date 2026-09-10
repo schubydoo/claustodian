@@ -1,0 +1,25 @@
+# actionlint configuration.
+#
+# The ignore below exists because actionlint (<= v1.7.12, the latest as of
+# 2026-09-10) does not yet understand GitHub's `$/` self-repository `uses:` syntax
+# (July 2026) and reports it as an invalid reference. The syntax is deliberate: it
+# is immune to runtime filesystem substitution and GitHub treats it as pinned, so
+# the message shape is suppressed rather than the migration reverted.
+#
+# Every local `uses:` in this repo is the `$/` form, and all of them are
+# composite-action references (`$/.github/actions/...`), for which actionlint emits
+# "specifying action ... in invalid format because ref is missing". A
+# reusable-workflow `$/` call emits a DIFFERENT message; add its pattern here if
+# this repo ever gains one.
+#
+# Suppressing the format error also silences actionlint's composite-action call
+# validation (input-name typos, missing required inputs) for these sites. The
+# report-ci-failure action takes no inputs, so there is nothing to re-assert yet;
+# add a check if it gains a `with:` interface.
+#
+# Remove this file once rhysd/actionlint issue 711 ships `$/` support and the
+# pinned actionlint is bumped past it.
+paths:
+  .github/workflows/**/*.{yaml,yml}:
+    ignore:
+      - 'specifying action "\$/.+" in invalid format because ref is missing'
