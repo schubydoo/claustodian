@@ -1,15 +1,19 @@
 # Task 3.5 — Regenerate the dataset from the official CHANGELOG.md and open a
-# PR with any changes. Merging is manual and always has been: this workflow
-# enables no auto-merge, so a green validate-pr is a precondition for merging
-# the PR, never a trigger for it. Changelog-sourced data is authoritative, but
-# the other lanes feeding the same run are not self-checking — a docs-lane
-# parser that quietly stops matching an upstream page yields a green PR that
-# guts a lane. Read the diff.
+# PR with any changes. The hourly path (repository_dispatch) auto-merges the
+# PR once the guard clears it as a safe incremental add AND the required checks
+# (validate, security) pass — a green check alone is not the trigger. A manual
+# workflow_dispatch never auto-merges and waits for a human. Changelog-sourced
+# data is authoritative, but the other lanes feeding the same run are not
+# self-checking — a docs-lane parser that quietly stops matching an upstream
+# page yields a green PR that guts a lane. The guard withholds auto-merge on
+# that shape (see scripts/check-auto-merge.ts for the floors); on a manual run,
+# read the diff yourself.
 #
 # NOTE: the FIRST run produces a large PR — the initial full backfill that
 # replaces the curated seed with the complete changelog-derived dataset
-# (~335 versions). Review that one carefully; subsequent runs are incremental
-# (a new release adds one version file and updates index.json/latest.json).
+# (~335 versions). It runs by manual dispatch, so it never auto-merges; review
+# it carefully. Subsequent hourly runs are incremental (a new release adds one
+# version file and updates index.json/latest.json).
 name: Update dataset from changelog
 
 on:
@@ -237,9 +241,12 @@ jobs:
             Latest Claude Code version in this run: **v${{ steps.cc-version.outputs.version }}**.
 
             Binaries scraped into `binary-cache/` in this run: `${{ steps.scrape.outputs.scraped || 'none' }}`
-            (force re-scrape of cached versions: `${{ steps.scrape.outputs.force }}`).
+            (force re-scrape of cached versions: `${{ steps.scrape.outputs.force || 'false' }}`).
+
             Requested but already cached, left as they were: `${{ steps.scrape.outputs.skipped || 'none' }}`.
+
             Requested but not scraped, transient failure, old evidence kept: `${{ steps.scrape.outputs.failed || 'none' }}`.
+
             `latest.json` follows the changelog tip regardless of which binaries were
             scraped; only the versions scraped in this run have fresh binary evidence.
 
