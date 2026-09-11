@@ -17,6 +17,13 @@
   ],
   "symbols": [
     {
+      "symbol": "--ablation",
+      "type": "cli_flag",
+      "description": "`none` or `with-without`. See Compare against a no-plugin baseline",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
+    },
+    {
       "symbol": "--add-dir",
       "type": "cli_flag",
       "description": "Add additional working directories for Claude to read and edit files. Grants file access; Claude Code doesn't discover most `.claude/` configuration from these directories. Validates that each path exists as a directory. You can't add most network paths, such as `\\\\server\\share`. To persist these directories across sessions, set `permissions.additionalDirectories` in settings",
@@ -57,6 +64,13 @@
       "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. Lets you begin in a different mode like `plan` and switch to `bypassPermissions` later. See permission modes",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--allow-tools",
+      "type": "cli_flag",
+      "description": "Grant tools beyond the read-only set, such as `Bash`, `Write`, `Edit`, or `\"mcp__plugin_<plugin>_<server>__*\"`. See Grant tools",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
     },
     {
       "symbol": "--allowed-tools",
@@ -192,6 +206,13 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--concurrency",
+      "type": "cli_flag",
+      "description": "Agent sessions to run at once, 1 to 8. They share your rate limit",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
+    },
+    {
       "symbol": "--config",
       "type": "cli_flag",
       "description": "Set a `userConfig` option declared in the plugin's manifest. Repeat the flag to set multiple options",
@@ -285,6 +306,17 @@
       "description": "Create a new cloud session that runs on the self-hosted environment with the given ID. Environment IDs start with `ccpool_`. See `--environment` dispatch behavior for dispatch behavior and the flag combinations it rejects. Requires Claude Code v2.1.224 or later",
       "doc_min_version": "2.1.224",
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--eval-dir",
+      "type": "cli_flag",
+      "description": "Directory below the plugin that holds the cases",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference",
+      "scope_descriptions": {
+        "plugin eval": "Directory below the plugin that holds the cases",
+        "plugin eval init": "Directory below the current directory to write cases into"
+      }
     },
     {
       "symbol": "--exclude-dynamic-system-prompt-sections",
@@ -389,6 +421,13 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--interactive",
+      "type": "cli_flag",
+      "description": "Require the interview. Fails without a terminal instead of writing a template",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
+    },
+    {
       "symbol": "--json",
       "type": "cli_flag",
       "description": "Print the result as one JSON object on the last line of stdout instead of the human-readable message, for use in scripts. See JSON result format. Requires Claude Code v2.1.268 or later",
@@ -397,6 +436,7 @@
       "scope_descriptions": {
         "plugin disable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
         "plugin enable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
+        "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
         "plugin install": "Print the result as one JSON object on the last line of stdout instead of the human-readable message, for use in scripts. See JSON result format. Requires Claude Code v2.1.268 or later",
         "plugin list": "Output as JSON. A plugin row with load problems or authoring warnings carries `errors` or `notes` string arrays. On Claude Code v2.1.268 or later, parallel `errorDetails` and `noteDetails` arrays give each entry's diagnostic `type` and the names it refers to, such as the plugin, marketplace, server, or file",
         "plugin uninstall": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Can't be combined with `--prune`. Requires Claude Code v2.1.268 or later",
@@ -410,6 +450,13 @@
       "description": "Get validated JSON output matching a JSON Schema after the agent completes its workflow (print mode only). See structured outputs. Claude Code exits with an error on an invalid schema and accepts the `format` keyword as an annotation without client-side validation",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--judge-model",
+      "type": "cli_flag",
+      "description": "Model for `llm` and `baseline` graders",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
     },
     {
       "symbol": "--keep-data",
@@ -433,6 +480,13 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--max-cost-usd",
+      "type": "cli_flag",
+      "description": "Stop before the next run once spend reaches this, exit 2, and report partial results",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
+    },
+    {
       "symbol": "--max-turns",
       "type": "cli_flag",
       "description": "Limit the number of agentic turns (print mode only). Exits with an error when the limit is reached. No limit by default. With `--input-format stream-json`, a message still queued when the limit ends a turn stays queued and starts a new turn with its own limit",
@@ -450,6 +504,13 @@
       "symbol": "--message",
       "type": "cli_flag",
       "description": "Tag annotation message. Use `%s` as a placeholder for the version",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
+    },
+    {
+      "symbol": "--mocks",
+      "type": "cli_flag",
+      "description": "`record` or `off`. See Mock MCP servers",
       "doc_min_version": null,
       "doc_page": "plugins-reference"
     },
@@ -473,6 +534,13 @@
       "description": "Disable Chrome browser integration for this session",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--no-publish",
+      "type": "cli_flag",
+      "description": "Keep the HTML report local",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
     },
     {
       "symbol": "--no-sandbox",
@@ -615,6 +683,13 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--runs",
+      "type": "cli_flag",
+      "description": "Runs per case per arm",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
+    },
+    {
       "symbol": "--safe-mode",
       "type": "cli_flag",
       "description": "Start with all customizations disabled to troubleshoot a broken configuration: CLAUDE.md, skills, plugins, hooks, MCP servers, custom commands and agents, output styles, workflows, custom themes, custom keybindings, status line and file-suggestion commands, LSP servers, and auto memory do not load. Authentication, model selection, built-in tools, and permissions work normally, which differs from `--bare`. Managed settings policy still applies, including policy-configured hooks, status line, and file-suggestion commands; managed plugins, managed skills, managed CLAUDE.md, and policy-configured MCP servers do not. Useful for checking whether a customization is what triggers automatic model fallback. Sets `CLAUDE_CODE_SAFE_MODE`",
@@ -627,6 +702,13 @@
       "description": "Enable or disable sandboxing for filesystem and network isolation. Off by default.",
       "doc_min_version": "2.1.51",
       "doc_page": "remote-control"
+    },
+    {
+      "symbol": "--scaffold",
+      "type": "cli_flag",
+      "description": "Run each case's `scaffold_script`",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
     },
     {
       "symbol": "--scope",
@@ -721,6 +803,13 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--threshold",
+      "type": "cli_flag",
+      "description": "Exit 1 if any case scores below this",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
+    },
+    {
       "symbol": "--tmux",
       "type": "cli_flag",
       "description": "Create a tmux session for the worktree. Requires `--worktree`. Uses iTerm2 native panes when available; pass `--tmux=classic` for traditional tmux",
@@ -733,6 +822,13 @@
       "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for all, or tool names like `\"Bash,Edit,Read\"`. If you name one of the task-tracking tools here, Claude Code also opts the session in. The flag doesn't affect MCP tools; to deny those too, use `--disallowedTools \"mcp__*\"`. A list that omits `EndConversation` doesn't remove it; `\"\"` removes it only when no MCP tools remain",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--trust-plugin",
+      "type": "cli_flag",
+      "description": "Skip the first-run trust prompt, for CI. See What a run can access",
+      "doc_min_version": null,
+      "doc_page": "plugins-reference"
     },
     {
       "symbol": "--verbose",
@@ -974,7 +1070,7 @@
     {
       "symbol": "/design-sync",
       "type": "command",
-      "description": "**Skill.** Convert your repo's React design system and upload it to Claude Design, so designs it produces use your real components. Optionally name the design system, for example `/design-sync Acme DS`. A first-time sync verifies every component and can take a few hours on a large repo. Available on the Anthropic API; on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS the underlying tool can't reach claude.ai, so the command is unavailable",
+      "description": "**Skill.** Convert your repo's React design system and upload it to Claude Design, so designs it produces use your real components. Optionally name the design system, for example `/design-sync Acme DS`. A first-time sync verifies every component and can take a few hours on a large repo. Available on the Anthropic API. It needs claude.ai, which the CLI doesn't contact on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or Claude Platform on AWS, or through a Claude apps gateway, so the command is unavailable there",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1093,7 +1189,7 @@
     {
       "symbol": "/import",
       "type": "command",
-      "description": "Bring configuration from OpenAI Codex, Google Gemini CLI, or Cursor on your machine into Claude Code, including instruction files, MCP servers, commands, subagents, and skills. In non-interactive mode with `-p`, `/import` lists what it found and gives you the command that confirms the import. Add `--dry-run` to preview without writing anything, or `--yes` to skip the interactive picker. Not available on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or Claude Platform on AWS. Also unavailable when you turn off feature-flag fetching. Requires Claude Code v2.1.213 or later. Importing from Cursor requires v2.1.265 or later",
+      "description": "Bring configuration from OpenAI Codex, Google Gemini CLI, or Cursor on your machine into Claude Code, including instruction files, MCP servers, commands, subagents, and skills. In non-interactive mode with `-p`, `/import` lists what it found and gives you the command that confirms the import. Add `--dry-run` to preview without writing anything, or `--yes` to skip the interactive picker. Not available on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or Claude Platform on AWS, or through a Claude apps gateway. Also unavailable when you turn off feature-flag fetching. Requires Claude Code v2.1.213 or later. Importing from Cursor requires v2.1.265 or later",
       "doc_min_version": "2.1.213",
       "doc_page": "commands"
     },
@@ -1847,6 +1943,14 @@
       "description": "Show your organization's announcements to users at startup. When you list more than one, Claude Code picks one at random for each session; on a person's very first launch it shows the first entry.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "copyOnSelect",
+      "type": "config_key",
+      "description": "Copy text to your clipboard automatically when you finish selecting it with the mouse in fullscreen rendering or agent view. Appears in `/config` as **Copy on select** while fullscreen rendering is on.",
+      "doc_min_version": null,
+      "doc_page": "settings-reference",
+      "category": "global-config"
     },
     {
       "symbol": "crossSessionInbound",
@@ -3528,7 +3632,7 @@
     {
       "symbol": "CCR_FORCE_BUNDLE",
       "type": "env_var",
-      "description": "Set to `1` to force `claude --cloud` to bundle and upload your local repository even when GitHub access is available",
+      "description": "Set to `1` to force `claude --cloud` to bundle and upload your local repository instead of cloning from its remote",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },

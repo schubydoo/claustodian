@@ -8,11 +8,11 @@
       "first_seen": "2.1.198",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Run a no-plugin baseline arm and report the score delta (none | with-without; default: with-without when targeting a plugin by name (installed or skills-dir), none for a path)",
-      "description_source": "help",
-      "source_url": null,
+      "description": "`none` or `with-without`. See Compare against a no-plugin baseline",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -172,11 +172,11 @@
       "first_seen": "2.1.198",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Operator grant for gated tools (Bash, Write, Edit, WebFetch, mcp__*). Supports Tool(pattern:*) syntax",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Grant tools beyond the read-only set, such as `Bash`, `Write`, `Edit`, or `\"mcp__plugin_<plugin>_<server>__*\"`. See Grant tools",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -1177,12 +1177,17 @@
       "type": "cli_flag",
       "first_seen": "2.1.235",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Directory below the plugin that holds the cases",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
+      "scope_descriptions": {
+        "plugin eval": "Directory below the plugin that holds the cases",
+        "plugin eval init": "Directory below the current directory to write cases into"
+      },
       "scopes": [
         "plugin eval",
         "plugin eval init"
@@ -1675,11 +1680,11 @@
       "first_seen": "2.1.124",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Prompt for each item before deleting",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Require the interview. Fails without a terminal instead of writing a template",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval init",
@@ -1715,6 +1720,7 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
+        "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
         "plugin list": "Output as JSON. A plugin row with load problems or authoring warnings carries `errors` or `notes` string arrays."
       },
       "scopes": [
@@ -1745,11 +1751,11 @@
       "first_seen": "2.1.198",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Override LLM-grader model (default: haiku)",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Model for `llm` and `baseline` graders",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -1938,11 +1944,11 @@
       "first_seen": "2.1.198",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Optional hard cost ceiling; abort and report partial results if hit (exit 2). Overrun is bounded to one agent run — when that run breaches, paid graders (llm/baseline) are skipped while free graders still score it. Runs are already bounded by max_turns and timeout_seconds — only set this when you need a strict budget",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Stop before the next run once spend reaches this, exit 2, and report partial results",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -2064,11 +2070,11 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
       "description": "Mock stand-ins for MCP servers, from <eval dir>/mocks/ (record | off; default: record — off spawns the real servers, gated by --allow-tools as usual)",
-      "description_source": "help",
-      "source_url": null,
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -2180,11 +2186,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Keep the HTML report local only; skip publishing it to claude.ai",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Keep the HTML report local",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -2884,11 +2890,11 @@
       "first_seen": "2.1.198",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Override per-case runs (default: case.runs ?? 3)",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Runs per case per arm",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -2929,11 +2935,11 @@
       "first_seen": "2.1.198",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Run each case's scaffold_script (runs author-supplied bash as you; off by default — only use on case files you authored)",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Run each case's `scaffold_script`",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -3435,11 +3441,11 @@
       "first_seen": "2.1.198",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Exit 1 if any case score is below this threshold (default: 1.0)",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Exit 1 if any case scores below this",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -4268,7 +4274,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Skill.** Convert your repo's React design system and upload it to Claude Design, so designs it produces use your real components. Optionally name the design system, for example `/design-sync Acme DS`. A first-time sync verifies every component and can take a few hours on a large repo. Available on the Anthropic API; on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS the underlying tool can't reach claude.ai, so the command is unavailable",
+      "description": "**Skill.** Convert your repo's React design system and upload it to Claude Design, so designs it produces use your real components. Optionally name the design system, for example `/design-sync Acme DS`. A first-time sync verifies every component and can take a few hours on a large repo. Available on the Anthropic API. It needs claude.ai, which the CLI doesn't contact on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or Claude Platform on AWS, or through a Claude apps gateway, so the command is unavailable there",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
@@ -4530,7 +4536,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Bring configuration from OpenAI Codex, Google Gemini CLI, or Cursor on your machine into Claude Code, including instruction files, MCP servers, commands, subagents, and skills. In non-interactive mode with `-p`, `/import` lists what it found and gives you the command that confirms the import. Add `--dry-run` to preview without writing anything, or `--yes` to skip the interactive picker. Not available on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or Claude Platform on AWS. Also unavailable when you turn off feature-flag fetching. Requires Claude Code v2.1.213 or later. Importing from Cursor requires v2.1.265 or later",
+      "description": "Bring configuration from OpenAI Codex, Google Gemini CLI, or Cursor on your machine into Claude Code, including instruction files, MCP servers, commands, subagents, and skills. In non-interactive mode with `-p`, `/import` lists what it found and gives you the command that confirms the import. Add `--dry-run` to preview without writing anything, or `--yes` to skip the interactive picker. Not available on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or Claude Platform on AWS, or through a Claude apps gateway. Also unavailable when you turn off feature-flag fetching. Requires Claude Code v2.1.213 or later. Importing from Cursor requires v2.1.265 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
@@ -11582,7 +11588,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to force `claude --cloud` to bundle and upload your local repository even when GitHub access is available",
+      "description": "Set to `1` to force `claude --cloud` to bundle and upload your local repository instead of cloning from its remote",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -13109,11 +13115,11 @@
       "type": "env_var",
       "first_seen": "2.1.181",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -17447,11 +17453,11 @@
       "first_seen": "2.1.211",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Maximum age in milliseconds of the last transcript message for a session that ended mid-turn to continue automatically on resume. When the last message is older than this bound, Claude Code skips both the `CLAUDE_CODE_RESUME_INTERRUPTED_TURN` automatic resume and the injected `CLAUDE_CODE_RESUME_PROMPT` continuation message, and the session starts idle so you continue explicitly. Unset or `0` means no bound; a negative or non-numeric value applies a one-hour bound. Spawn scripts for long-running agents can set this so a restart against an old transcript doesn't re-run a stale prompt. Claude Code sets a one-hour bound itself when it restarts a crashed agent view session that inherited its conversation from an interactive session. Requires Claude Code v2.1.211 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {

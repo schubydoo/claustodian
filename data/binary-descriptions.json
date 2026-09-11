@@ -77,6 +77,12 @@
         "description": "Enable bypassing all permission checks as an option, without it being enabled by default. Recommended only for sandboxes with no internet access."
       }
     ],
+    "cli_flag:--allow-real-servers": [
+      {
+        "from": "2.1.269",
+        "description": "With --mocks record: also start the plugin's REAL MCP server processes for servers that have no mock (they run as you, outside the OS sandbox that confines shell tools; use only on plugins you trust)"
+      }
+    ],
     "cli_flag:--allow-tools": [
       {
         "from": "2.1.198",
@@ -261,6 +267,12 @@
       {
         "from": "2.1.166",
         "description": "Create a cloud session with the given description, or attach to an existing one by session ID or claude.ai/code URL"
+      }
+    ],
+    "cli_flag:--concurrency": [
+      {
+        "from": "2.1.269",
+        "description": "Run up to <n> agent runs at once (1-8; default 1). Each run is a full claude child on your own credential, so they share one rate limit; results and the report keep case order"
       }
     ],
     "cli_flag:--config": [
@@ -753,6 +765,10 @@
       {
         "from": "2.1.242",
         "description": "Mock stand-ins for MCP servers, from <eval dir>/mocks/ (record | off; default: record — off spawns the real servers, gated by --allow-tools as usual)"
+      },
+      {
+        "from": "2.1.269",
+        "description": "Mock stand-ins for MCP servers, from <eval dir>/mocks/ (record | off; default: record). record: a plugin server with no mock is NOT started (see --allow-real-servers); off: no stand-ins, every real server starts (as you, outside the OS sandbox), its tools gated by --allow-tools"
       }
     ],
     "cli_flag:--model": [
@@ -1313,6 +1329,12 @@
       {
         "from": "2.0.15",
         "description": "Transport type (stdio, sse, http). Defaults to stdio if not specified."
+      }
+    ],
+    "cli_flag:--trust-plugin": [
+      {
+        "from": "2.1.269",
+        "description": "Assert that you trust this plugin's code and eval suite, and skip the first-run trust prompt (for CI; like --dangerously-skip-permissions, only pass it for plugins you would run yourself). Does not imply --scaffold, --allow-tools or --mocks off"
       }
     ],
     "cli_flag:--unix": [
@@ -2053,6 +2075,10 @@
       {
         "from": "2.1.73",
         "description": "Deprecated: use /config to change output style"
+      },
+      {
+        "from": "2.1.269",
+        "description": "List output styles or switch to one"
       }
     ],
     "command:/parallel-agents": [
@@ -2851,6 +2877,12 @@
       {
         "from": "2.1.181",
         "description": "Render screen-reader friendly output (flat text, no decorative borders or animations). Overridden by the CLAUDE_AX_SCREEN_READER env var and the --ax-screen-reader CLI flag."
+      }
+    ],
+    "config_key:bashEditDiffEnabled": [
+      {
+        "from": "2.1.269",
+        "description": "Whether the Bash tool shows a diff of the files a Bash command changed (PostToolUse Bash hooks get the changed-file list in tool_response). Set to false to turn that off. Default: on when the Bash tool handles file edits. Only user, flag or policy settings can turn it on outside auto and bypassPermissions modes."
       }
     ],
     "config_key:bashOutputMaxChars": [
