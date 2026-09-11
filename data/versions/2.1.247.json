@@ -1643,12 +1643,12 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Output as JSON",
-      "description_source": "docs",
+      "description": "Output in JSON format",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
-        "plugin list": "Output as JSON"
+        "plugin list": "Output as JSON. A plugin row with load problems or authoring warnings carries `errors` or `notes` string arrays."
       },
       "scopes": [
         "agents",
@@ -5348,19 +5348,6 @@
       "confidence": "high",
       "description": "Change the color theme. Includes an `auto` option that matches your terminal's light or dark background, light and dark variants, colorblind-accessible (daltonized) themes, ANSI themes that use your terminal's color palette, and any custom themes from `~/.claude/themes/` or plugins. Select **New custom theme…** to create one",
       "description_source": "docs",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
-      "symbol": "/tmp",
-      "type": "command",
-      "first_seen": "2.1.232",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -14251,7 +14238,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to get the task-tracking tools on the models listed under Task tool availability, where Claude Code otherwise leaves them out. `CLAUDE_CODE_ENABLE_TASKS` still selects the Task tools or `TodoWrite`. Requires Claude Code v2.1.233 or later",
+      "description": "Set to `1` to get the task-tracking tools on every model. Without it, Claude Code provides them by default only on the models listed under Task tool availability. `CLAUDE_CODE_ENABLE_TASKS` still selects the Task tools or `TodoWrite`. Requires Claude Code v2.1.233 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
