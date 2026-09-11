@@ -340,6 +340,16 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   'XDG_DATA_HOME',
   'TMPDIR',
   'TEMP',
+  // OS filesystem directories named in the 2.1.268 bugfix bullet "Fixed deny and
+  // ask permission rules on symlinked directories (`/etc`, `/tmp`, `/var` on
+  // macOS; `/bin` on Linux) …". The command pattern reads each backticked
+  // `/word` as a slash-command, but these are directories the permission system
+  // acts on, not Claude Code commands. `/tmp` also appears alone in an earlier
+  // bullet (2.1.232), so this same entry clears that pre-existing false positive.
+  '/bin',
+  '/etc',
+  '/tmp',
+  '/var',
 ]);
 
 /**
