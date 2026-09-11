@@ -221,6 +221,17 @@ describe('extractSymbols', () => {
     expect(symbols).toEqual([]);
   });
 
+  it('drops OS filesystem directories named in a symlink-permission bugfix bullet', () => {
+    // 2.1.268: `/etc`, `/tmp`, `/var`, `/bin` are directories the permission
+    // system acts on, not Claude Code slash-commands. The command pattern reads
+    // each backticked `/word` as a command; CHANGELOG_SYMBOL_DENYLIST drops them.
+    const symbols = extractSymbols(
+      'Fixed deny and ask permission rules on symlinked directories ' +
+        '(`/etc`, `/tmp`, `/var` on macOS; `/bin` on Linux) not applying.'
+    );
+    expect(symbols).toEqual([]);
+  });
+
   it('scopes the changelog-only suppression, leaving the binary denylist clean', () => {
     // Neither the git primitives nor the OS/shell env vars may leak into the
     // shared SYMBOL_DENYLIST that extract-bundle consults: the binary lane must
@@ -239,6 +250,10 @@ describe('extractSymbols', () => {
       'OLDPWD',
       'DIRSTACK',
       'XDG_DATA_HOME',
+      '/bin',
+      '/etc',
+      '/tmp',
+      '/var',
     ];
     // Membership: these particular tokens must be present, so the list is explicit.
     for (const token of changelogOnly) {
