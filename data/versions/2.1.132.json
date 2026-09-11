@@ -961,11 +961,11 @@
       "first_seen": "2.1.124",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
-      "description": "Prompt for each item before deleting",
-      "description_source": "help",
-      "source_url": null,
+      "description": "Require the interview. Fails without a terminal instead of writing a template",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval init",
@@ -985,6 +985,7 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
+        "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
         "plugin list": "Output as JSON. A plugin row with load problems or authoring warnings carries `errors` or `notes` string arrays."
       },
       "scopes": [
@@ -7132,7 +7133,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to force `claude --cloud` to bundle and upload your local repository even when GitHub access is available",
+      "description": "Set to `1` to force `claude --cloud` to bundle and upload your local repository instead of cloning from its remote",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
