@@ -391,11 +391,16 @@
     {
       "symbol": "--json",
       "type": "cli_flag",
-      "description": "Output as JSON",
-      "doc_min_version": "2.1.259",
+      "description": "Print the result as one JSON object on the last line of stdout instead of the human-readable message, for use in scripts. See JSON result format. Requires Claude Code v2.1.268 or later",
+      "doc_min_version": "2.1.268",
       "doc_page": "plugins-reference",
       "scope_descriptions": {
-        "plugin list": "Output as JSON",
+        "plugin disable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
+        "plugin enable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
+        "plugin install": "Print the result as one JSON object on the last line of stdout instead of the human-readable message, for use in scripts. See JSON result format. Requires Claude Code v2.1.268 or later",
+        "plugin list": "Output as JSON. A plugin row with load problems or authoring warnings carries `errors` or `notes` string arrays. On Claude Code v2.1.268 or later, parallel `errorDetails` and `noteDetails` arrays give each entry's diagnostic `type` and the names it refers to, such as the plugin, marketplace, server, or file",
+        "plugin uninstall": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Can't be combined with `--prune`. Requires Claude Code v2.1.268 or later",
+        "plugin update": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
         "plugin validate": "Output the validation report as one JSON object with the same exit codes. Requires Claude Code v2.1.259 or later"
       }
     },
@@ -4139,7 +4144,7 @@
     {
       "symbol": "CLAUDE_CODE_ENABLE_TODO_TOOLS",
       "type": "env_var",
-      "description": "Set to `1` to get the task-tracking tools on the models listed under Task tool availability, where Claude Code otherwise leaves them out. `CLAUDE_CODE_ENABLE_TASKS` still selects the Task tools or `TodoWrite`. Requires Claude Code v2.1.233 or later",
+      "description": "Set to `1` to get the task-tracking tools on every model. Without it, Claude Code provides them by default only on the models listed under Task tool availability. `CLAUDE_CODE_ENABLE_TASKS` still selects the Task tools or `TodoWrite`. Requires Claude Code v2.1.233 or later",
       "doc_min_version": "2.1.233",
       "doc_page": "env-vars"
     },
@@ -4925,6 +4930,13 @@
       "type": "env_var",
       "description": "Set to the number of milliseconds WebFetch keeps each fetched URL's response cached. The default is `900000`, which is 15 minutes. Takes plain digits only; `0`, a decimal, or any other spelling keeps the default. Claude Code reads the value once per launch, so a change in a settings `env` block applies when you next launch `claude`. Requires Claude Code v2.1.233 or later",
       "doc_min_version": "2.1.233",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_WEBFETCH_DEADLINE_MS",
+      "type": "env_var",
+      "description": "Upper bound in milliseconds on how long WebFetch waits for a page to download, including any redirects it follows. A download that hasn't completed by then fails with a deadline error. The default is `300000`, which is five minutes. Set to `0` to remove the limit. Takes plain digits only; a decimal or any other spelling keeps the default. Requires Claude Code v2.1.268 or later",
+      "doc_min_version": "2.1.268",
       "doc_page": "env-vars"
     },
     {

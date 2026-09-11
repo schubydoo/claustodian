@@ -727,12 +727,12 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Output as JSON",
-      "description_source": "docs",
+      "description": "Output in JSON format",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
-        "plugin list": "Output as JSON"
+        "plugin list": "Output as JSON. A plugin row with load problems or authoring warnings carries `errors` or `notes` string arrays."
       },
       "scopes": [
         "agents",
