@@ -819,7 +819,7 @@
     {
       "symbol": "--tools",
       "type": "cli_flag",
-      "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for all, or tool names like `\"Bash,Edit,Read\"`. If you name one of the task-tracking tools here, Claude Code also opts the session in. The flag doesn't affect MCP tools; to deny those too, use `--disallowedTools \"mcp__*\"`. A list that omits `EndConversation` doesn't remove it; `\"\"` removes it only when no MCP tools remain",
+      "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for the default set, or tool names like `\"Bash,Edit,Read\"`. On macOS, Linux, and WSL, the default set leaves out `Glob` and `Grep`, as described under Glob tool behavior. If you name one of the task-tracking tools here, Claude Code also opts the session in. The flag doesn't affect MCP tools; to deny those too, use `--disallowedTools \"mcp__*\"`. A list that omits `EndConversation` doesn't remove it; `\"\"` removes it only when no MCP tools remain",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -2349,7 +2349,7 @@
     {
       "symbol": "managedSourcesBehavior",
       "type": "config_key",
-      "description": "Choose whether Claude Code applies only the highest-priority managed source your organization delivers, or combines every admin source it delivers. By default Claude Code takes the highest-priority source that carries a policy key and ignores the rest. A policy key is any settings key other than this one and `wslInheritsWindowsSettings`. So once server-managed settings or an MDM policy deliver a policy key, a `managed-settings.json` file contributes only the keys Claude Code reads from every admin source. With `\"merge\"`, every admin source you deliver contributes its keys to one combined policy. Requires Claude Code v2.1.242 or later.",
+      "description": "Choose whether Claude Code applies only the highest-priority managed source your organization delivers, or combines every admin source it delivers. By default Claude Code takes the highest-priority source that carries a policy key and ignores the rest. A policy key is any settings key other than this one and `wslInheritsWindowsSettings`. Under that default, once server-managed settings or an MDM policy deliver a policy key, a `managed-settings.json` file contributes only the keys Claude Code reads from every admin source. With `\"merge\"`, every admin source you deliver contributes its keys to one combined policy. Requires Claude Code v2.1.242 or later.",
       "doc_min_version": "2.1.242",
       "doc_page": "settings-reference"
     },
@@ -5601,6 +5601,13 @@
       "type": "env_var",
       "description": "Set to `true` to include the session entrypoint in metrics attributes (default: excluded). Added in v2.1.152. See Monitoring",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_REPOSITORY",
+      "type": "env_var",
+      "description": "Set to `true` to tag OpenTelemetry metrics and events with `vcs.*` attributes identifying the session's repository (default: excluded). Requires Claude Code v2.1.269 or later. See Repository attributes",
+      "doc_min_version": "2.1.269",
       "doc_page": "env-vars"
     },
     {
