@@ -2244,8 +2244,8 @@
     {
       "symbol": "footerLinksRegexes",
       "type": "config_key",
-      "description": "Render extra clickable badges in the footer below the input box when a regex matches turn output: tool results, including file contents and fetched pages, and Claude's own responses. Use it to turn IDs printed by project CLIs, such as review tools and issue trackers, into session links. Requires Claude Code v2.1.176 or later.",
-      "doc_min_version": "2.1.176",
+      "description": "Render extra clickable badges in the footer below the input box when a regex matches turn output: tool results, including file contents and fetched pages, and Claude's own responses. Use it to turn IDs printed by project CLIs, such as review tools and issue trackers, into session links.",
+      "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
@@ -3198,8 +3198,8 @@
     {
       "symbol": "wheelScrollAccelerationEnabled",
       "type": "config_key",
-      "description": "Accelerate mouse-wheel scroll speed during fast scrolls in fullscreen rendering. Set it to `false` for a constant scroll rate per wheel notch. Requires Claude Code v2.1.174 or later.",
-      "doc_min_version": "2.1.174",
+      "description": "Accelerate mouse-wheel scroll speed during fast scrolls in fullscreen rendering. Set it to `false` for a constant scroll rate per wheel notch.",
+      "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
