@@ -3440,7 +3440,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Pick which model answers when Claude calls the server-side advisor tool. Unset it to turn the advisor off. The advisor must be at least as capable as your main model; when it isn't, Claude Code sends requests without the advisor. See Choose an advisor model.",
+      "description": "Pick which model answers when Claude calls the server-side advisor tool. Unset it to turn the advisor off. The advisor must be at least as capable as your main model. See Choose an advisor model for the accepted pairings and what happens when you pick one that isn't accepted.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
