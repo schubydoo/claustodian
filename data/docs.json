@@ -1896,6 +1896,13 @@
       "doc_page": "settings-reference"
     },
     {
+      "symbol": "bashEditDiffEnabled",
+      "type": "config_key",
+      "description": "Choose whether Claude Code records the files a Bash command changes in a Git repository. When it records them, you see their diff in the terminal after the command, and your PostToolUse Bash hooks receive the changed-file list.",
+      "doc_min_version": null,
+      "doc_page": "settings-reference"
+    },
+    {
       "symbol": "bashOutputMaxChars",
       "type": "config_key",
       "description": "Set how many characters of a successful Bash or PowerShell command's output Claude receives inline. When output passes the limit, Claude Code saves it to a file and Claude receives a short preview plus the file's path. Raise the limit when command output, such as a verbose build or a full test-suite log, routinely overflows the default and you want Claude to read it without opening the file. Requires Claude Code v2.1.261 or later.",
@@ -2284,6 +2291,13 @@
       "doc_page": "settings-reference"
     },
     {
+      "symbol": "gatewayInternalNetworks",
+      "type": "config_key",
+      "description": "Declare the public IPv4 blocks that your organization numbers its internal network from, so `/login` accepts a cloud gateway there. Requires Claude Code v2.1.268 or later.",
+      "doc_min_version": "2.1.268",
+      "doc_page": "settings-reference"
+    },
+    {
       "symbol": "gcpAuthRefresh",
       "type": "config_key",
       "description": "Run your own command to refresh Google Cloud Application Default Credentials when Claude Code finds they've expired or can't be loaded, so Google Cloud's Agent Platform requests keep working without you re-authenticating by hand.",
@@ -2483,7 +2497,7 @@
     {
       "symbol": "permissions.deny",
       "type": "config_key",
-      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths. Read and Edit deny rules apply to Claude's built-in file tools, to file commands Claude Code recognizes in Bash, such as `cat`, `head`, `tail`, and `sed`, and to the targets of Bash redirections such as `> file` and `< file`; they don't apply to a command that reads files without naming them, such as `grep -r pattern .`, or to arbitrary subprocesses, so for OS-level enforcement enable the sandbox.",
+      "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3826,6 +3840,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_BASH_EDIT_DIFF",
+      "type": "env_var",
+      "description": "Set to `0` to turn off the diff of the files a Bash command changed, or `1` to record it in every permission mode. Takes precedence over the `bashEditDiffEnabled` setting. Requires Claude Code v2.1.269 or later",
+      "doc_min_version": "2.1.269",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_BRIDGE_SESSION_ID",
       "type": "env_var",
       "description": "Set automatically in Bash tool and hook command subprocesses while the session has an active Remote Control connection, and removed when the connection ends. The value is the session's ID in `session_` form, the same identifier that appears in the session's `claude.ai/code` URL, so a script can link back to the session that ran it. Requires Claude Code v2.1.199 or later. In cloud sessions, read `CLAUDE_CODE_REMOTE_SESSION_ID` instead",
@@ -4766,7 +4787,7 @@
     {
       "symbol": "CLAUDE_CODE_SESSIONEND_HOOKS_TIMEOUT_MS",
       "type": "env_var",
-      "description": "Override the time budget in milliseconds for SessionEnd hooks. Applies to session exit, `/clear`, and switching sessions via interactive `/resume`. By default the budget is 1.5 seconds, automatically raised to the highest per-hook `timeout` configured in settings files, up to 60 seconds. Timeouts on plugin-provided hooks do not raise the budget",
+      "description": "Override the time budget in milliseconds for SessionEnd hooks. The value is also the timeout for each hook that sets no `timeout` of its own. Applies to session exit, `/clear`, and switching sessions via interactive `/resume`. By default the budget is 1.5 seconds, automatically raised to the highest per-hook `timeout` configured in settings files, up to 60 seconds. Timeouts on plugin-provided hooks do not raise the budget",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
