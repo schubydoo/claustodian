@@ -3482,15 +3482,15 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
+      "description": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
-        "plugin install": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
+        "plugin install": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first.",
         "plugin prune": "Skip the confirmation prompt. Required when stdin or stdout is not a TTY",
         "plugin uninstall": "Skip the `--prune` confirmation prompt. Required when stdin or stdout is not a TTY",
-        "plugin update": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal"
+        "plugin update": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first."
       },
       "scopes": [
         "auto-mode reset",
