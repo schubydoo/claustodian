@@ -18,9 +18,9 @@
  * for auto-merge. The decision is advisory output, not an error: an unsafe
  * verdict exits 0 so it never trips the workflow's failure path.
  *
- * The verdict is written to `$GITHUB_OUTPUT` as `auto_merge=true|false` when that
- * env var is set, and always printed. The workflow enables auto-merge only on
- * `true`.
+ * The verdict is written to `$GITHUB_OUTPUT` as `auto_merge=true|false` plus a
+ * one-line `summary` when that env var is set, and always printed. The workflow
+ * enables auto-merge only on `true`, and puts `summary` in the bot PR body.
  *
  * Scope note: the bot gates auto-merge on the HOURLY, single-version path only
  * (a new upstream release). Manual `workflow_dispatch` runs — forced re-scrapes,
@@ -58,8 +58,21 @@ function sampleNames(names: string[], limit = 15): string {
   return `${names.slice(0, limit).join(', ')}, ... (+${names.length - limit} more)`;
 }
 
-/** Counts records by the value of `key`, e.g. `type` or `provenance`. */
-function countBy(symbols: SymbolRecord[], key: 'type' | 'provenance'): Map<string, number> {
+/**
+ * Provenance precedence, strongest lane first. `enrichSymbols` gives a symbol the
+ * strongest lane that knows it: a changelog entry beats a docs page, which beats a
+ * binary-only observation. So an existing symbol moving UP this list is upstream
+ * catching up — the docs page for a previously binary-only flag finally landed —
+ * and is an ordinary hourly outcome, not a lane failure.
+ */
+const PROVENANCE_RANK: Record<SymbolRecord['provenance'], number> = {
+  changelog: 0,
+  docs: 1,
+  binary: 2,
+};
+
+/** Counts records by the value of `key`. */
+function countBy(symbols: SymbolRecord[], key: 'type'): Map<string, number> {
   const counts = new Map<string, number>();
   for (const record of symbols) {
     counts.set(record[key], (counts.get(record[key]) ?? 0) + 1);
@@ -69,15 +82,11 @@ function countBy(symbols: SymbolRecord[], key: 'type' | 'provenance'): Map<strin
 
 /**
  * Reports every value of `key` whose count DROPPED from `prev` to `next`. A lane
- * that stops matching shows up here as its `type`/`provenance` count falling —
- * the "silently gutted lane" this guard exists to catch. A value missing from
- * `next` counts as zero, so a whole category disappearing is caught too.
+ * that stops matching shows up here as its `type` count falling — the "silently
+ * gutted lane" this guard exists to catch. A value missing from `next` counts as
+ * zero, so a whole category disappearing is caught too.
  */
-function floorDrops(
-  prev: SymbolRecord[],
-  next: SymbolRecord[],
-  key: 'type' | 'provenance'
-): string[] {
+function floorDrops(prev: SymbolRecord[], next: SymbolRecord[], key: 'type'): string[] {
   const prevCounts = countBy(prev, key);
   const nextCounts = countBy(next, key);
   const drops: string[] = [];
@@ -97,8 +106,11 @@ function floorDrops(
  * 1. No removals. A symbol present on the base but gone from `next` is either a
  *    genuine upstream retirement or a gutted lane; both want human eyes.
  * 2. No `type` count drop (cli_flag, env_var, command, config_key, ...).
- * 3. No `provenance` count drop (changelog, docs, binary) — catches a lane that
- *    silently stopped contributing even when the total holds.
+ * 3. No provenance DEMOTION on a symbol present in both — a lane that used to
+ *    claim the symbol no longer does, which is the silently-gutted-lane shape
+ *    even when the total holds. Deliberately directional: a per-lane count drop
+ *    also fires on a promotion (upstream documenting a binary-only flag), which
+ *    is routine, so counting alone withheld clean runs for no reason.
  * 4. No `first_seen` change on a symbol present in both. Re-dating history is a
  *    deliberate forced-backfill action, never something the hourly one-version
  *    run should produce; if it appears here, something is wrong.
@@ -116,7 +128,16 @@ export function evaluateAutoMerge(
   }
 
   reasons.push(...floorDrops(prev.symbols, next.symbols, 'type'));
-  reasons.push(...floorDrops(prev.symbols, next.symbols, 'provenance'));
+
+  const demoted = diff.changed.filter(
+    (c) => PROVENANCE_RANK[c.after.provenance] > PROVENANCE_RANK[c.before.provenance]
+  );
+  if (demoted.length > 0) {
+    const names = sampleNames(
+      demoted.map((c) => `${c.key} (${c.before.provenance} -> ${c.after.provenance})`)
+    );
+    reasons.push(`${demoted.length} symbol(s) lost a stronger provenance lane: ${names}`);
+  }
 
   const redated = diff.changed.filter((c) => c.before.first_seen !== c.after.first_seen);
   if (redated.length > 0) {
@@ -167,11 +188,32 @@ function printVerdict(verdict: AutoMergeVerdict): void {
   }
 }
 
-/** Appends `auto_merge=<bool>` to `$GITHUB_OUTPUT` when running under Actions. */
-async function writeGithubOutput(safe: boolean): Promise<void> {
+/**
+ * The verdict as ONE line, for the bot PR body. Until this existed the reasons
+ * reached only the run log, so a withheld PR looked identical to a cleared one
+ * and the maintainer had to open the Actions tab to learn why it waited.
+ *
+ * One line is a hard requirement, not tidiness: Actions substitutes the
+ * expression into the workflow YAML before parsing it, so a value with a newline
+ * breaks the indentation of the `body:` block scalar it lands in. Whitespace is
+ * collapsed rather than trusted — a newline would also let a symbol name forge a
+ * second `key=value` pair in `$GITHUB_OUTPUT`, including `auto_merge=true`.
+ */
+export function summarize(verdict: AutoMergeVerdict): string {
+  const text = verdict.safe
+    ? 'enabled — clean incremental add, no floor tripped.'
+    : `withheld for human review — ${verdict.reasons.join('; ')}`;
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+/** Appends the verdict to `$GITHUB_OUTPUT` when running under Actions. */
+async function writeGithubOutput(verdict: AutoMergeVerdict): Promise<void> {
   const outputPath = process.env.GITHUB_OUTPUT;
   if (!outputPath) return;
-  await appendFile(outputPath, `auto_merge=${safe ? 'true' : 'false'}\n`);
+  await appendFile(
+    outputPath,
+    `auto_merge=${verdict.safe ? 'true' : 'false'}\nsummary=${summarize(verdict)}\n`
+  );
 }
 
 export async function main(argv: string[]): Promise<number> {
@@ -186,7 +228,7 @@ export async function main(argv: string[]): Promise<number> {
 
   const verdict = evaluateAutoMerge(base, next);
   printVerdict(verdict);
-  await writeGithubOutput(verdict.safe);
+  await writeGithubOutput(verdict);
 
   // Exit 0 for BOTH outcomes: a withheld merge is a normal result, and a
   // non-zero here would fail the job and (later) trip the failure notifier.

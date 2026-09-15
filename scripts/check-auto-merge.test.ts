@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { evaluateAutoMerge } from './check-auto-merge.js';
+import { evaluateAutoMerge, summarize } from './check-auto-merge.js';
 import type { SymbolRecord } from './scrape-changelog.js';
 
 function makeSymbol(overrides: Partial<SymbolRecord> = {}): SymbolRecord {
@@ -71,7 +71,7 @@ describe('evaluateAutoMerge', () => {
     expect(verdict.reasons.some((r) => r.includes('type "cli_flag" dropped 2 -> 1'))).toBe(true);
   });
 
-  it('withholds when a provenance count drops', () => {
+  it('withholds when a symbol is demoted to a weaker provenance lane', () => {
     // Same total and same types, but a docs-provenance record flips to binary:
     // the docs lane quietly stopped contributing.
     const prev = {
@@ -89,7 +89,31 @@ describe('evaluateAutoMerge', () => {
 
     const verdict = evaluateAutoMerge(prev, next);
     expect(verdict.safe).toBe(false);
-    expect(verdict.reasons.some((r) => r.includes('provenance "docs" dropped 1 -> 0'))).toBe(true);
+    expect(verdict.reasons.some((r) => r.includes('lost a stronger provenance lane'))).toBe(true);
+    expect(verdict.reasons.some((r) => r.includes('cli_flag:--foo (docs -> binary)'))).toBe(true);
+  });
+
+  it('clears a promotion to a stronger provenance lane', () => {
+    // Upstream caught up: a binary-only flag got a docs page, and a documented one
+    // got a changelog entry. Each drains its old lane's count, which is what the
+    // old counting floor read as a gutted lane — it withheld PRs 349 and 350 for
+    // exactly this, with nothing removed from the snapshot.
+    const prev = {
+      symbols: [
+        makeSymbol({ symbol: '--foo', provenance: 'binary' }),
+        makeSymbol({ symbol: '--bar', provenance: 'docs' }),
+      ],
+    };
+    const next = {
+      symbols: [
+        makeSymbol({ symbol: '--foo', provenance: 'docs' }),
+        makeSymbol({ symbol: '--bar', provenance: 'changelog' }),
+      ],
+    };
+
+    const verdict = evaluateAutoMerge(prev, next);
+    expect(verdict.reasons).toEqual([]);
+    expect(verdict.safe).toBe(true);
   });
 
   it('withholds when an existing symbol is re-dated', () => {
@@ -125,5 +149,36 @@ describe('evaluateAutoMerge', () => {
     const verdict = evaluateAutoMerge(prev, next);
     expect(verdict.safe).toBe(true);
     expect(verdict.changed).toBe(1);
+  });
+});
+
+describe('summarize', () => {
+  it('states the reasons on one line so the PR body can carry them', () => {
+    const prev = {
+      symbols: [makeSymbol({ symbol: '--foo' }), makeSymbol({ symbol: '--gone' })],
+    };
+    const next = { symbols: [makeSymbol({ symbol: '--foo', provenance: 'changelog' })] };
+
+    const summary = summarize(evaluateAutoMerge(prev, next));
+    expect(summary).toContain('withheld for human review');
+    expect(summary).toContain('cli_flag:--gone');
+    expect(summary).not.toContain('\n');
+  });
+
+  it('collapses a newline inside a symbol name, which would forge a second output', () => {
+    // $GITHUB_OUTPUT is parsed as key=value lines, so an embedded newline could
+    // append `auto_merge=true` after a withheld verdict.
+    const prev = { symbols: [makeSymbol({ symbol: '--foo\nauto_merge=true' })] };
+    const next = { symbols: [] as SymbolRecord[] };
+
+    const summary = summarize(evaluateAutoMerge(prev, next));
+    expect(summary).not.toContain('\n');
+  });
+
+  it('says the verdict when nothing tripped', () => {
+    const symbols = [makeSymbol({ symbol: '--foo' })];
+    expect(summarize(evaluateAutoMerge({ symbols }, { symbols: [...symbols] }))).toContain(
+      'clean incremental add'
+    );
   });
 });
