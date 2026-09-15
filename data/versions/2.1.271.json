@@ -23,13 +23,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.271",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Accept the marketplace-declared command (a command-source install, or the headersHelper that fetches the archive) whose sha256 a previous --json run reported as shownCommand.sha256; counts as -y for exactly that command, for that plugin and marketplace catalog, and nothing else. If either changed (a refresh that moved the catalog counts), the run refuses and reports the command again, to be shown to a person again",
-      "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Accept the marketplace-declared command whose `sha256` a previous `--json` run reported in `shownCommand`, in place of `-y`. The acceptance counts for exactly that command, plugin, and marketplace catalog. If any of them changed since the command was displayed, including through the run's own marketplace refresh, Claude Code doesn't accept the digest and shows the command again. Can't be combined with `-y`. Has no effect inside a Claude Code session, so run the command from your own terminal. Requires Claude Code v2.1.271 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "category": "cli"
     },
     {
       "symbol": "--add-dir",
@@ -3807,15 +3807,15 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
+      "description": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY, unless you pass `--accept-command`. Has no effect inside a Claude Code session, so run the command from your own terminal",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
-        "plugin install": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal",
+        "plugin install": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY, unless you pass `--accept-command`. Has no effect inside a Claude Code session, so run the command from your own terminal",
         "plugin prune": "Skip the confirmation prompt. Required when stdin or stdout is not a TTY",
         "plugin uninstall": "Skip the `--prune` confirmation prompt. Required when stdin or stdout is not a TTY",
-        "plugin update": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY. Has no effect inside a Claude Code session, so run the command from your own terminal"
+        "plugin update": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download. Accepting a `headersHelper` requires Claude Code v2.1.238 or later. Claude Code still prints the command first. Required when stdin or stdout isn't a TTY, unless you pass `--accept-command`. Has no effect inside a Claude Code session, so run the command from your own terminal"
       },
       "scopes": [
         "auto-mode reset",
@@ -9754,7 +9754,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set the agent count Claude aims for in the dynamic workflows it writes. Claude Code sends the value to Claude as advice, not an enforced cap: `\"small\"` asks for fewer than 5 agents, `\"medium\"` fewer than 15, and `\"large\"` fewer than 50. Choose `\"small\"` when you want to bound what a workflow spends. Requires Claude Code v2.1.219 or later.",
+      "description": "Set the agent count Claude aims for in the dynamic workflows it writes. Claude Code sends the value to Claude as advice, not an enforced cap: `\"small\"` asks for fewer than 5 agents, `\"medium\"` fewer than 10, and `\"large\"` fewer than 50. Choose `\"small\"` when you want to bound what a workflow spends. Requires Claude Code v2.1.219 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -18122,7 +18122,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` for unattended sessions such as eval harnesses, CI jobs, or remote workers. Retries `429` and `529` capacity errors indefinitely instead of failing after `CLAUDE_CODE_MAX_RETRIES` attempts. Claude Code fails at once on a `429` that reports a spend limit or exhausted usage credits, even one from a gateway spend cap that resets on a schedule. Before v2.1.239, the watchdog retried these indefinitely. The watchdog backs off up to 5 minutes between attempts, or until the limit resets when the response carries a rate-limit reset time, so a session that hits a usage limit waits out the remaining window. On v2.1.199 or later it also raises the default retry count for other transient errors, such as server errors, timeouts, and dropped connections, to 300, roughly three hours of backoff, and removes the cap of 15 on `CLAUDE_CODE_MAX_RETRIES` if you set that variable explicitly. Requires Claude Code v2.1.186 or later",
+      "description": "Set to `1` for unattended sessions such as eval harnesses, CI jobs, or remote workers. Retries `429` and `529` capacity errors indefinitely instead of failing after `CLAUDE_CODE_MAX_RETRIES` attempts. Claude Code fails at once when a standard-speed request gets a `429` that reports a spend limit or exhausted usage credits, even one from a gateway spend cap that resets on a schedule. Before v2.1.239, the watchdog retried these indefinitely. For fast mode requests, see Handle rate limits. The watchdog backs off up to 5 minutes between attempts, or until the limit resets when the response carries a rate-limit reset time, so a session that hits a usage limit waits out the remaining window. On v2.1.199 or later it also raises the default retry count for other transient errors, such as server errors, timeouts, and dropped connections, to 300, roughly three hours of backoff, and removes the cap of 15 on `CLAUDE_CODE_MAX_RETRIES` if you set that variable explicitly. Requires Claude Code v2.1.186 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
