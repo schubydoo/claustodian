@@ -1877,6 +1877,10 @@
       {
         "from": "2.1.71",
         "description": "Dump the JS heap to ~/Desktop"
+      },
+      {
+        "from": "2.1.274",
+        "description": "Dump the JS heap to the Desktop; on Linux with no Desktop folder, the home directory"
       }
     ],
     "command:/help": [
@@ -2595,6 +2599,10 @@
       {
         "from": "2.1.163",
         "description": "Set up Claude Code on the web with your GitHub account"
+      },
+      {
+        "from": "2.1.274",
+        "description": "Set up cloud sessions with your GitHub account"
       }
     ],
     "command:/wellbeing": [
