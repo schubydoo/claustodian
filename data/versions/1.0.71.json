@@ -466,7 +466,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Resume a web session in your local terminal",
+      "description": "Resume a cloud session in your local terminal",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli-internal"
@@ -2341,11 +2341,11 @@
       "first_seen": "0.2.42",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Timeout in milliseconds for MCP server startup (default: 30000, or 30 seconds)",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -2572,6 +2572,18 @@
       "description": "Override region for Claude 4.1 Opus when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
+      "symbol": "XDG_CONFIG_HOME",
+      "type": "env_var",
+      "first_seen": "1.0.3",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     }
   ]
