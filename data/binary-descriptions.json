@@ -979,6 +979,12 @@
         "description": "Print response and exit (useful for pipes). Note: The workspace trust dialog is skipped when Claude is run in non-interactive mode (via -p, or when stdout is not a TTY, e.g. piped or redirected output). Only use this in directories you trust. Settings files that fail validation are silently ignored in this mode (no error dialog is shown)."
       }
     ],
+    "cli_flag:--project-config-root": [
+      {
+        "from": "2.1.275",
+        "description": "Read project settings, .mcp.json and the .claude config trees (commands, agents, skills, workflows, routines, output-styles; --routine is refused with this flag) from this directory rather than the working directory (for a session a host starts in a worktree of it)"
+      }
+    ],
     "cli_flag:--prompt-suggestions": [
       {
         "from": "2.1.154",
@@ -1017,6 +1023,12 @@
       {
         "from": "2.1.224",
         "description": "Branch, tag, or SHA to check out in the remote session; defaults to local current branch. Requires --cloud or --environment."
+      }
+    ],
+    "cli_flag:--registry": [
+      {
+        "from": "2.1.275",
+        "description": "For a <package>@npm install: resolve and download from this npm registry instead of the one your npm configuration selects"
       }
     ],
     "cli_flag:--remote": [

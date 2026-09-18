@@ -2738,10 +2738,10 @@
       "provenance": "changelog",
       "confidence": "high",
       "description": "Deprecated: use /config to change output style",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command",
-      "deprecated_in": "2.1.73",
-      "description_source": "binary"
+      "deprecated_in": "2.1.73"
     },
     {
       "symbol": "/passes",
@@ -8102,12 +8102,11 @@
       "type": "env_var",
       "first_seen": "2.1.111",
       "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
-      "description": "Set to `1` to enable appending extra text to the end of the system prompt of every subagent other than a forked subagent.",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -8973,7 +8972,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to skip the re-clone attempt and keep using the existing marketplace cache when a `git pull` fails. Useful in offline or airgapped environments where re-cloning would fail the same way. See Marketplace updates fail in offline environments",
+      "description": "Set to `1` to skip the re-clone attempt and keep using the existing marketplace checkout when a marketplace refresh can't reach or authenticate to the remote. Useful in offline or airgapped environments where re-cloning would fail the same way. See Marketplace updates fail in offline environments",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -10976,7 +10975,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls whether startup waits for MCP servers to connect before the first query. MCP startup is non-blocking by default: servers connect in the background and their tools become available as they finish. Set to `0` to make Claude Code wait for servers to connect before the first query. Servers configured with `alwaysLoad: true` still make startup wait regardless, except when served from the discovery cache, since their tools must be present when the first prompt is built. In non-interactive mode (`-p`), Claude Code also waits for still-pending servers before the first turn regardless of this variable, with a longer deadline when you pass `--mcp-config` explicitly; see that flag's entry for the cached-server exception",
+      "description": "Controls whether startup waits for MCP servers to connect before the first query. MCP startup is non-blocking by default: servers connect in the background and their tools become available as they finish. Set to `0` to make Claude Code wait for servers to connect before the first query. Servers configured with `alwaysLoad: true` still make startup wait regardless, except when served from the discovery cache, since their tools must be present when the first prompt is built. In non-interactive mode (`-p`) without `--input-format stream-json`, Claude Code also waits for still-pending servers before the first turn regardless of this variable. When you pass `--mcp-config` explicitly, the wait has a longer deadline; see that flag's entry for the cached-server exception",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
