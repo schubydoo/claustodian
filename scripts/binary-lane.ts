@@ -370,9 +370,36 @@ export function isPublishableBinaryFlag(observation: BinaryObservation): boolean
  * sighting re-date that record would answer "when did --capacity appear?" with
  * the wrong event. The same argument the withholding gate used to make about
  * `--help` applies to every scoped flag, so it outlives the gate.
+ *
+ * `recordFirstSeenEstimated` is the one case that argument does not cover. An
+ * ESTIMATE is an upper bound — "no later than this" — and a positive sighting of
+ * the same token at an earlier version refutes it outright, so there is no rival
+ * anchored claim for the scope caveat to protect. Without this, an incidental
+ * changelog bullet publishes as the date: a 2.1.275 bug-fix bullet naming
+ * `--drain-wait-sec` dated it 2.1.275 and dropped it from every snapshot back to
+ * its real 2.1.224 sighting, and `--base-dir`, `--kill-session-after-min` and
+ * `--use-anthropic-git-proxy` shipped the same way.
+ *
+ * It is the ANCHORED half, not the completeness of the scope set, that keeps
+ * `--capacity` answering 2.1.51 from its docs page rather than 2.1.224 from the
+ * runner. What the caveat no longer covers is a dual-scope flag whose docs page
+ * states no `min-version`: enrichSymbols dates that at the tip and marks it
+ * estimated, so a runner sighting would re-date it. No published record is in that
+ * state, and no switch-case observation is first seen before 2.1.224, so none can
+ * out-date a docs `min-version` either.
+ *
+ * The scope set must still be COMPLETE (isPublishableBinaryFlag), so an observation
+ * with no scope set stays silent whatever the record's date. Today that is Node's
+ * own `--experimental-repl-await`, `--pending-deprecation` and `--use-strict`, and
+ * it would cover `--help`, whose scope set cannot be complete because the `/plugin`
+ * parser switches on it too.
  */
-export function mayRedateFromBinary(observation: BinaryObservation): boolean {
-  return observation.switch_case_only !== true;
+export function mayRedateFromBinary(
+  observation: BinaryObservation,
+  recordFirstSeenEstimated = false
+): boolean {
+  if (observation.switch_case_only !== true) return true;
+  return recordFirstSeenEstimated && isPublishableBinaryFlag(observation);
 }
 
 /**

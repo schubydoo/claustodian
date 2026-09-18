@@ -94,10 +94,14 @@ were written as absolute resolvers were never wrong.
 **Observations are evidence; policy lives in `binary-lane.ts`.**
 `data/binary-observations.json` records what was seen. What publishes, how it is
 categorised, and whether it may re-date an existing record are interpretation. Note
-`mayRedateFromBinary` is deliberately stricter than `isPublishableBinaryFlag`: a
-subcommand-scoped flag publishes, but its dates describe that subcommand's flag, and
-identity is flat — a `self-hosted-runner` sighting must not answer "when did
-`--capacity` appear?".
+`mayRedateFromBinary` is deliberately stricter than `isPublishableBinaryFlag` for an
+ANCHORED date: a subcommand-scoped flag publishes, but its dates describe that
+subcommand's flag, and identity is flat — a `self-hosted-runner` sighting must not
+answer "when did `--capacity` appear?". An ESTIMATE is the one carve-out, and there
+the two predicates coincide. An estimate is an upper bound, so an earlier sighting of
+the same token refutes it, and no anchored claim is at stake. Without the carve-out a
+passing changelog bullet outranked the sighting: `--drain-wait-sec` published 2.1.275
+and disappeared from every earlier snapshot.
 
 **Prefer structural evidence over curated lists.** Curated lists rot silently. Every
 lane that works is anchored on something the bundle states about itself:

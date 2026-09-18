@@ -401,6 +401,24 @@ describe('isPublishableBinaryFlag / mayRedateFromBinary', () => {
     expect(mayRedateFromBinary(scoped)).toBe(false);
   });
 
+  it('lets a scoped observation correct an ESTIMATED date but not an anchored one', () => {
+    // An estimate is an upper bound, so an earlier sighting of the same token
+    // refutes it and there is no rival anchored claim to protect.
+    const scoped = obs({ switch_case_only: true, scopes: ['self-hosted-runner'] });
+    expect(mayRedateFromBinary(scoped, true)).toBe(true);
+    expect(mayRedateFromBinary(scoped, false)).toBe(false);
+  });
+
+  it('keeps an incomplete scope set silent even against an estimate', () => {
+    // The absent scope set is what returns false here, not the name: the predicate
+    // never reads `symbol`. Today this covers Node's own `--experimental-repl-await`,
+    // `--pending-deprecation` and `--use-strict`, the three switch-case observations
+    // containment could not scope.
+    const unscoped = obs({ symbol: '--use-strict', switch_case_only: true });
+    expect(mayRedateFromBinary(unscoped, true)).toBe(false);
+    expect(mayRedateFromBinary(obs({ switch_case_only: true, scopes: [] }), true)).toBe(false);
+  });
+
   it('lets an ordinary observation re-date a record', () => {
     expect(mayRedateFromBinary(obs())).toBe(true);
   });
