@@ -6683,11 +6683,11 @@
       "first_seen": "2.0.77",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Maximum number of characters of a background task's output that the `TaskOutput` tool keeps (default: 32000; maximum: 160000).",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {

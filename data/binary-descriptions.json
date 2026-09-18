@@ -1193,6 +1193,12 @@
         "description": "Force SSO login flow"
       }
     ],
+    "cli_flag:--status": [
+      {
+        "from": "2.1.277",
+        "description": "Report whether design-system access is authorized, and exit"
+      }
+    ],
     "cli_flag:--strict": [
       {
         "from": "2.1.145",
@@ -4223,6 +4229,10 @@
       {
         "from": "2.1.261",
         "description": "How many characters of a background task's output the TaskOutput tool hands Claude inline (default 32000; values clamp to 4000-128000). Longer output is cut to its most recent characters with the path of the full output file, except that a shell command still running returns its first characters up to this size. When set, this also replaces TASK_MAX_OUTPUT_LENGTH, which on its own only sizes that window."
+      },
+      {
+        "from": "2.1.277",
+        "description": "Deprecated: no longer has any effect (the TaskOutput tool was removed). Read a background task's output file with the Read tool instead."
       }
     ],
     "config_key:teammateMode": [
