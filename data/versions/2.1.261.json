@@ -1007,22 +1007,6 @@
       ]
     },
     {
-      "symbol": "--drain-wait-sec",
-      "type": "cli_flag",
-      "first_seen": "2.1.224",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "binary",
-      "confidence": "high",
-      "description": "On SIGTERM/SIGINT, wait up to N seconds for each session's in-flight turn (a foreground tool call) and running background tasks to finish before sending the session process its SIGTERM. Adds N to the advertised shutdown budget. Default: 0 (send SIGTERM immediately). Max: 86400. (--drain-wait-bg-tasks-sec is a deprecated alias for this flag.)",
-      "description_source": "help",
-      "source_url": null,
-      "category": "cli",
-      "scopes": [
-        "self-hosted-runner"
-      ]
-    },
-    {
       "symbol": "--dry-run",
       "type": "cli_flag",
       "first_seen": "2.1.118",
@@ -2407,11 +2391,11 @@
       "first_seen": "2.1.129",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Fetch a plugin `.zip` archive from a URL for this session only. Repeat the flag for multiple plugins, or pass space-separated URLs in a single quoted value",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -4103,7 +4087,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open the Settings interface to adjust theme, model, output style, and other preferences. From v2.1.181, pass one or more `key=value` pairs to set a setting directly without opening the interface, for example `/config thinking=false`. From v2.1.182, named shorthand keys are also accepted, such as `/config theme=dark` or `/config model=sonnet`. The `key=value` form also works in non-interactive mode (`-p`) and from the Claude mobile app via Remote Control. The `key=value` form can't turn on a setting that needs your confirmation in the panel, such as `autoContinueAtUsageLimit`, though it can turn one off. Run `/config --help` to list the keys it accepts. Alias: `/settings`",
+      "description": "Open the Settings interface to adjust theme, model, output style, and other preferences. Pass one or more `key=value` pairs to set a setting directly without opening the interface, for example `/config thinking=false`. From v2.1.182, named shorthand keys are also accepted, such as `/config theme=dark` or `/config model=sonnet`. The `key=value` form also works in non-interactive mode (`-p`) and from the Claude mobile app via Remote Control. The `key=value` form can't turn on a setting that needs your confirmation in the panel, such as `autoContinueAtUsageLimit`, though it can turn one off. Run `/config --help` to list the keys it accepts. Alias: `/settings`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4809,10 +4793,10 @@
       "provenance": "changelog",
       "confidence": "high",
       "description": "Deprecated: use /config to change output style",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command",
-      "deprecated_in": "2.1.73",
-      "description_source": "binary"
+      "deprecated_in": "2.1.73"
     },
     {
       "symbol": "/passes",
@@ -5613,12 +5597,12 @@
       "first_seen": "2.1.163",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Change settings: hooks, permissions, environment variables",
-      "description_source": "binary",
-      "source_url": null,
-      "category": "command"
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/upgrade",
@@ -6333,7 +6317,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Render screen-reader friendly output: flat text without decorative borders or animations. Screen-reader mode uses the classic renderer, so the `tui` setting has no effect while it is active; attached background sessions still render fullscreen. Requires Claude Code v2.1.181 or later.",
+      "description": "Render screen-reader friendly output: flat text without decorative borders or animations. Screen-reader mode uses the classic renderer, so the `tui` setting has no effect while it is active; attached background sessions still render fullscreen.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -14568,12 +14552,11 @@
       "type": "env_var",
       "first_seen": "2.1.111",
       "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
-      "description": "Set to `1` to enable appending extra text to the end of the system prompt of every subagent other than a forked subagent. The `--append-subagent-system-prompt` and `--append-subagent-system-prompt-file` flags supply the appended text and set this variable automatically, so you don't need to set it yourself. Requires Claude Code v2.1.205 or later",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -16873,7 +16856,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to skip the re-clone attempt and keep using the existing marketplace cache when a `git pull` fails. Useful in offline or airgapped environments where re-cloning would fail the same way. See Marketplace updates fail in offline environments",
+      "description": "Set to `1` to skip the re-clone attempt and keep using the existing marketplace checkout when a marketplace refresh can't reach or authenticate to the remote. Useful in offline or airgapped environments where re-cloning would fail the same way. See Marketplace updates fail in offline environments",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -17406,7 +17389,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Maximum age in milliseconds of the last transcript message for a session that ended mid-turn to continue automatically on resume. When the last message is older than this bound, Claude Code skips both the `CLAUDE_CODE_RESUME_INTERRUPTED_TURN` automatic resume and the injected `CLAUDE_CODE_RESUME_PROMPT` continuation message, and the session starts idle so you continue explicitly. Unset or `0` means no bound; a negative or non-numeric value applies a one-hour bound. Spawn scripts for long-running agents can set this so a restart against an old transcript doesn't re-run a stale prompt. Claude Code sets a one-hour bound itself when it restarts a crashed agent view session that inherited its conversation from an interactive session. Requires Claude Code v2.1.211 or later",
+      "description": "Maximum age in milliseconds of the last transcript message for a session that ended mid-turn to continue automatically on resume. When the last message is older than this bound, Claude Code skips both the `CLAUDE_CODE_RESUME_INTERRUPTED_TURN` automatic resume and the injected `CLAUDE_CODE_RESUME_PROMPT` continuation message, and the session starts idle so you continue explicitly. Unset or `0` means no bound, except that a turn whose last request failed with an API error resumes only while that error is less than six hours old. A positive value bounds every turn, including those; a negative or non-numeric value applies a one-hour bound. Spawn scripts for long-running agents can set this so a restart against an old transcript doesn't re-run a stale prompt. Claude Code sets a one-hour bound itself when it restarts a crashed agent view session that inherited its conversation from an interactive session. Requires Claude Code v2.1.211 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -20770,7 +20753,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls whether startup waits for MCP servers to connect before the first query. MCP startup is non-blocking by default: servers connect in the background and their tools become available as they finish. Set to `0` to make Claude Code wait for servers to connect before the first query. Servers configured with `alwaysLoad: true` still make startup wait regardless, except when served from the discovery cache, since their tools must be present when the first prompt is built. In non-interactive mode (`-p`), Claude Code also waits for still-pending servers before the first turn regardless of this variable, with a longer deadline when you pass `--mcp-config` explicitly; see that flag's entry for the cached-server exception",
+      "description": "Controls whether startup waits for MCP servers to connect before the first query. MCP startup is non-blocking by default: servers connect in the background and their tools become available as they finish. Set to `0` to make Claude Code wait for servers to connect before the first query. Servers configured with `alwaysLoad: true` still make startup wait regardless, except when served from the discovery cache, since their tools must be present when the first prompt is built. In non-interactive mode (`-p`) without `--input-format stream-json`, Claude Code also waits for still-pending servers before the first turn regardless of this variable. When you pass `--mcp-config` explicitly, the wait has a longer deadline; see that flag's entry for the cached-server exception",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -20873,7 +20856,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "On the v2 MCP client runtime only, whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `auto` to probe HTTP, claude.ai connector, and stdio servers; a server that doesn't answer the probe connects on the earlier protocol instead, as SSE and WebSocket servers always do. Set `legacy` to skip the probe for every server. Without the variable, Claude Code probes HTTP and claude.ai connector servers on Claude Code v2.1.232 or later, with the exceptions the MCP client runtimes section lists. Any other value is ignored with a warning in the debug log. Requires Claude Code v2.1.221 or later",
+      "description": "On the v2 MCP client runtime only, whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `auto` to probe HTTP, claude.ai connector, and stdio servers; a server that doesn't answer the probe connects on the earlier protocol instead, as SSE and WebSocket servers always do. Set `legacy` to skip the probe for every server. Without the variable, Claude Code probes HTTP servers, and also probes claude.ai connector servers in sessions where it fetches feature flags. Any other value is ignored with a warning in the debug log. Requires Claude Code v2.1.221 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -20899,7 +20882,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Pin which MCP client runtime this process connects to MCP servers with: `v1`, built on MCP TypeScript SDK 1.x, or `v2`, built on MCP TypeScript SDK 2.0. Without the variable, Claude Code uses v2 on Claude Code v2.1.232 or later, except where that section says it uses v1. On Claude Code v2.1.221 or later, the v2 runtime checks the issuer an MCP OAuth server returns in its authorization response and fails the sign-in with an error that begins `Issuer mismatch in authorization response` when it doesn't match. The v1 runtime doesn't run this check. If you set an unrecognized value, Claude Code ignores it and writes a warning to the debug log. Claude Code reads the value once per process. Requires Claude Code v2.1.218 or later",
+      "description": "Pin which MCP client runtime this process connects to MCP servers with: `v1`, built on MCP TypeScript SDK 1.x, or `v2`, built on MCP TypeScript SDK 2.0. Without the variable, Claude Code uses v2, starting with the versions listed in that section. On Claude Code v2.1.221 or later, the v2 runtime checks the issuer an MCP OAuth server returns in its authorization response and fails the sign-in with an error that begins `Issuer mismatch in authorization response` when it doesn't match. The v1 runtime doesn't run this check. If you set an unrecognized value, Claude Code ignores it and writes a warning to the debug log. Claude Code reads the value once per process. Requires Claude Code v2.1.218 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
