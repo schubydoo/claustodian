@@ -1265,11 +1265,18 @@ export function enrichSymbols(
  * credits the text.
  *
  * A symbol with a per-version description TIMELINE is skipped, because
- * assembleSnapshots already fills it at every version from the archived binaries.
- * One audited string would stamp the tip's answer on older snapshots, which is
- * the same anachronism the description guard exists to prevent. That leaves the
- * audit doing what only it can: the runner flags have no timeline at all, since
- * the `--help` sweep that built the timelines never reached the subcommand.
+ * assembleSnapshots resolves those from the archived binaries per version. One
+ * audited string would stamp the tip's answer on every snapshot the symbol is live
+ * at, which is the anachronism the description guard exists to prevent. (describeAt
+ * leaves a version BEFORE the first era empty rather than filling it, so the skip
+ * trades a tip-era string for a gap in the oldest snapshots, and that is the trade
+ * invariant 4 asks for.) It leaves the audit doing what only it can: the runner
+ * flags have no timeline at all, since the `--help` sweep that built the timelines
+ * never reached the subcommand.
+ *
+ * An EMPTY era array counts as no timeline, matching how describeAt reads the same
+ * map, so a symbol cannot fall between the two and end up with no description from
+ * either.
  */
 function describeFromPromotion(
   record: SymbolRecord,
@@ -1278,7 +1285,7 @@ function describeFromPromotion(
 ): SymbolRecord {
   if (record.description !== '') return record;
   const key = `${obs.type}:${obs.symbol}`;
-  if (binaryDescriptions?.[key] !== undefined) return record;
+  if (binaryDescriptions?.[key]?.length) return record;
   const promo = promotionFor(obs.type, obs.symbol);
   if (promo === undefined) return record;
   return finalizeRecord({
@@ -1290,7 +1297,7 @@ function describeFromPromotion(
 }
 
 /**
- * Overlays the binary lane onto the changelog+docs records. Two effects, both
+ * Overlays the binary lane onto the changelog+docs records. Three effects, all
  * grounded in positive extraction evidence (the symbol literally appeared in that
  * version's bundle):
  *
@@ -1309,6 +1316,10 @@ function describeFromPromotion(
  *    registration/registry evidence. A symbol
  *    a maintainer has audited (PROMOTED_BINARY_SYMBOLS) is instead published
  *    active/high with a first-party description (still provenance:"binary").
+ *  - audited descriptions on a SHARED record — the only effect that reaches a
+ *    record the binary lane does not own. A record another lane claimed but left
+ *    with an empty description takes the audited text, and nothing else about it
+ *    moves (describeFromPromotion).
  *
  * Shared (changelog/docs) records keep their own removed_in — the binary lane
  * only corrects first_seen upward-in-time on them, never their lifecycle end;

@@ -410,11 +410,13 @@ describe('isPublishableBinaryFlag / mayRedateFromBinary', () => {
   });
 
   it('keeps an incomplete scope set silent even against an estimate', () => {
-    // `--help`: the `/plugin` parser switches on it too, so no scope set of it can
-    // be complete, and a `decode-token --help` sighting proves nothing about the
-    // top-level flag — estimate or not.
-    const unscoped = obs({ symbol: '--help', switch_case_only: true });
+    // The absent scope set is what returns false here, not the name: the predicate
+    // never reads `symbol`. Today this covers Node's own `--experimental-repl-await`,
+    // `--pending-deprecation` and `--use-strict`, the three switch-case observations
+    // containment could not scope.
+    const unscoped = obs({ symbol: '--use-strict', switch_case_only: true });
     expect(mayRedateFromBinary(unscoped, true)).toBe(false);
+    expect(mayRedateFromBinary(obs({ switch_case_only: true, scopes: [] }), true)).toBe(false);
   });
 
   it('lets an ordinary observation re-date a record', () => {

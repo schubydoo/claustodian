@@ -380,10 +380,19 @@ export function isPublishableBinaryFlag(observation: BinaryObservation): boolean
  * its real 2.1.224 sighting, and `--base-dir`, `--kill-session-after-min` and
  * `--use-anthropic-git-proxy` shipped the same way.
  *
- * The scope set must still be COMPLETE (isPublishableBinaryFlag), which keeps the
- * `--help` case intact: a `self-hosted-runner decode-token` parser accepting it
- * proves nothing about the top-level flag, and `--help` has no scope set because
- * the `/plugin` parser switches on it too.
+ * It is the ANCHORED half, not the completeness of the scope set, that keeps
+ * `--capacity` answering 2.1.51 from its docs page rather than 2.1.224 from the
+ * runner. What the caveat no longer covers is a dual-scope flag whose docs page
+ * states no `min-version`: enrichSymbols dates that at the tip and marks it
+ * estimated, so a runner sighting would re-date it. No published record is in that
+ * state, and no switch-case observation is first seen before 2.1.224, so none can
+ * out-date a docs `min-version` either.
+ *
+ * The scope set must still be COMPLETE (isPublishableBinaryFlag), so an observation
+ * with no scope set stays silent whatever the record's date. Today that is Node's
+ * own `--experimental-repl-await`, `--pending-deprecation` and `--use-strict`, and
+ * it would cover `--help`, whose scope set cannot be complete because the `/plugin`
+ * parser switches on it too.
  */
 export function mayRedateFromBinary(
   observation: BinaryObservation,
