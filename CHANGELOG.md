@@ -16,6 +16,36 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-09-17
+
+### Fixed
+
+- **A passing changelog mention no longer outranks the binary sighting of a scoped
+  flag.** A bullet that names a flag incidentally registers it in the changelog lane
+  at that version. The binary lane sees some flags only as a subcommand's argv
+  switch. A scoped observation like that cannot re-date a record, so the changelog
+  date won. But that date is a mere upper bound. An earlier sighting of the same
+  token refutes it. When containment proved the flag's complete scope set, the
+  sighting now corrects the date. `--drain-wait-sec` read `2.1.275` after the
+  2.1.275 changelog named it in a bug-fix bullet. That dropped it from every
+  snapshot back to its real 2.1.224 sighting. `--base-dir` (`2.1.225`),
+  `--kill-session-after-min` (`2.1.260`) and `--use-anthropic-git-proxy`
+  (`2.1.267`) carried the same error. All four now read `2.1.224`. An anchored date
+  is still safe from a scoped sighting. That is what keeps one `--capacity` record
+  from answering for both `remote-control` and `self-hosted-runner`. `--help` still
+  corrects nothing. No scope set of it can be complete.
+- **An audited binary description now fills a record another lane left empty.** The
+  maintainer-audited `--help` text was reachable in one place only: the branch where
+  the binary lane adds a symbol no other lane knew. A symbol the changelog also
+  named therefore published with an empty description. `--drain-wait-sec`,
+  `--kill-session-after-min` and `--use-anthropic-git-proxy` all shipped that way.
+  The text now fills an empty description whatever lane owns the record. It never
+  replaces text a lane supplied. A symbol with a per-version description timeline
+  is left to that timeline, which is the more exact answer at every version.
+  `provenance` is untouched, and only `description_source` credits the text. **No
+  data ships in this change.** The regeneration that corrects the four records is a
+  separate data PR.
+
 ## 2026-09-04
 
 ### Fixed

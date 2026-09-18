@@ -401,6 +401,22 @@ describe('isPublishableBinaryFlag / mayRedateFromBinary', () => {
     expect(mayRedateFromBinary(scoped)).toBe(false);
   });
 
+  it('lets a scoped observation correct an ESTIMATED date but not an anchored one', () => {
+    // An estimate is an upper bound, so an earlier sighting of the same token
+    // refutes it and there is no rival anchored claim to protect.
+    const scoped = obs({ switch_case_only: true, scopes: ['self-hosted-runner'] });
+    expect(mayRedateFromBinary(scoped, true)).toBe(true);
+    expect(mayRedateFromBinary(scoped, false)).toBe(false);
+  });
+
+  it('keeps an incomplete scope set silent even against an estimate', () => {
+    // `--help`: the `/plugin` parser switches on it too, so no scope set of it can
+    // be complete, and a `decode-token --help` sighting proves nothing about the
+    // top-level flag — estimate or not.
+    const unscoped = obs({ symbol: '--help', switch_case_only: true });
+    expect(mayRedateFromBinary(unscoped, true)).toBe(false);
+  });
+
   it('lets an ordinary observation re-date a record', () => {
     expect(mayRedateFromBinary(obs())).toBe(true);
   });

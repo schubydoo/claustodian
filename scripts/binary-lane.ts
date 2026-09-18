@@ -370,9 +370,27 @@ export function isPublishableBinaryFlag(observation: BinaryObservation): boolean
  * sighting re-date that record would answer "when did --capacity appear?" with
  * the wrong event. The same argument the withholding gate used to make about
  * `--help` applies to every scoped flag, so it outlives the gate.
+ *
+ * `recordFirstSeenEstimated` is the one case that argument does not cover. An
+ * ESTIMATE is an upper bound — "no later than this" — and a positive sighting of
+ * the same token at an earlier version refutes it outright, so there is no rival
+ * anchored claim for the scope caveat to protect. Without this, an incidental
+ * changelog bullet publishes as the date: a 2.1.275 bug-fix bullet naming
+ * `--drain-wait-sec` dated it 2.1.275 and dropped it from every snapshot back to
+ * its real 2.1.224 sighting, and `--base-dir`, `--kill-session-after-min` and
+ * `--use-anthropic-git-proxy` shipped the same way.
+ *
+ * The scope set must still be COMPLETE (isPublishableBinaryFlag), which keeps the
+ * `--help` case intact: a `self-hosted-runner decode-token` parser accepting it
+ * proves nothing about the top-level flag, and `--help` has no scope set because
+ * the `/plugin` parser switches on it too.
  */
-export function mayRedateFromBinary(observation: BinaryObservation): boolean {
-  return observation.switch_case_only !== true;
+export function mayRedateFromBinary(
+  observation: BinaryObservation,
+  recordFirstSeenEstimated = false
+): boolean {
+  if (observation.switch_case_only !== true) return true;
+  return recordFirstSeenEstimated && isPublishableBinaryFlag(observation);
 }
 
 /**

@@ -922,6 +922,156 @@ describe('enrichWithBinary', () => {
     expect(byKey(out).get('cli_flag:--help')).toMatchObject({ first_seen: '2.1.200' });
   });
 
+  it('lets a complete-scope observation correct a LATER estimate', () => {
+    // The 2.1.275 changelog named `--drain-wait-sec` in a bug-fix bullet, which dated
+    // the record 2.1.275 and dropped the flag from every snapshot back to its real
+    // 2.1.224 sighting. An estimate is an upper bound, so an earlier sighting of the
+    // same token refutes it — and the scope set here is complete, unlike `--help`.
+    const out = enrichWithBinary(
+      [
+        record({
+          symbol: '--drain-wait-sec',
+          first_seen: '2.1.275',
+          first_seen_estimated: true,
+          confidence: 'medium',
+          description: '',
+        }),
+      ],
+      binary([
+        {
+          symbol: '--drain-wait-sec',
+          type: 'cli_flag',
+          first_seen: '2.1.224',
+          last_seen: '2.1.275',
+          switch_case_only: true,
+          scopes: ['self-hosted-runner'],
+        },
+      ])
+    );
+    expect(byKey(out).get('cli_flag:--drain-wait-sec')).toMatchObject({
+      first_seen: '2.1.224',
+      confidence: 'high',
+    });
+    expect(byKey(out).get('cli_flag:--drain-wait-sec')?.first_seen_estimated).toBeUndefined();
+  });
+
+  it('still refuses to re-date an ANCHORED date from a scoped observation', () => {
+    // The other half of the rule above, and the `--capacity` case in one record:
+    // identity is `type:symbol`, so a runner sighting must not overwrite a date
+    // another lane ANCHORED for a different invocation path. Deliberately a later
+    // anchored date, so only the estimate check can be what saves it.
+    const out = enrichWithBinary(
+      [record({ symbol: '--capacity', first_seen: '2.1.240', confidence: 'high' })],
+      binary([
+        {
+          symbol: '--capacity',
+          type: 'cli_flag',
+          first_seen: '2.1.224',
+          last_seen: '2.1.272',
+          switch_case_only: true,
+          scopes: ['self-hosted-runner'],
+        },
+      ])
+    );
+    expect(byKey(out).get('cli_flag:--capacity')?.first_seen).toBe('2.1.240');
+  });
+
+  it('fills an empty description from the binary audit without changing provenance', () => {
+    // `--kill-session-after-min` shipped with an empty description for 15 releases:
+    // the changelog named it, so the binary-only append that reads the audit table
+    // never ran for it. A record another lane claimed still gets the audited text.
+    const out = enrichWithBinary(
+      [
+        record({
+          symbol: '--kill-session-after-min',
+          first_seen: '2.1.224',
+          description: '',
+          provenance: 'changelog',
+        }),
+      ],
+      binary([
+        {
+          symbol: '--kill-session-after-min',
+          type: 'cli_flag',
+          first_seen: '2.1.224',
+          last_seen: '2.1.272',
+          switch_case_only: true,
+          scopes: ['self-hosted-runner'],
+        },
+      ])
+    );
+    const filled = byKey(out).get('cli_flag:--kill-session-after-min');
+    expect(filled?.description).toContain('SIGTERM a session child after N min');
+    expect(filled).toMatchObject({ description_source: 'help', provenance: 'changelog' });
+  });
+
+  it('leaves the audit unused when the symbol has a per-version timeline', () => {
+    // assembleSnapshots fills those per version from the archived binaries, which
+    // beats one audited string: `/update-config` and `--rewind-files` both have a
+    // timeline, and stamping the tip's text on the record would carry today's
+    // answer into every older snapshot.
+    const out = enrichWithBinary(
+      [record({ symbol: '--kill-session-after-min', first_seen: '2.1.224', description: '' })],
+      binary([
+        {
+          symbol: '--kill-session-after-min',
+          type: 'cli_flag',
+          first_seen: '2.1.224',
+          last_seen: '2.1.272',
+          switch_case_only: true,
+          scopes: ['self-hosted-runner'],
+        },
+      ]),
+      {
+        'cli_flag:--kill-session-after-min': [{ from: '2.1.224', description: 'from the binary' }],
+      }
+    );
+    const skipped = byKey(out).get('cli_flag:--kill-session-after-min');
+    expect(skipped?.description).toBe('');
+    expect(skipped?.description_source).toBeUndefined();
+  });
+
+  it('leaves an empty description empty when the audit has no entry', () => {
+    // `--mcp-debug` is deliberately un-audited, so this covers the miss rather than
+    // quietly becoming a second test of the promotion table.
+    const out = enrichWithBinary(
+      [record({ symbol: '--mcp-debug', first_seen: '2.1.0', description: '' })],
+      binary([
+        { symbol: '--mcp-debug', type: 'cli_flag', first_seen: '2.1.0', last_seen: '2.1.272' },
+      ])
+    );
+    const untouched = byKey(out).get('cli_flag:--mcp-debug');
+    expect(untouched?.description).toBe('');
+    expect(untouched?.description_source).toBeUndefined();
+  });
+
+  it('never overwrites a description a lane already supplied', () => {
+    const out = enrichWithBinary(
+      [
+        record({
+          symbol: '--kill-session-after-min',
+          first_seen: '2.1.224',
+          description: 'the docs page said this',
+          description_source: 'docs',
+        }),
+      ],
+      binary([
+        {
+          symbol: '--kill-session-after-min',
+          type: 'cli_flag',
+          first_seen: '2.1.224',
+          last_seen: '2.1.272',
+          switch_case_only: true,
+          scopes: ['self-hosted-runner'],
+        },
+      ])
+    );
+    expect(byKey(out).get('cli_flag:--kill-session-after-min')).toMatchObject({
+      description: 'the docs page said this',
+      description_source: 'docs',
+    });
+  });
+
   it('does not touch first_seen when the binary observed the symbol no earlier', () => {
     const input = [record({ symbol: '--foo', first_seen: '1.0.0' })];
     const out = enrichWithBinary(

@@ -40,6 +40,7 @@ import {
   binaryConfigCategory,
   binaryEnvCategory,
   type BinaryDescriptions,
+  type BinaryObservation,
   type BinaryObservations,
   descriptionAt,
   isCurrentDescriptionEra,
@@ -1247,6 +1248,48 @@ export function enrichSymbols(
 }
 
 /**
+ * Fills an EMPTY description from the maintainer-audited binary table
+ * (PROMOTED_BINARY_SYMBOLS), and returns the record untouched otherwise.
+ *
+ * The audit was reachable only from the binary-only append below, so a symbol
+ * another lane also named published with no description at all while its audited
+ * `--help` text sat unused. `--kill-session-after-min` and
+ * `--use-anthropic-git-proxy` both shipped empty that way, and a 2.1.275 bug-fix
+ * bullet naming `--drain-wait-sec` replaced its full description with an empty one.
+ *
+ * Only an empty description is filled, so a docs page or an introducing bullet
+ * still wins — this adds text where the dataset had none and never overwrites a
+ * lane. `provenance` is deliberately left alone: it names the lane that
+ * establishes the symbol, and a changelog entry naming a flag is the stronger
+ * claim (check-auto-merge's PROVENANCE_RANK), so only `description_source`
+ * credits the text.
+ *
+ * A symbol with a per-version description TIMELINE is skipped, because
+ * assembleSnapshots already fills it at every version from the archived binaries.
+ * One audited string would stamp the tip's answer on older snapshots, which is
+ * the same anachronism the description guard exists to prevent. That leaves the
+ * audit doing what only it can: the runner flags have no timeline at all, since
+ * the `--help` sweep that built the timelines never reached the subcommand.
+ */
+function describeFromPromotion(
+  record: SymbolRecord,
+  obs: BinaryObservation,
+  binaryDescriptions?: BinaryDescriptions['descriptions']
+): SymbolRecord {
+  if (record.description !== '') return record;
+  const key = `${obs.type}:${obs.symbol}`;
+  if (binaryDescriptions?.[key] !== undefined) return record;
+  const promo = promotionFor(obs.type, obs.symbol);
+  if (promo === undefined) return record;
+  return finalizeRecord({
+    ...record,
+    first_seen_estimated: record.first_seen_estimated === true,
+    description: promo.description,
+    description_source: promo.description_source,
+  });
+}
+
+/**
  * Overlays the binary lane onto the changelog+docs records. Two effects, both
  * grounded in positive extraction evidence (the symbol literally appeared in that
  * version's bundle):
@@ -1280,21 +1323,27 @@ export function enrichWithBinary(
 
   const merged = records.map((record) => {
     const obs = observedByKey.get(`${record.type}:${record.symbol}`);
-    if (!obs || compareVersionsAsc(obs.first_seen, record.first_seen) >= 0) {
+    if (!obs) {
       return record;
     }
+    const described = describeFromPromotion(record, obs, binaryDescriptions);
+    if (compareVersionsAsc(obs.first_seen, described.first_seen) >= 0) {
+      return described;
+    }
     // A switch-case-only observation is subcommand-scoped, so it says nothing about
-    // when the top-level flag of the same name appeared — it must not re-date it.
-    // This stays gated on the scope caveat itself, NOT on publishability: a scoped
-    // flag publishes now, but `--capacity` is still one record spanning both
-    // `remote-control` (older, from docs) and `self-hosted-runner` (2.1.224), and
-    // the runner's sighting is the wrong answer to "when did --capacity appear?".
-    if (!mayRedateFromBinary(obs)) {
-      return record;
+    // when the top-level flag of the same name appeared — it must not re-date an
+    // ANCHORED date. This stays gated on the scope caveat itself, NOT on
+    // publishability: a scoped flag publishes now, but `--capacity` is still one
+    // record spanning both `remote-control` (older, from docs) and
+    // `self-hosted-runner` (2.1.224), and the runner's sighting is the wrong answer
+    // to "when did --capacity appear?". An ESTIMATE is a different matter — the
+    // sighting refutes the bound, so a complete-scope observation may correct it.
+    if (!mayRedateFromBinary(obs, described.first_seen_estimated === true)) {
+      return described;
     }
     // Binary saw the symbol earlier than any other lane — earliest evidence wins.
     return finalizeRecord({
-      ...record,
+      ...described,
       first_seen: obs.first_seen,
       first_seen_estimated: false,
       confidence: 'high',
