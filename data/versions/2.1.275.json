@@ -13509,7 +13509,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "On Amazon Bedrock, Google Cloud's Agent Platform, and Microsoft Foundry, set to `1` to have the platform's server-side classifier review auto mode actions; where the platform doesn't run the classifier, Claude Code falls back to its own classifier requests. When unset or `0`, the classifier runs through requests that Claude Code itself sends. Has no effect on other providers, including the Anthropic API. Requires Claude Code v2.1.271 or later",
+      "description": "Controls whether Claude Code asks the server to review auto mode actions. When unset, Claude Code asks the server on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS, and when you point `ANTHROPIC_BASE_URL` at an LLM gateway or proxy. Set to `0` to use Claude Code's own classifier requests instead. Not read on a direct connection to the Anthropic API.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
