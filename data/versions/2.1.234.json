@@ -3967,8 +3967,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Skill.** Draft UI mockups, screen flows, landing pages, or posters as artboards on one canvas, published as an artifact that runs a research preview of Claude Design's editor, for example `/design a settings screen for a mobile banking app`. Where saving is enabled for your account, you edit the artboards on the canvas and save to publish a new version; otherwise you view the draft and export it as PNG or PDF. Requires a session where artifacts are available and Claude Code v2.1.234 or later. Available on the Anthropic API. On Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS, artifacts aren't available, so the command is unavailable there",
-      "description_source": "docs",
+      "description": "Grant or revoke Claude agent access to your Design projects",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
     },
