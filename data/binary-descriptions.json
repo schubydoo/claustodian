@@ -1121,6 +1121,10 @@
       {
         "from": "2.1.169",
         "description": "Start with all customizations (CLAUDE.md, skills, plugins, hooks, MCP servers, custom commands and agents, output styles, workflows, custom themes, keybindings, and more) disabled — useful for troubleshooting a broken configuration. Admin-managed (policy) settings still apply. Auth, model selection, built-in tools, and permissions work normally. Sets CLAUDE_CODE_SAFE_MODE=1."
+      },
+      {
+        "from": "2.1.280",
+        "description": "Start with all customizations (CLAUDE.md, skills, installed plugins, hooks, MCP servers, custom commands and agents, output styles, workflows, custom themes, keybindings, and more) disabled"
       }
     ],
     "cli_flag:--scaffold": [
@@ -2695,6 +2699,10 @@
       {
         "from": "2.0.54",
         "description": "When true (and set in managed settings), only hooks from managed settings run. User, project, and local hooks are ignored."
+      },
+      {
+        "from": "2.1.280",
+        "description": "When true (and set in managed settings), only hooks from managed settings and from plugins that managed settings enable run. User, project, and local hooks and the hooks of plugins the user installed are ignored. Features built into Claude Code are not hooks in this sense and keep working."
       }
     ],
     "config_key:allowManagedMcpServersOnly": [
@@ -3079,6 +3087,10 @@
       {
         "from": "1.0.68",
         "description": "Disable all hooks and statusLine execution"
+      },
+      {
+        "from": "2.1.280",
+        "description": "Disable all hooks and statusLine execution: the hooks defined in settings files and by installed plugins. Features built into Claude Code are not hooks in this sense and keep working; each has its own switch."
       }
     ],
     "config_key:disableArtifact": [
