@@ -2817,8 +2817,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Customize the attribution Claude Code adds to git commits and pull requests. Commits get a git trailer such as `Co-Authored-By` by default; pull request descriptions get plain text. Set each part separately with the sub-keys below.",
-      "description_source": "docs",
+      "description": "Customize attribution text for commits and PRs. Each field defaults to the standard Claude Code attribution if not set.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -3283,7 +3283,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Have Claude respond in a language other than English by default. There is no fixed list for responses: Claude Code adds the value verbatim to the system prompt as an instruction to always respond in that language, so any language name Claude can read works. Claude Code doesn't check the value, so a misspelled name reaches Claude as written rather than producing an error. The same value sets the language for voice dictation, which does have a fixed list of supported dictation languages, and for auto-generated session titles.",
+      "description": "Have Claude respond in a language other than English by default. There is no fixed list for responses: Claude Code passes the value verbatim to Claude as an instruction to always respond in that language, so any language name Claude can read works. Claude Code doesn't check the value, so a misspelled name reaches Claude as written rather than producing an error. The same value sets the language for voice dictation, which does have a fixed list of supported dictation languages, and for auto-generated session titles.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"

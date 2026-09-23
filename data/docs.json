@@ -2370,7 +2370,7 @@
     {
       "symbol": "language",
       "type": "config_key",
-      "description": "Have Claude respond in a language other than English by default. There is no fixed list for responses: Claude Code adds the value verbatim to the system prompt as an instruction to always respond in that language, so any language name Claude can read works. Claude Code doesn't check the value, so a misspelled name reaches Claude as written rather than producing an error. The same value sets the language for voice dictation, which does have a fixed list of supported dictation languages, and for auto-generated session titles.",
+      "description": "Have Claude respond in a language other than English by default. There is no fixed list for responses: Claude Code passes the value verbatim to Claude as an instruction to always respond in that language, so any language name Claude can read works. Claude Code doesn't check the value, so a misspelled name reaches Claude as written rather than producing an error. The same value sets the language for voice dictation, which does have a fixed list of supported dictation languages, and for auto-generated session titles.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -4470,6 +4470,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH",
+      "type": "env_var",
+      "description": "Maximum length in characters of each MCP tool description and each MCP server's instructions that Claude Code sends to the model (default: 2048). Claude Code truncates longer text. Accepts a positive whole number in plain digits. Anything else is ignored and the default applies. Requires Claude Code v2.1.280 or later",
+      "doc_min_version": "2.1.280",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_MAX_OUTPUT_TOKENS",
       "type": "env_var",
       "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code defaults to 32000 for model IDs it doesn't recognize, such as gateway-specific names, and lowers values above a model's cap to the cap. Increasing this value reduces the effective context window available before auto-compaction triggers",
@@ -4670,6 +4677,13 @@
       "type": "env_var",
       "description": "Override the plugins root directory. Despite the name, this sets the parent directory, not the cache itself: marketplaces and the plugin cache live in subdirectories under this path. Defaults to `~/.claude/plugins`",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_PLUGIN_DIRS",
+      "type": "env_var",
+      "description": "Plugin directories to load for the session, each loaded the way a `--plugin-dir` flag loads it. Separate multiple paths with `:` on Unix or `;` on Windows. Give each path as an absolute path or start it with `~`, because Claude Code skips relative paths. Requires Claude Code v2.1.280 or later",
+      "doc_min_version": "2.1.280",
       "doc_page": "env-vars"
     },
     {

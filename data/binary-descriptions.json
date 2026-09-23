@@ -69,6 +69,10 @@
       {
         "from": "1.0.125",
         "description": "JSON object defining custom agents (e.g. '{\"reviewer\": {\"description\": \"Reviews code\", \"prompt\": \"You are a code reviewer\"}}')"
+      },
+      {
+        "from": "2.1.281",
+        "description": "JSON object defining custom agents, or with --print the path to a file that holds one (e.g. '{\"reviewer\": {\"description\": \"Reviews code\", \"prompt\": \"You are a code reviewer\"}}')"
       }
     ],
     "cli_flag:--all": [
@@ -167,6 +171,12 @@
       {
         "from": "2.1.8",
         "description": "Include available plugins from marketplaces (requires --json)"
+      }
+    ],
+    "cli_flag:--await-claim": [
+      {
+        "from": "2.1.281",
+        "description": "Start as a pre-warmed spare for an SDK host: boot with host-level options in a neutral directory, skip session-scoped start-up work, and wait for a claim_session control request that binds the process to its session (SDK-internal; requires --print with stream-json input and output)"
       }
     ],
     "cli_flag:--await-initialize": [
@@ -2763,6 +2773,10 @@
       {
         "from": "2.0.62",
         "description": "Customize attribution text for commits and PRs. Each field defaults to the standard Claude Code attribution if not set."
+      },
+      {
+        "from": "2.1.281",
+        "description": "Customize attribution text for commits and PRs. Each field defaults to the standard Claude Code attribution if not set. Set to false to hide all attribution, the same as { \"commit\": \"\", \"pr\": \"\", \"sessionUrl\": false }. Setting it to true is the same as leaving it out. Older Claude Code versions reject true or false here, so use the object form in settings files shared across versions."
       }
     ],
     "config_key:attribution.commit": [

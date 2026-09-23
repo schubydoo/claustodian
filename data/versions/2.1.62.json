@@ -2462,8 +2462,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Customize the attribution Claude Code adds to git commits and pull requests. Commits get a git trailer such as `Co-Authored-By` by default; pull request descriptions get plain text. Set each part separately with the sub-keys below.",
-      "description_source": "docs",
+      "description": "Customize attribution text for commits and PRs. Each field defaults to the standard Claude Code attribution if not set.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
