@@ -347,8 +347,11 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   // `/word` as a slash-command, but these are directories the permission system
   // acts on, not Claude Code commands. `/tmp` also appears alone in an earlier
   // bullet (2.1.232), so this same entry clears that pre-existing false positive.
+  // `/home` comes from the 2.1.282 bullet "… or a rules link to macOS's `/home`
+  // being listed", the same class of false positive.
   '/bin',
   '/etc',
+  '/home',
   '/tmp',
   '/var',
 ]);
