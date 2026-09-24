@@ -3856,7 +3856,7 @@
     {
       "symbol": "CLAUDE_CODE_AUTO_MODE_SERVER",
       "type": "env_var",
-      "description": "Controls whether Claude Code asks the server to review auto mode actions. When unset, Claude Code asks the server on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS, and when you point `ANTHROPIC_BASE_URL` at an LLM gateway or proxy. Set to `0` to use Claude Code's own classifier requests instead. Not read on a direct connection to the Anthropic API. Requires Claude Code v2.1.271 or later; asking the server by default requires v2.1.278 or later",
+      "description": "Controls whether Claude Code asks the server to review auto mode actions. Set to `0` to use Claude Code's own classifier requests instead. On a direct connection to the Anthropic API, requires v2.1.281 or later. The linked section lists which sessions ask the server when the variable is unset, and from which version. Requires Claude Code v2.1.271 or later",
       "doc_min_version": "2.1.271",
       "doc_page": "env-vars"
     },

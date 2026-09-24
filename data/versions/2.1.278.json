@@ -13522,7 +13522,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls whether Claude Code asks the server to review auto mode actions. When unset, Claude Code asks the server on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS, and when you point `ANTHROPIC_BASE_URL` at an LLM gateway or proxy. Set to `0` to use Claude Code's own classifier requests instead. Not read on a direct connection to the Anthropic API. Requires Claude Code v2.1.271 or later; asking the server by default requires v2.1.278 or later",
+      "description": "Controls whether Claude Code asks the server to review auto mode actions. Set to `0` to use Claude Code's own classifier requests instead.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
