@@ -4692,19 +4692,6 @@
       "category": "command"
     },
     {
-      "symbol": "/home",
-      "type": "command",
-      "first_seen": "2.1.282",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
       "symbol": "/hooks",
       "type": "command",
       "first_seen": "1.0.38",
@@ -13804,7 +13791,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls whether Claude Code asks the server to review auto mode actions. When unset, Claude Code asks the server on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS, and when you point `ANTHROPIC_BASE_URL` at an LLM gateway or proxy. Set to `0` to use Claude Code's own classifier requests instead. Not read on a direct connection to the Anthropic API. Requires Claude Code v2.1.271 or later; asking the server by default requires v2.1.278 or later",
+      "description": "Controls whether Claude Code asks the server to review auto mode actions. Set to `0` to use Claude Code's own classifier requests instead. On a direct connection to the Anthropic API, requires v2.1.281 or later. The linked section lists which sessions ask the server when the variable is unset, and from which version. Requires Claude Code v2.1.271 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
