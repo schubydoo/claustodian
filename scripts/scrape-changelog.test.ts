@@ -232,6 +232,18 @@ describe('extractSymbols', () => {
     expect(symbols).toEqual([]);
   });
 
+  it('drops the macOS /home directory named in a symlink-startup bugfix bullet', () => {
+    // 2.1.282: `/home` is a directory a rules symlink can reach, not a
+    // slash-command. `/Network` and `/.vol` in the same bullet never match the
+    // command pattern (uppercase, leading dot), so only `/home` needs the entry.
+    const symbols = extractSymbols(
+      'Fixed CLAUDE.md and rules being read at startup through a repository ' +
+        "symlink reaching macOS's `/Network` via `..` or a `/.vol`-style kernel " +
+        "path, or a rules link to macOS's `/home` being listed"
+    );
+    expect(symbols).toEqual([]);
+  });
+
   it('scopes the changelog-only suppression, leaving the binary denylist clean', () => {
     // Neither the git primitives nor the OS/shell env vars may leak into the
     // shared SYMBOL_DENYLIST that extract-bundle consults: the binary lane must
@@ -252,6 +264,7 @@ describe('extractSymbols', () => {
       'XDG_DATA_HOME',
       '/bin',
       '/etc',
+      '/home',
       '/tmp',
       '/var',
     ];
