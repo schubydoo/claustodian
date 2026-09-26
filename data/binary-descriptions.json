@@ -267,6 +267,12 @@
         "description": "Use Claude subscription (default)"
       }
     ],
+    "cli_flag:--client-data-url": [
+      {
+        "from": "2.1.283",
+        "description": "URL for a signed configuration document. Claude Code exits if it cannot load it or it does not cover the selected model. Setting CLAUDE_CODE_CLIENT_DATA_URL instead keeps the URL out of the process list"
+      }
+    ],
     "cli_flag:--client-id": [
       {
         "from": "2.1.30",
@@ -2917,6 +2923,16 @@
       {
         "from": "2.1.40",
         "description": "Allowlist of models that users can select. Accepts family aliases (\"opus\" allows any opus version), version prefixes (\"opus-4-5\" allows only that version), and full model IDs. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators."
+      },
+      {
+        "from": "2.1.283",
+        "description": "Allowlist of models that users can select. Accepts family aliases (\"opus\" allows any opus version), version prefixes (\"opus-4-5\" allows that version and any model ID that extends it, so \"claude-opus-5\" also allows \"claude-opus-5-5\"), and full model IDs. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators."
+      }
+    ],
+    "config_key:availableModelsMatch": [
+      {
+        "from": "2.1.283",
+        "description": "How availableModels entries match model IDs. \"prefix\" (the default) lets an entry also allow any model ID that extends it, so \"claude-opus-5\" allows \"claude-opus-5-5\". \"exact\" keeps that matching but stops a model ID entry from allowing other versions: \"claude-opus-5\" allows Opus 5 and its dated and -fast IDs, but not Opus 5.5 or a later release until it is listed, and a -latest ID needs a -latest entry. Family aliases (\"opus\") still allow the whole family; aliases whose model depends on the release or settings (best, opusplan, default) are ignored. With \"exact\" and a list that names at least one model, the Default option also uses only a listed model; if none can be used, Claude Code will not start. Haiku background models, and hooks and other helper requests that pick their own model, are not restricted (deniedModels covers them; allowManagedHooksOnly limits hooks). Read from managed settings only."
       }
     ],
     "config_key:awaySummaryEnabled": [
@@ -3087,6 +3103,12 @@
       {
         "from": "2.0.22",
         "description": "Enterprise denylist of MCP servers that are explicitly blocked. If a server is on the denylist, it will be blocked across all scopes including enterprise. Denylist takes precedence over allowlist - if a server is on both lists, it is denied."
+      }
+    ],
+    "config_key:deniedModels": [
+      {
+        "from": "2.1.283",
+        "description": "Models users cannot select, even when availableModels allows them. A family alias (\"opus\") blocks that family. A model ID blocks that version in every spelling: dates, -fast and provider prefixes are ignored, so \"claude-opus-5-5\" blocks every Opus 5.5 ID but not Opus 5. An ID with no minor version (\"claude-opus-5\") also blocks later minor versions, as it allows them in availableModels. Aliases whose model depends on the release or settings (best, opusplan, default) are ignored. The Default option steps down past a blocked model; if the Default has no allowed model to step down to, Claude Code will not start. Read from managed settings only."
       }
     ],
     "config_key:desktopSessionCleanupPeriodDays": [

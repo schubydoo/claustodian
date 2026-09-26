@@ -12,7 +12,7 @@
       "confidence": "high",
       "description": "Run a no-plugin baseline arm and report the score delta (none | with-without; default: with-without when targeting a plugin by name (installed or skills-dir), none for a path)",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -142,7 +142,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Disable all enabled plugins. Can't be combined with `--scope`",
+      "description": "Disable every enabled plugin. Can't be combined with a plugin name or `--scope`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
@@ -176,7 +176,7 @@
       "confidence": "high",
       "description": "Grant tools beyond the read-only set, such as `Bash`, `Write`, `Edit`, or `\"mcp__plugin_<plugin>_<server>__*\"`. See Grant tools",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -242,9 +242,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Author name",
+      "description": "Author name. Defaults to `git config user.name`",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin init"
@@ -258,9 +258,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Author email",
+      "description": "Author email. Defaults to `git config user.email`",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin init"
@@ -274,9 +274,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Include available plugins from marketplaces. Requires `--json`",
+      "description": "Also list plugins your marketplaces offer that you haven't installed. Has no effect without `--json`",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin list"
@@ -316,7 +316,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Minimal mode: skip auto-discovery of hooks, skills, custom commands, subagents, plugins, MCP servers, auto memory, and CLAUDE.md so scripted calls start faster. Skills in a directory you pass with `--add-dir` still load. Claude has access to Bash, file read, and file edit tools. Sets `CLAUDE_CODE_SIMPLE`. See bare mode",
+      "description": "Minimal mode: skip auto-discovery of hooks, skills, custom commands, subagents, installed plugins, MCP servers, auto memory, and CLAUDE.md so scripted calls start faster. Skills in a directory you pass with `--add-dir` still load. Claude has access to Bash, file read, and file edit tools. Sets `CLAUDE_CODE_SIMPLE`. See bare mode",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -440,11 +440,11 @@
       "first_seen": "2.1.79",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
       "description": "Use Claude subscription (default)",
-      "description_source": "help",
-      "source_url": null,
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "auth login"
@@ -517,9 +517,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set a `userConfig` option declared in the plugin's manifest. Repeat the flag to set multiple options",
+      "description": "Set a `userConfig` option the plugin's manifest declares. Repeat the flag for each option. Requires Claude Code v2.1.147 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "gateway",
@@ -723,7 +723,7 @@
       "confidence": "high",
       "description": "Manifest description",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin init"
@@ -776,12 +776,12 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "List what would be removed without removing anything",
+      "description": "List what would be removed without removing it",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
-        "plugin prune": "List what would be removed without removing anything",
+        "plugin prune": "List what would be removed without removing it",
         "plugin tag": "Print what would be tagged without creating the tag"
       },
       "scopes": [
@@ -924,11 +924,11 @@
       "confidence": "high",
       "description": "Overwrite an existing `.claude-plugin/` at the target",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scope_descriptions": {
         "plugin init": "Overwrite an existing `.claude-plugin/` at the target",
-        "plugin tag": "Create the tag even if the working tree is dirty or the tag already exists"
+        "plugin tag": "Skip the dirty-working-tree and tag-already-exists checks"
       },
       "scopes": [
         "install",
@@ -1010,8 +1010,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Display help for command",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -1143,7 +1142,7 @@
       "confidence": "high",
       "description": "Require the interview. Fails without a terminal instead of writing a template",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli-internal",
       "scopes": [
         "plugin eval init",
@@ -1180,7 +1179,8 @@
       "category": "cli",
       "scope_descriptions": {
         "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
-        "plugin list": "Output as JSON. A plugin row with load problems or authoring warnings carries `errors` or `notes` string arrays."
+        "plugin list": "Print the list as JSON",
+        "plugin marketplace list": "Print the list as JSON"
       },
       "scopes": [
         "agents",
@@ -1214,7 +1214,7 @@
       "confidence": "high",
       "description": "Model for `llm` and `baseline` graders",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -1228,9 +1228,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Preserve the plugin's persistent data directory",
+      "description": "Preserve the plugin's persistent data directory, `~/.claude/plugins/data/<id>/`",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin uninstall"
@@ -1301,7 +1301,7 @@
       "confidence": "high",
       "description": "Stop before the next run once spend reaches this, exit 2, and report partial results",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -1380,9 +1380,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Tag annotation message. Use `%s` as a placeholder for the version",
+      "description": "Tag annotation message. `%s` stands for the version. Defaults to `<name> <version>`",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin tag"
@@ -1718,9 +1718,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Also remove auto-installed dependencies that no other plugin requires. See plugin prune",
+      "description": "Also remove auto-installed dependencies that no remaining plugin needs",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin uninstall"
@@ -1734,9 +1734,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Push the tag to the remote after creating it",
+      "description": "Push the tag to `--remote` after creating it",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin tag"
@@ -1893,9 +1893,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Runs per case per arm",
+      "description": "Runs per case in each arm",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -1940,7 +1940,7 @@
       "confidence": "high",
       "description": "Run each case's `scaffold_script`",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -1954,17 +1954,19 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Installation scope: `user`, `project`, or `local`",
+      "description": "Installation scope: `user`, `project`, or `local`. Defaults to `user`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
-        "plugin disable": "Scope to disable: `user`, `project`, or `local`. When omitted, Claude Code detects the scope where the plugin is installed",
-        "plugin enable": "Scope to enable: `user`, `project`, or `local`. When omitted, Claude Code detects the scope where the plugin is installed",
-        "plugin install": "Installation scope: `user`, `project`, or `local`",
-        "plugin prune": "Prune at scope: `user`, `project`, or `local`",
-        "plugin uninstall": "Uninstall from scope: `user`, `project`, or `local`",
-        "plugin update": "Scope to update: `user`, `project`, `local`, or `managed`"
+        "plugin disable": "Scope to disable at: `user`, `project`, or `local`. Auto-detected when omitted",
+        "plugin enable": "Scope to enable at: `user`, `project`, or `local`. Auto-detected when omitted",
+        "plugin install": "Installation scope: `user`, `project`, or `local`. Defaults to `user`",
+        "plugin marketplace add": "Settings file to declare the marketplace in: `user`, `project`, or `local`. Defaults to `user`",
+        "plugin marketplace remove": "Remove the declaration from one settings scope: `user`, `project`, or `local`. Without it, Claude Code removes the declaration from every scope",
+        "plugin prune": "Prune at scope: `user`, `project`, or `local`. Defaults to `user`",
+        "plugin uninstall": "Uninstall from scope: `user`, `project`, or `local`. Defaults to `user`",
+        "plugin update": "Scope to update: `user`, `project`, `local`, or `managed`. Defaults to the scope the plugin is installed at"
       },
       "scopes": [
         "mcp add",
@@ -2040,7 +2042,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Comma-separated list of setting sources to load (`user`, `project`, `local`)",
+      "description": "Comma-separated list of setting sources to load (`user`, `project`, `local`). See agent view and agent teams for the sessions you start from this one that inherit the list",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -2076,13 +2078,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.63",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Limit checkout to specific directories via git sparse-checkout (for monorepos). Example: --sparse .claude-plugin plugins",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Limit the git checkout to these directories, for monorepos. `github` and `git` sources only",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
-      "description_source": "binary",
       "scopes": [
         "plugin marketplace add"
       ]
@@ -2127,9 +2129,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Treat warnings as errors and exit 1 on them. Use in CI to catch issues the runtime tolerates, such as unrecognized fields",
+      "description": "Treat warnings as errors, so unrecognized fields and missing metadata that the runtime tolerates fail the run. Requires Claude Code v2.1.145 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin validate"
@@ -2224,7 +2226,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set how agent team teammates display: `in-process` (default), `auto`, `tmux`, or `iterm2` (added in v2.1.186). Overrides the `teammateMode` setting for this session. See Choose a display mode",
+      "description": "Set how agent team teammates display: `in-process` (default), `auto`, `tmux`, or `iterm2`. Overrides the `teammateMode` setting for this session. See Choose a display mode",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli-internal"
@@ -2294,7 +2296,7 @@
       "confidence": "high",
       "description": "Exit 1 if any case scores below this",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin eval"
@@ -2404,9 +2406,9 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Also scaffold component folders. Valid values: `skills`, `agents`, `hooks`, `mcp`, `lsp`, `output-style`, `channel`",
+      "description": "Also scaffold starter files for `skills`, `agents`, `hooks`, `mcp`, `lsp`, `output-style`, or `channel`",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
         "plugin init"
@@ -2472,15 +2474,15 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download.",
+      "description": "Accept the displayed install command without the `Run this command now?` prompt. Ignored when the command runs inside a Claude Code session, such as from the Bash tool or a hook.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
-        "plugin install": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download.",
-        "plugin prune": "Skip the confirmation prompt. Required when stdin or stdout is not a TTY",
-        "plugin uninstall": "Skip the `--prune` confirmation prompt. Required when stdin or stdout is not a TTY",
-        "plugin update": "Accept a command the plugin's marketplace declares, without the confirmation prompt: the command that produces a plugin with a `command` source, or the `headersHelper` that authenticates an archive download."
+        "plugin install": "Accept the displayed install command without the `Run this command now?` prompt. Ignored when the command runs inside a Claude Code session, such as from the Bash tool or a hook.",
+        "plugin prune": "Skip the confirmation prompt. Required when stdin or stdout isn't a TTY",
+        "plugin uninstall": "Skip the `--prune` confirmation prompt. Required with `--prune` when stdin or stdout isn't a TTY",
+        "plugin update": "Accept a changed install command from a command-source plugin, without the prompt."
       },
       "scopes": [
         "auto-mode reset",
@@ -2591,8 +2593,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "**Skill.** Orchestrate large-scale changes across a codebase in parallel. Researches the codebase, decomposes the work into 5 to 30 independent units, and presents a plan. Once approved, spawns one background subagent per unit in an isolated git worktree. Each subagent implements its unit, runs tests, and opens a pull request. Requires a git repository. Example: `/batch migrate src/ from JavaScript to TypeScript`",
-      "description_source": "docs",
+      "description": "Plan a large change; background agents each open a PR",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2749,7 +2751,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Start a new conversation with empty context. Pass a name to label the previous conversation in the `/resume` picker. To free up context while continuing the same conversation, use `/compact` instead. Resume the previous conversation with `/resume`, or, in the same Claude Code process, restore it from the rewind menu's previous-session entry. The rewind entry requires Claude Code v2.1.191 or later. Aliases: `/reset`, `/new`",
+      "description": "Start a new conversation with empty context. Pass a name to label the previous conversation in the `/resume` picker. To free up context while continuing the same conversation, use `/compact` instead. Resume the previous conversation with `/resume`, or, in the same Claude Code process, restore it from the rewind menu's previous-session entry. Aliases: `/reset`, `/new`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4770,8 +4772,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Restrict which models people can select for the main session, subagents, skills, and the advisor. A managed list constrains `/model`, `--model`, and the `model` key in a developer's own files; a model outside it can't be selected. On its own this doesn't touch the Default option; pair it with `enforceAvailableModels` for that.",
-      "description_source": "docs",
+      "description": "Allowlist of models that users can select. Accepts family aliases (\"opus\" allows any opus version), version prefixes (\"opus-4-5\" allows only that version), and full model IDs. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -5290,7 +5292,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "The `/model` picker has a **Default** option that resolves to your organization default model when one applies, and otherwise to your account type's default. An `availableModels` allowlist limits the models you can name, but on its own it leaves **Default** alone, so **Default** can still resolve to a model outside the list. This key closes that gap. Requires Claude Code v2.1.175 or later.",
+      "description": "The `/model` picker has a **Default** option that resolves to your organization default model when one applies, and otherwise to your account type's default. An `availableModels` allowlist limits the models you can name, but with the default prefix matching it leaves **Default** alone, so **Default** can still resolve to a model outside the list. This key closes that gap. Requires Claude Code v2.1.175 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -5303,7 +5305,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set environment variables for every session and for the subprocesses Claude Code starts from it. Any variable in the environment variables reference can go here, which is how you apply one to every session or roll it out to your team.",
+      "description": "Set environment variables for every session and for the subprocesses Claude Code starts from it. Most variables in the environment variables reference can go here, which is how you apply one to every session or roll it out to your team. Project and local settings can't set some of them.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -5730,7 +5732,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set the permission mode new sessions start in. When you leave it unset, sessions start in the built-in default for your plan and surface.",
+      "description": "Set the permission mode new sessions start in. When you leave it unset, sessions start in the built-in default for your surface.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6094,7 +6096,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose whether Claude responds after you run a shell command with the `!` prefix in the input box. By default, Claude Code adds the command's output to the conversation and Claude replies to it. Set this key to `false` to add the output to context without a reply, so you can run several commands and ask about them together. Requires Claude Code v2.1.186 or later.",
+      "description": "Choose whether Claude responds after you run a shell command with the `!` prefix in the input box. By default, Claude Code adds the command's output to the conversation and Claude replies to it. Set this key to `false` to add the output to context without a reply, so you can run several commands and ask about them together.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6172,7 +6174,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Declare the credential files and environment variables to protect from sandboxed commands. Each entry names a file `path` or a variable `name` and a `mode`: `deny` hides the credential inside the sandbox, and `mask` shows sandboxed commands a placeholder while the sandbox proxy substitutes the real value on outbound requests. Claude Code protects only the entries you list; there is no built-in credential deny list. Requires Claude Code v2.1.187 or later.",
+      "description": "Declare the credential files and environment variables to protect from sandboxed commands. Each entry names a file `path` or a variable `name` and a `mode`: `deny` hides the credential inside the sandbox, and `mask` shows sandboxed commands a placeholder while the sandbox proxy substitutes the real value on outbound requests. Claude Code protects only the entries you list; there is no built-in credential deny list.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6198,7 +6200,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Protect environment variables from sandboxed commands. With `\"mode\": \"deny\"`, Claude Code removes the variable from the environment of sandboxed commands. With `\"mode\": \"mask\"`, sandboxed commands see a per-session sentinel value, and the sandbox proxy substitutes the real value on outbound requests to that entry's `injectHosts`, so tools such as `gh` and `npm` keep authenticating without ever holding the real credential. Requires Claude Code v2.1.187 or later, and `\"mode\": \"mask\"` requires v2.1.199 or later.",
+      "description": "Protect environment variables from sandboxed commands. With `\"mode\": \"deny\"`, Claude Code removes the variable from the environment of sandboxed commands. With `\"mode\": \"mask\"`, sandboxed commands see a per-session sentinel value, and the sandbox proxy substitutes the real value on outbound requests to that entry's `injectHosts`, so tools such as `gh` and `npm` keep authenticating without ever holding the real credential. `\"mode\": \"mask\"` requires Claude Code v2.1.199 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6289,7 +6291,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Control which paths sandboxed commands can read and write. By default they can write to the working directory, the session temp directory, and directories you add with `--add-dir`, `/add-dir`, or `permissions.additionalDirectories`, and can read the rest of the filesystem, including credential files. Widen or narrow that with the four path lists, or switch the filesystem layer off with `disabled`. See Filesystem isolation for the default boundaries.",
+      "description": "Control which paths sandboxed commands can read and write. By default they can write to the working directory, the per-user temp directory, and directories you add with `--add-dir`, `/add-dir`, or `permissions.additionalDirectories`, and can read the rest of the filesystem, including credential files. Widen or narrow that with the four path lists, or switch the filesystem layer off with `disabled`. See Filesystem isolation for the default boundaries.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6328,7 +6330,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Add paths where sandboxed commands can write, beyond the working directory, the session temp directory, and the directories you've added with `--add-dir`, `/add-dir`, or `permissions.additionalDirectories`. Use it when a subprocess such as `kubectl` or a build tool needs to write outside the project.",
+      "description": "Add paths where sandboxed commands can write, beyond the working directory, the per-user temp directory, and the directories you've added with `--add-dir`, `/add-dir`, or `permissions.additionalDirectories`. Use it when a subprocess such as `kubectl` or a build tool needs to write outside the project.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7134,7 +7136,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose whether Claude Code uses the auto mode classifier to review shell commands in plan mode. With the default `true`, the classifier reviews each command during planning when auto mode is available and you see no prompt. Set `false` to get a permission prompt for every command outside the built-in read-only set. Appears in `/config` as **Use auto mode during plan**.",
+      "description": "Choose whether Claude Code uses the auto mode classifier to review shell commands in plan mode. With the default `true`, the classifier reviews each command during planning when auto mode is available and you see no prompt, except for critical-path removals. Set `false` to get a permission prompt for every command outside the built-in read-only set. Appears in `/config` as **Use auto mode during plan**.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -11168,7 +11170,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to enable OpenTelemetry data collection for metrics and logging. Required before configuring OTel exporters. See Monitoring",
+      "description": "Set to `1` to enable OpenTelemetry data collection for metrics and logging. Required before configuring OTel exporters. Set it in your shell, user settings, or managed settings. Ignored in project and local settings. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -12495,7 +12497,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Timeout in milliseconds for git operations when installing or updating plugins (default: 120000). Increase this value for large repositories or slow network connections. See Git operations time out",
+      "description": "Timeout in milliseconds for cloning or refreshing a plugin marketplace (default: 120000). Increase this value for large repositories or slow network connections. See Git clone timed out",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -12904,7 +12906,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override the continuation message injected when resuming a session that ended mid-turn. Defaults to `Continue from where you left off.`. Spawn scripts for long-running agents can set this to a more directive boot message. An empty string uses the default",
+      "description": "Override the continuation message Claude Code sends to Claude when `CLAUDE_CODE_RESUME_INTERRUPTED_TURN` continues an interrupted turn instead of resending its prompt, or when you resume a deferred tool call with `-p`. Defaults to `Continue from where you left off.`. An empty string uses the default",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -13141,7 +13143,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to run with a minimal system prompt and only the Bash, file read, and file edit tools. MCP tools from `--mcp-config` are still available. Disables auto-discovery of hooks, skills, custom commands, subagents, plugins, MCP servers, auto memory, and CLAUDE.md. Skills in a directory you pass with `--add-dir` still load. OAuth tokens and keychain credentials are not read, so Anthropic authentication must come from `ANTHROPIC_API_KEY` or an `apiKeyHelper` in `--settings`. Equivalent to passing `--bare`",
+      "description": "Set to `1` to run with a minimal system prompt and only the Bash, file read, and file edit tools. MCP tools from `--mcp-config` are still available. Disables auto-discovery of hooks, skills, custom commands, subagents, installed plugins, MCP servers, auto memory, and CLAUDE.md. Skills in a directory you pass with `--add-dir` still load. OAuth tokens and keychain credentials are not read, so Anthropic authentication must come from `ANTHROPIC_API_KEY` or an `apiKeyHelper` in `--settings`. Equivalent to passing `--bare`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -14583,7 +14585,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Absolute path to the plugin's installation directory",
+      "description": "Absolute path of the plugin's installed version",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -15225,11 +15227,11 @@
       "first_seen": "1.0.113",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable prompt caching for Haiku models",
+      "description": "Set to `1` to disable prompt caching for the default Haiku model, wherever it runs",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -15266,7 +15268,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events don't include user data like code, file paths, or bash commands. Also disables feature-flag fetching with the same effect as `DISABLE_GROWTHBOOK`, which makes Remote Control and the other features that need feature-flag fetching unavailable. See Turn telemetry off for your organization",
+      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events don't include user data like code, file paths, or Bash commands. Also disables feature-flag fetching. See Turn telemetry off for your organization",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -15303,11 +15305,11 @@
       "first_seen": "2.1.92",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to opt out of telemetry, with the same effect as `DISABLE_TELEMETRY`, including making Remote Control and the other features that need feature-flag fetching unavailable. Claude Code reads this variable as a standard boolean, so `0` leaves telemetry on, and honors it as the cross-tool convention recognized by many developer CLIs",
+      "description": "Set to `1` to opt out of telemetry, with the same effect as `DISABLE_TELEMETRY`, including on feature-flag fetching. Claude Code reads this variable as a standard boolean, so `0` leaves telemetry on, and honors it as the cross-tool convention recognized by many developer CLIs",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -15532,6 +15534,18 @@
       "confidence": "high",
       "description": "Set to `1` to force the 5-minute prompt cache TTL even when 1-hour TTL would otherwise apply.",
       "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
+    },
+    {
+      "symbol": "GIT_CONFIG_COUNT",
+      "type": "env_var",
+      "first_seen": "2.1.186",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
@@ -15884,7 +15898,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to include the model's response text on `assistant_response` OpenTelemetry log events. When unset, the value of `OTEL_LOG_USER_PROMPTS` is used instead. Set to `0` to keep responses redacted even when `OTEL_LOG_USER_PROMPTS` is set. Requires Claude Code v2.1.193 or later. See Monitoring",
+      "description": "Set to `1` to include the model's response text on `assistant_response` OpenTelemetry log events. When unset, Claude Code uses the value of `OTEL_LOG_USER_PROMPTS` instead. Set to `0` to keep responses redacted even when `OTEL_LOG_USER_PROMPTS` is set. Set it in your shell, user settings, or managed settings. Ignored in project and local settings. Requires Claude Code v2.1.193 or later. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
@@ -15910,7 +15924,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to include tool content in the `tool.output` OpenTelemetry span event. Span attributes carry tool content under their own gates. Requires tracing. Disabled by default to protect sensitive data. See Monitoring",
+      "description": "Set to `1` to include tool content in the `tool.output` OpenTelemetry span event. Span attributes carry tool content under their own gates. Requires tracing. Disabled by default to protect sensitive data. Set it in your shell, user settings, or managed settings. Ignored in project and local settings, apart from the off values that section describes. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
@@ -15923,7 +15937,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to include tool input arguments, MCP server names, user-authored workflow names, raw error strings on tool failures, the refusal `category` on `api_refusal` events, and other tool details in OpenTelemetry traces and logs. Disabled by default to protect PII. See Monitoring",
+      "description": "Set to `1` to include tool input arguments, MCP server names, user-authored workflow names, raw error strings on tool failures, the refusal `category` on `api_refusal` events, and other tool details in OpenTelemetry traces and logs. Disabled by default to protect PII. Set it in your shell, user settings, or managed settings. Ignored in project and local settings, apart from the off values that section describes. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
@@ -15936,7 +15950,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to include user prompt text in OpenTelemetry traces and logs. Disabled by default (prompts are redacted). See Monitoring",
+      "description": "Set to `1` to include user prompt text in OpenTelemetry traces and logs. Disabled by default (prompts are redacted). Set it in your shell, user settings, or managed settings. Ignored in project and local settings, apart from the off values that section describes. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
