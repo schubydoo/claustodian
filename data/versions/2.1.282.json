@@ -22205,43 +22205,6 @@
       "category": "other"
     },
     {
-      "symbol": "GIT_ALLOW_PROTOCOL",
-      "type": "env_var",
-      "first_seen": "2.1.280",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
-      "symbol": "GIT_CONFIG_COUNT",
-      "type": "env_var",
-      "first_seen": "2.1.186",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
-      "symbol": "GIT_SSL_CAINFO",
-      "type": "env_var",
-      "first_seen": "2.1.251",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
       "symbol": "GOOGLE_APPLICATION_CREDENTIALS",
       "type": "env_var",
       "first_seen": "0.2.9",
