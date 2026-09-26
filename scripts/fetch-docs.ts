@@ -30,7 +30,11 @@ export const DOC_PAGES = [
   'interactive-mode',
   'checkpointing',
   'hooks',
-  'plugins-reference',
+  // The old `plugins-reference` page split in two. Its URL now redirects to the
+  // manifest page, which kept only the plugin env vars; the `claude plugin`
+  // subcommand flag tables moved to the plugin commands reference.
+  'plugins/cli-reference',
+  'plugins/manifest-reference',
   'channels-reference',
   'glossary',
   'remote-control',
@@ -78,7 +82,8 @@ export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number
   commands: 60,
   'env-vars': 200,
   'settings-reference': 120,
-  'plugins-reference': 10,
+  'plugins/cli-reference': 10,
+  'plugins/manifest-reference': 1,
   'remote-control': 1,
 };
 
@@ -100,6 +105,14 @@ const ENV_DENYLIST = new Set([
   // A stopgap until conceptual pages are curated out (see roadmap).
   'SKILL',
 ]);
+
+/**
+ * Backticked `/word` spans a doc table uses as a path placeholder, not a slash
+ * command. `/path` comes from the plugin commands reference's marketplace source
+ * table (`` `./path`, `../path`, `/path`, or `~/path` to a directory ``), where
+ * it is the first span that matches the command pattern.
+ */
+const COMMAND_DENYLIST = new Set(['/path']);
 
 export interface DocEntry {
   symbol: string;
@@ -204,7 +217,9 @@ function symbolFromInner(inner: string): { symbol: string; type: DocSymbolType }
   // and `/import [codex|gemini] [--dry-run] [--yes]`. A bracketed argument of a
   // slash command is not a `claude` CLI flag; the anchor is what tells them apart.
   const command = inner.match(/^(\/[a-z][a-z0-9-]+)/);
-  if (command?.[1]) return { symbol: command[1], type: 'command' };
+  if (command?.[1]) {
+    return COMMAND_DENYLIST.has(command[1]) ? null : { symbol: command[1], type: 'command' };
+  }
 
   // Capitals are matched so a camelCase flag is seen whole and rejected by the
   // grammar, not truncated at its first capital. cli-reference.md writes the pair

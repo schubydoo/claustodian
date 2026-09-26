@@ -9,6 +9,7 @@ import {
   assertDocsCoverage,
   assertOfficialDocs,
   buildDocsIndex,
+  DOCS_BASE,
   knownSettingsKeys,
   main,
   officialSourcePages,
@@ -26,7 +27,9 @@ import {
  * an index-wide duplicate would be deduped away and starve the second page.
  */
 function mockPageBody(url: string): string {
-  const page = (url.split('/').pop() ?? '').replace(/\.md$/, '');
+  // The whole slug, not the last segment: `plugins/cli-reference` must not read
+  // as `cli-reference`.
+  const page = url.slice(DOCS_BASE.length).replace(/\.md$/, '');
   const floor = PAGE_MIN_SYMBOLS[page as keyof typeof PAGE_MIN_SYMBOLS] ?? 0;
   const rows = Array.from({ length: floor }, (_, i) => i);
   if (page === 'settings-reference') {
@@ -37,7 +40,7 @@ function mockPageBody(url: string): string {
   const cell = (i: number): string => {
     if (page === 'commands') return `/mock-${i}`;
     if (page === 'env-vars') return `MOCK_ENV_${i}`;
-    return `--${page}-mock-${i}`;
+    return `--${page.replace('/', '-')}-mock-${i}`;
   };
   return rows.map((i) => `| \`${cell(i)}\` | A mocked symbol |`).join('\n');
 }
@@ -71,6 +74,13 @@ describe('symbolFromCell', () => {
 
   it('skips the SKILL concept-label false positive (denylist)', () => {
     expect(symbolFromCell('`SKILL`')).toBeNull();
+  });
+
+  it('skips the /path placeholder in the marketplace source table (denylist)', () => {
+    // The real cell from plugins/cli-reference: `/path` is the first span the
+    // command pattern accepts, so without the entry it published as a command.
+    expect(symbolFromCell('`./path`, `../path`, `/path`, or `~/path` to a directory')).toBeNull();
+    expect(symbolFromCell('`/plugin`')).toEqual({ symbol: '/plugin', type: 'command' });
   });
 
   it('returns null for a `claude subcommand` row and for prose', () => {
