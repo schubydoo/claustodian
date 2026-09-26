@@ -277,11 +277,11 @@
       "confidence": "high",
       "description": "Overwrite an existing `.claude-plugin/` at the target",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins-reference.md",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scope_descriptions": {
         "plugin init": "Overwrite an existing `.claude-plugin/` at the target",
-        "plugin tag": "Create the tag even if the working tree is dirty or the tag already exists"
+        "plugin tag": "Skip the dirty-working-tree and tag-already-exists checks"
       },
       "scopes": [
         "install",
@@ -326,8 +326,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Display help for command",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -398,7 +397,8 @@
       "category": "cli",
       "scope_descriptions": {
         "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
-        "plugin list": "Output as JSON. A plugin row with load problems or authoring warnings carries `errors` or `notes` string arrays."
+        "plugin list": "Print the list as JSON",
+        "plugin marketplace list": "Print the list as JSON"
       },
       "scopes": [
         "agents",
@@ -665,17 +665,19 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Installation scope: `user`, `project`, or `local`",
+      "description": "Installation scope: `user`, `project`, or `local`. Defaults to `user`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
-        "plugin disable": "Scope to disable: `user`, `project`, or `local`. When omitted, Claude Code detects the scope where the plugin is installed",
-        "plugin enable": "Scope to enable: `user`, `project`, or `local`. When omitted, Claude Code detects the scope where the plugin is installed",
-        "plugin install": "Installation scope: `user`, `project`, or `local`",
-        "plugin prune": "Prune at scope: `user`, `project`, or `local`",
-        "plugin uninstall": "Uninstall from scope: `user`, `project`, or `local`",
-        "plugin update": "Scope to update: `user`, `project`, `local`, or `managed`"
+        "plugin disable": "Scope to disable at: `user`, `project`, or `local`. Auto-detected when omitted",
+        "plugin enable": "Scope to enable at: `user`, `project`, or `local`. Auto-detected when omitted",
+        "plugin install": "Installation scope: `user`, `project`, or `local`. Defaults to `user`",
+        "plugin marketplace add": "Settings file to declare the marketplace in: `user`, `project`, or `local`. Defaults to `user`",
+        "plugin marketplace remove": "Remove the declaration from one settings scope: `user`, `project`, or `local`. Without it, Claude Code removes the declaration from every scope",
+        "plugin prune": "Prune at scope: `user`, `project`, or `local`. Defaults to `user`",
+        "plugin uninstall": "Uninstall from scope: `user`, `project`, or `local`. Defaults to `user`",
+        "plugin update": "Scope to update: `user`, `project`, `local`, or `managed`. Defaults to the scope the plugin is installed at"
       },
       "scopes": [
         "mcp add",
@@ -726,7 +728,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Comma-separated list of setting sources to load (`user`, `project`, `local`)",
+      "description": "Comma-separated list of setting sources to load (`user`, `project`, `local`). See agent view and agent teams for the sessions you start from this one that inherit the list",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1956,7 +1958,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set environment variables for every session and for the subprocesses Claude Code starts from it. Any variable in the environment variables reference can go here, which is how you apply one to every session or roll it out to your team.",
+      "description": "Set environment variables for every session and for the subprocesses Claude Code starts from it. Most variables in the environment variables reference can go here, which is how you apply one to every session or roll it out to your team. Project and local settings can't set some of them.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -2370,7 +2372,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Control which paths sandboxed commands can read and write. By default they can write to the working directory, the session temp directory, and directories you add with `--add-dir`, `/add-dir`, or `permissions.additionalDirectories`, and can read the rest of the filesystem, including credential files. Widen or narrow that with the four path lists, or switch the filesystem layer off with `disabled`. See Filesystem isolation for the default boundaries.",
+      "description": "Control which paths sandboxed commands can read and write. By default they can write to the working directory, the per-user temp directory, and directories you add with `--add-dir`, `/add-dir`, or `permissions.additionalDirectories`, and can read the rest of the filesystem, including credential files. Widen or narrow that with the four path lists, or switch the filesystem layer off with `disabled`. See Filesystem isolation for the default boundaries.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -3500,7 +3502,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to enable OpenTelemetry data collection for metrics and logging. Required before configuring OTel exporters. See Monitoring",
+      "description": "Set to `1` to enable OpenTelemetry data collection for metrics and logging. Required before configuring OTel exporters. Set it in your shell, user settings, or managed settings. Ignored in project and local settings. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -4469,11 +4471,11 @@
       "first_seen": "1.0.113",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable prompt caching for Haiku models",
+      "description": "Set to `1` to disable prompt caching for the default Haiku model, wherever it runs",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -4510,7 +4512,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events don't include user data like code, file paths, or bash commands.",
+      "description": "Set to any non-empty value, such as `1`, to opt out of telemetry. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn telemetry back on. Telemetry events don't include user data like code, file paths, or Bash commands. Also disables feature-flag fetching. See Turn telemetry off for your organization",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -4983,7 +4985,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to include tool content in the `tool.output` OpenTelemetry span event. Span attributes carry tool content under their own gates. Requires tracing. Disabled by default to protect sensitive data. See Monitoring",
+      "description": "Set to `1` to include tool content in the `tool.output` OpenTelemetry span event. Span attributes carry tool content under their own gates. Requires tracing. Disabled by default to protect sensitive data. Set it in your shell, user settings, or managed settings. Ignored in project and local settings, apart from the off values that section describes. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
@@ -4996,7 +4998,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to include user prompt text in OpenTelemetry traces and logs. Disabled by default (prompts are redacted). See Monitoring",
+      "description": "Set to `1` to include user prompt text in OpenTelemetry traces and logs. Disabled by default (prompts are redacted). Set it in your shell, user settings, or managed settings. Ignored in project and local settings, apart from the off values that section describes. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
