@@ -83,7 +83,7 @@ export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number
   'env-vars': 200,
   'settings-reference': 120,
   'plugins/cli-reference': 10,
-  'plugins/manifest-reference': 1,
+  'plugins/manifest-reference': 2,
   'remote-control': 1,
 };
 

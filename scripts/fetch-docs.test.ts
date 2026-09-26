@@ -799,6 +799,13 @@ describe('assertDocsCoverage', () => {
     expect(() => assertDocsCoverage(index(counts))).toThrow(/"env-vars" yielded 1 of the/);
   });
 
+  it('throws when the plugin manifest page keeps only one of its env vars', () => {
+    const counts = { ...atFloor(), 'plugins/manifest-reference': 1 };
+    expect(() => assertDocsCoverage(index(counts))).toThrow(
+      /"plugins\/manifest-reference" yielded 1 of the 2/
+    );
+  });
+
   it('ignores a page with no floor', () => {
     expect(() => assertDocsCoverage(index({ ...atFloor(), glossary: 0 }))).not.toThrow();
   });
