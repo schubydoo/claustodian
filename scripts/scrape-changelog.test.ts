@@ -244,6 +244,17 @@ describe('extractSymbols', () => {
     expect(symbols).toEqual([]);
   });
 
+  it("drops git's own env vars named in runner and worktree bullets", () => {
+    // 2.1.280 and 2.1.283: each is git's variable, not Claude Code's surface.
+    for (const bullet of [
+      "Self-hosted runner: Changed git in lifecycle hooks to ignore hook folders and programs named in the runner's shared git files; local-path and `git://` remotes there now need `GIT_ALLOW_PROTOCOL`",
+      'Fixed worktree checkouts failing certificate verification (for example on Git LFS downloads) when the CA certificate is passed to git as `GIT_CONFIG_COUNT` environment pairs',
+      "Self-hosted runner: Changed `GIT_SSL_CAINFO` and `GIT_SSL_NO_VERIFY` under Anthropic-managed git: the runner's own git always verifies Anthropic's git route, and warning lines say what applies where",
+    ]) {
+      expect(extractSymbols(bullet)).toEqual([]);
+    }
+  });
+
   it('scopes the changelog-only suppression, leaving the binary denylist clean', () => {
     // Neither the git primitives nor the OS/shell env vars may leak into the
     // shared SYMBOL_DENYLIST that extract-bundle consults: the binary lane must
@@ -254,6 +265,10 @@ describe('extractSymbols', () => {
       '--git-dir',
       'GIT_DIR',
       'GIT_WORK_TREE',
+      'GIT_ALLOW_PROTOCOL',
+      'GIT_CONFIG_COUNT',
+      'GIT_SSL_CAINFO',
+      'GIT_SSL_NO_VERIFY',
       'PATH',
       'HOME',
       'LANG',
