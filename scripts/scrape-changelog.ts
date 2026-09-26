@@ -311,6 +311,15 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   '--git-dir',
   'GIT_DIR',
   'GIT_WORK_TREE',
+  // More of git's own variables, named in self-hosted runner and worktree
+  // bullets: 2.1.280 "… now need `GIT_ALLOW_PROTOCOL`", and 2.1.283 "… passed to
+  // git as `GIT_CONFIG_COUNT` environment pairs" and "Changed `GIT_SSL_CAINFO`
+  // and `GIT_SSL_NO_VERIFY` under Anthropic-managed git". Claude Code sets or
+  // reads them, but git owns them, the same line as `GIT_DIR` above.
+  'GIT_ALLOW_PROTOCOL',
+  'GIT_CONFIG_COUNT',
+  'GIT_SSL_CAINFO',
+  'GIT_SSL_NO_VERIFY',
   // The `gh` CLI / GitHub Actions auth-token convention, from the 2.1.251 bullet
   // "call the GitHub API directly (via `gh auth token`, `GH_TOKEN`, or
   // `GITHUB_TOKEN`)". Claude Code's GitHub integration reads these, but they are
