@@ -118,7 +118,7 @@ describe('scopesFor', () => {
   });
 
   it('leaves a flag accepted on bare claude unscoped', () => {
-    // `--help` is attributed to plugins-reference in docs.json purely because no
+    // `--help` was attributed to plugins-reference in docs.json purely because no
     // earlier page claimed it. Scoping by page would publish "--help only works
     // under claude plugin", which is worse than saying nothing.
     expect(scopesFor('cli_flag', '--help')).toBeUndefined();

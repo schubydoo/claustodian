@@ -17,7 +17,7 @@
  * Completeness is what makes the field safe, and it is why this is a curated map
  * rather than a per-page rule in the docs lane. Deriving scope from the doc page a
  * symbol happened to be parsed from produces partial and sometimes plainly wrong
- * answers: `--help` is attributed to `plugins-reference` purely because no earlier
+ * answers: `--help` was attributed to `plugins-reference` purely because no earlier
  * page claimed it, and scoping by page would publish "`--help` only works under
  * `claude plugin`" — worse than the flat namespace it replaces. `--all`, `--json`,
  * `--config` and `--yes` are each accepted under two or more different

@@ -16,6 +16,20 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-09-26
+
+### Changed
+
+- **Plugin symbols cite the new plugin docs pages.** Anthropic split the
+  `plugins-reference` page into `plugins/cli-reference` and
+  `plugins/manifest-reference`. A record with a `source_url` on
+  `plugins-reference.md` now cites the new page that documents it: the
+  `claude plugin` subcommand flags cite `plugins/cli-reference.md`, and
+  `CLAUDE_PLUGIN_DATA` cites `plugins/manifest-reference.md`. `--sparse` and
+  `--claudeai` also get docs descriptions from the `plugin marketplace add` table.
+  `--help` loses its docs description, because neither new page has a table row
+  for it.
+
 ## 2026-09-17
 
 ### Fixed
