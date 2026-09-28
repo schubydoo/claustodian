@@ -971,7 +971,7 @@
         "plugin marketplace remove": "Remove the declaration from one settings scope: `user`, `project`, or `local`. Without it, Claude Code removes the declaration from every scope",
         "plugin prune": "Prune at scope: `user`, `project`, or `local`. Defaults to `user`",
         "plugin uninstall": "Uninstall from scope: `user`, `project`, or `local`. Defaults to `user`",
-        "plugin update": "Scope to update: `user`, `project`, `local`, or `managed`. Defaults to the scope the plugin is installed at"
+        "plugin update": "Scope to update: `user`, `project`, `local`, or `managed`. Auto-detected when omitted"
       },
       "scopes": [
         "mcp add",
