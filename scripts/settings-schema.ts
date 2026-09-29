@@ -42,6 +42,15 @@
  * schema at all (before 0.2.123) is a different answer and returns empty.
  */
 
+import {
+  parseSync,
+  type ArrowFunctionExpression,
+  type ExpressionStatement,
+  type FunctionBody,
+  type ParenthesizedExpression,
+  type ReturnStatement,
+} from 'oxc-parser';
+
 /**
  * Long-lived top-level keys used to locate the schema root. Several, because a
  * single anchor is one upstream rename away from silently disabling the lane.
@@ -79,37 +88,13 @@ const THUNK = /^\s*\(\)\s*=>\s*/;
  * hide another (`if(e){return a}return b`) is a shape we do not recognise, so it
  * throws rather than walking one branch and dropping the other's keys.
  *
- * Inside the block, comments and regex literals are skipped, so keyword text in
- * them (`let p=/if/`) is not read as a statement. The block's END is not this
- * scan's to find: it comes from `scanLevel`, which does not skip regex literals,
- * so a regex holding a bracket or quote (`/\(/`) still misplaces it, in a block
- * or in any other value.
+ * The block is PARSED, not scanned. Telling a regex literal from a division
+ * (`/if/` against `i++/2`) needs a tokenizer, and each hand-written rule for it
+ * refused a valid block the previous rule accepted. A block that does not parse
+ * throws too. The block's END still comes from `scanLevel`, which does not skip
+ * regex literals, so a regex holding a bracket or quote (`/\(/`) can misplace it.
+ * That usually leaves text that does not parse, and so throws here.
  */
-const BLOCK_KEYWORD = /^(?:return|if|else|switch|try|for|while|do)(?![\w$])/;
-
-/**
- * Text ending where a `/` opens a regex literal rather than dividing: after an
- * operator, an opening bracket, a separator, or a keyword that takes an
- * expression. After an identifier, a number or a closing bracket it divides.
- */
-const REGEX_CONTEXT =
-  /(?:^|[(,=:[!&|?{};+\-*%<>~^]|(?<![\w$.])(?:return|typeof|case|void|in|of|new|delete|throw))\s*$/;
-
-/** Index just past the regex literal whose opening `/` is at `j`. */
-function skipRegex(src: string, j: number): number {
-  let inClass = false;
-  for (j++; j < src.length; j++) {
-    const c = src[j];
-    if (c === '\\') j++;
-    else if (c === '[') inClass = true;
-    else if (c === ']') inClass = false;
-    else if (c === '/' && !inClass) break;
-  }
-  j++;
-  while (j < src.length && /[a-z]/.test(src[j] as string)) j++;
-  return j;
-}
-
 function schemaSpan(
   src: string,
   valueStart: number,
@@ -126,43 +111,34 @@ function schemaSpan(
         `Refusing to emit a key set that may be missing its keys.`
     );
   };
-  let returnAt = -1;
-  let depth = 0;
-  for (let j = at + 1; j < valueEnd; j++) {
-    const c = src[j];
-    if (c === '"' || c === "'" || c === '`') {
-      j = skipString(src, j) - 1;
-      continue;
-    }
-    if (c === '/') {
-      const next = src[j + 1];
-      if (next === '/') {
-        const eol = src.indexOf('\n', j);
-        j = eol === -1 ? valueEnd : eol;
-      } else if (next === '*') {
-        const close = src.indexOf('*/', j + 2);
-        j = close === -1 ? valueEnd : close + 1;
-      } else if (REGEX_CONTEXT.test(src.slice(Math.max(at, j - 16), j))) {
-        j = skipRegex(src, j) - 1;
-      }
-      continue;
-    }
-    if (c === '(' || c === '[' || c === '{') depth++;
-    else if (c === ')' || c === ']' || c === '}') {
-      if (depth === 0) {
-        if (returnAt === -1) break;
-        return { valueStart: returnAt, valueEnd: j };
-      }
-      depth--;
-    } else if (depth === 0 && !/[\w$.]/.test(src[j - 1] as string)) {
-      const keyword = BLOCK_KEYWORD.exec(src.slice(j, j + 8))?.[0];
-      if (keyword === undefined) continue;
-      if (keyword !== 'return') refuse(`with a top-level ${keyword}`);
-      if (returnAt !== -1) refuse('with more than one top-level return');
-      returnAt = j + keyword.length;
-    }
+  // Re-wrapped as a parenthesised arrow so the block parses as its body rather
+  // than as a statement block. Tree offsets are then `prefix` past `src` ones.
+  const prefix = '(()=>';
+  const parsed = parseSync('thunk.js', `${prefix}${src.slice(at, valueEnd)})`, {
+    sourceType: 'script',
+  });
+  if (parsed.errors.length > 0) refuse('that does not parse');
+  const shift = at - prefix.length;
+  // A clean parse of one parenthesised arrow with a block body has this shape.
+  const statement = parsed.program.body[0] as ExpressionStatement;
+  const arrow = (statement.expression as ParenthesizedExpression)
+    .expression as ArrowFunctionExpression;
+  const body = arrow.body as FunctionBody;
+  const returns = body.body.filter((node) => node.type === 'ReturnStatement');
+  if (returns.length === 0) refuse('with no top-level return');
+  if (returns.length > 1) refuse('with more than one top-level return');
+  for (const node of body.body) {
+    if (
+      node.type !== 'ReturnStatement' &&
+      node.type !== 'VariableDeclaration' &&
+      node.type !== 'ExpressionStatement'
+    )
+      refuse(`with a top-level ${node.type}`);
   }
-  return refuse('with no top-level return');
+  const ret = returns[0] as ReturnStatement;
+  if (ret !== body.body.at(-1)) refuse('with a statement after its return');
+  if (!ret.argument) return refuse('whose return has no value');
+  return { valueStart: ret.argument.start + shift, valueEnd: ret.argument.end + shift };
 }
 
 /**

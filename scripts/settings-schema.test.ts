@@ -119,7 +119,7 @@ describe('extractSettingsKeys — thunked era (2.1.284 →)', () => {
       builders +
       'function la(e){return{apiKeyHelper:()=>o(),' +
       'attribution:()=>{if(e)return u({commit:o()});return u({pr:o()})}}}';
-    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*top-level if/);
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*top-level IfStatement/);
     const bare =
       builders +
       'function la(e){return{apiKeyHelper:()=>o(),' +
@@ -134,7 +134,7 @@ describe('extractSettingsKeys — thunked era (2.1.284 →)', () => {
       builders +
       'function la(e){return{apiKeyHelper:()=>o(),' +
       'attribution:()=>{if(e){return u({commit:o()})}return u({pr:o()})}}}';
-    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*top-level if/);
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*top-level IfStatement/);
   });
 
   it('does not read a property access such as Symbol.for as a keyword', () => {
@@ -153,6 +153,8 @@ describe('extractSettingsKeys — thunked era (2.1.284 →)', () => {
     ['a block comment', '/* if(e){return a} */'],
     ['a line comment', '// if(e){return a}\n'],
     ['a division', 'let n=e/2;'],
+    ['a division after an increment', 'let n=e++/2;'],
+    ['a nested template literal', 'let t=`${e?`if`:""}`;'],
   ])('reads a straight-line block holding %s', (_, statement) => {
     const src =
       builders +
@@ -167,7 +169,27 @@ describe('extractSettingsKeys — thunked era (2.1.284 →)', () => {
   ])('throws when a %s never closes, rather than reading inside it', (_, statement) => {
     const src =
       builders + `function la(e){return{apiKeyHelper:()=>o(),attribution:()=>{${statement}}}}`;
-    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*no top-level return/);
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*does not parse/);
+  });
+
+  it.each([
+    ['a statement after its return', 'return u({commit:o()});e()', /statement after its return/],
+    ['a return with no value', 'return', /return has no value/],
+  ])('throws on %s', (_, statement, message) => {
+    const src =
+      builders + `function la(e){return{apiKeyHelper:()=>o(),attribution:()=>{${statement}}}}`;
+    expect(() => extractSettingsKeys(src)).toThrow(message);
+  });
+
+  it('maps the return back to the bundle past non-ASCII text in the block', () => {
+    // oxc reports UTF-16 offsets, the same unit as a JavaScript string index. A
+    // byte offset would land past the return and lose the parent's description.
+    const src =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o(),' +
+      'attribution:()=>{let s="·é—";return u({commit:o()}).describe("Own")}}}';
+    const attribution = extractSettingsKeys(src).find((k) => k.path === 'attribution');
+    expect(attribution?.description).toBe('Own');
   });
 });
 
