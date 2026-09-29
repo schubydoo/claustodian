@@ -26,7 +26,7 @@
  *
  * From 2.1.284 the ROOT is also emitted as a returned plain object of thunks,
  * `return{cleanupPeriodDays:()=>lt().int(),…}`, which a lazy wrapper builds field
- * by field. The walk reads each value past its thunk (see `schemaSpan`); nested
+ * by field. The walk reads each value past its thunk (see `readValue`); nested
  * objects are still call-opened.
  *
  * A third change, at 2.1.242, is not an emission era but a SCOPE one: the
@@ -44,11 +44,12 @@
 
 import {
   parseSync,
-  type ArrowFunctionExpression,
-  type ExpressionStatement,
+  type ArrayExpressionElement,
+  type Expression,
   type FunctionBody,
-  type ParenthesizedExpression,
   type ReturnStatement,
+  type Statement,
+  type VariableDeclaration,
 } from 'oxc-parser';
 
 /**
@@ -70,60 +71,111 @@ const ANCHOR_RE = new RegExp(
 );
 
 /**
- * A value's leading thunk. From 2.1.284 the root is a plain object whose every
- * value is deferred — `{apiKeyHelper:()=>o().optional(),…}` — and a lazy wrapper
- * (`new yn(la(e))`) builds each field on demand. The schema expression is what
- * follows the arrow, so the walk reads past it.
+ * Local names in scope for a value, each mapped to the offset of its
+ * initializer in the bundle, or -1 when it is bound without a readable one.
  */
-const THUNK = /^\s*\(\)\s*=>\s*/;
+type Locals = ReadonlyMap<string, number>;
+
+const NO_LOCALS: Locals = new Map();
+
+/** A value read through the parser: its schema expression and what it can see. */
+interface ReadValue {
+  /** Span of the schema expression, past any thunk. */
+  valueStart: number;
+  valueEnd: number;
+  /** The union call's members and the offset just past the call, when the schema is one. */
+  union?: { members: ArrayExpressionElement[]; end: number; shift: number };
+  /** Names in scope: the enclosing ones, plus a block thunk's own declarations. */
+  locals: Locals;
+}
 
 /**
- * The span of the schema expression a value holds. A plain value is its own
- * span, and a thunk's is what follows the arrow. A block-bodied thunk —
- * `()=>{let i=u({…});return Fe([H(),i])…}` — holds its schema in the block's
- * top-level `return`. Reading the whole block instead hands the parent its first
- * child's `.describe()`: `attribution` borrowed `attribution.commit`'s sentence
- * at 2.1.284. Only a straight-line block with exactly one top-level `return` is
- * read. A block with no `return`, a second one, or a branch or loop that could
- * hide another (`if(e){return a}return b`) is a shape we do not recognise, so it
- * throws rather than walking one branch and dropping the other's keys.
+ * Reads one value through the parser.
  *
- * The block is PARSED, not scanned. Telling a regex literal from a division
- * (`/if/` against `i++/2`) needs a tokenizer, and each hand-written rule for it
- * refused a valid block the previous rule accepted. A block that does not parse
- * throws too. The block's END still comes from `scanLevel`, which does not skip
- * regex literals, so a regex holding a bracket or quote (`/\(/`) can misplace it.
- * That usually leaves text that does not parse, and so throws here.
+ * The value must parse as exactly one expression. `scanLevel` bounds each value
+ * by counting brackets and quotes and does not know regex literals, so a regex
+ * holding a bracket or quote (`/\(/`) moves the bound and swallows the keys after
+ * it without an error. A value that is not one expression is that failure, and
+ * it throws.
+ *
+ * From 2.1.284 the root is a plain object of thunks —
+ * `{apiKeyHelper:()=>o().optional(),…}` — which a lazy wrapper (`new yn(la(e))`)
+ * builds field by field. The schema is what follows the arrow. A block-bodied
+ * thunk (`()=>{let i=u({…});return Fe([H(),i])…}`) holds its schema in the
+ * block's top-level `return`. Reading the whole block instead hands the parent
+ * its first child's `.describe()`: `attribution` borrowed `attribution.commit`'s
+ * sentence at 2.1.284. Only a straight-line block with exactly one top-level
+ * `return` is read. A second return, or a branch or loop that could hide one
+ * (`if(e){return a}return b`), throws rather than walking one branch and
+ * dropping the other's keys.
+ *
+ * A union passed its members as an array literal (`Fe([H(),i],{…})…`) is
+ * reported with its members, so the walk can read them.
  */
-function schemaSpan(
+function readValue(
   src: string,
-  valueStart: number,
-  valueEnd: number,
-  path: string
-): { valueStart: number; valueEnd: number } {
-  const thunk = THUNK.exec(src.slice(valueStart, valueStart + 16));
-  if (!thunk) return { valueStart, valueEnd };
-  const at = valueStart + thunk[0].length;
-  if (src[at] !== '{') return { valueStart: at, valueEnd };
+  entryStart: number,
+  entryEnd: number,
+  path: string,
+  inherited: Locals
+): ReadValue {
+  // The newline keeps a trailing `//` comment from swallowing the closing paren.
+  const parsed = parseSync('value.js', `(${src.slice(entryStart, entryEnd)}\n)`, {
+    sourceType: 'script',
+  });
+  const statement = parsed.program.body[0];
+  if (
+    parsed.errors.length > 0 ||
+    parsed.program.body.length !== 1 ||
+    statement?.type !== 'ExpressionStatement' ||
+    statement.expression.type !== 'ParenthesizedExpression' ||
+    statement.expression.expression.type === 'SequenceExpression'
+  ) {
+    throw new SettingsSchemaError(
+      `settings schema: the value of "${path}" is not one expression, so its ` +
+        `extent was misread. Refusing to emit a key set that may be missing its keys.`
+    );
+  }
+  const shift = entryStart - 1;
+  const expr = statement.expression.expression;
+  let schema: Expression = expr;
+  let valueStart = entryStart;
+  let valueEnd = entryEnd;
+  let locals = inherited;
+  if (expr.type === 'ArrowFunctionExpression' && expr.params.length === 0 && !expr.async) {
+    if (expr.expression) {
+      // An expression-bodied arrow's body is the expression itself in this tree.
+      schema = expr.body as Expression;
+      valueStart = schema.start + shift;
+    } else {
+      const body = expr.body as FunctionBody;
+      const ret = blockReturn(body, path);
+      schema = ret;
+      valueStart = ret.start + shift;
+      valueEnd = ret.end + shift;
+      locals = new Map([...inherited, ...declaredLocals(body.body, shift)]);
+    }
+  }
+  let base: Expression = schema;
+  while (base.type === 'CallExpression' && base.callee.type === 'MemberExpression')
+    base = base.callee.object;
+  const union =
+    base.type === 'CallExpression' &&
+    base.callee.type === 'Identifier' &&
+    base.arguments[0]?.type === 'ArrayExpression'
+      ? { members: base.arguments[0].elements, end: base.end + shift, shift }
+      : undefined;
+  return { valueStart, valueEnd, union, locals };
+}
+
+/** The argument of a straight-line block's single top-level `return`, or throws. */
+function blockReturn(body: FunctionBody, path: string): Expression {
   const refuse = (why: string): never => {
     throw new SettingsSchemaError(
       `settings schema: the thunk for "${path}" has a block body ${why}. ` +
         `Refusing to emit a key set that may be missing its keys.`
     );
   };
-  // Re-wrapped as a parenthesised arrow so the block parses as its body rather
-  // than as a statement block. Tree offsets are then `prefix` past `src` ones.
-  const prefix = '(()=>';
-  const parsed = parseSync('thunk.js', `${prefix}${src.slice(at, valueEnd)})`, {
-    sourceType: 'script',
-  });
-  if (parsed.errors.length > 0) refuse('that does not parse');
-  const shift = at - prefix.length;
-  // A clean parse of one parenthesised arrow with a block body has this shape.
-  const statement = parsed.program.body[0] as ExpressionStatement;
-  const arrow = (statement.expression as ParenthesizedExpression)
-    .expression as ArrowFunctionExpression;
-  const body = arrow.body as FunctionBody;
   const returns = body.body.filter((node) => node.type === 'ReturnStatement');
   if (returns.length === 0) refuse('with no top-level return');
   if (returns.length > 1) refuse('with more than one top-level return');
@@ -138,7 +190,54 @@ function schemaSpan(
   const ret = returns[0] as ReturnStatement;
   if (ret !== body.body.at(-1)) refuse('with a statement after its return');
   if (!ret.argument) return refuse('whose return has no value');
-  return { valueStart: ret.argument.start + shift, valueEnd: ret.argument.end + shift };
+  return ret.argument;
+}
+
+/** The names the top-level declarations in `statements` bind, with their initializers. */
+function declaredLocals(statements: readonly Statement[], shift: number): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const node of statements) {
+    if (node.type !== 'VariableDeclaration') continue;
+    for (const declarator of node.declarations) {
+      // A destructuring pattern binds names without one initializer each, so it
+      // is left out: a union member naming one of them then throws, rather than
+      // resolving to the wrong object.
+      if (declarator.id.type !== 'Identifier') continue;
+      out.set(declarator.id.name, declarator.init ? declarator.init.start + shift : -1);
+    }
+  }
+  return out;
+}
+
+/**
+ * The locals the schema ROOT can see: the declarations of the one statement
+ * just before the `return` that returns it. From 2.1.281 that statement binds
+ * the object member of `attribution`'s union —
+ * `let r=(d,c)=>…,i=u({commit:…}).passthrough();return u({$schema:…`.
+ *
+ * The statement's start is found by parsing, not by searching for the name. The
+ * nearest `let`/`const`/`var` before the `return` whose text up to the `;`
+ * parses as exactly one declaration is that statement: a nearer one inside it
+ * leaves an unmatched bracket and does not parse. A root with no `return`
+ * before it (`Q=v.object({…`) sees no locals.
+ */
+function rootLocals(src: string, root: number): Locals {
+  const before = src.slice(Math.max(0, root - 96), root - 1);
+  const ret = /(?<![\w$.])return\s*(?:(?:[A-Za-z_$][\w$]*\.)?[A-Za-z_$][\w$]*\()?$/.exec(before);
+  if (!ret) return NO_LOCALS;
+  const returnAt = root - 1 - before.length + ret.index;
+  const semi = src.lastIndexOf(';', returnAt);
+  if (semi === -1 || src.slice(semi + 1, returnAt).trim() !== '') return NO_LOCALS;
+  const floor = Math.max(0, semi - ROOT_WINDOW);
+  const keyword = /(?<![\w$.])(?:let|const|var)\s/g;
+  const candidates = [...src.slice(floor, semi).matchAll(keyword)].map((m) => floor + m.index);
+  for (const start of candidates.reverse().slice(0, 64)) {
+    const parsed = parseSync('statement.js', src.slice(start, semi), { sourceType: 'script' });
+    const [statement] = parsed.program.body;
+    if (parsed.errors.length > 0 || parsed.program.body.length !== 1) continue;
+    return declaredLocals([statement as VariableDeclaration], start);
+  }
+  return NO_LOCALS;
 }
 
 /**
@@ -366,6 +465,7 @@ function objectEnd(src: string, bodyStart: number): number {
       if (depth === 0) return j + 1;
     }
   }
+  /* v8 ignore next -- invariant guard: its only caller runs after walk's one-expression check, so the object always closes */
   return -1;
 }
 
@@ -391,7 +491,48 @@ function describeKey(
   const bodyStart = objectBodyStart(value, valueStart);
   if (bodyStart === -1) return describeOf(value);
   const end = objectEnd(src, bodyStart);
+  /* v8 ignore next -- the `end === -1` arm is an invariant guard: walk refuses a value that is not one expression, so an object it opens always closes */
   return end === -1 || end >= valueEnd ? undefined : describeOf(src.slice(end, valueEnd));
+}
+
+/**
+ * The object bodies of a union's members. A member counts when it is an inline
+ * object call (`u({…})`) or a local name in scope bound to one (`i`, bound by
+ * `i=u({…})`). Other members (`H()`, strings, factories) add no keys, as before.
+ * A bare name with no binding in scope throws: resolving it by text alone would
+ * reach whatever same-named binding lies nearest, in any scope. Two object
+ * members would make the keys depend on which branch matched, a shape this walk
+ * does not model, so that throws too.
+ */
+function unionObjectBodies(
+  src: string,
+  union: NonNullable<ReadValue['union']>,
+  locals: Locals,
+  path: string
+): number[] {
+  const bodies: number[] = [];
+  for (const member of union.members) {
+    if (member?.type === 'CallExpression' && member.arguments[0]?.type === 'ObjectExpression') {
+      bodies.push(member.arguments[0].start + union.shift + 1);
+    } else if (member?.type === 'Identifier') {
+      const init = locals.get(member.name);
+      if (init === undefined) {
+        throw new SettingsSchemaError(
+          `settings schema: the union for "${path}" names ${member.name}, which has no ` +
+            `binding in scope. Refusing to emit a key set that may be missing its keys.`
+        );
+      }
+      const body = init === -1 ? -1 : objectBodyStart(src.slice(init, init + 80), init);
+      if (body !== -1) bodies.push(body);
+    }
+  }
+  if (bodies.length > 1) {
+    throw new SettingsSchemaError(
+      `settings schema: the union for "${path}" has more than one object member. ` +
+        `Refusing to emit a key set that may be missing its keys.`
+    );
+  }
+  return bodies;
 }
 
 /**
@@ -705,6 +846,7 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
     start: number,
     prefix: string,
     depth: number,
+    locals: Locals,
     viaFactory?: string
   ): void => {
     const { src } = scope;
@@ -720,17 +862,34 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
     }
     for (const entry of scanLevel(src, start)) {
       const path = prefix ? `${prefix}.${entry.key}` : entry.key;
-      const { valueStart, valueEnd } = schemaSpan(src, entry.valueStart, entry.valueEnd, path);
+      const read = readValue(src, entry.valueStart, entry.valueEnd, path, locals);
+      const { valueStart, valueEnd, union } = read;
       const value = src.slice(valueStart, valueEnd);
       keys.push({
         path: detach(path),
-        description: describeKey(src, value, valueStart, valueEnd),
+        // A union's own description is chained after the union call closes, the
+        // same rule `describeKey` applies to an object.
+        description: union
+          ? describeOf(src.slice(union.end, valueEnd))
+          : describeKey(src, value, valueStart, valueEnd),
         viaFactory,
       });
 
       const inlineBody = objectBodyStart(value, valueStart);
       if (inlineBody !== -1) {
-        walk(scope, inlineBody, path, depth + 1, viaFactory);
+        walk(scope, inlineBody, path, depth + 1, read.locals, viaFactory);
+        continue;
+      }
+      // A union passed its members inline as an array — `Fe([H(),i],{…})`, how
+      // `attribution` is emitted from 2.1.281, where `i` is a local
+      // `i=u({commit:…})`. The union's keys are its object member's keys.
+      // Resolving the callee instead reaches the union builder, which is not an
+      // object, and that dropped `attribution.commit`, `.pr` and `.sessionUrl`.
+      // The callee is never resolved for a union, for the same name-collision
+      // reason as the record guard below.
+      if (union) {
+        for (const body of unionObjectBodies(src, union, read.locals, path))
+          walk(scope, body, path, depth + 1, read.locals, viaFactory);
         continue;
       }
       // A two-argument keyed combinator — `record(keySchema,valueSchema)` /
@@ -767,10 +926,11 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
       // era has no alias, so every candidate is resolved and judged by its body.
       if (!name || name === alias) continue;
       const factory = resolveFactory(scope, name, path, valueStart, graph);
-      if (factory.body !== -1) walk(factory.scope, factory.body, path, depth + 1, name);
+      // A factory is another function, so none of these locals reach into it.
+      if (factory.body !== -1) walk(factory.scope, factory.body, path, depth + 1, NO_LOCALS, name);
     }
   };
-  walk(anchorScope, root, '', 0);
+  walk(anchorScope, root, '', 0, rootLocals(anchorScope.src, root));
 
   // Feature-gated fragments contribute top-level keys the root walk cannot reach:
   // they live in a separate registry (`{autoMode:{buildGate:()=>!0,shape:()=>({…})}}`)
@@ -784,7 +944,7 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
   const rootCount = keys.length;
   for (const scope of graph.scopes) {
     for (const { bodyStart } of gatedFragments(scope.src))
-      walk(scope, bodyStart, '', 1, 'gated-fragment');
+      walk(scope, bodyStart, '', 1, NO_LOCALS, 'gated-fragment');
   }
 
   // A bundle can embed the same module graph twice — 2.1.113 carries two copies of

@@ -169,7 +169,7 @@ describe('extractSettingsKeys — thunked era (2.1.284 →)', () => {
   ])('throws when a %s never closes, rather than reading inside it', (_, statement) => {
     const src =
       builders + `function la(e){return{apiKeyHelper:()=>o(),attribution:()=>{${statement}}}}`;
-    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*does not parse/);
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*not one expression/);
   });
 
   it.each([
@@ -321,8 +321,14 @@ describe('extractSettingsKeys — code-split era (2.1.242 →)', () => {
       'function Ne(e,r){return new As({type:"union",options:e})}' +
       'Q=v.object({apiKeyHelper:v.string(),theme:Ne([v.enum(["light","dark"]),v.string()]).optional()})';
     expect(paths([login, settings])).toEqual(['apiKeyHelper', 'theme']);
-    // The same text as one flat string is exactly the defect.
-    expect(paths(login + ';' + settings)).toContain('theme.jws');
+    // The same defect through a CALLED reference, which still resolves the callee
+    // by name: scoped to its chunk it finds the union builder, flat it finds the
+    // login object. (A union value no longer resolves its callee at all.)
+    const called =
+      'function Ne(e,r){return new As({type:"union",options:e})}' +
+      'Q=v.object({apiKeyHelper:v.string(),theme:Ne(e).optional()})';
+    expect(paths([login, called])).toEqual(['apiKeyHelper', 'theme']);
+    expect(paths(login + ';' + called)).toContain('theme.jws');
   });
 
   it('resolves an imported sub-schema through the module that exports it', () => {
@@ -443,6 +449,138 @@ describe('extractSettingsKeys — depth accounting at the object top level', () 
     expect(() =>
       extractSettingsKeys('Q=v.object({apiKeyHelper:v.string().describe("unclosed')
     ).not.toThrow(RangeError);
+  });
+});
+
+describe('extractSettingsKeys — union members (2.1.281 →)', () => {
+  // From 2.1.281 `attribution` is a union of a boolean and an object held in a
+  // local: `Fe([H(),i],{…})`. Resolving the callee reached the union builder and
+  // dropped `attribution.commit`, `.pr` and `.sessionUrl`.
+  const builders = 'var o=Ct(),u=Ct(),H=Ct();function Fe(e,n){return new Zn(e)}';
+
+  it('reads the object member a local binds before the root (2.1.281 → 2.1.283)', () => {
+    const src =
+      builders +
+      'function la(e){let r=(d)=>d,i=u({commit:o().describe("Commit"),pr:o()}).passthrough();' +
+      'return u({apiKeyHelper:o(),attribution:Fe([H(),i],{error:(d)=>d}).pipe(i).optional()})}';
+    const keys = extractSettingsKeys(src);
+    expect(keys.map((k) => k.path)).toEqual([
+      'apiKeyHelper',
+      'attribution',
+      'attribution.commit',
+      'attribution.pr',
+    ]);
+    expect(keys[2]?.description).toBe('Commit');
+  });
+
+  it('reads the object member a local binds inside a block thunk (2.1.284 →)', () => {
+    const src =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o(),' +
+      'attribution:()=>{let i=u({commit:o()});return Fe([H(),i]).optional()}}}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual([
+      'apiKeyHelper',
+      'attribution',
+      'attribution.commit',
+    ]);
+  });
+
+  it('reads an inline object member', () => {
+    const src = builders + 'Q=u({apiKeyHelper:o(),attribution:Fe([H(),u({commit:o()})])})';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toContain('attribution.commit');
+  });
+
+  it('adds no children for a union with no object member, and never resolves its callee', () => {
+    // `Fe` also names an unrelated object here. Resolving the callee would walk it.
+    const src =
+      'var o=Ct(),H=Ct();Fe=m(()=>u({jws:o()}));' +
+      'Q=u({apiKeyHelper:o(),theme:Fe([o(),H(),"dark"])})';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual(['apiKeyHelper', 'theme']);
+  });
+
+  it('throws on a member name with no binding in scope, even when one exists elsewhere', () => {
+    // `i` is a parameter here. An unrelated `i=u({x:…})` earlier in the bundle
+    // must not be taken for it: that would publish a phantom `attribution.x`.
+    const src =
+      builders +
+      'var i=u({x:o()});' +
+      'function la(e,i){return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution" names i, which has no binding/);
+  });
+
+  it('adds no children for a local bound to something other than an object call', () => {
+    const src =
+      builders + 'function la(e){let i=e;return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual(['apiKeyHelper', 'attribution']);
+  });
+
+  it.each([
+    ['a destructured name', 'let {i}=e;'],
+    ['a statement that is not a declaration', 'f(e);'],
+    ['no statement before the return', ''],
+  ])('throws when the root sees the member only through %s', (_, before) => {
+    const src =
+      builders + `function la(e){${before}return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}`;
+    expect(() => extractSettingsKeys(src)).toThrow(/names i, which has no binding/);
+  });
+
+  it('finds the declaration before the root past a nested one inside it', () => {
+    // The nearest `let` belongs to an arrow body inside the statement. Its text up
+    // to the `;` does not parse, so the search moves on to the real statement.
+    const src =
+      builders +
+      'function la(e){let r=(d)=>{let q=d;return q},i=u({commit:o()});' +
+      'return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toContain('attribution.commit');
+  });
+
+  it('adds no children for a local declared without an initializer', () => {
+    const src =
+      builders + 'function la(e){let i;return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual(['apiKeyHelper', 'attribution']);
+  });
+
+  it("keeps one value's block locals out of another value", () => {
+    // `model` declares its own `i`. `attribution` must still read the `i` bound
+    // before the root, not the nearer one inside `model`'s thunk.
+    const src =
+      builders +
+      'function la(e){let i=u({commit:o()});return{apiKeyHelper:()=>o(),' +
+      'model:()=>{let i=u({x:o()});return o()},attribution:()=>Fe([H(),i])}}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual([
+      'apiKeyHelper',
+      'model',
+      'attribution',
+      'attribution.commit',
+    ]);
+  });
+
+  it("reads a union's own description, not its inline member's", () => {
+    const src =
+      builders +
+      'Q=u({apiKeyHelper:o(),attribution:Fe([H(),u({commit:o().describe("Commit")})]).describe("Own")})';
+    const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
+    expect(by.get('attribution')).toBe('Own');
+    expect(by.get('attribution.commit')).toBe('Commit');
+  });
+
+  it('throws on a union with two object members', () => {
+    const src = builders + 'Q=u({apiKeyHelper:o(),attribution:Fe([u({commit:o()}),u({pr:o()})])})';
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution" has more than one object member/);
+  });
+});
+
+describe('extractSettingsKeys — a misread value extent', () => {
+  it('throws when a regex holding a bracket moves the end of a value', () => {
+    // scanLevel counts the `(` inside `/\(/`, so without the check the value runs
+    // on, `model` and `x` are swallowed into `apiKeyHelper`, and they vanish.
+    const src = 'Q=v.object({apiKeyHelper:v.string().regex(/\\(/),model:v.string(),x:v.string()})';
+    expect(() => extractSettingsKeys(src)).toThrow(/"apiKeyHelper" is not one expression/);
+  });
+
+  it('throws when a quote inside a regex starts a false string', () => {
+    const src = 'Q=v.object({apiKeyHelper:v.string().regex(/"/),model:v.string()})';
+    expect(() => extractSettingsKeys(src)).toThrow(/is not one expression/);
   });
 });
 
@@ -637,15 +775,12 @@ describe('extractSettingsKeys — a parent object never borrows a child descript
 });
 
 describe('extractSettingsKeys — an object whose body never closes', () => {
-  it('gives the parent no description rather than reading past the value', () => {
-    // objectEnd scans `src`, not the value slice, so an unterminated object would
-    // otherwise run to the end of the bundle and hand back whatever `.describe()`
-    // it found there — a description belonging to an unrelated key.
-    // Truncated mid-object: the brace never arrives before end-of-source.
+  it('refuses the value rather than reading past it', () => {
+    // Truncated mid-object: the brace never arrives before end-of-source, so the
+    // value is not one expression. Walking it would hand the parent whatever
+    // `.describe()` lies past the value, a description of an unrelated key.
     const src =
       'Q=v.object({apiKeyHelper:v.string(),broken:v.object({a:v.string().describe("Child")';
-    const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
-    expect(by.get('broken')).toBeUndefined();
-    expect(by.get('broken.a')).toBe('Child');
+    expect(() => extractSettingsKeys(src)).toThrow(/"broken" is not one expression/);
   });
 });
