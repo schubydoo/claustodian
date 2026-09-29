@@ -350,6 +350,11 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   'XDG_DATA_HOME',
   'TMPDIR',
   'TEMP',
+  // A Windows system variable, from the 2.1.282 bullet "Windows: Changed project
+  // and local settings `env` to no longer set `ALLUSERSPROFILE`, `SystemDrive`,
+  // or the `CommonProgramFiles` variables". The other two are mixed case, which
+  // the env_var pattern does not match.
+  'ALLUSERSPROFILE',
   // OS filesystem directories named in the 2.1.268 bugfix bullet "Fixed deny and
   // ask permission rules on symlinked directories (`/etc`, `/tmp`, `/var` on
   // macOS; `/bin` on Linux) …". The command pattern reads each backticked

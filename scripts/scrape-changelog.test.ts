@@ -255,6 +255,15 @@ describe('extractSymbols', () => {
     }
   });
 
+  it('drops the Windows system variables named in the 2.1.282 settings bullet', () => {
+    const symbols = extractSymbols(
+      'Windows: Changed project and local settings `env` to no longer set ' +
+        '`ALLUSERSPROFILE`, `SystemDrive`, or the `CommonProgramFiles` variables; ' +
+        'set them in user or managed settings instead'
+    );
+    expect(symbols).toEqual([]);
+  });
+
   it('scopes the changelog-only suppression, leaving the binary denylist clean', () => {
     // Neither the git primitives nor the OS/shell env vars may leak into the
     // shared SYMBOL_DENYLIST that extract-bundle consults: the binary lane must
@@ -277,6 +286,7 @@ describe('extractSymbols', () => {
       'OLDPWD',
       'DIRSTACK',
       'XDG_DATA_HOME',
+      'ALLUSERSPROFILE',
       '/bin',
       '/etc',
       '/home',
