@@ -301,6 +301,10 @@
       {
         "from": "2.1.147",
         "description": "Set a userConfig option declared in the plugin's manifest (repeatable). Values are validated against the schema and stored via the same path as the interactive /plugin configure flow."
+      },
+      {
+        "from": "2.1.285",
+        "description": "Set a userConfig option declared in the plugin's manifest, or a bundled .mcpb server's own user_config field as <server>.<key>=<value> (a bare key works when only one bundled server declares it). Repeatable. Values are validated against the schema and stored via the same path as the interactive /plugin configure flow."
       }
     ],
     "cli_flag:--console": [
@@ -361,6 +365,12 @@
         "description": "Bypass all permission checks. Recommended only for sandboxes with no internet access."
       }
     ],
+    "cli_flag:--data-size": [
+      {
+        "from": "2.1.285",
+        "description": "Measure each installed plugin's saved data directory, or only the named plugin's (requires --json)"
+      }
+    ],
     "cli_flag:--debug": [
       {
         "from": "0.2.9",
@@ -415,6 +425,12 @@
       {
         "from": "2.1.157",
         "description": "Manifest description"
+      }
+    ],
+    "cli_flag:--desktop": [
+      {
+        "from": "2.1.285",
+        "description": "Open in the Claude Desktop app instead of the terminal (with --continue or --resume <id> to pick the session)"
       }
     ],
     "cli_flag:--disable-slash-commands": [
@@ -553,6 +569,12 @@
       {
         "from": "2.1.211",
         "description": "Forward subagent text and thinking blocks as assistant/user messages with parent_tool_use_id set (only works with --print and --output-format=stream-json)"
+      }
+    ],
+    "cli_flag:--from-link": [
+      {
+        "from": "2.1.284",
+        "description": "For a program adding a marketplace from an install link: adds it as the install link does, then prints one JSON line, {\"name\": \"<marketplace>\", \"added\": true|false}, or before failing {\"refused\": {\"kind\": \"<kind>\", \"name\": \"<name>\", \"folder\"?: \"<path>\"}}"
       }
     ],
     "cli_flag:--from-pr": [
@@ -1385,6 +1407,12 @@
       {
         "from": "2.1.64",
         "description": "Listen on a unix domain socket"
+      }
+    ],
+    "cli_flag:--values-stdin": [
+      {
+        "from": "2.1.285",
+        "description": "Read option values from stdin as a JSON object of single-line strings; options left out keep their values"
       }
     ],
     "cli_flag:--verbose": [
@@ -2237,6 +2265,10 @@
       {
         "from": "2.0.43",
         "description": "Show options when rate limit is reached"
+      },
+      {
+        "from": "2.1.284",
+        "description": "Manage usage limits and upgrade options"
       }
     ],
     "command:/recap": [
@@ -3199,6 +3231,10 @@
       {
         "from": "2.1.154",
         "description": "Disable the Workflows feature (also via CLAUDE_CODE_DISABLE_WORKFLOWS)."
+      },
+      {
+        "from": "2.1.285",
+        "description": "Disable the Workflows feature. Code Review on pull requests and /ultrareview run in Anthropic's cloud and are not stopped by this setting, except an /ultrareview that has to restart partway through. A machine that runs a review itself refuses it when that machine's own administrator set this, or CLAUDE_CODE_DISABLE_WORKFLOWS in an `env` block, in its managed settings (MDM, the managed-settings file or an administrator's policy helper). Set in the environment before Claude Code starts, CLAUDE_CODE_DISABLE_WORKFLOWS disables Workflows. Beyond the cases above it stops a review only when the review's own session starts with it set."
       }
     ],
     "config_key:disabledMcpjsonServers": [
@@ -3713,6 +3749,10 @@
       {
         "from": "2.1.268",
         "description": "Managed plugins (plugin@marketplace ids that managed enabledPlugins sets true) whose hooks run first, outermost, in the listed order: the first id listed sees every event before any other plugin and every result after it. Managed plugins not listed here or in appendPlugins follow the listed ones; user, project and marketplace plugins come after those; then appendPlugins; then the built-in plugins. The bundled sec-default@builtin seats itself outermost (on a machine with managed settings and for Team and Enterprise organizations) unless this list is set, in which case list sec-default@builtin where it should sit or leave it out. Any other id that is not an enabled managed plugin is skipped; an id listed in both keys is prepended. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources."
+      },
+      {
+        "from": "2.1.285",
+        "description": "Managed plugins (plugin@marketplace ids that managed enabledPlugins sets true) whose hooks run first, outermost, in the listed order: the first id listed sees every event before any other plugin and every result after it. Managed plugins not listed here or in appendPlugins follow the listed ones; user, project and marketplace plugins come after those; then appendPlugins; then the built-in plugins. The bundled cc-plugin-sec-default@builtin seats itself outermost (on a machine with managed settings and for Team and Enterprise organizations) unless this list is set, in which case list it where it should sit or leave it out. Name it there as sec-default@builtin, the id every release reads, for as long as any machine in the organization may run a release from before its rename; a release that knows the new id reads either. Any other id that is not an enabled managed plugin is skipped; an id listed in both keys is prepended. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources."
       }
     ],
     "config_key:proactive": [
