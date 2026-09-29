@@ -113,6 +113,37 @@ describe('extractSettingsKeys — thunked era (2.1.284 →)', () => {
       'function la(e){return{apiKeyHelper:()=>o(),attribution:()=>{let returned=o(),xreturn=o()}}}';
     expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*no top-level return/);
   });
+
+  it('throws on a second top-level return rather than walking one branch', () => {
+    const src =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o(),' +
+      'attribution:()=>{if(e)return u({commit:o()});return u({pr:o()})}}}';
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*top-level if/);
+    const bare =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o(),' +
+      'attribution:()=>{return u({commit:o()});return u({pr:o()})}}}';
+    expect(() => extractSettingsKeys(bare)).toThrow(
+      /"attribution".*more than one top-level return/
+    );
+  });
+
+  it('throws on a braced branch that could hide another return', () => {
+    const src =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o(),' +
+      'attribution:()=>{if(e){return u({commit:o()})}return u({pr:o()})}}}';
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*top-level if/);
+  });
+
+  it('does not read a property access such as Symbol.for as a keyword', () => {
+    const src =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o(),' +
+      'attribution:()=>{let s=Symbol.for("x"),t=g.return;return u({commit:o()})}}}';
+    expect(paths(src)).toEqual(['apiKeyHelper', 'attribution', 'attribution.commit']);
+  });
 });
 
 describe('extractSettingsKeys — sub-schema references', () => {

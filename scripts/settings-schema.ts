@@ -74,9 +74,13 @@ const THUNK = /^\s*\(\)\s*=>\s*/;
  * `()=>{let i=u({…});return Fe([H(),i])…}` — holds its schema in the block's
  * top-level `return`. Reading the whole block instead hands the parent its first
  * child's `.describe()`: `attribution` borrowed `attribution.commit`'s sentence
- * at 2.1.284. A block with no top-level `return` is a shape we do not recognise,
- * so it throws rather than guessing.
+ * at 2.1.284. Only a straight-line block with exactly one top-level `return` is
+ * read. A block with no `return`, a second one, or a branch or loop that could
+ * hide another (`if(e){return a}return b`) is a shape we do not recognise, so it
+ * throws rather than walking one branch and dropping the other's keys.
  */
+const BLOCK_KEYWORD = /^(?:return|if|else|switch|try|for|while|do)(?![\w$])/;
+
 function schemaSpan(
   src: string,
   valueStart: number,
@@ -87,6 +91,12 @@ function schemaSpan(
   if (!thunk) return { valueStart, valueEnd };
   const at = valueStart + thunk[0].length;
   if (src[at] !== '{') return { valueStart: at, valueEnd };
+  const refuse = (why: string): never => {
+    throw new SettingsSchemaError(
+      `settings schema: the thunk for "${path}" has a block body ${why}. ` +
+        `Refusing to emit a key set that may be missing its keys.`
+    );
+  };
   let returnAt = -1;
   let depth = 0;
   for (let j = at + 1; j < valueEnd; j++) {
@@ -102,19 +112,15 @@ function schemaSpan(
         return { valueStart: returnAt, valueEnd: j };
       }
       depth--;
-    } else if (
-      depth === 0 &&
-      src.startsWith('return', j) &&
-      !/[\w$]/.test(src[j - 1] as string) &&
-      !/[\w$]/.test(src[j + 'return'.length] as string)
-    ) {
-      returnAt = j + 'return'.length;
+    } else if (depth === 0 && !/[\w$.]/.test(src[j - 1] as string)) {
+      const keyword = BLOCK_KEYWORD.exec(src.slice(j, j + 8))?.[0];
+      if (keyword === undefined) continue;
+      if (keyword !== 'return') refuse(`with a top-level ${keyword}`);
+      if (returnAt !== -1) refuse('with more than one top-level return');
+      returnAt = j + keyword.length;
     }
   }
-  throw new SettingsSchemaError(
-    `settings schema: the thunk for "${path}" has a block body with no top-level return. ` +
-      `Refusing to emit a key set that may be missing its keys.`
-  );
+  return refuse('with no top-level return');
 }
 
 /**
