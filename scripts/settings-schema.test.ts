@@ -62,6 +62,59 @@ describe('extractSettingsKeys — tree-shaken era (2.1.224 →)', () => {
   });
 });
 
+describe('extractSettingsKeys — thunked era (2.1.284 →)', () => {
+  // 2.1.284 returns the root as a plain object of thunks, which a lazy wrapper
+  // builds field by field: `function la(e){return{apiKeyHelper:()=>o(),…}}`.
+  // Neither the anchor nor the root matched that shape, so the lane refused.
+  const builders = 'var o=Ct(),k=Ct(),u=Ct(),H=Ct();function Fe(e){return new Zn(e)}';
+
+  it('walks a returned root whose values are thunks', () => {
+    const src =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o().optional(),' +
+      'cleanupPeriodDays:()=>k().int().optional().describe("Days to retain transcripts"),' +
+      'attribution:()=>u({commit:o().describe("Commit trailer")}).optional()}}';
+    const keys = extractSettingsKeys(src);
+    expect(keys.map((k) => k.path)).toEqual([
+      'apiKeyHelper',
+      'cleanupPeriodDays',
+      'attribution',
+      'attribution.commit',
+    ]);
+    expect(keys[1]?.description).toBe('Days to retain transcripts');
+    expect(keys[2]?.description).toBeUndefined();
+  });
+
+  it("reads a block-bodied thunk's own return, not its first child's description", () => {
+    // At 2.1.284 `attribution` builds its object inside the block and returns a
+    // union, so the first `.describe()` in the value is `commit`'s. The nested
+    // `return` AFTER the top-level one is the 2.1.284 `.transform((d)=>{…})`
+    // shape: taking it would start the span past the parent's `.describe()`.
+    const src =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o(),' +
+      'attribution:()=>{let i=u({commit:o().describe("Commit trailer")});' +
+      'return Fe([H(),i]).describe("Customize attribution")' +
+      '.transform((d)=>{return d}).optional()}}}';
+    const attribution = extractSettingsKeys(src).find((k) => k.path === 'attribution');
+    expect(attribution?.description).toBe('Customize attribution');
+  });
+
+  it('throws on a block-bodied thunk with no top-level return', () => {
+    const src =
+      builders + 'function la(e){return{apiKeyHelper:()=>o(),attribution:()=>{let i=u({})}}}';
+    expect(() => extractSettingsKeys(src)).toThrow(SettingsSchemaError);
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*no top-level return/);
+  });
+
+  it('does not read an identifier that merely contains "return" as the keyword', () => {
+    const src =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o(),attribution:()=>{let returned=o(),xreturn=o()}}}';
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*no top-level return/);
+  });
+});
+
 describe('extractSettingsKeys — sub-schema references', () => {
   it('resolves a CALLED sub-schema factory and prefixes its keys', () => {
     const src =

@@ -24,6 +24,11 @@
  * either would have silently returned zero keys the moment 2.1.224 shipped,
  * which reads downstream as ~225 simultaneous removals.
  *
+ * From 2.1.284 the ROOT is also emitted as a returned plain object of thunks,
+ * `return{cleanupPeriodDays:()=>lt().int(),…}`, which a lazy wrapper builds field
+ * by field. The walk reads each value past its thunk (see `schemaSpan`); nested
+ * objects are still call-opened.
+ *
  * A third change, at 2.1.242, is not an emission era but a SCOPE one: the
  * bundle became a graph of ES-module chunks, each with its own minified names.
  * The walk takes the chunk list and resolves every reference inside the chunk
@@ -47,19 +52,78 @@ const ANCHOR_KEYS = ['cleanupPeriodDays', 'includeCoAuthoredBy', 'apiKeyHelper']
 
 /**
  * An anchor key followed by a call — `key:v.number(` (namespaced) or `key:lt(`
- * (tree-shaken). Group 1 is the namespace alias when there is one, so the
- * namespaced era can still report a real zod type.
+ * (tree-shaken), optionally behind a thunk — `key:()=>k(` (2.1.284 →). Group 1
+ * is the namespace alias when there is one, so the namespaced era can still
+ * report a real zod type.
  */
 const ANCHOR_RE = new RegExp(
-  `(?:${ANCHOR_KEYS.join('|')}):(?:([A-Za-z_$][\\w$]*)\\.)?[A-Za-z_$][\\w$]*\\(`
+  `(?:${ANCHOR_KEYS.join('|')}):(?:\\(\\)=>)?(?:([A-Za-z_$][\\w$]*)\\.)?[A-Za-z_$][\\w$]*\\(`
 );
 
 /**
- * Text ending immediately before an object literal's `{` when that literal is a
- * call's argument: `v.object(` or `Xt(`. This is the shape test that replaces
- * matching a literal `<alias>.object({`.
+ * A value's leading thunk. From 2.1.284 the root is a plain object whose every
+ * value is deferred — `{apiKeyHelper:()=>o().optional(),…}` — and a lazy wrapper
+ * (`new yn(la(e))`) builds each field on demand. The schema expression is what
+ * follows the arrow, so the walk reads past it.
  */
-const CALL_BEFORE_BRACE = /(?:[A-Za-z_$][\w$]*\.)?[A-Za-z_$][\w$]*\($/;
+const THUNK = /^\s*\(\)\s*=>\s*/;
+
+/**
+ * The span of the schema expression a value holds. A plain value is its own
+ * span, and a thunk's is what follows the arrow. A block-bodied thunk —
+ * `()=>{let i=u({…});return Fe([H(),i])…}` — holds its schema in the block's
+ * top-level `return`. Reading the whole block instead hands the parent its first
+ * child's `.describe()`: `attribution` borrowed `attribution.commit`'s sentence
+ * at 2.1.284. A block with no top-level `return` is a shape we do not recognise,
+ * so it throws rather than guessing.
+ */
+function schemaSpan(
+  src: string,
+  valueStart: number,
+  valueEnd: number,
+  path: string
+): { valueStart: number; valueEnd: number } {
+  const thunk = THUNK.exec(src.slice(valueStart, valueStart + 16));
+  if (!thunk) return { valueStart, valueEnd };
+  const at = valueStart + thunk[0].length;
+  if (src[at] !== '{') return { valueStart: at, valueEnd };
+  let returnAt = -1;
+  let depth = 0;
+  for (let j = at + 1; j < valueEnd; j++) {
+    const c = src[j];
+    if (c === '"' || c === "'" || c === '`') {
+      j = skipString(src, j) - 1;
+      continue;
+    }
+    if (c === '(' || c === '[' || c === '{') depth++;
+    else if (c === ')' || c === ']' || c === '}') {
+      if (depth === 0) {
+        if (returnAt === -1) break;
+        return { valueStart: returnAt, valueEnd: j };
+      }
+      depth--;
+    } else if (
+      depth === 0 &&
+      src.startsWith('return', j) &&
+      !/[\w$]/.test(src[j - 1] as string) &&
+      !/[\w$]/.test(src[j + 'return'.length] as string)
+    ) {
+      returnAt = j + 'return'.length;
+    }
+  }
+  throw new SettingsSchemaError(
+    `settings schema: the thunk for "${path}" has a block body with no top-level return. ` +
+      `Refusing to emit a key set that may be missing its keys.`
+  );
+}
+
+/**
+ * Text ending immediately before the schema root's `{`: a call's argument —
+ * `v.object(` or `Xt(` — or, from 2.1.284, a returned plain object of thunks
+ * (`return{`). This is the shape test that replaces matching a literal
+ * `<alias>.object({`.
+ */
+const ROOT_BEFORE_BRACE = /(?:(?:[A-Za-z_$][\w$]*\.)?[A-Za-z_$][\w$]*\(|(?<![\w$])return)$/;
 
 /** How far back from the anchor to look for the schema root. */
 const ROOT_WINDOW = 400_000;
@@ -149,7 +213,7 @@ function schemaRootStart(
   const floor = Math.max(0, anchor - ROOT_WINDOW);
   for (let i = anchor - 1; i >= floor; i--) {
     if (src[i] !== '{') continue;
-    if (!CALL_BEFORE_BRACE.test(src.slice(Math.max(0, i - 64), i))) continue;
+    if (!ROOT_BEFORE_BRACE.test(src.slice(Math.max(0, i - 64), i))) continue;
     const declaresAnchor = scanLevel(src, i + 1).some(
       (entry) => entry.key === anchorKey && entry.valueStart === anchorValueAt
     );
@@ -630,9 +694,10 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
           `Refusing to emit a truncated key set.`
       );
     }
-    for (const { key, valueStart, valueEnd } of scanLevel(src, start)) {
+    for (const entry of scanLevel(src, start)) {
+      const path = prefix ? `${prefix}.${entry.key}` : entry.key;
+      const { valueStart, valueEnd } = schemaSpan(src, entry.valueStart, entry.valueEnd, path);
       const value = src.slice(valueStart, valueEnd);
-      const path = prefix ? `${prefix}.${key}` : key;
       keys.push({
         path: detach(path),
         description: describeKey(src, value, valueStart, valueEnd),
