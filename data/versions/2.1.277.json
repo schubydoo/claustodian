@@ -683,8 +683,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set a `userConfig` option the plugin's manifest declares. Repeat the flag for each option. Requires Claude Code v2.1.147 or later",
-      "description_source": "docs",
+      "description": "Set a userConfig option declared in the plugin's manifest (repeatable). Values are validated against the schema and stored via the same path as the interactive /plugin configure flow.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
@@ -1254,7 +1254,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Move per-machine sections from the system prompt (working directory, environment info, memory paths, git-repo flag) into the first user message. Improves prompt-cache reuse across different users and machines running the same task. Only applies with the default system prompt; ignored when `--system-prompt` or `--system-prompt-file` is set. Use with `-p` for scripted, multi-user workloads",
+      "description": "Move per-user context, such as the auto memory location, out of the system prompt and into the first user message. Improves prompt-cache reuse across different users and machines running the same task. Only applies with the default system prompt; ignored when `--system-prompt` or `--system-prompt-file` is set. Use with `-p` for scripted, multi-user workloads",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -4400,7 +4400,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Skill.** Draft UI mockups, screen flows, landing pages, or posters as artboards on one canvas, published as a Design artifact, for example `/design a settings screen for a mobile banking app`. You edit the artboards in a desktop browser, and your edits save automatically. You can export each artboard as PNG or PDF. Requires a session where artifacts are available and Claude Code v2.1.265 or later. Available on the Anthropic API. On Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS, artifacts aren't available, so the command is unavailable there",
+      "description": "**Skill.** Draft UI mockups, screen flows, landing pages, or posters as artboards on one canvas, published as a Claude Design artifact, for example `/design a settings screen for a mobile banking app`. You edit the artboards in a desktop browser, and your edits save automatically. You can export each artboard as PNG or PDF. Requires Claude Code v2.1.265 or later, a session where artifacts are available, and an account where the Design template is available; if your organization has turned that template off, `/design` doesn't draft designs. Available on the Anthropic API. On Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS, artifacts aren't available, so the command is unavailable there",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
@@ -4505,8 +4505,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Set the effort level: `low` to `xhigh`, `max`, `ultracode`, or `auto`; `status` prints it. `max` and `ultracode` are session-only; the `ultracode` key persists. Run it while Claude is responding and, once you confirm the cache warning, if Claude Code shows one, Claude Code applies the new level to the next request in that turn. Before v2.1.242, Claude Code decided from a feature flag it fetched from Anthropic whether to run the command mid-turn or queue it until the turn finished, and always queued it in a session that doesn't fetch feature flags, such as on a third-party provider. Works in `-p`",
-      "description_source": "docs",
+      "description": "Set effort level for model usage",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -4623,8 +4623,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Toggle the focus view, which shows only your last prompt, a one-line tool-call summary with edit diffstats, and the final response. The tool-call summary also counts the subagents launched in the turn and collapses completed background-task notifications into a single count. The selection persists across sessions; set `viewMode` in settings to override it. Only available in fullscreen rendering. The VS Code extension offers its own Focus view as a command-menu toggle, stored as an extension setting, independent of `viewMode`",
-      "description_source": "docs",
+      "description": "Toggle focus view: just your prompt, summary, and response",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -5219,11 +5219,11 @@
       "first_seen": "2.0.43",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
-      "description": "Show ways to keep working when a claude.ai usage limit blocks a request: wait and continue automatically when the limit resets, add usage credits, or upgrade your plan. Claude Code can also open this menu on its own when you hit a limit at your own terminal. See Turn automatic continue off. Requires a claude.ai subscription. Doesn't appear in the command menu; type it in full. The wait-and-continue rows require Claude Code v2.1.234 or later",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "description": "Show options when rate limit is reached",
+      "description_source": "binary",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -5562,6 +5562,19 @@
       "description": "List available skills. Type to filter the list by name, description, or source. Press `t` to sort by token count, `Space` or `Enter` to cycle a skill's visibility to Claude and the `/` menu, and `Esc` to save and close. You can't cycle plugin skills, skills whose frontmatter sets `disable-model-invocation: true`, or skills with a `skillOverrides` entry in managed settings or the `--settings` flag",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/slides",
+      "type": "command",
+      "first_seen": "2.1.265",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "**Skill.** Make a new presentation as a Claude Slides artifact filled from your brief, for example `/slides a quarterly review of the platform team`. Requires Claude Code v2.1.265 or later, a session where artifacts are available, and an account where the Slides template is available; otherwise the command doesn't appear. Available on the Anthropic API. On Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, and Claude Platform on AWS, artifacts aren't available, so the command is unavailable there",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
     },
     {
@@ -6145,7 +6158,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allowlist the MCP servers people can add. Claude Code blocks any server that doesn't match an entry wherever it's defined, including plugin servers, servers passed with `--mcp-config`, and servers from claude.ai.",
+      "description": "Allowlist the MCP servers people can add. Claude Code blocks any server that doesn't match an entry wherever it's defined, including plugin servers, servers a user passes with `--mcp-config`, and servers from claude.ai.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6707,7 +6720,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set how many days Claude Code keeps session transcripts and other application data before deleting them. Claude Code runs the deletion as a background sweep after a session starts, as long as it can safely determine the retention period.",
+      "description": "Set how many days Claude Code keeps session transcripts and other application data before deleting them. Claude Code runs the deletion as a background sweep after a session starts, as long as it can safely determine the retention period. The sweep deletes transcripts without showing a message, so a session you haven't used for longer than the retention period no longer appears in the `/resume` picker.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7011,7 +7024,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Reject the `--plugin-dir`, `--plugin-url`, `--agents`, and `--mcp-config` CLI flags at startup, which users could otherwise pass to bypass `strictKnownMarketplaces` for a single run. Claude Code exits with an error naming the rejected flags, and applies the same check to surfaces that start the CLI with these flags internally, currently Cowork local sessions in the desktop app. In cloud sessions, Claude Code drops the MCP servers the server delivered through `--mcp-config`, other than in-process `type: \"sdk\"` entries, and starts the session. Requires Claude Code v2.1.193 or later.",
+      "description": "Reject the `--plugin-dir`, `--plugin-url`, `--agents`, and `--mcp-config` CLI flags at startup, which users could otherwise pass to bypass `strictKnownMarketplaces` for a single run. Claude Code exits with an error naming the rejected flags, and applies the same check to surfaces that start the CLI with these flags internally, currently Cowork local sessions in the desktop app. In cloud sessions, Claude Code instead starts the session and drops every server-delivered `--mcp-config` entry except in-process `type: \"sdk\"` entries and a Claude Tag session's Slack tools. Requires Claude Code v2.1.193 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7037,8 +7050,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn off dynamic workflows and the bundled workflow commands for everyone your settings reach, such as an organization through managed settings. To turn workflows on or off just for yourself, use `enableWorkflows` instead, which the **Dynamic workflows** toggle in `/config` writes to your user settings.",
-      "description_source": "docs",
+      "description": "Disable the Workflows feature (also via CLAUDE_CODE_DISABLE_WORKFLOWS).",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7180,7 +7193,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "The `/model` picker has a **Default** option that resolves to your organization default model when one applies, and otherwise to your account type's default. An `availableModels` allowlist limits the models you can name, but with the default prefix matching it leaves **Default** alone, so **Default** can still resolve to a model outside the list. This key closes that gap. Requires Claude Code v2.1.175 or later.",
+      "description": "The `/model` picker has a **Default** option, and `default` model setting describes the model it resolves to. An `availableModels` allowlist limits the models you can name, but with the default prefix matching it doesn't remap your account type's default, so **Default** can still resolve to a model outside the list. This key closes that gap. Requires Claude Code v2.1.175 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7826,7 +7839,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Stop Claude from reading paths outside the session's working directories with the Read, Grep, Glob, and LSP tools, in every permission mode including `bypassPermissions`. A Bash command that reads a matching path through a file command Claude Code recognizes, such as `cat`, prompts you even in auto mode and `bypassPermissions` mode. Requires Claude Code v2.1.257 or later.",
+      "description": "Make Claude's file tools refuse reads outside your working directories in every permission mode, including `bypassPermissions`. Claude Code denies `Read`, `Grep`, `Glob`, and `LSP` calls on those paths and tells Claude to ask you to add the directory with `/add-dir`. Files Claude Code itself needs stay readable, such as your skills, plugins, rules, agents, commands, and the `CLAUDE.md` memory file under `~/.claude/`. Requires Claude Code v2.1.257 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9324,7 +9337,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Lock the `agents` surface. Claude Code stops loading agents from `~/.claude/agents/` and `.claude/agents/`, and keeps loading plugin agents, built-in agents, and agents in the managed policy directory.",
+      "description": "Lock the `agents` surface. Claude Code stops loading agents from `~/.claude/agents/`, `.claude/agents/`, and `--add-dir` directories. It keeps loading plugin agents, built-in agents, and agents in the managed policy directory.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9366,7 +9379,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Lock the `skills` surface. Claude Code stops loading skills from `~/.claude/skills/` and `.claude/skills/`, custom commands from `~/.claude/commands/` and `.claude/commands/`, skills under `--add-dir` directories, and skills synced from your claude.ai account, and keeps loading plugin skills, bundled skills, and skills in the managed policy directory.",
+      "description": "Lock the `skills` surface. Claude Code stops loading skills from `~/.claude/skills/` and `.claude/skills/`, custom commands from `~/.claude/commands/` and `.claude/commands/`, skills and commands under `--add-dir` directories, and skills synced from your claude.ai account. It keeps loading plugin skills, bundled skills, and skills in the managed policy directory.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9651,7 +9664,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Start sessions with ultracode on. With it on, Claude plans a workflow for each substantive task instead of waiting for you to ask. Claude plans workflows only when dynamic workflows are enabled for you, your model supports `xhigh` effort, and no effort cap below `xhigh` applies. Either way, `ultracode: true` runs the session at `xhigh` effort, or at the cap when an effort cap is lower. Claude Code reads this key but never writes it: `/effort ultracode` turns ultracode on for the current session only.",
+      "description": "Start sessions with ultracode on. With it on, Claude plans a workflow for each substantive task instead of waiting for you to ask. Claude plans workflows only when dynamic workflows are enabled for you and your model supports `xhigh` effort. The key doesn't change the session's effort level: ultracode runs at whichever level the session uses. Claude Code reads this key but never writes it: `/effort ultracode` turns ultracode on for the current session only.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9897,7 +9910,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Have Claude Code on WSL read managed settings from the Windows policy chain, with HKLM and the Windows managed settings file taking priority over `/etc/claude-code` and HKCU below it. While the chain is on, Claude Code reads `/etc/claude-code` only when no managed settings file or drop-in under `C:\\Program Files\\ClaudeCode\\` delivers a policy key. Set it to extend the policy you already deploy on Windows to WSL sessions on the same machine, so they follow the same rules as host sessions. Claude Code honors it only when set in the HKLM registry key or in a managed settings file or drop-in under `C:\\Program Files\\ClaudeCode\\`, both of which require Windows admin to write.",
+      "description": "Have Claude Code on WSL read managed settings from the Windows policy chain, with HKLM and the Windows managed settings file taking priority over `/etc/claude-code` and HKCU below it. While the chain is on, Claude Code reads `/etc/claude-code` only when no Windows admin document is present in the HKLM registry value or the `C:\\Program Files\\ClaudeCode\\` folder. Set it to extend the policy you already deploy on Windows to WSL sessions on the same machine, so they follow the same rules as host sessions. Claude Code honors it only when set in the HKLM registry key or in a managed settings file or drop-in under `C:\\Program Files\\ClaudeCode\\`, both of which require Windows admin to write.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -11556,11 +11569,11 @@
       "first_seen": "2.0.45",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Microsoft Foundry resource name (for example, `my-resource`). Required if `ANTHROPIC_FOUNDRY_BASE_URL` is not set (see Microsoft Foundry)",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -14342,7 +14355,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable 1M context window support. When set, 1M model variants are unavailable in the model picker, and Claude Code holds sessions on models with a native 1M window, such as Sonnet 5 and the Fable models, to a 200K window; see Extended context for how the hold is enforced. Useful for enterprise environments with compliance requirements. For its role in correcting the window for an unrecognized `[1m]` model ID, see Correct the window for a gateway or custom model ID",
+      "description": "Set to `1` to disable 1M context window support. When set, 1M model variants are unavailable in the model picker, and Claude Code holds sessions on models with a native 1M window, such as Sonnet 5.5 and the Fable models, to a 200K window; see Extended context for how the hold is enforced. Useful for enterprise environments with compliance requirements. For its role in correcting the window for an unrecognized `[1m]` model ID, see Correct the window for a gateway or custom model ID",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -14355,7 +14368,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable adaptive reasoning on Opus 4.6 and Sonnet 4.6 and fall back to the fixed thinking budget controlled by `MAX_THINKING_TOKENS`. Has no effect on Fable models, Sonnet 5, or Opus 4.7 and later, which always use adaptive reasoning",
+      "description": "Set to `1` to disable adaptive reasoning on Opus 4.6 and Sonnet 4.6 and fall back to the fixed thinking budget controlled by `MAX_THINKING_TOKENS`. Has no effect on Fable models, Sonnet 5 and later, or Opus 4.7 and later, which always use adaptive reasoning",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -15037,7 +15050,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to omit the `thinking` parameter from API requests entirely. This is a compatibility option for proxies and gateways that reject the parameter. On models that think by default, omitting the parameter means the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead. Neither variable turns thinking off on Opus 5.5 or the Fable models, which can't have thinking turned off. On third-party providers, `MAX_THINKING_TOKENS=0` likewise omits the parameter, so the two variables behave the same there",
+      "description": "Set to `1` to omit the `thinking` parameter from API requests entirely. This is a compatibility option for proxies and gateways that reject the parameter. On models that think by default, omitting the parameter means the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead. Neither variable turns thinking off on Opus 5.5, Sonnet 5.5, or the Fable models, which can't have thinking turned off. On third-party providers, `MAX_THINKING_TOKENS=0` likewise omits the parameter, so the two variables behave the same there",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -19526,7 +19539,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Override the temp directory used for internal temp files. Claude Code appends `/claude-{uid}/` on Unix or `/claude/` on Windows to this path. Default: `/tmp` on macOS, `os.tmpdir()` on Linux and Windows. On macOS and Linux, sandboxed Bash subprocesses receive a short fallback `$TMPDIR` under the system default when your override is a long path, since some tools fail when temp paths get too long. Unsandboxed Bash commands inherit your shell's `$TMPDIR` when it is set. Claude Code's own temp files always use your override. Set it in your shell, user settings, or managed settings. Ignored in project and local settings",
+      "description": "Override the temp directory used for internal temp files. Claude Code appends `/claude-{uid}/` to this path on Unix, or `/claude/` on Windows. Default: `/tmp` on macOS, `os.tmpdir()` on Linux and Windows. On macOS and Linux, sandboxed Bash subprocesses receive a short fallback `$TMPDIR` under the system default when your override is a long path, since some tools fail when temp paths get too long. Unsandboxed Bash commands inherit your shell's `$TMPDIR` when it is set. On native Windows, when your shell doesn't set `$TMPDIR`, a Bash command that references `$TMPDIR` receives your override, or `%TEMP%` when you haven't set one. Claude Code's own temp files always use your override. Set it in your shell, user settings, or managed settings. Ignored in project and local settings",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -20302,7 +20315,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Set automatically in Bash tool subprocesses and hook commands to the effort level in effect when the subprocess starts: `low`, `medium`, `high`, `xhigh`, or `max`. Ultracode is not a distinct level and reports as `xhigh`. Matches the `effort.level` field passed to hooks. Only set when the current model supports the effort parameter",
+      "description": "Set automatically in Bash tool subprocesses and hook commands to the effort level in effect when the subprocess starts: `low`, `medium`, `high`, `xhigh`, or `max`. Matches the `effort.level` field passed to hooks. Only set when the current model supports the effort parameter",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -21728,7 +21741,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024. See `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Opus 5.5 and the Fable models, which can't have thinking turned off. On third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5. Claude Code ignores nonzero values on adaptive reasoning models, except on the models where `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` turns adaptive reasoning off",
+      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024. See `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Opus 5.5, Sonnet 5.5, and the Fable models, which can't have thinking turned off. On third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5. Claude Code ignores nonzero values on adaptive reasoning models, except on the models where `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` turns adaptive reasoning off",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -21778,11 +21791,11 @@
       "first_seen": "2.1.217",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Turns the MCP discovery cache on or off. With the cache on, a remote HTTP or SSE server you've used before can show the `cached` status, and Claude Code connects it on its first tool call instead of at startup. The cache is off by default unless a gradual rollout has enabled it for your account. Set to `1` to turn it on, or `0` to keep it off even when the rollout has enabled it. Before v2.1.238, the cache was on by default. The `cached` status requires Claude Code v2.1.221 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -22099,7 +22112,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to include tool input arguments, MCP server names, user-authored workflow names, raw error strings on tool failures, the refusal `category` on `api_refusal` events, and other tool details in OpenTelemetry traces and logs. Disabled by default to protect PII. Set it in your shell, user settings, or managed settings. Ignored in project and local settings, apart from the off values that section describes. See Monitoring",
+      "description": "Set to `1` to include tool input arguments; MCP server names; user-authored workflow names; raw error strings on tool failures; the refusal `category` on `api_refusal` events; real agent, skill, plugin, and MCP server names on cost and token metrics; and other tool details in OpenTelemetry metrics, traces, and logs. Disabled by default to protect PII. Set it in your shell, user settings, or managed settings. Ignored in project and local settings, apart from the off values that section describes. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
