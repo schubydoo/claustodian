@@ -144,6 +144,31 @@ describe('extractSettingsKeys — thunked era (2.1.284 →)', () => {
       'attribution:()=>{let s=Symbol.for("x"),t=g.return;return u({commit:o()})}}}';
     expect(paths(src)).toEqual(['apiKeyHelper', 'attribution', 'attribution.commit']);
   });
+
+  it.each([
+    ['a regex literal', 'let p=/if|return/g;'],
+    ['a regex whose class holds a slash', 'let p=/[/]if/;'],
+    ['a regex with an escaped slash', 'let p=/\\/if/;'],
+    ['a regex after a keyword', 'void /if/;'],
+    ['a block comment', '/* if(e){return a} */'],
+    ['a line comment', '// if(e){return a}\n'],
+    ['a division', 'let n=e/2;'],
+  ])('reads a straight-line block holding %s', (_, statement) => {
+    const src =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o(),' +
+      `attribution:()=>{${statement}return u({commit:o()})}}}`;
+    expect(paths(src)).toEqual(['apiKeyHelper', 'attribution', 'attribution.commit']);
+  });
+
+  it.each([
+    ['block comment', '/* return u({commit:o()})'],
+    ['line comment', '// return u({commit:o()})'],
+  ])('throws when a %s never closes, rather than reading inside it', (_, statement) => {
+    const src =
+      builders + `function la(e){return{apiKeyHelper:()=>o(),attribution:()=>{${statement}}}}`;
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*no top-level return/);
+  });
 });
 
 describe('extractSettingsKeys — sub-schema references', () => {

@@ -78,8 +78,37 @@ const THUNK = /^\s*\(\)\s*=>\s*/;
  * read. A block with no `return`, a second one, or a branch or loop that could
  * hide another (`if(e){return a}return b`) is a shape we do not recognise, so it
  * throws rather than walking one branch and dropping the other's keys.
+ *
+ * Inside the block, comments and regex literals are skipped, so keyword text in
+ * them (`let p=/if/`) is not read as a statement. The block's END is not this
+ * scan's to find: it comes from `scanLevel`, which does not skip regex literals,
+ * so a regex holding a bracket or quote (`/\(/`) still misplaces it, in a block
+ * or in any other value.
  */
 const BLOCK_KEYWORD = /^(?:return|if|else|switch|try|for|while|do)(?![\w$])/;
+
+/**
+ * Text ending where a `/` opens a regex literal rather than dividing: after an
+ * operator, an opening bracket, a separator, or a keyword that takes an
+ * expression. After an identifier, a number or a closing bracket it divides.
+ */
+const REGEX_CONTEXT =
+  /(?:^|[(,=:[!&|?{};+\-*%<>~^]|(?<![\w$.])(?:return|typeof|case|void|in|of|new|delete|throw))\s*$/;
+
+/** Index just past the regex literal whose opening `/` is at `j`. */
+function skipRegex(src: string, j: number): number {
+  let inClass = false;
+  for (j++; j < src.length; j++) {
+    const c = src[j];
+    if (c === '\\') j++;
+    else if (c === '[') inClass = true;
+    else if (c === ']') inClass = false;
+    else if (c === '/' && !inClass) break;
+  }
+  j++;
+  while (j < src.length && /[a-z]/.test(src[j] as string)) j++;
+  return j;
+}
 
 function schemaSpan(
   src: string,
@@ -103,6 +132,19 @@ function schemaSpan(
     const c = src[j];
     if (c === '"' || c === "'" || c === '`') {
       j = skipString(src, j) - 1;
+      continue;
+    }
+    if (c === '/') {
+      const next = src[j + 1];
+      if (next === '/') {
+        const eol = src.indexOf('\n', j);
+        j = eol === -1 ? valueEnd : eol;
+      } else if (next === '*') {
+        const close = src.indexOf('*/', j + 2);
+        j = close === -1 ? valueEnd : close + 1;
+      } else if (REGEX_CONTEXT.test(src.slice(Math.max(at, j - 16), j))) {
+        j = skipRegex(src, j) - 1;
+      }
       continue;
     }
     if (c === '(' || c === '[' || c === '{') depth++;
