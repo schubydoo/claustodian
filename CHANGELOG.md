@@ -20,6 +20,14 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ### Fixed
 
+- **Settings descriptions decode their escapes.** The compiled binary writes some
+  characters as escapes, such as `\u2014` for an em dash. The binary lane
+  published those escapes as literal text, for example "section \u2014 security
+  boundaries". It now decodes each string as JavaScript does. This changes about
+  3,200 descriptions of 48 keys across 147 releases, from 2.1.113 to 2.1.285. The
+  text is otherwise the same, and no key changes. The decoded text appears once
+  those releases are re-scraped.
+
 - **Three env vars are first seen earlier.** `CLAUDE_CODE_BS_AS_CTRL_BACKSPACE`
   moves from 2.1.133 to 2.1.113, and `CLAUDE_CODE_HTTPS_PROXY` and
   `CLAUDE_CODE_HTTP_PROXY` move from 2.1.136 to 2.1.116. From 2.1.113 to 2.1.132
