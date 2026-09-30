@@ -427,7 +427,15 @@ function eachWrite(
   else if (node.type === 'UpdateExpression') emit(bindingNames(node.argument));
   else if (node.type === 'VariableDeclaration' && node.kind === 'var' && !top.includes(node))
     for (const declarator of node.declarations as AnyNode[]) emit(bindingNames(declarator.id));
-  for (const child of childNodes(node)) eachWrite(child, inner, top, write);
+  // A switch discriminant runs before its cases' scope exists, so the outer
+  // names are what it writes.
+  for (const child of childNodes(node))
+    eachWrite(
+      child,
+      node.type === 'SwitchStatement' && child === node.discriminant ? shadow : inner,
+      top,
+      write
+    );
 }
 
 /**

@@ -718,6 +718,10 @@ describe('extractSettingsKeys — how a union member local is bound', () => {
       'in a switch case without a declaration',
       'let i=u({commit:o()});switch(e){case 1:i=u({x:o()})}',
     ],
+    [
+      'in a switch discriminant, outside the case scope',
+      'let i=u({commit:o()});switch(i=u({x:o()})){case 1:let i=o()}',
+    ],
     ['through a hole in an array pattern', 'let i=u({commit:o()});[,i]=[0,u({x:o()})];'],
     ['by an object rest', 'let i=u({commit:o()});({...i}=e);'],
     ['by a default in a pattern', 'let i=u({commit:o()});[i=u({x:o()})]=[];'],
