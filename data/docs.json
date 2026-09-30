@@ -1728,6 +1728,13 @@
       "doc_page": "settings-reference"
     },
     {
+      "symbol": "allowClaudeInChromeWithManagedMcp",
+      "type": "config_key",
+      "description": "Let the built-in Claude in Chrome server run alongside a deployed `managed-mcp.json`. Without this key, a deployed `managed-mcp.json` blocks Claude in Chrome in terminal sessions. Requires Claude Code v2.1.282 or later.",
+      "doc_min_version": "2.1.282",
+      "doc_page": "settings-reference"
+    },
+    {
       "symbol": "allowedChannelPlugins",
       "type": "config_key",
       "description": "Choose which channel plugins can push messages into sessions in your organization. When you set it, Claude Code uses your list in place of the default Anthropic allowlist; each entry names a plugin and the marketplace it comes from.",
