@@ -25,7 +25,7 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   constants, or as `"…"+` a constant name. The binary lane read only a single
   literal, so these keys had no binary description. From 2.1.64 on, about 2,250
   such descriptions across 184 releases were empty. The lane now evaluates the
-  joined string. If every string binding of a name in its chunk gives the same
+  joined string. If every binding of a name in its chunk folds to the same
   text, the lane uses that text. Otherwise the description stays empty, as
   before. No key and no existing description changes. The new descriptions
   appear once the affected releases are re-extracted.

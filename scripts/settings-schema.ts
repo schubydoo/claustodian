@@ -735,17 +735,14 @@ function describeOf(value: string, resolve: StringResolver): string | undefined 
   const at = m ? m.index : value.indexOf(DESCRIBE_CALL);
   if (at === -1) return undefined;
   const arg = callArgument(value, at + DESCRIBE_CALL.length);
-  const text = arg && foldString(arg, resolve, 0);
+  const text = arg && foldString(arg, resolve);
   return text === undefined ? undefined : detach(text);
 }
 
 const DESCRIBE_CALL = '.describe(';
 
 /** Resolves a name to the string constant it is bound to, or `undefined`. */
-type StringResolver = (name: string, depth: number) => string | undefined;
-
-/** How many names deep a string constant may be folded. */
-const MAX_FOLD_DEPTH = 8;
+type StringResolver = (name: string) => string | undefined;
 
 /** A string literal's raw text, unescaped the way every description always has been. */
 function unescapeRaw(raw: string): string {
@@ -780,7 +777,7 @@ function parseExpression(text: string): Expression | undefined {
 }
 
 /** The string an expression of literals, `+` and constant names evaluates to. */
-function foldString(node: Expression, resolve: StringResolver, depth: number): string | undefined {
+function foldString(node: Expression, resolve: StringResolver): string | undefined {
   if (node.type === 'Literal')
     return typeof node.value === 'string'
       ? unescapeRaw((node.raw as string).slice(1, -1))
@@ -790,36 +787,33 @@ function foldString(node: Expression, resolve: StringResolver, depth: number): s
     const quasis = node.quasis as { value: { raw: string } }[];
     let out = unescapeRaw((quasis[0] as { value: { raw: string } }).value.raw);
     for (const [i, expression] of node.expressions.entries()) {
-      const part = foldString(expression as Expression, resolve, depth);
+      const part = foldString(expression as Expression, resolve);
       if (part === undefined) return undefined;
       out += part + unescapeRaw((quasis[i + 1] as { value: { raw: string } }).value.raw);
     }
     return out;
   }
   if (node.type === 'BinaryExpression' && node.operator === '+') {
-    const left = foldString(node.left as Expression, resolve, depth);
-    const right = left === undefined ? undefined : foldString(node.right, resolve, depth);
+    const left = foldString(node.left as Expression, resolve);
+    const right = left === undefined ? undefined : foldString(node.right, resolve);
     return left === undefined || right === undefined ? undefined : left + right;
   }
-  if (node.type === 'ParenthesizedExpression') return foldString(node.expression, resolve, depth);
-  if (node.type === 'Identifier' && depth < MAX_FOLD_DEPTH) return resolve(node.name, depth + 1);
+  if (node.type === 'ParenthesizedExpression') return foldString(node.expression, resolve);
+  if (node.type === 'Identifier') return resolve(node.name);
   return undefined;
 }
 
 /**
  * The string constant `name` is bound to in `src`, folded, or `undefined`.
  *
- * Minified names are reused across scopes, so this takes every `name=`
- * binding in the scope and answers only when all of those that fold to a
- * string give the same text. Two different texts mean the name is not known,
- * and the description is left out rather than taken from the wrong binding.
+ * Minified names are reused across scopes, and nothing here tells which
+ * binding a use sees. So this takes every `name=` binding in the chunk and
+ * answers only when all of them fold to the same text. One binding that does
+ * not fold (`Gs=42`, a builder, a `WeakMap`) or a second text means the name
+ * is not known, and the description is left out rather than taken from a
+ * binding the use may never see.
  */
-function stringConstant(
-  src: string,
-  name: string,
-  resolve: StringResolver,
-  depth: number
-): string | undefined {
+function stringConstant(src: string, name: string, resolve: StringResolver): string | undefined {
   const binding = new RegExp(`(?<![\\w$.])${escapeRegExp(name)}\\s*=(?![=>])\\s*`, 'g');
   const texts = new Set<string>();
   let seen = 0;
@@ -827,8 +821,9 @@ function stringConstant(
     if (++seen > MAX_CONSTANT_BINDINGS) return undefined;
     const start = m.index + m[0].length;
     const value = constantValue(src, start);
-    const text = value && foldString(value, resolve, depth);
-    if (text !== undefined) texts.add(text);
+    const text = value && foldString(value, resolve);
+    if (text === undefined) return undefined;
+    texts.add(text);
     if (texts.size > 1) return undefined;
   }
   return texts.size === 1 ? [...texts][0] : undefined;
@@ -1269,27 +1264,21 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
   const keys: SettingsKey[] = [];
   const alias = anchorMatch[1];
   // String constants a description names, resolved in the chunk that binds
-  // them, following an import to the module it names. Memoized per chunk and
-  // name; the placeholder `null` also stops a cycle.
+  // them. An imported name is not followed: a chunk is matched to an import
+  // only by the names it exports, which is too weak to vouch for text, and no
+  // release needs it. Memoized per chunk and name. The placeholder `null` stops
+  // a cycle, and no result depends on the path that reached it.
   const stringCache = new Map<string, string | null>();
   const resolvers = new Map<Scope, StringResolver>();
   const strings = (scope: Scope): StringResolver => {
     const known = resolvers.get(scope);
     if (known) return known;
-    const resolve: StringResolver = (name, depth) => {
+    const resolve: StringResolver = (name) => {
       const key = `${scope.index}\0${name}`;
       const cached = stringCache.get(key);
       if (cached !== undefined) return cached ?? undefined;
       stringCache.set(key, null);
-      const binding = scope.imports.get(name);
-      let text: string | undefined;
-      if (binding) {
-        const target = moduleOf(binding.source, graph);
-        const local = target?.exports.get(binding.name);
-        text = target && local ? strings(target)(local, depth) : undefined;
-      } else {
-        text = stringConstant(scope.src, name, resolve, depth);
-      }
+      const text = scope.imports.has(name) ? undefined : stringConstant(scope.src, name, resolve);
       stringCache.set(key, text ?? null);
       return text;
     };

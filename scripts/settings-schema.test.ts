@@ -842,10 +842,21 @@ describe('extractSettingsKeys — descriptions', () => {
     expect(described(prelude, '`${po}: ${st}`')).toBe('When managed: project settings');
   });
 
-  it('ignores same-named bindings that are not strings', () => {
-    // At 2.1.285 `po` is also a zod builder and `st` a WeakMap in the same bundle.
-    const prelude = 'po=Xn("$ZodCUID",(e,t)=>{});st=new WeakMap;po="When managed";st="project";';
-    expect(described(prelude, '`${po} ${st}`')).toBe('When managed project');
+  it('leaves a name out when any of its bindings is not a string', () => {
+    // Nothing tells which binding a use sees, so `Gs=42` next to an inner
+    // `let Gs="wrong"` must not publish "prefix wrong".
+    expect(described('Gs=42;function f(){let Gs="wrong"}', '"prefix "+Gs')).toBeUndefined();
+    expect(described('st=new WeakMap;st="project";', '"a "+st')).toBeUndefined();
+  });
+
+  it('folds a chain of constants in any order, with no depth limit', () => {
+    const chain = Array.from({ length: 12 }, (_, i) => `a${i + 1}=a${i};`).join('');
+    const src =
+      `a0="deep";${chain}` +
+      'Q=v.object({apiKeyHelper:v.string().describe("x "+a12),model:v.string().describe("y "+a3)})';
+    const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
+    expect(by.get('apiKeyHelper')).toBe('x deep');
+    expect(by.get('model')).toBe('y deep');
   });
 
   it.each([
@@ -875,19 +886,14 @@ describe('extractSettingsKeys — descriptions', () => {
     expect(described('Gs="same";Gs="same";', '"a "+Gs')).toBe('a same');
   });
 
-  it('folds a string constant imported from another chunk', () => {
+  it('does not follow an import to fold a description', () => {
+    // A chunk is matched to an import only by the names it exports, which is too
+    // weak to vouch for the text a description publishes.
     const strings = 'var po="When managed";export{po as P}';
     const settings =
       'import{P as q}from"/$bunfs/root/strings.js";' +
       'Q=v.object({apiKeyHelper:v.string().describe(q+", ignored.")})';
-    expect(extractSettingsKeys([strings, settings])[0]?.description).toBe('When managed, ignored.');
-  });
-
-  it('leaves a description out when its import cannot be traced', () => {
-    const settings =
-      'import{P as q}from"/$bunfs/root/missing.js";' +
-      'Q=v.object({apiKeyHelper:v.string().describe(q+", ignored.")})';
-    expect(extractSettingsKeys([settings])[0]?.description).toBeUndefined();
+    expect(extractSettingsKeys([strings, settings])[0]?.description).toBeUndefined();
   });
 
   it('reads a joined description holding a paren in a string', () => {
