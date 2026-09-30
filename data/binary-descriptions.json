@@ -1113,6 +1113,12 @@
         "description": "Write the self-contained HTML report (scores, prompts, grader verdicts) to <path> instead of the results dir"
       }
     ],
+    "cli_flag:--resolve-only": [
+      {
+        "from": "2.1.286",
+        "description": "With --from-link (not with --sparse or --scope): adds nothing and prints one JSON line, {\"existing\": \"<marketplace>\"} naming the added marketplace --from-link would reuse for this source, or {\"existing\": null} when it would reuse none"
+      }
+    ],
     "cli_flag:--resume": [
       {
         "from": "0.2.91",

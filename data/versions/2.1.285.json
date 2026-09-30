@@ -2355,22 +2355,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--no-sandbox",
-      "type": "cli_flag",
-      "first_seen": "2.1.51",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
-      "description": "Enable or disable sandboxing for filesystem and network isolation. Off by default.",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/remote-control.md",
-      "category": "cli",
-      "scopes": [
-        "remote-control"
-      ]
-    },
-    {
       "symbol": "--no-scaffold",
       "type": "cli_flag",
       "first_seen": "2.1.198",
@@ -3099,22 +3083,6 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
-    },
-    {
-      "symbol": "--sandbox",
-      "type": "cli_flag",
-      "first_seen": "2.1.51",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
-      "description": "Enable or disable sandboxing for filesystem and network isolation. Off by default.",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/remote-control.md",
-      "category": "cli",
-      "scopes": [
-        "remote-control"
-      ]
     },
     {
       "symbol": "--scaffold",
@@ -7264,7 +7232,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Reject the `--plugin-dir`, `--plugin-url`, `--agents`, and `--mcp-config` CLI flags at startup, which users could otherwise pass to bypass `strictKnownMarketplaces` for a single run. Claude Code exits with an error naming the rejected flags, and applies the same check to surfaces that start the CLI with these flags internally, currently Cowork local sessions in the desktop app. In cloud sessions, Claude Code instead starts the session and drops every server-delivered `--mcp-config` entry except in-process `type: \"sdk\"` entries and a Claude Tag session's Slack tools. Requires Claude Code v2.1.193 or later.",
+      "description": "Reject the `--plugin-dir`, `--plugin-url`, `--agents`, and `--mcp-config` CLI flags at startup, which users could otherwise pass to bypass `strictKnownMarketplaces` for a single run. Claude Code exits with an error naming the rejected flags. In cloud sessions, Claude Code instead starts the session and drops every server-delivered `--mcp-config` entry except in-process `type: \"sdk\"` entries and a Claude Tag session's Slack tools. Requires Claude Code v2.1.193 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -12627,7 +12595,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Default timeout for long-running bash commands (default: 120000, or 2 minutes)",
+      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A default longer than 30 minutes also becomes the default time limit for background commands. The background time limit requires Claude Code v2.1.285 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -12653,7 +12621,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum timeout the model can set for long-running bash commands (default: 600000, or 10 minutes). The effective ceiling is the larger of this and `BASH_DEFAULT_TIMEOUT_MS`",
+      "description": "Maximum timeout the model can set for a foreground Bash or PowerShell tool command, in milliseconds (default: 600000, or 10 minutes). The effective ceiling is the larger of this and `BASH_DEFAULT_TIMEOUT_MS`. An effective ceiling longer than 2 hours also becomes the maximum time limit for background commands. The background time limit requires Claude Code v2.1.285 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
