@@ -2795,6 +2795,10 @@
     ],
     "config_key:allowedChannelPlugins": [
       {
+        "from": "2.1.84",
+        "description": "Teams/Enterprise allowlist of channel plugins. When set, replaces the default Anthropic allowlist — admins decide which plugins may push inbound messages. Undefined falls back to the default. Requires channelsEnabled: true."
+      },
+      {
         "from": "2.1.113",
         "description": "Teams/Enterprise allowlist of channel plugins. When set, replaces the default Anthropic allowlist \\u2014 admins decide which plugins may push inbound messages. Undefined falls back to the default. Requires channelsEnabled: true."
       },
@@ -4109,6 +4113,10 @@
     ],
     "config_key:sandbox.enableWeakerNetworkIsolation": [
       {
+        "from": "2.1.64",
+        "description": "macOS only: Allow access to com.apple.trustd.agent in the sandbox. Needed for Go-based CLI tools (gh, gcloud, terraform, etc.) to verify TLS certificates when using httpProxyPort with a MITM proxy and custom CA. **Reduces security** — opens a potential data exfiltration vector through the trustd service. Default: false"
+      },
+      {
         "from": "2.1.113",
         "description": "macOS only: Allow access to com.apple.trustd.agent in the sandbox. Needed for Go-based CLI tools (gh, gcloud, terraform, etc.) to verify TLS certificates when using httpProxyPort with a MITM proxy and custom CA. **Reduces security** \\u2014 opens a potential data exfiltration vector through the trustd service. Default: false"
       },
@@ -4549,6 +4557,18 @@
         "description": "Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these exact sources can be added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem."
       },
       {
+        "from": "2.1.64",
+        "description": "Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these exact sources can be added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem. Note: this is a policy gate only — it does NOT register marketplaces. To pre-register allowed marketplaces for users, also set extraKnownMarketplaces."
+      },
+      {
+        "from": "2.1.66",
+        "description": "Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these exact sources can be added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem."
+      },
+      {
+        "from": "2.1.69",
+        "description": "Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these exact sources can be added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem. Note: this is a policy gate only — it does NOT register marketplaces. To pre-register allowed marketplaces for users, also set extraKnownMarketplaces."
+      },
+      {
         "from": "2.1.113",
         "description": "Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these exact sources can be added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem. Note: this is a policy gate only \\u2014 it does NOT register marketplaces. To pre-register allowed marketplaces for users, also set extraKnownMarketplaces."
       },
@@ -4558,6 +4578,10 @@
       }
     ],
     "config_key:strictPluginOnlyCustomization": [
+      {
+        "from": "2.1.81",
+        "description": "When set in managed settings, blocks non-plugin customization sources for the listed surfaces. Array form locks specific surfaces (e.g. [\"skills\", \"hooks\"]); `true` locks all four; `false` is an explicit no-op. Blocked: ~/.claude/{surface}/, .claude/{surface}/ (project), settings.json hooks, .mcp.json. NOT blocked: managed (policySettings) sources, plugin-provided customizations. Composes with strictKnownMarketplaces for end-to-end admin control — plugins gated by marketplace allowlist, everything else blocked here."
+      },
       {
         "from": "2.1.113",
         "description": "When set in managed settings, blocks non-plugin customization sources for the listed surfaces. Array form locks specific surfaces (e.g. [\"skills\", \"hooks\"]); `true` locks all four; `false` is an explicit no-op. Blocked: ~/.claude/{surface}/, .claude/{surface}/ (project), settings.json hooks, .mcp.json. NOT blocked: managed (policySettings) sources, plugin-provided customizations. Composes with strictKnownMarketplaces for end-to-end admin control \\u2014 plugins gated by marketplace allowlist, everything else blocked here."
@@ -4832,6 +4856,10 @@
       }
     ],
     "config_key:worktree.sparsePaths": [
+      {
+        "from": "2.1.76",
+        "description": "Directories to include when creating worktrees, via git sparse-checkout (cone mode). Dramatically faster in large monorepos — only the listed paths are written to disk."
+      },
       {
         "from": "2.1.113",
         "description": "Directories to include when creating worktrees, via git sparse-checkout (cone mode). Dramatically faster in large monorepos \\u2014 only the listed paths are written to disk."
