@@ -892,6 +892,19 @@ describe('extractParamEnvVars — env vars read through a param bound to process
     expect(names(src)).toEqual([]);
   });
 
+  it('keeps the call form when a bundle embedded twice repeats the same definition', () => {
+    // 2.1.113 to 2.1.132 embed the CLI bundle twice, so `MG1` is defined twice
+    // with the same text. That is one function, and its read counts.
+    const fn = 'function MG1(H,$){let q=$.CLAUDE_CODE_BS_AS_CTRL_BACKSPACE;return q}';
+    const copy = `${fn}function Fe8(){return MG1("linux",process.env)}`;
+    expect(names(copy + copy)).toEqual(['CLAUDE_CODE_BS_AS_CTRL_BACKSPACE']);
+  });
+
+  it('treats a definition whose extent cannot be matched as a different one', () => {
+    const fn = 'function MG1(H,$){return $.CLAUDE_CODE_BS_AS_CTRL_BACKSPACE}';
+    expect(names(`${fn}MG1("linux",process.env);function MG1(H,$`)).toEqual([]);
+  });
+
   it('does not treat a trailing member read (process.env.HOME) as the env object', () => {
     // `process.env.HOME` is a scalar value, not the env object — `g` is not bound.
     const src = 'function g(a){return a.CLAUDE_CODE_TRAILING}g(process.env.HOME);';

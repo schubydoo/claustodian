@@ -410,14 +410,30 @@ function paramBinding(p: string): { name: string; envDefault: boolean } | null {
 }
 
 /**
+ * The full text of the function whose `function` keyword is at `start` and
+ * whose parameter list opens at `paramOpen`, or `undefined` when its extent
+ * cannot be matched.
+ */
+function functionText(src: string, start: number, paramOpen: number): string | undefined {
+  const paramEnd = matchBracket(src, paramOpen);
+  if (paramEnd < 0) return undefined;
+  let bodyOpen = paramEnd + 1;
+  while (bodyOpen < src.length && /\s/.test(src[bodyOpen] as string)) bodyOpen++;
+  if (src[bodyOpen] !== '{') return undefined;
+  const bodyEnd = matchBracket(src, bodyOpen);
+  return bodyEnd < 0 ? undefined : src.slice(start, bodyEnd + 1);
+}
+
+/**
  * Env vars read through a PARAMETER bound to `process.env` — the reads the inline
  * `process.env.NAME` patterns miss. Two proven bindings:
  *
  *   1. Call form — `f(process.env)` / `f({...process.env})` where `f`'s body reads
  *      `param.NAME`. The process.env argument's POSITION is matched to the
  *      parameter's position, so `f("linux",process.env)` binds the second param.
- *      Trusted ONLY when the callee name has exactly one `function NAME(`
- *      definition: a minified name reused for two functions is ambiguous — a call
+ *      Trusted ONLY when every `function NAME(` definition of the callee has the
+ *      same text (a bundle embedded twice repeats each function verbatim): a
+ *      minified name reused for two different functions is ambiguous — a call
  *      to one must not bind `process.env` onto the other's param — so it is
  *      dropped rather than risk a wrong provenance. Note Pass 1 also captures the
  *      trailing name of a METHOD call (`x.f(process.env)` records `f`), so a method
@@ -453,9 +469,18 @@ export function extractParamEnvVars(src: string): Map<string, string> {
     });
   }
   // Definitions per name — the call form trusts only a uniquely-defined callee.
-  const defCount = new Map<string, number>();
+  // Uniqueness is by TEXT, not by count: a compiled binary can embed the whole
+  // CLI bundle twice (2.1.113 does), so the same function appears twice with the
+  // same text. That is one function. Two different bodies under one name are a
+  // reused minified name and stay ambiguous. A definition whose extent cannot be
+  // matched counts as distinct, so it can only make a name ambiguous.
+  const defTexts = new Map<string, Set<string>>();
   for (const m of src.matchAll(/\bfunction\s+([A-Za-z_$][\w$]*)\s*\(/g)) {
-    defCount.set(m[1] as string, (defCount.get(m[1] as string) ?? 0) + 1);
+    const at = m.index as number;
+    const text = functionText(src, at, at + m[0].length - 1) ?? `\0${at}`;
+    const texts = defTexts.get(m[1] as string);
+    if (texts) texts.add(text);
+    else defTexts.set(m[1] as string, new Set([text]));
   }
   // Pass 2: function definitions -> `param.NAME` reads where the param is env-bound.
   const out = new Map<string, string>();
@@ -474,7 +499,9 @@ export function extractParamEnvVars(src: string): Map<string, string> {
       const bind = paramBinding(p);
       if (!bind || !/^[A-Za-z_$][\w$]*$/.test(bind.name)) return;
       const callBound =
-        fname !== undefined && defCount.get(fname) === 1 && (envArg.get(fname)?.has(i) ?? false);
+        fname !== undefined &&
+        defTexts.get(fname)?.size === 1 &&
+        (envArg.get(fname)?.has(i) ?? false);
       if (!bind.envDefault && !callBound) return;
       // `param.NAME` reads only — a following `=` (not `==`/`===`) is a WRITE.
       // A `(?<![\w$])` lookbehind (not `\b`) anchors the whole param name: `\b`
