@@ -20,14 +20,16 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ### Fixed
 
-- **`attribution.commit`, `attribution.pr` and `attribution.sessionUrl` are
-  observed in the binary again.** From 2.1.281 Claude Code builds `attribution`
-  as a union of a boolean and an object. The binary lane did not read union
-  members. So `data/binary-observations.json` stopped these three keys at
-  `last_seen: 2.1.280`, but every later binary still carried them. The records
-  in the version snapshots were not affected, because the docs lane kept them
-  published. The binary lane now reads the object member of an inline union, and
-  `last_seen` follows the binary once 2.1.281 onward are re-scraped.
+- **51 settings keys are observed in the binary again from 2.1.281.** They are
+  the 7 `permissions.*` keys, the 41 `sandbox.*` keys, and `attribution.commit`,
+  `attribution.pr` and `attribution.sessionUrl`. From 2.1.281 Claude Code builds
+  `permissions` and `sandbox` as zod `lazy` schemas, and `attribution` as a
+  union of a boolean and an object. The binary lane read neither shape. So
+  `data/binary-observations.json` stopped these keys at `last_seen: 2.1.280`,
+  but every later binary still carried them. The records in the version
+  snapshots stayed published. The binary lane now reads a `lazy` schema's inner
+  schema and a union's object member. `last_seen` follows the binary once
+  2.1.281 onward are re-scraped.
 
 ## 2026-09-26
 
