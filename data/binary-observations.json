@@ -8214,7 +8214,7 @@
     {
       "symbol": "CLAUDE_CODE_ALTGR_AS_TEXT",
       "type": "env_var",
-      "first_seen": "2.1.234",
+      "first_seen": "2.1.179",
       "last_seen": "2.1.246",
       "removed_in": null
     },
@@ -8564,7 +8564,7 @@
     {
       "symbol": "CLAUDE_CODE_AUTO_BACKGROUND_TIMEOUT_MS",
       "type": "env_var",
-      "first_seen": "2.1.234",
+      "first_seen": "2.1.198",
       "last_seen": "2.1.285",
       "removed_in": null
     },
@@ -8788,7 +8788,7 @@
     {
       "symbol": "CLAUDE_CODE_BS_AS_CTRL_BACKSPACE",
       "type": "env_var",
-      "first_seen": "2.1.234",
+      "first_seen": "2.1.133",
       "last_seen": "2.1.272",
       "removed_in": null
     },
@@ -10517,14 +10517,14 @@
     {
       "symbol": "CLAUDE_CODE_HTTPS_PROXY",
       "type": "env_var",
-      "first_seen": "2.1.234",
+      "first_seen": "2.1.136",
       "last_seen": "2.1.241",
       "removed_in": null
     },
     {
       "symbol": "CLAUDE_CODE_HTTP_PROXY",
       "type": "env_var",
-      "first_seen": "2.1.234",
+      "first_seen": "2.1.136",
       "last_seen": "2.1.241",
       "removed_in": null
     },
