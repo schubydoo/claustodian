@@ -908,6 +908,8 @@ describe('extractSettingsKeys — descriptions', () => {
     expect(described('', `"A ${dash} ${quote}b${quote} c"`)).toBe(decoded);
     expect(described('', `"A ${dash} ${quote}b${quote} "+'c'`)).toBe(decoded);
     expect(described('', `\`A ${dash} "b" c\``)).toBe(decoded);
+    // A template that also interpolates a constant joins decoded text and the constant.
+    expect(described('st="c";', `\`A ${dash} "b" ${'${st}'}\``)).toBe(decoded);
     expect(described('', `"line one\\nline two"`)).toBe('line one\nline two');
   });
 
