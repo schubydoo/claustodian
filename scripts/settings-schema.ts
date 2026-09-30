@@ -726,7 +726,8 @@ function scanLevel(
 function describeOf(value: string, resolve: StringResolver): string | undefined {
   const m = /\.describe\((["'`])((?:\\.|(?!\1).)*)\1\)/.exec(value);
   const raw = m?.[2];
-  if (raw !== undefined && !(m?.[1] === '`' && raw.includes('${'))) return detach(unescapeRaw(raw));
+  if (raw !== undefined && !(m?.[1] === '`' && raw.includes('${')))
+    return detach(decodeLiteral(m?.[1] as string, raw));
   // Not one plain literal: a joined description (`"…"+"…"`, `"…"+Gs`) or a
   // template that interpolates constants (`${po}, true from ${st}…`). Fold it
   // to the string it evaluates to. The raw `${…}` text would churn with every
@@ -744,9 +745,22 @@ const DESCRIBE_CALL = '.describe(';
 /** Resolves a name to the string constant it is bound to, or `undefined`. */
 type StringResolver = (name: string) => string | undefined;
 
-/** A string literal's raw text, unescaped the way every description always has been. */
-function unescapeRaw(raw: string): string {
-  return raw.replace(/\\(["'`\\])/g, '$1');
+/**
+ * The text a string literal's source evaluates to: escapes such as `\u2014`,
+ * `\n` and `\"` decoded as JavaScript decodes them. Descriptions are published
+ * as text, so a raw `\u2014` is a defect, not the author's wording. The parser
+ * does the decoding, so a single literal, a joined one and a template all read
+ * the same way.
+ */
+/* v8 ignore next -- never called: a lone literal names no constant */
+const NO_STRINGS: StringResolver = () => undefined;
+
+function decodeLiteral(quote: string, raw: string): string {
+  const node = parseExpression(`${quote}${raw}${quote}`);
+  // `raw` was matched as one literal, so it parses as one and decodes cleanly.
+  const text = node && foldString(node, NO_STRINGS);
+  /* v8 ignore next -- invariant guard: a literal matched whole always parses back */
+  return text ?? raw;
 }
 
 /**
@@ -778,18 +792,17 @@ function parseExpression(text: string): Expression | undefined {
 
 /** The string an expression of literals, `+` and constant names evaluates to. */
 function foldString(node: Expression, resolve: StringResolver): string | undefined {
-  if (node.type === 'Literal')
-    return typeof node.value === 'string'
-      ? unescapeRaw((node.raw as string).slice(1, -1))
-      : undefined;
+  if (node.type === 'Literal') return typeof node.value === 'string' ? node.value : undefined;
   if (node.type === 'TemplateLiteral') {
-    // A template always has one more text part than it has expressions.
-    const quasis = node.quasis as { value: { raw: string } }[];
-    let out = unescapeRaw((quasis[0] as { value: { raw: string } }).value.raw);
+    // A template always has one more text part than it has expressions. Each
+    // part's cooked text is its decoded value: only a TAGGED template can hold an
+    // invalid escape, and an untagged one with one does not parse at all.
+    const quasis = node.quasis as { value: { cooked: string } }[];
+    let out = (quasis[0] as { value: { cooked: string } }).value.cooked;
     for (const [i, expression] of node.expressions.entries()) {
       const part = foldString(expression as Expression, resolve);
       if (part === undefined) return undefined;
-      out += part + unescapeRaw((quasis[i + 1] as { value: { raw: string } }).value.raw);
+      out += part + (quasis[i + 1] as { value: { cooked: string } }).value.cooked;
     }
     return out;
   }

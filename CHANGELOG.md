@@ -20,6 +20,14 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ### Fixed
 
+- **Settings descriptions decode their escapes.** The compiled binary writes some
+  characters as escapes, such as `\u2014` for an em dash. The binary lane
+  published those escapes as literal text, for example "section \u2014 security
+  boundaries". It now decodes each string as JavaScript does. This changes about
+  3,200 descriptions of 48 keys across 147 releases, from 2.1.113 to 2.1.285. The
+  text is otherwise the same, and no key changes. The decoded text appears once
+  those releases are re-scraped.
+
 - **Settings descriptions written as joined strings are published.** Claude Code
   writes some settings descriptions as `"…"+"…"`, as a template of string
   constants, or as `"…"+` a constant name. The binary lane read only a single

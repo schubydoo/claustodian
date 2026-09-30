@@ -900,10 +900,15 @@ describe('extractSettingsKeys — descriptions', () => {
     expect(described('', '"Use (a) or "+"(b)."')).toBe('Use (a) or (b).');
   });
 
-  it('unescapes a joined description the same way as a single literal', () => {
-    // Escapes other than quotes and backslashes stay as written, as they always have.
-    expect(described('', String.raw`"A — \"b\" "+'c'`)).toBe(String.raw`A — "b" c`);
-    expect(described('', String.raw`"A — \"b\" c"`)).toBe(String.raw`A — "b" c`);
+  it('decodes escapes the same way in a single, a joined and a template description', () => {
+    // Built from pieces so no tool can collapse the escape into the character.
+    const dash = '\\' + 'u2014';
+    const quote = '\\"';
+    const decoded = 'A \u2014 "b" c';
+    expect(described('', `"A ${dash} ${quote}b${quote} c"`)).toBe(decoded);
+    expect(described('', `"A ${dash} ${quote}b${quote} "+'c'`)).toBe(decoded);
+    expect(described('', `\`A ${dash} "b" c\``)).toBe(decoded);
+    expect(described('', `"line one\\nline two"`)).toBe('line one\nline two');
   });
 
   it('unescapes quotes inside a description', () => {
