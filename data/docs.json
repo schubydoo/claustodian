@@ -557,13 +557,6 @@
       "doc_page": "plugins/cli-reference"
     },
     {
-      "symbol": "--no-sandbox",
-      "type": "cli_flag",
-      "description": "Enable or disable sandboxing for filesystem and network isolation. Off by default.",
-      "doc_min_version": "2.1.51",
-      "doc_page": "remote-control"
-    },
-    {
       "symbol": "--no-session-persistence",
       "type": "cli_flag",
       "description": "Disable session persistence so sessions are not saved to disk and cannot be resumed. Print mode only. The `CLAUDE_CODE_SKIP_PROMPT_HISTORY` environment variable does the same in any mode",
@@ -709,13 +702,6 @@
       "description": "Start with all customizations disabled to troubleshoot a broken configuration: CLAUDE.md, skills, plugins, hooks, MCP servers, custom commands and agents, output styles, workflows, custom themes, custom keybindings, status line and file-suggestion commands, LSP servers, and auto memory do not load. Authentication, model selection, built-in tools, and permissions work normally, which differs from `--bare`. Managed settings policy still applies, including policy-configured hooks, status line, and file-suggestion commands; managed plugins, managed skills, managed CLAUDE.md, and policy-configured MCP servers do not. Useful for checking whether a customization is what triggers automatic model fallback. Sets `CLAUDE_CODE_SAFE_MODE`",
       "doc_min_version": null,
       "doc_page": "cli-reference"
-    },
-    {
-      "symbol": "--sandbox",
-      "type": "cli_flag",
-      "description": "Enable or disable sandboxing for filesystem and network isolation. Off by default.",
-      "doc_min_version": "2.1.51",
-      "doc_page": "remote-control"
     },
     {
       "symbol": "--scaffold",
@@ -2206,7 +2192,7 @@
     {
       "symbol": "disableSideloadFlags",
       "type": "config_key",
-      "description": "Reject the `--plugin-dir`, `--plugin-url`, `--agents`, and `--mcp-config` CLI flags at startup, which users could otherwise pass to bypass `strictKnownMarketplaces` for a single run. Claude Code exits with an error naming the rejected flags, and applies the same check to surfaces that start the CLI with these flags internally, currently Cowork local sessions in the desktop app. In cloud sessions, Claude Code instead starts the session and drops every server-delivered `--mcp-config` entry except in-process `type: \"sdk\"` entries and a Claude Tag session's Slack tools. Requires Claude Code v2.1.193 or later.",
+      "description": "Reject the `--plugin-dir`, `--plugin-url`, `--agents`, and `--mcp-config` CLI flags at startup, which users could otherwise pass to bypass `strictKnownMarketplaces` for a single run. Claude Code exits with an error naming the rejected flags. In cloud sessions, Claude Code instead starts the session and drops every server-delivered `--mcp-config` entry except in-process `type: \"sdk\"` entries and a Claude Tag session's Slack tools. Requires Claude Code v2.1.193 or later.",
       "doc_min_version": "2.1.193",
       "doc_page": "settings-reference"
     },
@@ -3758,7 +3744,7 @@
     {
       "symbol": "BASH_DEFAULT_TIMEOUT_MS",
       "type": "env_var",
-      "description": "Default timeout for long-running bash commands (default: 120000, or 2 minutes)",
+      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A default longer than 30 minutes also becomes the default time limit for background commands. The background time limit requires Claude Code v2.1.285 or later",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -3772,7 +3758,7 @@
     {
       "symbol": "BASH_MAX_TIMEOUT_MS",
       "type": "env_var",
-      "description": "Maximum timeout the model can set for long-running bash commands (default: 600000, or 10 minutes). The effective ceiling is the larger of this and `BASH_DEFAULT_TIMEOUT_MS`",
+      "description": "Maximum timeout the model can set for a foreground Bash or PowerShell tool command, in milliseconds (default: 600000, or 10 minutes). The effective ceiling is the larger of this and `BASH_DEFAULT_TIMEOUT_MS`. An effective ceiling longer than 2 hours also becomes the maximum time limit for background commands. The background time limit requires Claude Code v2.1.285 or later",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
