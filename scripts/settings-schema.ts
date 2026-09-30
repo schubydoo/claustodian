@@ -26,7 +26,7 @@
  *
  * From 2.1.284 the ROOT is also emitted as a returned plain object of thunks,
  * `return{cleanupPeriodDays:()=>lt().int(),…}`, which a lazy wrapper builds field
- * by field. The walk reads each value past its thunk (see `schemaSpan`); nested
+ * by field. The walk reads each value past its thunk (see `readValue`); nested
  * objects are still call-opened.
  *
  * A third change, at 2.1.242, is not an emission era but a SCOPE one: the
@@ -44,11 +44,15 @@
 
 import {
   parseSync,
-  type ArrowFunctionExpression,
+  type ArrayExpressionElement,
+  type Expression,
   type ExpressionStatement,
-  type FunctionBody,
+  type Function as FunctionNode,
   type ParenthesizedExpression,
+  type FunctionBody,
   type ReturnStatement,
+  type ArrowFunctionExpression,
+  type Statement,
 } from 'oxc-parser';
 
 /**
@@ -69,61 +73,205 @@ const ANCHOR_RE = new RegExp(
   `(?:${ANCHOR_KEYS.join('|')}):(?:\\(\\)=>)?(?:([A-Za-z_$][\\w$]*)\\.)?[A-Za-z_$][\\w$]*\\(`
 );
 
-/**
- * A value's leading thunk. From 2.1.284 the root is a plain object whose every
- * value is deferred — `{apiKeyHelper:()=>o().optional(),…}` — and a lazy wrapper
- * (`new yn(la(e))`) builds each field on demand. The schema expression is what
- * follows the arrow, so the walk reads past it.
- */
-const THUNK = /^\s*\(\)\s*=>\s*/;
+/** What a local name is bound to, as far as the walk can tell. */
+type Binding =
+  /** Bound to this expression; `shift` maps its offsets back into the bundle. */
+  | { node: Expression; shift: number }
+  /** Declared with no initializer and never assigned: it holds no schema. */
+  | 'unknown'
+  /** Bound by a destructuring pattern, whose value the walk cannot read. */
+  | 'destructured'
+  /** Assigned again after it was bound, so its value at the use is not known. */
+  | 'reassigned';
+
+/** Local names in scope for a value. */
+type Locals = ReadonlyMap<string, Binding>;
+
+const NO_LOCALS: Locals = new Map();
+
+/** A value read through the parser: its schema expression and what it can see. */
+interface ReadValue {
+  /** Span of the value past any thunk, which its own description is read from. */
+  valueStart: number;
+  valueEnd: number;
+  /** Span of the expression whose keys are the value's keys, past any `lazy`. */
+  childStart: number;
+  childEnd: number;
+  /** Where the value's own description starts when a `lazy` call precedes it. */
+  tail?: number;
+  /**
+   * The members to read keys from, and the offset just past the call that holds
+   * them: a union's array, or a single local name standing for the schema.
+   */
+  union?: { members: ArrayExpressionElement[]; end: number; shift: number };
+  /** Names in scope: the enclosing ones, plus a block thunk's own declarations. */
+  locals: Locals;
+}
 
 /**
- * The span of the schema expression a value holds. A plain value is its own
- * span, and a thunk's is what follows the arrow. A block-bodied thunk —
- * `()=>{let i=u({…});return Fe([H(),i])…}` — holds its schema in the block's
- * top-level `return`. Reading the whole block instead hands the parent its first
- * child's `.describe()`: `attribution` borrowed `attribution.commit`'s sentence
- * at 2.1.284. Only a straight-line block with exactly one top-level `return` is
- * read. A block with no `return`, a second one, or a branch or loop that could
- * hide another (`if(e){return a}return b`) is a shape we do not recognise, so it
- * throws rather than walking one branch and dropping the other's keys.
+ * Reads one value through the parser.
  *
- * The block is PARSED, not scanned. Telling a regex literal from a division
- * (`/if/` against `i++/2`) needs a tokenizer, and each hand-written rule for it
- * refused a valid block the previous rule accepted. A block that does not parse
- * throws too. The block's END still comes from `scanLevel`, which does not skip
- * regex literals, so a regex holding a bracket or quote (`/\(/`) can misplace it.
- * That usually leaves text that does not parse, and so throws here.
+ * The value must parse as exactly one expression. `scanLevel` bounds each value
+ * by counting brackets and quotes and does not know regex literals, so a regex
+ * holding a bracket or quote (`/\\(/`) moves the bound and swallows the keys after
+ * it without an error. A value that is not one expression is that failure, and
+ * it throws.
+ *
+ * From 2.1.284 the root is a plain object of thunks —
+ * `{apiKeyHelper:()=>o().optional(),…}` — which a lazy wrapper (`new yn(la(e))`)
+ * builds field by field. The schema is what follows the arrow. A block-bodied
+ * thunk (`()=>{let i=u({…});return Fe([H(),i])…}`) holds its schema in the
+ * block's top-level `return`. Reading the whole block instead hands the parent
+ * its first child's `.describe()`: `attribution` borrowed `attribution.commit`'s
+ * sentence at 2.1.284. Only a straight-line block with exactly one top-level
+ * `return` is read. A second return, or a branch or loop that could hide one
+ * (`if(e){return a}return b`), throws rather than walking one branch and
+ * dropping the other's keys.
+ *
+ * From 2.1.281 `permissions` and `sandbox` are zod `lazy` schemas —
+ * `permissions:Oe(()=>ji(e)).describe(…)`, where `Oe` builds
+ * `{type:"lazy",getter:…}` — so their keys are the keys of what the getter
+ * returns. A call whose only argument is a thunk is read that way. Resolving the
+ * callee instead reached the lazy builder, which is not an object, and dropped
+ * all 48 `permissions.*` and `sandbox.*` keys.
+ *
+ * A union passed its members as an array literal (`Fe([H(),i],{…})…`) is
+ * reported with its members, so the walk can read them.
  */
-function schemaSpan(
+function readValue(
   src: string,
-  valueStart: number,
-  valueEnd: number,
-  path: string
-): { valueStart: number; valueEnd: number } {
-  const thunk = THUNK.exec(src.slice(valueStart, valueStart + 16));
-  if (!thunk) return { valueStart, valueEnd };
-  const at = valueStart + thunk[0].length;
-  if (src[at] !== '{') return { valueStart: at, valueEnd };
+  entryStart: number,
+  entryEnd: number,
+  path: string,
+  inherited: Locals
+): ReadValue {
+  // The newline keeps a trailing `//` comment from swallowing the closing paren.
+  const parsed = parseSync('value.js', `(${src.slice(entryStart, entryEnd)}\n)`, {
+    sourceType: 'script',
+  });
+  const statement = parsed.program.body[0];
+  if (
+    parsed.errors.length > 0 ||
+    parsed.program.body.length !== 1 ||
+    statement?.type !== 'ExpressionStatement' ||
+    statement.expression.type !== 'ParenthesizedExpression' ||
+    statement.expression.expression.type === 'SequenceExpression'
+  ) {
+    throw new SettingsSchemaError(
+      `settings schema: the value of "${path}" is not one expression, so its ` +
+        `extent was misread. Refusing to emit a key set that may be missing its keys.`
+    );
+  }
+  const shift = entryStart - 1;
+  let schema: Expression = statement.expression.expression;
+  let valueStart = entryStart;
+  let valueEnd = entryEnd;
+  let locals = inherited;
+  const thunk = thunkBody(schema, path, shift);
+  if (thunk) {
+    schema = thunk.expression;
+    valueStart = schema.start + shift;
+    if (thunk.block) valueEnd = schema.end + shift;
+    locals = new Map([...inherited, ...thunk.locals]);
+  }
+  let childStart = valueStart;
+  let childEnd = valueEnd;
+  let tail: number | undefined;
+  for (let lazy = lazyGetter(schema); lazy; lazy = lazyGetter(schema)) {
+    tail ??= lazy.call.end + shift;
+    const inner = thunkBody(lazy.getter, path, shift) as NonNullable<ReturnType<typeof thunkBody>>;
+    schema = inner.expression;
+    childStart = schema.start + shift;
+    childEnd = schema.end + shift;
+    locals = new Map([...locals, ...inner.locals]);
+  }
+  const base = chainBase(schema);
+  const array = base.type === 'CallExpression' ? base.arguments[0] : undefined;
+  let union: ReadValue['union'];
+  if (
+    base.type === 'CallExpression' &&
+    base.callee.type === 'Identifier' &&
+    array?.type === 'ArrayExpression' &&
+    array.elements.some((m) => carriesKeys(m, locals))
+  ) {
+    union = { members: array.elements, end: base.end + shift, shift };
+  } else if (base.type === 'Identifier' && locals.has(base.name)) {
+    // A local name (`return i`, `i.optional()`) is read like a one-member union,
+    // through its binding, since the plain path resolves only called names.
+    union = { members: [schema], end: base.end + shift, shift };
+  }
+  return { valueStart, valueEnd, childStart, childEnd, tail, union, locals };
+}
+
+/**
+ * The expression a zero-parameter arrow evaluates to, with the locals its block
+ * declares, or `undefined` for anything else.
+ */
+function thunkBody(
+  node: Expression,
+  path: string,
+  shift: number
+): { expression: Expression; block: boolean; locals: Map<string, Binding> } | undefined {
+  if (node.type !== 'ArrowFunctionExpression' || node.params.length !== 0 || node.async)
+    return undefined;
+  // An expression-bodied arrow's body is the expression itself in this tree.
+  if (node.expression)
+    return { expression: node.body as Expression, block: false, locals: new Map() };
+  const body = node.body as FunctionBody;
+  return {
+    expression: blockReturn(body, path),
+    block: true,
+    locals: declaredLocals(body.body, shift),
+  };
+}
+
+/** `X(()=>…)`: a call whose only argument is a thunk, and that thunk. */
+function lazyGetter(node: Expression): { call: Expression; getter: Expression } | undefined {
+  const base = chainBase(node);
+  if (base.type !== 'CallExpression' || base.callee.type !== 'Identifier') return undefined;
+  const [getter, ...rest] = base.arguments;
+  if (rest.length > 0 || getter?.type !== 'ArrowFunctionExpression') return undefined;
+  if (getter.params.length !== 0 || getter.async) return undefined;
+  return { call: base, getter };
+}
+
+/** The call at the base of a method chain: `u({…})` in `u({…}).passthrough().optional()`. */
+function chainBase(node: Expression): Expression {
+  let base = node;
+  while (base.type === 'CallExpression' && base.callee.type === 'MemberExpression')
+    base = base.callee.object;
+  return base;
+}
+
+/** The object literal a member's base call takes as its first argument, if any. */
+function objectArgument(member: Expression): { start: number } | undefined {
+  const base = chainBase(member);
+  if (base.type !== 'CallExpression') return undefined;
+  const first = base.arguments[0];
+  return first?.type === 'ObjectExpression' ? first : undefined;
+}
+
+/**
+ * Whether a union member can carry keys: an inline object call, a local name in
+ * scope, or a call to a named factory. A string or a name the value cannot see
+ * cannot, so an enum over strings or module constants (`$([cD,"high"])`) is not
+ * read as a union and keeps the plain path.
+ */
+function carriesKeys(member: ArrayExpressionElement, locals: Locals): boolean {
+  if (!member || member.type === 'SpreadElement') return false;
+  const base = chainBase(member);
+  if (base.type === 'Identifier') return locals.has(base.name);
+  return base.type === 'CallExpression' && base.callee.type === 'Identifier';
+}
+
+/** The argument of a straight-line block's single top-level `return`, or throws. */
+function blockReturn(body: FunctionBody, path: string): Expression {
   const refuse = (why: string): never => {
     throw new SettingsSchemaError(
       `settings schema: the thunk for "${path}" has a block body ${why}. ` +
         `Refusing to emit a key set that may be missing its keys.`
     );
   };
-  // Re-wrapped as a parenthesised arrow so the block parses as its body rather
-  // than as a statement block. Tree offsets are then `prefix` past `src` ones.
-  const prefix = '(()=>';
-  const parsed = parseSync('thunk.js', `${prefix}${src.slice(at, valueEnd)})`, {
-    sourceType: 'script',
-  });
-  if (parsed.errors.length > 0) refuse('that does not parse');
-  const shift = at - prefix.length;
-  // A clean parse of one parenthesised arrow with a block body has this shape.
-  const statement = parsed.program.body[0] as ExpressionStatement;
-  const arrow = (statement.expression as ParenthesizedExpression)
-    .expression as ArrowFunctionExpression;
-  const body = arrow.body as FunctionBody;
   const returns = body.body.filter((node) => node.type === 'ReturnStatement');
   if (returns.length === 0) refuse('with no top-level return');
   if (returns.length > 1) refuse('with more than one top-level return');
@@ -138,7 +286,245 @@ function schemaSpan(
   const ret = returns[0] as ReturnStatement;
   if (ret !== body.body.at(-1)) refuse('with a statement after its return');
   if (!ret.argument) return refuse('whose return has no value');
-  return { valueStart: ret.argument.start + shift, valueEnd: ret.argument.end + shift };
+  return ret.argument;
+}
+
+type AnyNode = { type: string } & Record<string, unknown>;
+
+function isNode(value: unknown): value is AnyNode {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { type?: unknown }).type === 'string'
+  );
+}
+
+/** The child nodes of `n`, in source order. */
+function childNodes(n: AnyNode): AnyNode[] {
+  const out: AnyNode[] = [];
+  for (const key in n) {
+    /* v8 ignore next -- oxc sets no `parent` links by default; the guard keeps a version that does from recursing forever */
+    if (key === 'parent') continue;
+    const value = n[key];
+    if (Array.isArray(value)) {
+      for (const child of value) if (isNode(child)) out.push(child);
+    } else if (isNode(value)) {
+      out.push(value);
+    }
+  }
+  return out;
+}
+
+/**
+ * The names a binding or assignment target writes, read by its structure. A
+ * property write (`e.i=…`) and an object pattern's keys (`{i:q}`) bind nothing
+ * of their own, so neither counts as a write to a local `i`.
+ */
+function bindingNames(target: unknown, out: string[] = []): string[] {
+  if (!isNode(target)) return out;
+  if (target.type === 'Identifier') out.push(target.name as string);
+  else if (target.type === 'ArrayPattern')
+    for (const element of target.elements as unknown[]) bindingNames(element, out);
+  else if (target.type === 'ObjectPattern')
+    for (const property of target.properties as AnyNode[])
+      bindingNames(property.type === 'RestElement' ? property.argument : property.value, out);
+  else if (target.type === 'AssignmentPattern') bindingNames(target.left, out);
+  else if (target.type === 'RestElement') bindingNames(target.argument, out);
+  return out;
+}
+
+const FUNCTION_NODES = new Set([
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'ArrowFunctionExpression',
+]);
+
+/** The names a statement list's own `let`, `const`, class and function declarations bind. */
+function lexicalNames(statements: unknown): string[] {
+  const out: string[] = [];
+  // An expression-bodied arrow has no statement list, so it declares nothing.
+  for (const node of (Array.isArray(statements) ? statements : []) as AnyNode[]) {
+    if (node.type === 'VariableDeclaration' && node.kind !== 'var')
+      for (const declarator of node.declarations as AnyNode[]) bindingNames(declarator.id, out);
+    else if (
+      (node.type === 'FunctionDeclaration' || node.type === 'ClassDeclaration') &&
+      isNode(node.id)
+    )
+      out.push(node.id.name as string);
+  }
+  return out;
+}
+
+/**
+ * The names `var` declares anywhere under `node`, not crossing into a nested
+ * function or class static block, each of which is its own `var` scope.
+ */
+function varNames(node: AnyNode, out: string[] = []): string[] {
+  for (const child of childNodes(node)) {
+    if (FUNCTION_NODES.has(child.type) || child.type === 'StaticBlock') continue;
+    if (child.type === 'VariableDeclaration' && child.kind === 'var')
+      for (const declarator of child.declarations as AnyNode[]) bindingNames(declarator.id, out);
+    varNames(child, out);
+  }
+  return out;
+}
+
+/**
+ * Calls `write` for every write under `node` to a name `shadow` does not hide.
+ * A nested function's name, parameters and declarations, a class expression's
+ * name, a class static block's declarations, a block's or a `switch` body's
+ * `let`, `const`, class and function declarations, a loop's own `let` and a
+ * catch parameter all hide the outer name, so
+ * `(i)=>{i=…}` and `for(let i=0;;i++)` do not write to an outer `i`. A `var`
+ * redeclared in a nested block of the same function does, since it is the same
+ * binding. `top` holds the declarations being bound, which are not writes.
+ */
+function eachWrite(
+  node: AnyNode,
+  shadow: ReadonlySet<string>,
+  top: readonly unknown[],
+  write: (name: string) => void
+): void {
+  const hidden: string[] = [];
+  if (FUNCTION_NODES.has(node.type)) {
+    // A function expression's own name is bound inside it, not outside.
+    if (node.type === 'FunctionExpression') bindingNames(node.id, hidden);
+    for (const param of node.params as unknown[]) bindingNames(param, hidden);
+    const body = node.body as AnyNode;
+    varNames(body, hidden);
+    hidden.push(...lexicalNames(body.body));
+  } else if (node.type === 'ClassExpression') {
+    bindingNames(node.id, hidden);
+  } else if (node.type === 'StaticBlock') {
+    varNames(node, hidden);
+    hidden.push(...lexicalNames(node.body));
+  } else if (node.type === 'BlockStatement') {
+    hidden.push(...lexicalNames(node.body));
+  } else if (node.type === 'SwitchStatement') {
+    // The cases share one block scope.
+    hidden.push(
+      ...lexicalNames((node.cases as AnyNode[]).flatMap((c) => c.consequent as unknown[]))
+    );
+  } else if (node.type === 'CatchClause') {
+    bindingNames(node.param, hidden);
+  } else if (/^For(?:In|Of)?Statement$/.test(node.type)) {
+    const head = node.type === 'ForStatement' ? node.init : node.left;
+    if (isNode(head) && head.type === 'VariableDeclaration' && head.kind !== 'var')
+      for (const declarator of head.declarations as AnyNode[]) bindingNames(declarator.id, hidden);
+  }
+  const inner = hidden.length > 0 ? new Set([...shadow, ...hidden]) : shadow;
+  const emit = (names: string[]): void => {
+    for (const name of names) if (!inner.has(name)) write(name);
+  };
+  if (node.type === 'AssignmentExpression') emit(bindingNames(node.left));
+  // `for(i of e)` writes `i` on every pass without an assignment expression.
+  else if (
+    (node.type === 'ForInStatement' || node.type === 'ForOfStatement') &&
+    isNode(node.left) &&
+    node.left.type !== 'VariableDeclaration'
+  )
+    emit(bindingNames(node.left));
+  else if (node.type === 'UpdateExpression') emit(bindingNames(node.argument));
+  else if (node.type === 'VariableDeclaration' && node.kind === 'var' && !top.includes(node))
+    for (const declarator of node.declarations as AnyNode[]) emit(bindingNames(declarator.id));
+  // A switch discriminant runs before its cases' scope exists, so the outer
+  // names are what it writes.
+  for (const child of childNodes(node))
+    eachWrite(
+      child,
+      node.type === 'SwitchStatement' && child === node.discriminant ? shadow : inner,
+      top,
+      write
+    );
+}
+
+/**
+ * The names the top-level declarations in `statements` bind.
+ *
+ * A name is `reassigned` when anything in `statements` assigns it again, at any
+ * depth: `e&&(i=u({…}))` is how esbuild writes `if(e)i=…`, so a top-level scan
+ * alone would follow the first initializer and publish the wrong object's keys.
+ * A nested `var` of the same name counts too, since it is the same binding. The
+ * one exception is esbuild's hoisting shape, `var i;…;i=u({…})`: a name declared
+ * without an initializer and then assigned exactly once, by a top-level
+ * statement, is bound to that assignment.
+ */
+function declaredLocals(statements: readonly Statement[], shift: number): Map<string, Binding> {
+  const out = new Map<string, Binding>();
+  for (const node of statements) {
+    if (node.type !== 'VariableDeclaration') continue;
+    for (const declarator of node.declarations) {
+      if (declarator.id.type !== 'Identifier') {
+        for (const name of bindingNames(declarator.id)) out.set(name, 'destructured');
+        continue;
+      }
+      out.set(declarator.id.name, declarator.init ? { node: declarator.init, shift } : 'unknown');
+    }
+  }
+  const writes = new Map<string, number>();
+  const topLevel = new Map<string, Expression>();
+  const count = (name: string): void => {
+    writes.set(name, (writes.get(name) ?? 0) + 1);
+  };
+  for (const node of statements) {
+    const assignment =
+      node.type === 'ExpressionStatement' && node.expression.type === 'AssignmentExpression'
+        ? node.expression
+        : undefined;
+    if (assignment?.operator === '=' && assignment.left.type === 'Identifier')
+      topLevel.set(assignment.left.name, assignment.right);
+  }
+  for (const node of statements)
+    eachWrite(node as unknown as AnyNode, new Set(), statements, count);
+  for (const [name, binding] of out) {
+    const n = writes.get(name) ?? 0;
+    if (n === 0) continue;
+    const hoisted = topLevel.get(name);
+    out.set(
+      name,
+      binding === 'unknown' && n === 1 && hoisted ? { node: hoisted, shift } : 'reassigned'
+    );
+  }
+  return out;
+}
+
+/**
+ * The locals the schema ROOT can see: the top-level declarations of the block
+ * that holds the `return` returning it. From 2.1.281 that block declares the
+ * object member of `attribution`'s union —
+ * `let r=(d,c)=>…,i=u({commit:…}).passthrough();return u({$schema:…`.
+ *
+ * The block is found by parsing, not by searching for the name. Its opening
+ * brace is the nearest `{` before the `return` whose text up to the `return`
+ * parses as a list of statements: a nearer brace belongs to an object or a
+ * nested function that closes before the `return`, and leaves an unmatched
+ * bracket. Names declared in an outer block are not seen, so a member bound
+ * there throws rather than resolving. A root with no `return` before it
+ * (`Q=v.object({…`) sees no locals.
+ */
+function rootLocals(src: string, root: number): Locals {
+  const before = src.slice(Math.max(0, root - 96), root - 1);
+  const ret = /(?<![\w$.])return\s*(?:(?:[A-Za-z_$][\w$]*\.)?[A-Za-z_$][\w$]*\()?$/.exec(before);
+  if (!ret) return NO_LOCALS;
+  const returnAt = root - 1 - before.length + ret.index;
+  const prefix = '(function(){';
+  const floor = Math.max(0, returnAt - BLOCK_WINDOW);
+  // Each attempt parses from its brace to the `return`, so the attempts are
+  // capped: the real roots settle within a handful of braces.
+  for (
+    let brace = src.lastIndexOf('{', returnAt), tries = 0;
+    brace >= floor && tries < BLOCK_TRIES;
+    brace = src.lastIndexOf('{', brace - 1), tries++
+  ) {
+    const text = `${prefix}${src.slice(brace + 1, returnAt)}\nreturn 0})`;
+    const parsed = parseSync('block.js', text, { sourceType: 'script' });
+    if (parsed.errors.length > 0) continue;
+    const fn = (parsed.program.body[0] as ExpressionStatement)
+      .expression as ParenthesizedExpression;
+    const body = (fn.expression as FunctionNode).body as FunctionBody;
+    return declaredLocals(body.body, brace + 1 - prefix.length);
+  }
+  return NO_LOCALS;
 }
 
 /**
@@ -148,6 +534,11 @@ function schemaSpan(
  * `<alias>.object({`.
  */
 const ROOT_BEFORE_BRACE = /(?:(?:[A-Za-z_$][\w$]*\.)?[A-Za-z_$][\w$]*\(|(?<![\w$])return)$/;
+
+/** How far back from the root's `return` to look for the block that holds it. */
+const BLOCK_WINDOW = 65_536;
+/** How many braces to try before giving up on finding that block. */
+const BLOCK_TRIES = 256;
 
 /** How far back from the anchor to look for the schema root. */
 const ROOT_WINDOW = 400_000;
@@ -366,6 +757,7 @@ function objectEnd(src: string, bodyStart: number): number {
       if (depth === 0) return j + 1;
     }
   }
+  /* v8 ignore next -- invariant guard: its only caller runs after walk's one-expression check, so the object always closes */
   return -1;
 }
 
@@ -391,7 +783,62 @@ function describeKey(
   const bodyStart = objectBodyStart(value, valueStart);
   if (bodyStart === -1) return describeOf(value);
   const end = objectEnd(src, bodyStart);
+  /* v8 ignore next -- the `end === -1` arm is an invariant guard: walk refuses a value that is not one expression, so an object it opens always closes */
   return end === -1 || end >= valueEnd ? undefined : describeOf(src.slice(end, valueEnd));
+}
+
+/** Where a union member's keys come from. */
+type MemberTarget = { body: number } | { factory: string; refAt: number };
+
+/**
+ * Where each key-carrying union member's keys come from: an inline object call
+ * (`u({…})`), a local bound to one, or a named factory (`zWl(e)`), looked
+ * through any method chain and `lazy` wrapper. A name with no binding in scope,
+ * or one reassigned after it was bound, throws: resolving it by text would reach
+ * whatever same-named binding lies nearest, in any scope.
+ */
+function unionTargets(
+  union: NonNullable<ReadValue['union']>,
+  locals: Locals,
+  path: string
+): MemberTarget[] {
+  const targets: MemberTarget[] = [];
+  const refuse = (name: string, why: string): never => {
+    throw new SettingsSchemaError(
+      `settings schema: the union for "${path}" names ${name}, which has ${why}. ` +
+        `Refusing to emit a key set that may be missing its keys.`
+    );
+  };
+  const resolve = (node: Expression, shift: number, seen: readonly string[]): void => {
+    let expr = node;
+    for (let lazy = lazyGetter(expr); lazy; lazy = lazyGetter(expr)) {
+      const getter = lazy.getter as ArrowFunctionExpression;
+      /* v8 ignore next 2 -- a block-bodied getter in a union member has not been seen; it is refused rather than half-read */
+      if (!getter.expression) refuse('a lazy member', 'a block-bodied getter');
+      expr = getter.body as Expression;
+    }
+    const inline = objectArgument(expr);
+    if (inline) {
+      targets.push({ body: inline.start + shift + 1 });
+      return;
+    }
+    const base = chainBase(expr);
+    if (base.type === 'Identifier') {
+      const binding = locals.get(base.name);
+      if (binding === undefined) return refuse(base.name, 'no binding in scope');
+      if (binding === 'reassigned') return refuse(base.name, 'been reassigned');
+      if (binding === 'destructured') return refuse(base.name, 'a destructured binding');
+      if (binding === 'unknown') return;
+      if (seen.includes(base.name)) return refuse(base.name, 'a binding cycle');
+      resolve(binding.node, binding.shift, [...seen, base.name]);
+    } else if (base.type === 'CallExpression' && base.callee.type === 'Identifier') {
+      targets.push({ factory: base.callee.name, refAt: base.start + shift });
+    }
+  };
+  for (const member of union.members) {
+    if (member && member.type !== 'SpreadElement') resolve(member, union.shift, []);
+  }
+  return targets;
 }
 
 /**
@@ -705,6 +1152,7 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
     start: number,
     prefix: string,
     depth: number,
+    locals: Locals,
     viaFactory?: string
   ): void => {
     const { src } = scope;
@@ -720,17 +1168,62 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
     }
     for (const entry of scanLevel(src, start)) {
       const path = prefix ? `${prefix}.${entry.key}` : entry.key;
-      const { valueStart, valueEnd } = schemaSpan(src, entry.valueStart, entry.valueEnd, path);
-      const value = src.slice(valueStart, valueEnd);
+      const read = readValue(src, entry.valueStart, entry.valueEnd, path, locals);
+      const { valueStart, valueEnd, childStart, childEnd, tail, union } = read;
       keys.push({
         path: detach(path),
-        description: describeKey(src, value, valueStart, valueEnd),
+        // A `lazy` call or a union carries its own description after it closes,
+        // the same rule `describeKey` applies to an object.
+        description:
+          tail !== undefined
+            ? describeOf(src.slice(tail, valueEnd))
+            : union
+              ? describeOf(src.slice(union.end, valueEnd))
+              : describeKey(src, src.slice(valueStart, valueEnd), valueStart, valueEnd),
         viaFactory,
       });
+      const value = src.slice(childStart, childEnd);
 
-      const inlineBody = objectBodyStart(value, valueStart);
+      const inlineBody = objectBodyStart(value, childStart);
       if (inlineBody !== -1) {
-        walk(scope, inlineBody, path, depth + 1, viaFactory);
+        walk(scope, inlineBody, path, depth + 1, read.locals, viaFactory);
+        continue;
+      }
+      // A union passed its members inline as an array — `Fe([H(),i],{…})`, how
+      // `attribution` is emitted from 2.1.281, where `i` is a local
+      // `i=u({commit:…})`. The union's keys are its object members' keys.
+      // Resolving the callee instead reaches the union builder, which is not an
+      // object, and that dropped `attribution.commit`, `.pr` and `.sessionUrl`.
+      // The callee is never resolved for a union, for the same name-collision
+      // reason as the record guard below.
+      if (union) {
+        const bodies: { scope: Scope; body: number; via?: string }[] = [];
+        for (const target of unionTargets(union, read.locals, path)) {
+          if ('body' in target) {
+            bodies.push({ scope, body: target.body, via: viaFactory });
+            continue;
+          }
+          const factory = resolveFactory(scope, target.factory, path, target.refAt, graph);
+          if (factory.body !== -1)
+            bodies.push({ scope: factory.scope, body: factory.body, via: target.factory });
+        }
+        // Two object members would make the keys depend on which branch matched,
+        // a shape this walk does not model.
+        if (bodies.length > 1) {
+          throw new SettingsSchemaError(
+            `settings schema: the union for "${path}" has more than one object member. ` +
+              `Refusing to emit a key set that may be missing its keys.`
+          );
+        }
+        for (const { scope: at, body, via } of bodies)
+          walk(
+            at,
+            body,
+            path,
+            depth + 1,
+            at === scope && via === viaFactory ? read.locals : NO_LOCALS,
+            via
+          );
         continue;
       }
       // A two-argument keyed combinator — `record(keySchema,valueSchema)` /
@@ -766,11 +1259,12 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
       // which is a schema type, not a sub-schema to descend into. The tree-shaken
       // era has no alias, so every candidate is resolved and judged by its body.
       if (!name || name === alias) continue;
-      const factory = resolveFactory(scope, name, path, valueStart, graph);
-      if (factory.body !== -1) walk(factory.scope, factory.body, path, depth + 1, name);
+      const factory = resolveFactory(scope, name, path, childStart, graph);
+      // A factory is another function, so none of these locals reach into it.
+      if (factory.body !== -1) walk(factory.scope, factory.body, path, depth + 1, NO_LOCALS, name);
     }
   };
-  walk(anchorScope, root, '', 0);
+  walk(anchorScope, root, '', 0, rootLocals(anchorScope.src, root));
 
   // Feature-gated fragments contribute top-level keys the root walk cannot reach:
   // they live in a separate registry (`{autoMode:{buildGate:()=>!0,shape:()=>({…})}}`)
@@ -784,7 +1278,7 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
   const rootCount = keys.length;
   for (const scope of graph.scopes) {
     for (const { bodyStart } of gatedFragments(scope.src))
-      walk(scope, bodyStart, '', 1, 'gated-fragment');
+      walk(scope, bodyStart, '', 1, NO_LOCALS, 'gated-fragment');
   }
 
   // A bundle can embed the same module graph twice — 2.1.113 carries two copies of

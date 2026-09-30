@@ -169,7 +169,7 @@ describe('extractSettingsKeys — thunked era (2.1.284 →)', () => {
   ])('throws when a %s never closes, rather than reading inside it', (_, statement) => {
     const src =
       builders + `function la(e){return{apiKeyHelper:()=>o(),attribution:()=>{${statement}}}}`;
-    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*does not parse/);
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution".*not one expression/);
   });
 
   it.each([
@@ -321,8 +321,14 @@ describe('extractSettingsKeys — code-split era (2.1.242 →)', () => {
       'function Ne(e,r){return new As({type:"union",options:e})}' +
       'Q=v.object({apiKeyHelper:v.string(),theme:Ne([v.enum(["light","dark"]),v.string()]).optional()})';
     expect(paths([login, settings])).toEqual(['apiKeyHelper', 'theme']);
-    // The same text as one flat string is exactly the defect.
-    expect(paths(login + ';' + settings)).toContain('theme.jws');
+    // The same defect through a CALLED reference, which still resolves the callee
+    // by name: scoped to its chunk it finds the union builder, flat it finds the
+    // login object. (A union value no longer resolves its callee at all.)
+    const called =
+      'function Ne(e,r){return new As({type:"union",options:e})}' +
+      'Q=v.object({apiKeyHelper:v.string(),theme:Ne(e).optional()})';
+    expect(paths([login, called])).toEqual(['apiKeyHelper', 'theme']);
+    expect(paths(login + ';' + called)).toContain('theme.jws');
   });
 
   it('resolves an imported sub-schema through the module that exports it', () => {
@@ -443,6 +449,332 @@ describe('extractSettingsKeys — depth accounting at the object top level', () 
     expect(() =>
       extractSettingsKeys('Q=v.object({apiKeyHelper:v.string().describe("unclosed')
     ).not.toThrow(RangeError);
+  });
+});
+
+describe('extractSettingsKeys — union members (2.1.281 →)', () => {
+  // From 2.1.281 `attribution` is a union of a boolean and an object held in a
+  // local: `Fe([H(),i],{…})`. Resolving the callee reached the union builder and
+  // dropped `attribution.commit`, `.pr` and `.sessionUrl`.
+  const builders = 'var o=Ct(),u=Ct(),H=Ct();function Fe(e,n){return new Zn(e)}';
+
+  it('reads the object member a local binds before the root (2.1.281 → 2.1.283)', () => {
+    const src =
+      builders +
+      'function la(e){let r=(d)=>d,i=u({commit:o().describe("Commit"),pr:o()}).passthrough();' +
+      'return u({apiKeyHelper:o(),attribution:Fe([H(),i],{error:(d)=>d}).pipe(i).optional()})}';
+    const keys = extractSettingsKeys(src);
+    expect(keys.map((k) => k.path)).toEqual([
+      'apiKeyHelper',
+      'attribution',
+      'attribution.commit',
+      'attribution.pr',
+    ]);
+    expect(keys[2]?.description).toBe('Commit');
+  });
+
+  it('reads the object member a local binds inside a block thunk (2.1.284 →)', () => {
+    const src =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o(),' +
+      'attribution:()=>{let i=u({commit:o()});return Fe([H(),i]).optional()}}}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual([
+      'apiKeyHelper',
+      'attribution',
+      'attribution.commit',
+    ]);
+  });
+
+  it('reads an inline object member', () => {
+    const src = builders + 'Q=u({apiKeyHelper:o(),attribution:Fe([H(),u({commit:o()})])})';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toContain('attribution.commit');
+  });
+
+  it('keeps the plain path for an array call with no member that can carry keys', () => {
+    // An enum or a scalar-only call is not read as a union, so its callee is still
+    // resolved: a factory taking an array keeps its children.
+    const src =
+      builders +
+      'function Pz(e){return u({allow:o(),deny:o()})}' +
+      'Q=u({apiKeyHelper:o(),perms:Pz(["allow","deny"]),theme:Fe([o(),H(),"dark"])})';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual([
+      'apiKeyHelper',
+      'perms',
+      'perms.allow',
+      'perms.deny',
+      'theme',
+    ]);
+  });
+
+  it('reads an inline object member behind a method chain', () => {
+    const src =
+      builders + 'Q=u({apiKeyHelper:o(),attribution:Fe([H(),u({commit:o()}).passthrough()])})';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toContain('attribution.commit');
+  });
+
+  it('skips a spread or empty member and still reads the bound one', () => {
+    const src =
+      builders +
+      'function la(e){let i=u({commit:o()});' +
+      'return u({apiKeyHelper:o(),attribution:Fe([,...e,H(),i])})}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toContain('attribution.commit');
+  });
+
+  it('throws on a member reassigned inside a comma expression', () => {
+    const src =
+      builders +
+      'function la(e){let i=u({commit:o()});i=u({x:o()}),f(e);' +
+      'return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(() => extractSettingsKeys(src)).toThrow(/names i, which has been reassigned/);
+  });
+
+  it('throws when no enclosing block of the root parses', () => {
+    // The root's `return` sits at the top level, so no brace before it opens a
+    // block that holds it, and the member has no binding in scope.
+    const src = builders + 'return u({apiKeyHelper:o(),attribution:Fe([H(),i])})';
+    expect(() => extractSettingsKeys(src)).toThrow(/names i, which has no binding/);
+  });
+
+  it('reads a local declared by an earlier statement in the root block', () => {
+    const src =
+      builders +
+      'function la(e){let i=u({commit:o()});f(e);let r=e;' +
+      'return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toContain('attribution.commit');
+  });
+
+  it.each([
+    [
+      'in the root block',
+      'function la(e){let i=u({commit:o()});i=u({x:o()});return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}',
+    ],
+    [
+      'in a block thunk',
+      'function la(e){return{apiKeyHelper:()=>o(),attribution:()=>{let i=u({commit:o()});i=u({x:o()});return Fe([H(),i])}}}',
+    ],
+  ])('throws on a member reassigned %s', (_, body) => {
+    expect(() => extractSettingsKeys(builders + body)).toThrow(
+      /names i, which has been reassigned/
+    );
+  });
+
+  it('throws on a member name with no binding in scope, even when one exists elsewhere', () => {
+    // `i` is a parameter here. An unrelated `i=u({x:…})` earlier in the bundle
+    // must not be taken for it: that would publish a phantom `attribution.x`.
+    const src =
+      builders +
+      'var i=u({x:o()});' +
+      'function la(e,i){return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution" names i, which has no binding/);
+  });
+
+  it('throws on a local that aliases a name it cannot see', () => {
+    const src =
+      builders + 'function la(e){let i=e;return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(() => extractSettingsKeys(src)).toThrow(/names e, which has no binding in scope/);
+  });
+
+  it.each([
+    ['a statement that is not a declaration', 'f(e);'],
+    ['no statement before the return', ''],
+  ])('throws when the root sees the member only through %s', (_, before) => {
+    const src =
+      builders + `function la(e){${before}return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}`;
+    expect(() => extractSettingsKeys(src)).toThrow(/names i, which has no binding/);
+  });
+
+  it('throws on a member bound by destructuring', () => {
+    const src =
+      builders + 'function la(e){let {i}=e;return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(() => extractSettingsKeys(src)).toThrow(/names i, which has a destructured binding/);
+  });
+
+  it('finds the declaration before the root past a nested one inside it', () => {
+    // The nearest `let` belongs to an arrow body inside the statement. Its text up
+    // to the `;` does not parse, so the search moves on to the real statement.
+    const src =
+      builders +
+      'function la(e){let r=(d)=>{let q=d;return q},i=u({commit:o()});' +
+      'return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toContain('attribution.commit');
+  });
+
+  it('adds no children for a local declared without an initializer', () => {
+    const src =
+      builders + 'function la(e){let i;return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual(['apiKeyHelper', 'attribution']);
+  });
+
+  it("keeps one value's block locals out of another value", () => {
+    // `model` declares its own `i`. `attribution` must still read the `i` bound
+    // before the root, not the nearer one inside `model`'s thunk.
+    const src =
+      builders +
+      'function la(e){let i=u({commit:o()});return{apiKeyHelper:()=>o(),' +
+      'model:()=>{let i=u({x:o()});return o()},attribution:()=>Fe([H(),i])}}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual([
+      'apiKeyHelper',
+      'model',
+      'attribution',
+      'attribution.commit',
+    ]);
+  });
+
+  it("reads a union's own description, not its inline member's", () => {
+    const src =
+      builders +
+      'Q=u({apiKeyHelper:o(),attribution:Fe([H(),u({commit:o().describe("Commit")})]).describe("Own")})';
+    const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
+    expect(by.get('attribution')).toBe('Own');
+    expect(by.get('attribution.commit')).toBe('Commit');
+  });
+
+  it('throws on a union with two object members', () => {
+    const src = builders + 'Q=u({apiKeyHelper:o(),attribution:Fe([u({commit:o()}),u({pr:o()})])})';
+    expect(() => extractSettingsKeys(src)).toThrow(/"attribution" has more than one object member/);
+  });
+});
+
+describe('extractSettingsKeys — lazy schemas (2.1.281 →)', () => {
+  // From 2.1.281 `permissions` and `sandbox` are zod `lazy` schemas:
+  // `permissions:Oe(()=>ji(e)).describe(…)`. Their keys are the getter's keys.
+  const builders =
+    'var o=Ct(),u=Ct(),H=Ct();function Fe(e,n){return new Zn(e)}' +
+    'function Oe(e){let n;return new Do({type:"lazy",getter:()=>n??=e()})}';
+
+  it("reads the keys of a factory the getter calls, and the lazy call's own description", () => {
+    const src =
+      builders +
+      'function ji(e){return u({allow:o().describe("Allow"),deny:o()})}' +
+      'Q=u({apiKeyHelper:o(),permissions:Oe(()=>ji(e)).describe("Perms")})';
+    const keys = extractSettingsKeys(src);
+    expect(keys.map((k) => k.path)).toEqual([
+      'apiKeyHelper',
+      'permissions',
+      'permissions.allow',
+      'permissions.deny',
+    ]);
+    expect(keys[1]?.description).toBe('Perms');
+    expect(keys[2]?.description).toBe('Allow');
+  });
+
+  it('reads a local a thunked, block-bodied getter returns', () => {
+    const src =
+      builders +
+      'function la(e){return{apiKeyHelper:()=>o(),' +
+      'sandbox:()=>Oe(()=>{let i=u({enabled:H()});return i.optional()})}}';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual([
+      'apiKeyHelper',
+      'sandbox',
+      'sandbox.enabled',
+    ]);
+  });
+
+  it.each([
+    ['takes a second argument', 'Zq(()=>o(),"x")'],
+    ['takes a parameter', 'Zq((d)=>d)'],
+    ['is async', 'Zq(async()=>o())'],
+  ])('keeps the plain path for a call whose argument %s', (_, value) => {
+    // Not a lazy schema, so the callee is still resolved and judged by its body.
+    const src =
+      builders + 'function Zq(e){return u({x:o()})}' + `Q=u({apiKeyHelper:o(),k:${value}})`;
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual(['apiKeyHelper', 'k', 'k.x']);
+  });
+
+  it('reads a lazy union member and a factory union member', () => {
+    const src =
+      builders +
+      'function Pz(){return u({commit:o()})}' +
+      'Q=u({apiKeyHelper:o(),a:Fe([H(),Oe(()=>Pz())]),b:Fe([H(),Pz()])})';
+    expect(extractSettingsKeys(src).map((k) => k.path)).toEqual([
+      'apiKeyHelper',
+      'a',
+      'a.commit',
+      'b',
+      'b.commit',
+    ]);
+  });
+});
+
+describe('extractSettingsKeys — how a union member local is bound', () => {
+  const builders = 'var o=Ct(),u=Ct(),H=Ct();function Fe(e,n){return new Zn(e)}';
+  const root = (body: string): string =>
+    `${builders}function la(e){${body}return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}`;
+
+  it("reads esbuild's hoisting shape, a bare declaration assigned once", () => {
+    expect(extractSettingsKeys(root('var i;i=u({commit:o()});')).map((k) => k.path)).toContain(
+      'attribution.commit'
+    );
+  });
+
+  it.each([
+    ['conditionally, as esbuild writes `if`', 'let i=u({commit:o()});e&&(i=u({x:o()}));'],
+    ['twice after a bare declaration', 'var i;i=u({commit:o()});i=u({x:o()});'],
+    ['inside a nested function', 'let i=u({commit:o()}),r=()=>{i=u({x:o()})};'],
+    ['by a destructuring assignment', 'let i=u({commit:o()});[i]=[u({x:o()})];'],
+    ['by an update', 'let i=u({commit:o()});i++;'],
+    ['by a var in a nested block', 'var i=u({commit:o()});{var i=u({x:o()})}'],
+    [
+      'in a switch case without a declaration',
+      'let i=u({commit:o()});switch(e){case 1:i=u({x:o()})}',
+    ],
+    [
+      'in a switch discriminant, outside the case scope',
+      'let i=u({commit:o()});switch(i=u({x:o()})){case 1:let i=o()}',
+    ],
+    ['through a hole in an array pattern', 'let i=u({commit:o()});[,i]=[0,u({x:o()})];'],
+    ['by an object rest', 'let i=u({commit:o()});({...i}=e);'],
+    ['by a default in a pattern', 'let i=u({commit:o()});[i=u({x:o()})]=[];'],
+    ['by an array rest', 'let i=u({commit:o()});[...i]=[];'],
+    ['as a for-of target', 'let i=u({commit:o()});for(i of e);'],
+    ['as a for-in target', 'let i=u({commit:o()});for(i in e);'],
+  ])('throws on a member assigned again %s', (_, body) => {
+    expect(() => extractSettingsKeys(root(body))).toThrow(/names i, which has been reassigned/);
+  });
+
+  it.each([
+    ['a property write', 'let i=u({commit:o()});e.i=o();'],
+    ['an object pattern key', 'let i=u({commit:o()}),q;({i:q}=e);'],
+    ['a nested function parameter', 'let i=u({commit:o()}),r=(i)=>{i=o()};'],
+    ['a nested function var', 'let i=u({commit:o()});e&&function(){var i=u({x:o()})};'],
+    ['a block let', 'let i=u({commit:o()});{let i=o();i=H()}'],
+    ['a loop counter', 'let i=u({commit:o()});for(let i=0;i<1;i++);'],
+    ['a catch parameter', 'let i=u({commit:o()});try{f()}catch(i){i=o()}'],
+    ['an arrow parameter with an expression body', 'let i=u({commit:o()}),r=(i)=>i=o();'],
+    ['a block function declaration', 'let i=u({commit:o()});{function i(){}i=o()}'],
+    ['a block class declaration', 'let i=u({commit:o()});{class i{}i=o()}'],
+    [
+      'a var in a function nested in a function',
+      'let i=u({commit:o()}),r=()=>{(()=>{var i=o()})()};',
+    ],
+    ['a for-in let', 'let i=u({commit:o()});for(let i in e)i=o();'],
+    ['a loop with no head', 'let i=u({commit:o()});for(;;)break;'],
+    ['a let in a switch case', 'let i=u({commit:o()});switch(e){case 1:let i=o();i=H()}'],
+    ['a named function expression', 'let i=u({commit:o()}),r=function i(){i=o()};'],
+    ['a named class expression', 'let i=u({commit:o()}),C=class i{m(){i=o()}};'],
+    ['a class static block var', 'let i=u({commit:o()});class K{static{var i=o();i=H()}}'],
+  ])('does not count %s as a write to the member', (_, body) => {
+    expect(extractSettingsKeys(root(body)).map((k) => k.path)).toContain('attribution.commit');
+  });
+
+  it('throws on a binding cycle', () => {
+    const src =
+      builders + 'function la(e){let i=j,j=i;return u({apiKeyHelper:o(),attribution:Fe([H(),i])})}';
+    expect(() => extractSettingsKeys(src)).toThrow(/names [ij], which has a binding cycle/);
+  });
+});
+
+describe('extractSettingsKeys — a misread value extent', () => {
+  it('throws when a regex holding a bracket moves the end of a value', () => {
+    // scanLevel counts the `(` inside `/\(/`, so without the check the value runs
+    // on, `model` and `x` are swallowed into `apiKeyHelper`, and they vanish.
+    const src = 'Q=v.object({apiKeyHelper:v.string().regex(/\\(/),model:v.string(),x:v.string()})';
+    expect(() => extractSettingsKeys(src)).toThrow(/"apiKeyHelper" is not one expression/);
+  });
+
+  it('throws when a quote inside a regex starts a false string', () => {
+    const src = 'Q=v.object({apiKeyHelper:v.string().regex(/"/),model:v.string()})';
+    expect(() => extractSettingsKeys(src)).toThrow(/is not one expression/);
   });
 });
 
@@ -637,15 +969,12 @@ describe('extractSettingsKeys — a parent object never borrows a child descript
 });
 
 describe('extractSettingsKeys — an object whose body never closes', () => {
-  it('gives the parent no description rather than reading past the value', () => {
-    // objectEnd scans `src`, not the value slice, so an unterminated object would
-    // otherwise run to the end of the bundle and hand back whatever `.describe()`
-    // it found there — a description belonging to an unrelated key.
-    // Truncated mid-object: the brace never arrives before end-of-source.
+  it('refuses the value rather than reading past it', () => {
+    // Truncated mid-object: the brace never arrives before end-of-source, so the
+    // value is not one expression. Walking it would hand the parent whatever
+    // `.describe()` lies past the value, a description of an unrelated key.
     const src =
       'Q=v.object({apiKeyHelper:v.string(),broken:v.object({a:v.string().describe("Child")';
-    const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
-    expect(by.get('broken')).toBeUndefined();
-    expect(by.get('broken.a')).toBe('Child');
+    expect(() => extractSettingsKeys(src)).toThrow(/"broken" is not one expression/);
   });
 });
