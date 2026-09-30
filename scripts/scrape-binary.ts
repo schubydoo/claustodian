@@ -185,8 +185,9 @@ export async function scrapeBinary(
   const version = resolveVersion(options.version);
   if (compareVersionsAsc(version, FIRST_COMPILED_CACHE) < 0) {
     throw new Error(
-      `${version}: releases before ${FIRST_COMPILED_CACHE} are extracted from the npm bundle, ` +
-        `not the compiled binary. Re-extract it from the archive with reextract-binaries.`
+      `scrape-binary: ${version} is before ${FIRST_COMPILED_CACHE}, so its cache is extracted ` +
+        `from the npm bundle, not the compiled binary. Re-extract it from the archive with ` +
+        `reextract-binaries.`
     );
   }
   const outPath = join(options.outDir, `${version}.json`);
@@ -255,7 +256,14 @@ export const CONTROL_REFUSAL_EXIT = 2;
  * message falls into the transient bucket, where CI warns and continues with no
  * cache entry. That has happened twice: `slice-bundle` and `settings schema`.
  */
-const REFUSAL_PREFIXES = ['control lane:', 'slice-bundle:', 'settings schema:'] as const;
+const REFUSAL_PREFIXES = [
+  'control lane:',
+  'slice-bundle:',
+  'settings schema:',
+  // A release before FIRST_COMPILED_CACHE: refused on every retry, so an
+  // unforced run must not report it as a CDN hiccup either.
+  'scrape-binary:',
+] as const;
 
 /** True when a failure will recur on retry, so CI must fail rather than tolerate it. */
 export function isDeterministicRefusal(message: string): boolean {
