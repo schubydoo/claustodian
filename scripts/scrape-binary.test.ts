@@ -242,6 +242,19 @@ describe('buildCacheRecord', () => {
     await rm(root, { recursive: true, force: true });
   });
 
+  it('returns the refusal exit code for a release before the first compiled cache', async () => {
+    // Retrying never helps, so an unforced run must fail rather than report a
+    // transient failure and keep going.
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-refusal-'));
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    const code = await main(['--version', '2.1.112', '--out', root]);
+
+    expect(code).toBe(CONTROL_REFUSAL_EXIT);
+    expect(fetchSpy).not.toHaveBeenCalled();
+    await rm(root, { recursive: true, force: true });
+  });
+
   it('produces the same shape reextract-binaries writes', () => {
     const record = buildCacheRecord('2.1.214', Buffer.from(FAKE_BUNDLE, 'utf-8'));
     expect(record.version).toBe('2.1.214');
@@ -353,6 +366,30 @@ describe('scrapeBinary', () => {
     await expect(scrapeBinary({ version: '9.9.9', outDir: dir, force: false })).rejects.toThrow(
       /no compiled release/
     );
+    await rm(dir, { recursive: true, force: true });
+  });
+
+  it.each([false, true])(
+    'refuses a release before the first compiled cache, with force %s, before any download',
+    async (force) => {
+      const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
+      const fetchSpy = vi.fn();
+      vi.stubGlobal('fetch', fetchSpy);
+
+      await expect(scrapeBinary({ version: '2.1.112', outDir: dir, force })).rejects.toThrow(
+        /2\.1\.112 is before 2\.1\.113, so its cache is extracted from the npm bundle/
+      );
+      expect(fetchSpy).not.toHaveBeenCalled();
+      await rm(dir, { recursive: true, force: true });
+    }
+  );
+
+  it('scrapes the first compiled release itself', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
+    stubCdn('2.1.113', FAKE_BUNDLE, sha256(FAKE_BUNDLE));
+
+    const result = await scrapeBinary({ version: '2.1.113', outDir: dir, force: false });
+    expect(result).not.toBe('skip');
     await rm(dir, { recursive: true, force: true });
   });
 
