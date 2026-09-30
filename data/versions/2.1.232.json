@@ -5507,7 +5507,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Alias for extraKnownMarketplaces: this key is read exactly as if it were spelled extraKnownMarketplaces. Do not set both in one file \\u2014 if both appear, this key is ignored with a warning. Claude Code may rewrite this key as extraKnownMarketplaces when it updates the file. Clients older than this alias ignore it (and their settings sync would upload a file that uses only this spelling as if it declared no marketplaces), so prefer extraKnownMarketplaces while older Claude Code versions still share the same settings.",
+      "description": "Alias for extraKnownMarketplaces: this key is read exactly as if it were spelled extraKnownMarketplaces. Do not set both in one file — if both appear, this key is ignored with a warning. Claude Code may rewrite this key as extraKnownMarketplaces when it updates the file. Clients older than this alias ignore it (and their settings sync would upload a file that uses only this spelling as if it declared no marketplaces), so prefer extraKnownMarketplaces while older Claude Code versions still share the same settings.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -5637,7 +5637,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Alias for strictKnownMarketplaces (managed settings only): this key is read exactly as if it were spelled strictKnownMarketplaces. Do not set both in one file \\u2014 if both appear, this key is ignored with a warning. Clients older than this alias ignore it, so keep using strictKnownMarketplaces when the allowlist must also bind older Claude Code versions.",
+      "description": "Alias for strictKnownMarketplaces (managed settings only): this key is read exactly as if it were spelled strictKnownMarketplaces. Do not set both in one file — if both appear, this key is ignored with a warning. Clients older than this alias ignore it, so keep using strictKnownMarketplaces when the allowlist must also bind older Claude Code versions.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -5899,7 +5899,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Rules for the auto mode classifier HARD BLOCK section \\u2014 security boundaries that user intent does NOT clear. Include the literal string \"$defaults\" to inherit the built-in rules at that position.",
+      "description": "Rules for the auto mode classifier HARD BLOCK section — security boundaries that user intent does NOT clear. Include the literal string \"$defaults\" to inherit the built-in rules at that position.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -5912,7 +5912,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Rules for the auto mode classifier SOFT BLOCK section \\u2014 destructive/irreversible actions that user intent can clear. Include the literal string \"$defaults\" to inherit the built-in rules at that position.",
+      "description": "Rules for the auto mode classifier SOFT BLOCK section — destructive/irreversible actions that user intent can clear. Include the literal string \"$defaults\" to inherit the built-in rules at that position.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -6042,7 +6042,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "@internal Opt-in break reminder. When enabled, shows a dismissible nudge after sustained continuous use. Never blocks \\u2014 just a friendly heads-up.",
+      "description": "@internal Opt-in break reminder. When enabled, shows a dismissible nudge after sustained continuous use. Never blocks — just a friendly heads-up.",
       "source_url": null,
       "category": "settings-internal",
       "description_source": "binary"
@@ -6370,7 +6370,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Controls the `command` plugin source, whose plugin directory is produced by running a marketplace-declared command on this machine. true: command-sourced plugins are never installed, updated, or re-resolved (the command never runs). false: explicitly allowed. Unset: follows allowManagedHooksOnly \\u2014 an org that restricts hook execution to managed settings gets command sources disabled too. Only honored from managed settings.",
+      "description": "Controls the `command` plugin source, whose plugin directory is produced by running a marketplace-declared command on this machine. true: command-sourced plugins are never installed, updated, or re-resolved (the command never runs). false: explicitly allowed. Unset: follows allowManagedHooksOnly — an org that restricts hook execution to managed settings gets command sources disabled too. Only honored from managed settings.",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6968,7 +6968,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "@internal Controls the ProposeGoal tool (model-proposed session goals). 'auto' (the default when absent) lets the model choose per proposal whether to ask for approval via its ask_user parameter; 'alwaysAsk' routes every model-proposed goal through the approval dialog; 'disabled' turns the tool off. A typed /goal is unaffected. Consent-affecting, so it is read from trusted sources only (user/policy/flag) \\u2014 workspace-resident project and local settings are ignored.",
+      "description": "@internal Controls the ProposeGoal tool (model-proposed session goals). 'auto' (the default when absent) lets the model choose per proposal whether to ask for approval via its ask_user parameter; 'alwaysAsk' routes every model-proposed goal through the approval dialog; 'disabled' turns the tool off. A typed /goal is unaffected. Consent-affecting, so it is read from trusted sources only (user/policy/flag) — workspace-resident project and local settings are ignored.",
       "source_url": null,
       "category": "settings-internal",
       "description_source": "binary"
@@ -7007,7 +7007,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Controls whether the SDK parent tier (Options.managedSettings / --managed-settings) layers under this admin tier. \"first-wins\" (default): parent is dropped \\u2014 admin tiers are the only policy source. \"merge\": parent's restrictive-only-filtered settings union under the admin winner. Has no effect when no admin tier exists (parent applies as the sole policy tier, still filtered restrictive-only).",
+      "description": "Controls whether the SDK parent tier (Options.managedSettings / --managed-settings) layers under this admin tier. \"first-wins\" (default): parent is dropped — admin tiers are the only policy source. \"merge\": parent's restrictive-only-filtered settings union under the admin winner. Has no effect when no admin tier exists (parent applies as the sole policy tier, still filtered restrictive-only).",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7241,7 +7241,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "@internal Per-OS variant of policyHelper, keyed by platform: macos, linux, windows, wsl, plus an optional \"default\" entry that is a STATIC settings payload (a JSON object of managed settings, not a helper). Each per-OS entry carries a helper (\"path\", with timeoutMs/refreshIntervalMs), its own static \"defaultSettings\" payload, or both; an entry may be payload-only. Selection for a platform walks its chain (the platform's own entry; on wsl the linux entry next): the first helper on the chain wins over policyHelper; if no helper is configured \\u2014 or the selected helper fails at startup or refresh \\u2014 the first payload applies (the chain's \"defaultSettings\" in platform-specific-first order, then the top-level \"default\", applied with no process spawned; unrecognized platforms reach only \"default\"); with no payload either, policyHelper. Honored only from admin-controlled policy sources.",
+      "description": "@internal Per-OS variant of policyHelper, keyed by platform: macos, linux, windows, wsl, plus an optional \"default\" entry that is a STATIC settings payload (a JSON object of managed settings, not a helper). Each per-OS entry carries a helper (\"path\", with timeoutMs/refreshIntervalMs), its own static \"defaultSettings\" payload, or both; an entry may be payload-only. Selection for a platform walks its chain (the platform's own entry; on wsl the linux entry next): the first helper on the chain wins over policyHelper; if no helper is configured — or the selected helper fails at startup or refresh — the first payload applies (the chain's \"defaultSettings\" in platform-specific-first order, then the top-level \"default\", applied with no process spawned; unrecognized platforms reach only \"default\"); with no payload either, policyHelper. Honored only from admin-controlled policy sources.",
       "source_url": null,
       "category": "settings-internal",
       "description_source": "binary"
@@ -7644,7 +7644,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "macOS only: Allow access to com.apple.trustd.agent in the sandbox. Needed for Go-based CLI tools (gh, gcloud, terraform, etc.) to verify TLS certificates when using httpProxyPort with a MITM proxy and custom CA. **Reduces security** \\u2014 opens a potential data exfiltration vector through the trustd service. Default: false",
+      "description": "macOS only: Allow access to com.apple.trustd.agent in the sandbox. Needed for Go-based CLI tools (gh, gcloud, terraform, etc.) to verify TLS certificates when using httpProxyPort with a MITM proxy and custom CA. **Reduces security** — opens a potential data exfiltration vector through the trustd service. Default: false",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7930,7 +7930,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "When true, the sandbox runtime deterministically denies hosts not in allowedDomains instead of prompting. Enforced for sandboxed commands only \\u2014 in-process tools such as WebFetch are not gated by this setting. Only honored from user, managed/policy, or CLI (--settings) settings \\u2014 project settings (.claude/settings.json and .claude/settings.local.json) are ignored.",
+      "description": "When true, the sandbox runtime deterministically denies hosts not in allowedDomains instead of prompting. Enforced for sandboxed commands only — in-process tools such as WebFetch are not gated by this setting. Only honored from user, managed/policy, or CLI (--settings) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored.",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8515,7 +8515,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "@internal Emit a <total_tokens>N tokens left</total_tokens> block in the system prompt, after each tool result, and (when totalTokensReminderAfterUserTurn is on) after each regular user prompt. 'infinite' uses the literal value Infinite, 'fixed' uses 5000000, 'countdown' uses the live remaining context-window tokens, 'padded-countdown' counts down from totalTokensReminderBudget (re-anchoring to the full budget on each regular user prompt when totalTokensReminderAfterUserTurn is on \\u2014 task-budget semantics). Defaults to off. Env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER overrides.",
+      "description": "@internal Emit a <total_tokens>N tokens left</total_tokens> block in the system prompt, after each tool result, and (when totalTokensReminderAfterUserTurn is on) after each regular user prompt. 'infinite' uses the literal value Infinite, 'fixed' uses 5000000, 'countdown' uses the live remaining context-window tokens, 'padded-countdown' counts down from totalTokensReminderBudget (re-anchoring to the full budget on each regular user prompt when totalTokensReminderAfterUserTurn is on — task-budget semantics). Defaults to off. Env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER overrides.",
       "source_url": null,
       "category": "settings-internal",
       "description_source": "binary"
@@ -8567,7 +8567,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Enable ultracode for the session: xhigh effort plus standing dynamic-workflow orchestration. Session-scoped \\u2014 typically provided via --settings or the apply_flag_settings control request; interactive toggles never persist it. Requires workflows to be enabled and an xhigh-capable model.",
+      "description": "Enable ultracode for the session: xhigh effort plus standing dynamic-workflow orchestration. Session-scoped — typically provided via --settings or the apply_flag_settings control request; interactive toggles never persist it. Requires workflows to be enabled and an xhigh-capable model.",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8722,7 +8722,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Advisory size guideline for the dynamic workflows Claude writes: \"small\" aims for fewer than 5 agents, \"medium\" (the default) fewer than 15, \"large\" fewer than 50, and \"unrestricted\" sends no guideline. A value here \\u2014 including from managed settings \\u2014 takes precedence over the \"Dynamic workflow size\" choice in /config, and that /config row is hidden while a settings file provides the key. This is a guideline, not an enforced limit.",
+      "description": "Advisory size guideline for the dynamic workflows Claude writes: \"small\" aims for fewer than 5 agents, \"medium\" (the default) fewer than 15, \"large\" fewer than 50, and \"unrestricted\" sends no guideline. A value here — including from managed settings — takes precedence over the \"Dynamic workflow size\" choice in /config, and that /config row is hidden while a settings file provides the key. This is a guideline, not an enforced limit.",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -11927,7 +11927,7 @@
     {
       "symbol": "CLAUDE_CODE_BS_AS_CTRL_BACKSPACE",
       "type": "env_var",
-      "first_seen": "2.1.133",
+      "first_seen": "2.1.113",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -13932,7 +13932,7 @@
     {
       "symbol": "CLAUDE_CODE_HTTPS_PROXY",
       "type": "env_var",
-      "first_seen": "2.1.136",
+      "first_seen": "2.1.116",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -13944,7 +13944,7 @@
     {
       "symbol": "CLAUDE_CODE_HTTP_PROXY",
       "type": "env_var",
-      "first_seen": "2.1.136",
+      "first_seen": "2.1.116",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -14219,7 +14219,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code defaults to 32000 for model IDs it doesn't recognize, such as gateway-specific names, and lowers values above a model's cap to the cap. Increasing this value reduces the effective context window available before auto-compaction triggers",
+      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code lowers a value above a model's cap to the cap. For a model ID Claude Code can't resolve to a model it knows, the default is 32000 and the cap is 128000. Increasing this value reduces the effective context window available before auto-compaction triggers",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -18019,7 +18019,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable prompt caching for Opus models",
+      "description": "Set to `1` to disable prompt caching for the default Opus model",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -18032,7 +18032,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable prompt caching for Sonnet models",
+      "description": "Set to `1` to disable prompt caching for the default Sonnet model",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
