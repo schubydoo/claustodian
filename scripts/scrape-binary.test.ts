@@ -356,6 +356,30 @@ describe('scrapeBinary', () => {
     await rm(dir, { recursive: true, force: true });
   });
 
+  it.each([false, true])(
+    'refuses a release before the first compiled cache, with force %s, before any download',
+    async (force) => {
+      const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
+      const fetchSpy = vi.fn();
+      vi.stubGlobal('fetch', fetchSpy);
+
+      await expect(scrapeBinary({ version: '2.1.112', outDir: dir, force })).rejects.toThrow(
+        /before 2\.1\.113 are extracted from the npm bundle/
+      );
+      expect(fetchSpy).not.toHaveBeenCalled();
+      await rm(dir, { recursive: true, force: true });
+    }
+  );
+
+  it('scrapes the first compiled release itself', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
+    stubCdn('2.1.113', FAKE_BUNDLE, sha256(FAKE_BUNDLE));
+
+    const result = await scrapeBinary({ version: '2.1.113', outDir: dir, force: false });
+    expect(result).not.toBe('skip');
+    await rm(dir, { recursive: true, force: true });
+  });
+
   it('skips when the cache file already exists and --force is not set', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
     await writeFile(

@@ -31,13 +31,24 @@ import { join } from 'node:path';
 import { extractControlMessages, type ControlMessageObservation } from './control-lane.js';
 import { sliceEmbeddedChunks } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
-import { runCli } from './lib.js';
+import { compareVersionsAsc, runCli } from './lib.js';
 
 /** The platform whose embedded bundle the extractor reads (matches reextract). */
 const PLATFORM = 'linux-x64';
 const CDN_BASE = 'https://downloads.claude.ai/claude-code-releases';
 const DEFAULT_OUT_DIR = 'binary-cache';
 const DEFAULT_INDEX_PATH = 'data/index.json';
+
+/**
+ * The first release whose cache is built from the compiled binary. Before it,
+ * the archive holds the npm bundle, and `reextract-binaries` builds the cache
+ * from that. The CDN serves compiled binaries for those releases too, but they
+ * are a different artifact: re-scraping one switches its cache to it, adding
+ * Bun's own `BUN_*` env vars, dropping npm-only ones and re-dating symbols. A
+ * forced dispatch over 2.1.64 to 2.1.112 did exactly that, as a side effect of
+ * a description fix.
+ */
+export const FIRST_COMPILED_CACHE = '2.1.113';
 /** A strict `major.minor.patch` — rejects junk version input early. */
 const VERSION_RE = /^\d+\.\d+\.\d+$/;
 /** Per-request deadline. Bounds a stalled connection (one that accepts but never
@@ -172,6 +183,12 @@ export async function scrapeBinary(
   options: CliOptions
 ): Promise<{ path: string; count: number } | 'skip'> {
   const version = resolveVersion(options.version);
+  if (compareVersionsAsc(version, FIRST_COMPILED_CACHE) < 0) {
+    throw new Error(
+      `${version}: releases before ${FIRST_COMPILED_CACHE} are extracted from the npm bundle, ` +
+        `not the compiled binary. Re-extract it from the archive with reextract-binaries.`
+    );
+  }
   const outPath = join(options.outDir, `${version}.json`);
   if (existsSync(outPath) && !options.force) {
     console.log(

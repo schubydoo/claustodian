@@ -196,6 +196,16 @@ gh workflow run update-from-changelog.yml \
   does not have until the next run.
 - Each version is one CDN download (~250 MB). The eight permanent CDN gaps cannot be
   scraped this way.
+- The bot cannot rewrite a release before 2.1.113. Those caches are built from the
+  npm bundle, and `scrape-binary` refuses them because the CDN's compiled binary is a
+  different artifact. Re-extract them from the archive into a separate directory, then
+  copy in only their files:
+
+  ```bash
+  npm run reextract-binaries -- --archive <dir holding only those versions> --out <tmp>
+  ```
+
+  Then run steps 2 and 4 of the order above. Ship the result as its own data PR.
 
 Use the full local regeneration above only when the range is unbounded, for example
 a fix that changes every era.
