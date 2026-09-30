@@ -811,9 +811,99 @@ describe('extractSettingsKeys — hard-fail rather than shrink', () => {
 });
 
 describe('extractSettingsKeys — descriptions', () => {
-  it('drops a template-literal description (its interpolation churns per build)', () => {
+  it('drops a template description whose interpolation does not resolve', () => {
+    // The raw `${K4}` text would churn with every build's minified names.
     const src = 'Q=v.object({apiKeyHelper:v.string().describe(`Path ${K4} helper`)})';
     expect(extractSettingsKeys(src)[0]?.description).toBeUndefined();
+  });
+
+  const described = (prelude: string, describe: string): string | undefined =>
+    extractSettingsKeys(`${prelude}Q=v.object({apiKeyHelper:v.string().describe(${describe})})`)[0]
+      ?.description;
+
+  it('joins a description written as literals and `+`', () => {
+    expect(described('', '"Exit on error. "+"When false, warn."')).toBe(
+      'Exit on error. When false, warn.'
+    );
+  });
+
+  it('folds a joined name bound to a string constant', () => {
+    expect(described('Gs="Project settings are ignored.";', '"Exit on error. "+Gs')).toBe(
+      'Exit on error. Project settings are ignored.'
+    );
+  });
+
+  it('folds a template whose interpolations are constants, through nested constants', () => {
+    const prelude =
+      'po="When managed",st="project settings",nn=`${po}, true from ${st} is ignored.`;';
+    expect(described(prelude, '"Run in the sandbox. "+nn')).toBe(
+      'Run in the sandbox. When managed, true from project settings is ignored.'
+    );
+    expect(described(prelude, '`${po}: ${st}`')).toBe('When managed: project settings');
+  });
+
+  it('leaves a name out when any of its bindings is not a string', () => {
+    // Nothing tells which binding a use sees, so `Gs=42` next to an inner
+    // `let Gs="wrong"` must not publish "prefix wrong".
+    expect(described('Gs=42;function f(){let Gs="wrong"}', '"prefix "+Gs')).toBeUndefined();
+    expect(described('st=new WeakMap;st="project";', '"a "+st')).toBeUndefined();
+  });
+
+  it('folds a chain of constants in any order, with no depth limit', () => {
+    const chain = Array.from({ length: 12 }, (_, i) => `a${i + 1}=a${i};`).join('');
+    const src =
+      `a0="deep";${chain}` +
+      'Q=v.object({apiKeyHelper:v.string().describe("x "+a12),model:v.string().describe("y "+a3)})';
+    const by = new Map(extractSettingsKeys(src).map((k) => [k.path, k.description]));
+    expect(by.get('apiKeyHelper')).toBe('x deep');
+    expect(by.get('model')).toBe('y deep');
+  });
+
+  it.each([
+    ['two different string bindings', 'Gs="one";Gs="two";', '"a "+Gs'],
+    ['no binding', '', '"a "+Gs'],
+    ['a binding cycle', 'Ga=Gb;Gb=Ga;', '"a "+Ga'],
+    ['a non-string part', '', '"a "+(1+1)'],
+    ['a non-string literal', '', '"a "+1'],
+    ['a non-string template part', '', '`a ${1}`'],
+  ])('leaves a joined description out on %s', (_, prelude, describe) => {
+    expect(described(prelude, describe)).toBeUndefined();
+  });
+
+  it.each([
+    ['a describe call with two arguments', '', '"a","b"'],
+    ['more nested parens than the search tries', '', `"a"+${'('.repeat(70)}"b"${')'.repeat(70)}`],
+    ['a binding whose value never parses', '', '"a "+Gs'],
+  ])('leaves a description out on %s', (_, prelude, describe) => {
+    const tail = _ === 'a binding whose value never parses' ? ';Gs=' : '';
+    const src = `${prelude}Q=v.object({apiKeyHelper:v.string().describe(${describe})})${tail}`;
+    expect(extractSettingsKeys(src)[0]?.description).toBeUndefined();
+  });
+
+  it('gives up on a name bound more often than it weighs', () => {
+    const prelude = Array.from({ length: 257 }, () => 'Gs="same";').join('');
+    expect(described(prelude, '"a "+Gs')).toBeUndefined();
+    expect(described('Gs="same";Gs="same";', '"a "+Gs')).toBe('a same');
+  });
+
+  it('does not follow an import to fold a description', () => {
+    // A chunk is matched to an import only by the names it exports, which is too
+    // weak to vouch for the text a description publishes.
+    const strings = 'var po="When managed";export{po as P}';
+    const settings =
+      'import{P as q}from"/$bunfs/root/strings.js";' +
+      'Q=v.object({apiKeyHelper:v.string().describe(q+", ignored.")})';
+    expect(extractSettingsKeys([strings, settings])[0]?.description).toBeUndefined();
+  });
+
+  it('reads a joined description holding a paren in a string', () => {
+    expect(described('', '"Use (a) or "+"(b)."')).toBe('Use (a) or (b).');
+  });
+
+  it('unescapes a joined description the same way as a single literal', () => {
+    // Escapes other than quotes and backslashes stay as written, as they always have.
+    expect(described('', String.raw`"A — \"b\" "+'c'`)).toBe(String.raw`A — "b" c`);
+    expect(described('', String.raw`"A — \"b\" c"`)).toBe(String.raw`A — "b" c`);
   });
 
   it('unescapes quotes inside a description', () => {

@@ -723,13 +723,128 @@ function scanLevel(
 }
 
 /** The schema's own description for a value, if it declares one. */
-function describeOf(value: string): string | undefined {
+function describeOf(value: string, resolve: StringResolver): string | undefined {
   const m = /\.describe\((["'`])((?:\\.|(?!\1).)*)\1\)/.exec(value);
   const raw = m?.[2];
-  // A template literal interpolates a per-build minified variable; its text is
-  // garbage across releases, so contribute nothing rather than churn.
-  if (raw === undefined || (m?.[1] === '`' && raw.includes('${'))) return undefined;
-  return detach(raw.replace(/\\(["'`\\])/g, '$1'));
+  if (raw !== undefined && !(m?.[1] === '`' && raw.includes('${'))) return detach(unescapeRaw(raw));
+  // Not one plain literal: a joined description (`"…"+"…"`, `"…"+Gs`) or a
+  // template that interpolates constants (`${po}, true from ${st}…`). Fold it
+  // to the string it evaluates to. The raw `${…}` text would churn with every
+  // build's minified names, so a description that does not fold to a string is
+  // left out, as before.
+  const at = m ? m.index : value.indexOf(DESCRIBE_CALL);
+  if (at === -1) return undefined;
+  const arg = callArgument(value, at + DESCRIBE_CALL.length);
+  const text = arg && foldString(arg, resolve);
+  return text === undefined ? undefined : detach(text);
+}
+
+const DESCRIBE_CALL = '.describe(';
+
+/** Resolves a name to the string constant it is bound to, or `undefined`. */
+type StringResolver = (name: string) => string | undefined;
+
+/** A string literal's raw text, unescaped the way every description always has been. */
+function unescapeRaw(raw: string): string {
+  return raw.replace(/\\(["'`\\])/g, '$1');
+}
+
+/**
+ * The argument of the call whose `(` ends just before `start`: the shortest
+ * text up to a `)` that parses as one expression. A shorter candidate always
+ * ends inside a string, a template or an inner call, and does not parse.
+ */
+function callArgument(text: string, start: number): Expression | undefined {
+  for (
+    let close = text.indexOf(')', start), tries = 0;
+    close !== -1 && tries < 64;
+    close = text.indexOf(')', close + 1), tries++
+  ) {
+    const expression = parseExpression(text.slice(start, close));
+    if (expression) return expression;
+  }
+  return undefined;
+}
+
+/** `text` parsed as exactly one expression, or `undefined`. */
+function parseExpression(text: string): Expression | undefined {
+  const parsed = parseSync('expression.js', `(${text}\n)`, { sourceType: 'script' });
+  const statement = parsed.program.body[0];
+  if (parsed.errors.length > 0 || parsed.program.body.length !== 1) return undefined;
+  const wrapped = (statement as ExpressionStatement).expression as ParenthesizedExpression;
+  const inner = wrapped.expression;
+  return inner.type === 'SequenceExpression' ? undefined : inner;
+}
+
+/** The string an expression of literals, `+` and constant names evaluates to. */
+function foldString(node: Expression, resolve: StringResolver): string | undefined {
+  if (node.type === 'Literal')
+    return typeof node.value === 'string'
+      ? unescapeRaw((node.raw as string).slice(1, -1))
+      : undefined;
+  if (node.type === 'TemplateLiteral') {
+    // A template always has one more text part than it has expressions.
+    const quasis = node.quasis as { value: { raw: string } }[];
+    let out = unescapeRaw((quasis[0] as { value: { raw: string } }).value.raw);
+    for (const [i, expression] of node.expressions.entries()) {
+      const part = foldString(expression as Expression, resolve);
+      if (part === undefined) return undefined;
+      out += part + unescapeRaw((quasis[i + 1] as { value: { raw: string } }).value.raw);
+    }
+    return out;
+  }
+  if (node.type === 'BinaryExpression' && node.operator === '+') {
+    const left = foldString(node.left as Expression, resolve);
+    const right = left === undefined ? undefined : foldString(node.right, resolve);
+    return left === undefined || right === undefined ? undefined : left + right;
+  }
+  if (node.type === 'ParenthesizedExpression') return foldString(node.expression, resolve);
+  if (node.type === 'Identifier') return resolve(node.name);
+  return undefined;
+}
+
+/**
+ * The string constant `name` is bound to in `src`, folded, or `undefined`.
+ *
+ * Minified names are reused across scopes, and nothing here tells which
+ * binding a use sees. So this takes every `name=` binding in the chunk and
+ * answers only when all of them fold to the same text. One binding that does
+ * not fold (`Gs=42`, a builder, a `WeakMap`) or a second text means the name
+ * is not known, and the description is left out rather than taken from a
+ * binding the use may never see.
+ */
+function stringConstant(src: string, name: string, resolve: StringResolver): string | undefined {
+  const binding = new RegExp(`(?<![\\w$.])${escapeRegExp(name)}\\s*=(?![=>])\\s*`, 'g');
+  const texts = new Set<string>();
+  let seen = 0;
+  for (const m of src.matchAll(binding)) {
+    if (++seen > MAX_CONSTANT_BINDINGS) return undefined;
+    const start = m.index + m[0].length;
+    const value = constantValue(src, start);
+    const text = value && foldString(value, resolve);
+    if (text === undefined) return undefined;
+    texts.add(text);
+    if (texts.size > 1) return undefined;
+  }
+  return texts.size === 1 ? [...texts][0] : undefined;
+}
+
+/** How many bindings of one name `stringConstant` weighs before giving up. */
+const MAX_CONSTANT_BINDINGS = 256;
+
+/**
+ * The expression a binding's right side starts at `start`: the shortest text
+ * up to a `,`, `;`, `)`, `}` or newline that parses as one expression.
+ */
+function constantValue(src: string, start: number): Expression | undefined {
+  const window = src.slice(start, start + 8192);
+  for (let i = 0; i < window.length; i++) {
+    const c = window[i];
+    if (c !== ',' && c !== ';' && c !== ')' && c !== '}' && c !== '\n') continue;
+    const expression = parseExpression(window.slice(0, i));
+    if (expression) return expression;
+  }
+  return undefined;
 }
 
 /** Start of the object literal a value opens, or -1 if the value isn't one. */
@@ -778,13 +893,14 @@ function describeKey(
   src: string,
   value: string,
   valueStart: number,
-  valueEnd: number
+  valueEnd: number,
+  resolve: StringResolver
 ): string | undefined {
   const bodyStart = objectBodyStart(value, valueStart);
-  if (bodyStart === -1) return describeOf(value);
+  if (bodyStart === -1) return describeOf(value, resolve);
   const end = objectEnd(src, bodyStart);
   /* v8 ignore next -- the `end === -1` arm is an invariant guard: walk refuses a value that is not one expression, so an object it opens always closes */
-  return end === -1 || end >= valueEnd ? undefined : describeOf(src.slice(end, valueEnd));
+  return end === -1 || end >= valueEnd ? undefined : describeOf(src.slice(end, valueEnd), resolve);
 }
 
 /** Where a union member's keys come from. */
@@ -1147,6 +1263,28 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
 
   const keys: SettingsKey[] = [];
   const alias = anchorMatch[1];
+  // String constants a description names, resolved in the chunk that binds
+  // them. An imported name is not followed: a chunk is matched to an import
+  // only by the names it exports, which is too weak to vouch for text, and no
+  // release needs it. Memoized per chunk and name. The placeholder `null` stops
+  // a cycle, and no result depends on the path that reached it.
+  const stringCache = new Map<string, string | null>();
+  const resolvers = new Map<Scope, StringResolver>();
+  const strings = (scope: Scope): StringResolver => {
+    const known = resolvers.get(scope);
+    if (known) return known;
+    const resolve: StringResolver = (name) => {
+      const key = `${scope.index}\0${name}`;
+      const cached = stringCache.get(key);
+      if (cached !== undefined) return cached ?? undefined;
+      stringCache.set(key, null);
+      const text = scope.imports.has(name) ? undefined : stringConstant(scope.src, name, resolve);
+      stringCache.set(key, text ?? null);
+      return text;
+    };
+    resolvers.set(scope, resolve);
+    return resolve;
+  };
   const walk = (
     scope: Scope,
     start: number,
@@ -1176,10 +1314,16 @@ export function extractSettingsKeys(source: string | readonly string[]): Setting
         // the same rule `describeKey` applies to an object.
         description:
           tail !== undefined
-            ? describeOf(src.slice(tail, valueEnd))
+            ? describeOf(src.slice(tail, valueEnd), strings(scope))
             : union
-              ? describeOf(src.slice(union.end, valueEnd))
-              : describeKey(src, src.slice(valueStart, valueEnd), valueStart, valueEnd),
+              ? describeOf(src.slice(union.end, valueEnd), strings(scope))
+              : describeKey(
+                  src,
+                  src.slice(valueStart, valueEnd),
+                  valueStart,
+                  valueEnd,
+                  strings(scope)
+                ),
         viaFactory,
       });
       const value = src.slice(childStart, childEnd);
