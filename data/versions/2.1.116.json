@@ -3362,7 +3362,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Teams/Enterprise allowlist of channel plugins. When set, replaces the default Anthropic allowlist \\u2014 admins decide which plugins may push inbound messages. Undefined falls back to the default. Requires channelsEnabled: true.",
+      "description": "Teams/Enterprise allowlist of channel plugins. When set, replaces the default Anthropic allowlist — admins decide which plugins may push inbound messages. Undefined falls back to the default. Requires channelsEnabled: true.",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -4413,7 +4413,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "macOS only: Allow access to com.apple.trustd.agent in the sandbox. Needed for Go-based CLI tools (gh, gcloud, terraform, etc.) to verify TLS certificates when using httpProxyPort with a MITM proxy and custom CA. **Reduces security** \\u2014 opens a potential data exfiltration vector through the trustd service. Default: false",
+      "description": "macOS only: Allow access to com.apple.trustd.agent in the sandbox. Needed for Go-based CLI tools (gh, gcloud, terraform, etc.) to verify TLS certificates when using httpProxyPort with a MITM proxy and custom CA. **Reduces security** — opens a potential data exfiltration vector through the trustd service. Default: false",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -4989,7 +4989,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these exact sources can be added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem. Note: this is a policy gate only \\u2014 it does NOT register marketplaces. To pre-register allowed marketplaces for users, also set extraKnownMarketplaces.",
+      "description": "Enterprise strict list of allowed marketplace sources. When set in managed settings, ONLY these exact sources can be added as marketplaces. The check happens BEFORE downloading, so blocked sources never touch the filesystem. Note: this is a policy gate only — it does NOT register marketplaces. To pre-register allowed marketplaces for users, also set extraKnownMarketplaces.",
       "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -6943,6 +6943,19 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_BS_AS_CTRL_BACKSPACE",
+      "type": "env_var",
+      "first_seen": "2.1.113",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `0` to make Claude Code read the `0x08` byte, also written `^H`, as plain Backspace, or `1` to read it as Ctrl+Backspace. Either value replaces the platform default. By default, Claude Code reads it as Ctrl+Backspace on Windows, except when `TERM_PROGRAM` is `mintty` or `TERM` is `cygwin`, and as plain Backspace on macOS and Linux. Set `0` in a Windows terminal where Backspace deletes a whole word",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_BUBBLEWRAP",
       "type": "env_var",
       "first_seen": "2.0.52",
@@ -7885,6 +7898,30 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_HTTPS_PROXY",
+      "type": "env_var",
+      "first_seen": "2.1.116",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_HTTP_PROXY",
+      "type": "env_var",
+      "first_seen": "2.1.116",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_IDE_HOST_OVERRIDE",
       "type": "env_var",
       "first_seen": "1.0.4",
@@ -8005,7 +8042,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code defaults to 32000 for model IDs it doesn't recognize, such as gateway-specific names, and lowers values above a model's cap to the cap. Increasing this value reduces the effective context window available before auto-compaction triggers",
+      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code lowers a value above a model's cap to the cap. For a model ID Claude Code can't resolve to a model it knows, the default is 32000 and the cap is 128000. Increasing this value reduces the effective context window available before auto-compaction triggers",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -9800,7 +9837,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable prompt caching for Opus models",
+      "description": "Set to `1` to disable prompt caching for the default Opus model",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -9813,7 +9850,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable prompt caching for Sonnet models",
+      "description": "Set to `1` to disable prompt caching for the default Sonnet model",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"

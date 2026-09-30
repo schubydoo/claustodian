@@ -3465,8 +3465,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Probability (0–1) that the session quality survey appears when eligible. 0.05 is a reasonable starting point.",
-      "description_source": "binary",
+      "description": "Set the probability that the session quality survey appears when a session is eligible for it. Set `0` to keep the survey from appearing.",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -4442,8 +4442,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "When set in managed settings, blocks non-plugin customization sources for the listed surfaces. Array form locks specific surfaces (e.g. [\"skills\", \"hooks\"]); `true` locks all four; `false` is an explicit no-op. Blocked: ~/.claude/{surface}/, .claude/{surface}/ (project), settings.json hooks, .mcp.json. NOT blocked: managed (policySettings) sources, plugin-provided customizations. Composes with strictKnownMarketplaces for end-to-end admin control — plugins gated by marketplace allowlist, everything else blocked here.",
-      "description_source": "binary",
+      "description": "Block skills, agents, hooks, and MCP servers from user and project sources, so they can come only from plugins or managed settings. Combine it with `strictKnownMarketplaces` to control the full customization supply chain: the marketplace allowlist controls which plugins users can install.",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -4494,8 +4494,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Directories to include when creating worktrees, via git sparse-checkout (cone mode). Dramatically faster in large monorepos — only the listed paths are written to disk.",
-      "description_source": "binary",
+      "description": "Check out only the listed directories in each worktree through git sparse-checkout. Claude Code writes only those directories plus root-level files to disk, which is faster in large monorepos; see Check out only the directories you need.",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -6813,7 +6813,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code defaults to 32000 for model IDs it doesn't recognize, such as gateway-specific names, and lowers values above a model's cap to the cap. Increasing this value reduces the effective context window available before auto-compaction triggers",
+      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code lowers a value above a model's cap to the cap. For a model ID Claude Code can't resolve to a model it knows, the default is 32000 and the cap is 128000. Increasing this value reduces the effective context window available before auto-compaction triggers",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -8207,7 +8207,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable prompt caching for Opus models",
+      "description": "Set to `1` to disable prompt caching for the default Opus model",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -8220,7 +8220,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable prompt caching for Sonnet models",
+      "description": "Set to `1` to disable prompt caching for the default Sonnet model",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
