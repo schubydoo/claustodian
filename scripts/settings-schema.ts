@@ -355,10 +355,13 @@ function lexicalNames(statements: unknown): string[] {
   return out;
 }
 
-/** The names `var` declares anywhere under `node`, not crossing into nested functions. */
+/**
+ * The names `var` declares anywhere under `node`, not crossing into a nested
+ * function or class static block, each of which is its own `var` scope.
+ */
 function varNames(node: AnyNode, out: string[] = []): string[] {
   for (const child of childNodes(node)) {
-    if (FUNCTION_NODES.has(child.type)) continue;
+    if (FUNCTION_NODES.has(child.type) || child.type === 'StaticBlock') continue;
     if (child.type === 'VariableDeclaration' && child.kind === 'var')
       for (const declarator of child.declarations as AnyNode[]) bindingNames(declarator.id, out);
     varNames(child, out);
@@ -368,8 +371,10 @@ function varNames(node: AnyNode, out: string[] = []): string[] {
 
 /**
  * Calls `write` for every write under `node` to a name `shadow` does not hide.
- * A nested function's parameters and declarations, a block's `let` and
- * `const`, a loop's own `let` and a catch parameter all hide the outer name, so
+ * A nested function's name, parameters and declarations, a class expression's
+ * name, a class static block's declarations, a block's or a `switch` body's
+ * `let`, `const`, class and function declarations, a loop's own `let` and a
+ * catch parameter all hide the outer name, so
  * `(i)=>{i=…}` and `for(let i=0;;i++)` do not write to an outer `i`. A `var`
  * redeclared in a nested block of the same function does, since it is the same
  * binding. `top` holds the declarations being bound, which are not writes.
@@ -382,12 +387,24 @@ function eachWrite(
 ): void {
   const hidden: string[] = [];
   if (FUNCTION_NODES.has(node.type)) {
+    // A function expression's own name is bound inside it, not outside.
+    if (node.type === 'FunctionExpression') bindingNames(node.id, hidden);
     for (const param of node.params as unknown[]) bindingNames(param, hidden);
     const body = node.body as AnyNode;
     varNames(body, hidden);
     hidden.push(...lexicalNames(body.body));
+  } else if (node.type === 'ClassExpression') {
+    bindingNames(node.id, hidden);
+  } else if (node.type === 'StaticBlock') {
+    varNames(node, hidden);
+    hidden.push(...lexicalNames(node.body));
   } else if (node.type === 'BlockStatement') {
     hidden.push(...lexicalNames(node.body));
+  } else if (node.type === 'SwitchStatement') {
+    // The cases share one block scope.
+    hidden.push(
+      ...lexicalNames((node.cases as AnyNode[]).flatMap((c) => c.consequent as unknown[]))
+    );
   } else if (node.type === 'CatchClause') {
     bindingNames(node.param, hidden);
   } else if (/^For(?:In|Of)?Statement$/.test(node.type)) {

@@ -714,6 +714,10 @@ describe('extractSettingsKeys — how a union member local is bound', () => {
     ['by a destructuring assignment', 'let i=u({commit:o()});[i]=[u({x:o()})];'],
     ['by an update', 'let i=u({commit:o()});i++;'],
     ['by a var in a nested block', 'var i=u({commit:o()});{var i=u({x:o()})}'],
+    [
+      'in a switch case without a declaration',
+      'let i=u({commit:o()});switch(e){case 1:i=u({x:o()})}',
+    ],
     ['through a hole in an array pattern', 'let i=u({commit:o()});[,i]=[0,u({x:o()})];'],
     ['by an object rest', 'let i=u({commit:o()});({...i}=e);'],
     ['by a default in a pattern', 'let i=u({commit:o()});[i=u({x:o()})]=[];'],
@@ -741,6 +745,10 @@ describe('extractSettingsKeys — how a union member local is bound', () => {
     ],
     ['a for-in let', 'let i=u({commit:o()});for(let i in e)i=o();'],
     ['a loop with no head', 'let i=u({commit:o()});for(;;)break;'],
+    ['a let in a switch case', 'let i=u({commit:o()});switch(e){case 1:let i=o();i=H()}'],
+    ['a named function expression', 'let i=u({commit:o()}),r=function i(){i=o()};'],
+    ['a named class expression', 'let i=u({commit:o()}),C=class i{m(){i=o()}};'],
+    ['a class static block var', 'let i=u({commit:o()});class K{static{var i=o();i=H()}}'],
   ])('does not count %s as a write to the member', (_, body) => {
     expect(extractSettingsKeys(root(body)).map((k) => k.path)).toContain('attribution.commit');
   });
