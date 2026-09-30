@@ -1695,8 +1695,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Run the Linux sandbox inside an unprivileged Docker container, where bubblewrap can't mount a fresh `/proc`. Instead the inner sandbox bind-mounts the container's existing `/proc`, which exposes process information that a fresh mount would hide. This reduces security; use it only when the outer container already provides the isolation you need.",
-      "description_source": "docs",
+      "description": "Enable weaker sandbox mode for unprivileged docker environments where --proc mounting fails. This significantly reduces the strength of the sandbox and should only be used when this risk is acceptable.Default: false (secure).",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -1708,8 +1708,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn on sandboxing for Bash commands. When you pick a mode in the `/sandbox` panel, Claude Code writes this key to `.claude/settings.local.json` for the current project; set it in `~/.claude/settings.json` to sandbox every project.",
-      "description_source": "docs",
+      "description": "Enable sandboxed bash",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -1721,8 +1721,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Name commands that Claude Code runs outside the sandbox, such as tools that don't work under it. Each entry uses the same syntax as the content of a `Bash(...)` permission rule: an exact command, a prefix such as `docker *`, or a wildcard pattern.",
-      "description_source": "docs",
+      "description": "Commands that should never run in the sandbox (e.g., [\"git\", \"docker\"])",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },

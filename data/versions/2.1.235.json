@@ -3548,6 +3548,19 @@
       "description_source": "binary"
     },
     {
+      "symbol": "/artifact-diagramming",
+      "type": "command",
+      "first_seen": "2.1.221",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "**Skill.** Load diagramming guidance for Claude to follow in artifacts: when a diagram helps, what to draw, and how to write inline SVG that stays legible in light and dark themes. Requires Claude Code v2.1.221 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "category": "command"
+    },
+    {
       "symbol": "/artifacts",
       "type": "command",
       "first_seen": "2.1.206",
@@ -3765,8 +3778,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Build and debug apps that use the Claude API",
-      "description_source": "binary",
+      "description": "**Skill.** Load Claude API and Managed Agents reference material for your project's language. Also activates automatically when your code imports `anthropic` or `@anthropic-ai/sdk`. For what each subcommand does and the version it requires, see Work on Claude API projects",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3775,13 +3788,13 @@
       "type": "command",
       "first_seen": "2.1.7",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Let Claude browse and interact with pages in your Chrome",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "**Skill.** Have Claude carry out a task in your browser, such as testing a page, filling a form, or reading console logs, through Claude in Chrome. Available when Chrome integration is enabled for the session, for example with `claude --chrome`, or when Claude Code can offer to install the extension",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "category": "command"
     },
     {
       "symbol": "/clear",
@@ -5540,9 +5553,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Alias for extraKnownMarketplaces: this key is read exactly as if it were spelled extraKnownMarketplaces. Do not set both in one file \\u2014 if both appear, this key is ignored with a warning. Claude Code may rewrite this key as extraKnownMarketplaces when it updates the file. Clients older than this alias ignore it, so prefer extraKnownMarketplaces while older Claude Code versions still share the same settings.",
       "source_url": null,
-      "category": "settings"
+      "category": "settings",
+      "description_source": "binary"
     },
     {
       "symbol": "advisorModel",
@@ -5669,9 +5683,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Alias for strictKnownMarketplaces (managed settings only): this key is read exactly as if it were spelled strictKnownMarketplaces. Do not set both in one file \\u2014 if both appear, this key is ignored with a warning. Clients older than this alias ignore it, so keep using strictKnownMarketplaces when the allowlist must also bind older Claude Code versions.",
       "source_url": null,
-      "category": "settings"
+      "category": "settings",
+      "description_source": "binary"
     },
     {
       "symbol": "allowedMcpServers",
@@ -6414,8 +6429,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Block the `command` plugin source, which installs a plugin by running a marketplace-declared command on the user's machine. When you set it to `true`, Claude Code never runs the command, doesn't install or update command-sourced plugins, and stops loading the ones already installed. Set it to `false` to allow them explicitly. Whenever it blocks command sources, whether you set it to `true` or leave it unset under `allowManagedHooksOnly`, it also blocks marketplace `headersHelper` commands, except for a marketplace that managed settings themselves declare.",
-      "description_source": "docs",
+      "description": "Controls the `command` plugin source, whose plugin directory is produced by running a marketplace-declared command on this machine. true: command-sourced plugins are never installed, updated, or re-resolved (the command never runs). false: explicitly allowed. Unset: follows allowManagedHooksOnly \\u2014 an org that restricts hook execution to managed settings gets command sources disabled too. Only honored from managed settings.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7012,9 +7027,10 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "@internal Controls the ProposeGoal tool (model-proposed session goals). 'auto' (the default when absent) lets the model choose per proposal whether to ask for approval via its ask_user parameter; 'alwaysAsk' routes every model-proposed goal through the approval dialog; 'disabled' turns the tool off. A typed /goal is unaffected. Consent-affecting, so it is read from trusted sources only (user/policy/flag) \\u2014 workspace-resident project and local settings are ignored.",
       "source_url": null,
-      "category": "settings"
+      "category": "settings-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "otelHeadersHelper",
@@ -7050,8 +7066,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose whether Claude Code applies managed settings supplied by an embedding host process, such as the Agent SDK or an IDE extension, when an admin-deployed managed tier is also present. With `\"first-wins\"`, Claude Code drops the host-supplied settings; with `\"merge\"`, it applies them under the admin tier through a restrictive-only filter. Set `\"merge\"` when a host needs to pass its own restrictions to the sessions it launches, for example Claude Desktop delivering a gateway's egress allowlist.",
-      "description_source": "docs",
+      "description": "Controls whether the SDK parent tier (Options.managedSettings / --managed-settings) layers under this admin tier. \"first-wins\" (default): parent is dropped \\u2014 admin tiers are the only policy source. \"merge\": parent's restrictive-only-filtered settings union under the admin winner. Has no effect when no admin tier exists (parent applies as the sole policy tier, still filtered restrictive-only).",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7557,8 +7573,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Let Claude retry a command outside the sandbox with the `dangerouslyDisableSandbox` parameter after the sandbox blocks it. Set it to `false` so Claude Code ignores that parameter completely and every command Claude runs must be sandboxed or appear in `excludedCommands`. The `/sandbox` **Overrides** tab shows that state as **Strict sandbox mode**. Use `false` in managed settings for policies that require strict sandboxing.",
-      "description_source": "docs",
+      "description": "Allow commands to run outside the sandbox via the dangerouslyDisableSandbox parameter. When false, the dangerouslyDisableSandbox parameter is completely ignored and all commands must run sandboxed. Default: true.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7674,8 +7690,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Run the Linux sandbox inside an unprivileged Docker container, where bubblewrap can't mount a fresh `/proc`. Instead the inner sandbox bind-mounts the container's existing `/proc`, which exposes process information that a fresh mount would hide. This reduces security; use it only when the outer container already provides the isolation you need.",
-      "description_source": "docs",
+      "description": "Enable weaker sandbox mode for unprivileged docker environments where --proc mounting fails. This significantly reduces the strength of the sandbox and should only be used when this risk is acceptable.Default: false (secure).",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7687,8 +7703,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Let sandboxed commands on macOS reach the system TLS trust service, `com.apple.trustd.agent`. Go-based tools such as `gh`, `gcloud`, and `terraform` need it to verify TLS certificates when you use `network.httpProxyPort` with a MITM proxy and a custom CA. This reduces security by opening a potential data exfiltration path through the trust service.",
-      "description_source": "docs",
+      "description": "macOS only: Allow access to com.apple.trustd.agent in the sandbox. Needed for Go-based CLI tools (gh, gcloud, terraform, etc.) to verify TLS certificates when using httpProxyPort with a MITM proxy and custom CA. **Reduces security** \\u2014 opens a potential data exfiltration vector through the trustd service. Default: false",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7700,8 +7716,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn on sandboxing for Bash commands. When you pick a mode in the `/sandbox` panel, Claude Code writes this key to `.claude/settings.local.json` for the current project; set it in `~/.claude/settings.json` to sandbox every project.",
-      "description_source": "docs",
+      "description": "Enable sandboxed bash",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7713,8 +7729,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Name commands that Claude Code runs outside the sandbox, such as tools that don't work under it. Each entry uses the same syntax as the content of a `Bash(...)` permission rule: an exact command, a prefix such as `docker *`, or a wildcard pattern.",
-      "description_source": "docs",
+      "description": "Commands that should never run in the sandbox (e.g., [\"git\", \"docker\"])",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7726,8 +7742,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Make Claude Code exit with an error at startup when `sandbox.enabled` is `true` but the sandbox can't start, because a dependency is missing or the platform is unsupported. Without it, Claude Code shows a warning and runs commands unsandboxed. Use it in managed settings when your organization requires sandboxing as a hard gate.",
-      "description_source": "docs",
+      "description": "Exit with an error at startup if sandbox.enabled is true but the sandbox cannot start (missing dependencies or unsupported platform). When false (default), a warning is shown and commands run unsandboxed. Intended for managed-settings deployments that require sandboxing as a hard gate.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7778,8 +7794,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Add paths where sandboxed commands can write, beyond the working directory, the per-user temp directory, and the directories you've added with `--add-dir`, `/add-dir`, or `permissions.additionalDirectories`. Use it when a subprocess such as `kubectl` or a build tool needs to write outside the project.",
-      "description_source": "docs",
+      "description": "Additional paths to allow writing within the sandbox. Merged with paths from Edit(...) allow permission rules.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7856,8 +7872,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Let sandboxed commands connect to every Unix socket. On Linux and WSL2, the sandbox's seccomp filter blocks `socket(AF_UNIX, ...)` calls, so this is the only way to permit Unix sockets there. When the filter is missing, which `/sandbox` reports on its Dependencies tab, the sandbox doesn't block Unix-socket calls. See Set up Linux and WSL2 for where the filter comes from.",
-      "description_source": "docs",
+      "description": "If true, allow all Unix sockets (disables blocking on both platforms).",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7882,8 +7898,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List additional XPC and Mach service names the macOS sandbox may look up. Tools that communicate over XPC, such as the iOS Simulator or Playwright, need their services listed here.",
-      "description_source": "docs",
+      "description": "macOS only: Additional XPC/Mach service names to allow looking up. Supports trailing-wildcard prefix matching (e.g., \"com.apple.coresimulator.*\"). Needed for tools that communicate via XPC such as the iOS Simulator or Playwright.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7908,8 +7924,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List the Unix socket paths sandboxed commands can connect to on macOS. Claude Code ignores this list on Linux and WSL2, where the seccomp filter can't inspect socket paths; use `allowAllUnixSockets` there instead.",
-      "description_source": "docs",
+      "description": "macOS only: Unix socket paths to allow. Ignored on Linux (seccomp cannot filter by path).",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7973,8 +7989,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Deny sandboxed commands access to hosts outside the allowlist instead of prompting for approval. The allowlist is `allowedDomains` plus domains from `WebFetch(domain:...)` allow rules, or only the managed settings entries when `allowManagedDomainsOnly` is set. Requires Claude Code v2.1.219 or later.",
-      "description_source": "docs",
+      "description": "When true, the sandbox runtime deterministically denies hosts not in allowedDomains instead of prompting. Enforced for sandboxed commands only \\u2014 in-process tools such as WebFetch are not gated by this setting. Only honored from user, managed/policy, or CLI (--settings) settings \\u2014 project settings (.claude/settings.json and .claude/settings.local.json) are ignored.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -8636,7 +8652,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "@internal Emit a <total_tokens>N tokens left</total_tokens> block in the system prompt and after each tool result. 'infinite' uses the literal value Infinite, 'fixed' uses 5000000, 'countdown' uses the live remaining context-window tokens, 'padded-countdown' counts down from totalTokensReminderBudget by per-agent cumulative context spend (monotonic across compaction and /clear). Defaults to off. Env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER overrides.",
+      "description": "@internal Emit a <total_tokens>N tokens left</total_tokens> block in the system prompt, after each tool result, and (when totalTokensReminderAfterUserTurn is on) after each regular user prompt. 'infinite' uses the literal value Infinite, 'fixed' uses 5000000, 'countdown' uses the live remaining context-window tokens, 'padded-countdown' counts down from totalTokensReminderBudget (re-anchoring to the full budget on each regular user prompt when totalTokensReminderAfterUserTurn is on \\u2014 task-budget semantics). Defaults to padded-countdown. Env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER overrides.",
       "source_url": null,
       "category": "settings-internal",
       "description_source": "binary"
@@ -8688,8 +8704,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Start sessions with ultracode on. With it on, Claude plans a workflow for each substantive task instead of waiting for you to ask. Claude plans workflows only when dynamic workflows are enabled for you and your model supports `xhigh` effort. The key doesn't change the session's effort level: ultracode runs at whichever level the session uses. Claude Code reads this key but never writes it: `/effort ultracode` turns ultracode on for the current session only.",
-      "description_source": "docs",
+      "description": "Enable ultracode for the session: xhigh effort plus standing dynamic-workflow orchestration. Session-scoped \\u2014 typically provided via --settings or the apply_flag_settings control request; interactive toggles never persist it. Requires workflows to be enabled and an xhigh-capable model.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -10531,7 +10547,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Override the 5-minute body idle timeout that aborts a streaming model response when no bytes arrive. Set to `0` to turn the timeout off, for example when a slow gateway or local model pauses longer than 5 minutes between chunks, or `1` to keep it on for every provider. When unset, the timeout is active on providers other than the direct Anthropic API and Claude Platform on AWS. The stream watchdogs run independently of it and abort a long silent pause even when you set `0` here",
+      "description": "Override the 5-minute body idle timeout that aborts a streaming model response when no bytes arrive. Set to `0` to turn the timeout off, for example when a slow gateway or local model pauses longer than 5 minutes between chunks, or `1` to keep it on for every provider. When unset, the timeout is active on providers other than the direct Anthropic API, Claude Platform on AWS, and Amazon Bedrock with `CLAUDE_ENABLE_BYTE_WATCHDOG_BEDROCK=1` set. The stream watchdogs run independently of it and abort a long silent pause even when you set `0` here",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -11572,7 +11588,7 @@
     {
       "symbol": "CLAUDE_CODE_ALTGR_AS_TEXT",
       "type": "env_var",
-      "first_seen": "2.1.234",
+      "first_seen": "2.1.179",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -11879,7 +11895,7 @@
     {
       "symbol": "CLAUDE_CODE_AUTO_BACKGROUND_TIMEOUT_MS",
       "type": "env_var",
-      "first_seen": "2.1.234",
+      "first_seen": "2.1.198",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -12111,7 +12127,7 @@
     {
       "symbol": "CLAUDE_CODE_BS_AS_CTRL_BACKSPACE",
       "type": "env_var",
-      "first_seen": "2.1.234",
+      "first_seen": "2.1.133",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -14191,7 +14207,7 @@
     {
       "symbol": "CLAUDE_CODE_HTTPS_PROXY",
       "type": "env_var",
-      "first_seen": "2.1.234",
+      "first_seen": "2.1.136",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -14203,7 +14219,7 @@
     {
       "symbol": "CLAUDE_CODE_HTTP_PROXY",
       "type": "env_var",
-      "first_seen": "2.1.234",
+      "first_seen": "2.1.136",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
