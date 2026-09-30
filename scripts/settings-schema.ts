@@ -289,33 +289,128 @@ function blockReturn(body: FunctionBody, path: string): Expression {
   return ret.argument;
 }
 
-/** Calls `visit` on every node under `node`, depth first. */
-function eachNode(
-  node: unknown,
-  visit: (n: { type: string } & Record<string, unknown>) => void
-): void {
-  if (Array.isArray(node)) {
-    for (const child of node) eachNode(child, visit);
-    return;
-  }
-  if (
-    typeof node !== 'object' ||
-    node === null ||
-    typeof (node as { type?: unknown }).type !== 'string'
-  )
-    return;
-  const n = node as { type: string } & Record<string, unknown>;
-  visit(n);
-  /* v8 ignore next -- oxc sets no `parent` links by default; the guard keeps a version that does from recursing forever */
-  for (const key in n) if (key !== 'parent') eachNode(n[key], visit);
+type AnyNode = { type: string } & Record<string, unknown>;
+
+function isNode(value: unknown): value is AnyNode {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { type?: unknown }).type === 'string'
+  );
 }
 
-/** Every name a binding or assignment pattern writes. */
-function patternNames(pattern: unknown, out: string[] = []): string[] {
-  eachNode(pattern, (n) => {
-    if (n.type === 'Identifier') out.push(n.name as string);
-  });
+/** The child nodes of `n`, in source order. */
+function childNodes(n: AnyNode): AnyNode[] {
+  const out: AnyNode[] = [];
+  for (const key in n) {
+    /* v8 ignore next -- oxc sets no `parent` links by default; the guard keeps a version that does from recursing forever */
+    if (key === 'parent') continue;
+    const value = n[key];
+    if (Array.isArray(value)) {
+      for (const child of value) if (isNode(child)) out.push(child);
+    } else if (isNode(value)) {
+      out.push(value);
+    }
+  }
   return out;
+}
+
+/**
+ * The names a binding or assignment target writes, read by its structure. A
+ * property write (`e.i=…`) and an object pattern's keys (`{i:q}`) bind nothing
+ * of their own, so neither counts as a write to a local `i`.
+ */
+function bindingNames(target: unknown, out: string[] = []): string[] {
+  if (!isNode(target)) return out;
+  if (target.type === 'Identifier') out.push(target.name as string);
+  else if (target.type === 'ArrayPattern')
+    for (const element of target.elements as unknown[]) bindingNames(element, out);
+  else if (target.type === 'ObjectPattern')
+    for (const property of target.properties as AnyNode[])
+      bindingNames(property.type === 'RestElement' ? property.argument : property.value, out);
+  else if (target.type === 'AssignmentPattern') bindingNames(target.left, out);
+  else if (target.type === 'RestElement') bindingNames(target.argument, out);
+  return out;
+}
+
+const FUNCTION_NODES = new Set([
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'ArrowFunctionExpression',
+]);
+
+/** The names a statement list's own `let`, `const`, class and function declarations bind. */
+function lexicalNames(statements: unknown): string[] {
+  const out: string[] = [];
+  // An expression-bodied arrow has no statement list, so it declares nothing.
+  for (const node of (Array.isArray(statements) ? statements : []) as AnyNode[]) {
+    if (node.type === 'VariableDeclaration' && node.kind !== 'var')
+      for (const declarator of node.declarations as AnyNode[]) bindingNames(declarator.id, out);
+    else if (
+      (node.type === 'FunctionDeclaration' || node.type === 'ClassDeclaration') &&
+      isNode(node.id)
+    )
+      out.push(node.id.name as string);
+  }
+  return out;
+}
+
+/** The names `var` declares anywhere under `node`, not crossing into nested functions. */
+function varNames(node: AnyNode, out: string[] = []): string[] {
+  for (const child of childNodes(node)) {
+    if (FUNCTION_NODES.has(child.type)) continue;
+    if (child.type === 'VariableDeclaration' && child.kind === 'var')
+      for (const declarator of child.declarations as AnyNode[]) bindingNames(declarator.id, out);
+    varNames(child, out);
+  }
+  return out;
+}
+
+/**
+ * Calls `write` for every write under `node` to a name `shadow` does not hide.
+ * A nested function's parameters and declarations, a block's `let` and
+ * `const`, a loop's own `let` and a catch parameter all hide the outer name, so
+ * `(i)=>{i=…}` and `for(let i=0;;i++)` do not write to an outer `i`. A `var`
+ * redeclared in a nested block of the same function does, since it is the same
+ * binding. `top` holds the declarations being bound, which are not writes.
+ */
+function eachWrite(
+  node: AnyNode,
+  shadow: ReadonlySet<string>,
+  top: readonly unknown[],
+  write: (name: string) => void
+): void {
+  const hidden: string[] = [];
+  if (FUNCTION_NODES.has(node.type)) {
+    for (const param of node.params as unknown[]) bindingNames(param, hidden);
+    const body = node.body as AnyNode;
+    varNames(body, hidden);
+    hidden.push(...lexicalNames(body.body));
+  } else if (node.type === 'BlockStatement') {
+    hidden.push(...lexicalNames(node.body));
+  } else if (node.type === 'CatchClause') {
+    bindingNames(node.param, hidden);
+  } else if (/^For(?:In|Of)?Statement$/.test(node.type)) {
+    const head = node.type === 'ForStatement' ? node.init : node.left;
+    if (isNode(head) && head.type === 'VariableDeclaration' && head.kind !== 'var')
+      for (const declarator of head.declarations as AnyNode[]) bindingNames(declarator.id, hidden);
+  }
+  const inner = hidden.length > 0 ? new Set([...shadow, ...hidden]) : shadow;
+  const emit = (names: string[]): void => {
+    for (const name of names) if (!inner.has(name)) write(name);
+  };
+  if (node.type === 'AssignmentExpression') emit(bindingNames(node.left));
+  // `for(i of e)` writes `i` on every pass without an assignment expression.
+  else if (
+    (node.type === 'ForInStatement' || node.type === 'ForOfStatement') &&
+    isNode(node.left) &&
+    node.left.type !== 'VariableDeclaration'
+  )
+    emit(bindingNames(node.left));
+  else if (node.type === 'UpdateExpression') emit(bindingNames(node.argument));
+  else if (node.type === 'VariableDeclaration' && node.kind === 'var' && !top.includes(node))
+    for (const declarator of node.declarations as AnyNode[]) emit(bindingNames(declarator.id));
+  for (const child of childNodes(node)) eachWrite(child, inner, top, write);
 }
 
 /**
@@ -335,7 +430,7 @@ function declaredLocals(statements: readonly Statement[], shift: number): Map<st
     if (node.type !== 'VariableDeclaration') continue;
     for (const declarator of node.declarations) {
       if (declarator.id.type !== 'Identifier') {
-        for (const name of patternNames(declarator.id)) out.set(name, 'destructured');
+        for (const name of bindingNames(declarator.id)) out.set(name, 'destructured');
         continue;
       }
       out.set(declarator.id.name, declarator.init ? { node: declarator.init, shift } : 'unknown');
@@ -354,13 +449,8 @@ function declaredLocals(statements: readonly Statement[], shift: number): Map<st
     if (assignment?.operator === '=' && assignment.left.type === 'Identifier')
       topLevel.set(assignment.left.name, assignment.right);
   }
-  eachNode(statements, (n) => {
-    if (n.type === 'AssignmentExpression') for (const name of patternNames(n.left)) count(name);
-    if (n.type === 'UpdateExpression') for (const name of patternNames(n.argument)) count(name);
-    if (n.type === 'VariableDeclaration' && n.kind === 'var' && !statements.includes(n as never))
-      for (const declarator of n.declarations as { id: unknown }[])
-        for (const name of patternNames(declarator.id)) count(name);
-  });
+  for (const node of statements)
+    eachWrite(node as unknown as AnyNode, new Set(), statements, count);
   for (const [name, binding] of out) {
     const n = writes.get(name) ?? 0;
     if (n === 0) continue;

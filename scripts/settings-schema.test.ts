@@ -713,9 +713,36 @@ describe('extractSettingsKeys — how a union member local is bound', () => {
     ['inside a nested function', 'let i=u({commit:o()}),r=()=>{i=u({x:o()})};'],
     ['by a destructuring assignment', 'let i=u({commit:o()});[i]=[u({x:o()})];'],
     ['by an update', 'let i=u({commit:o()});i++;'],
-    ['by a nested var', 'var i=u({commit:o()});e&&function(){var i=u({x:o()})};'],
+    ['by a var in a nested block', 'var i=u({commit:o()});{var i=u({x:o()})}'],
+    ['through a hole in an array pattern', 'let i=u({commit:o()});[,i]=[0,u({x:o()})];'],
+    ['by an object rest', 'let i=u({commit:o()});({...i}=e);'],
+    ['by a default in a pattern', 'let i=u({commit:o()});[i=u({x:o()})]=[];'],
+    ['by an array rest', 'let i=u({commit:o()});[...i]=[];'],
+    ['as a for-of target', 'let i=u({commit:o()});for(i of e);'],
+    ['as a for-in target', 'let i=u({commit:o()});for(i in e);'],
   ])('throws on a member assigned again %s', (_, body) => {
     expect(() => extractSettingsKeys(root(body))).toThrow(/names i, which has been reassigned/);
+  });
+
+  it.each([
+    ['a property write', 'let i=u({commit:o()});e.i=o();'],
+    ['an object pattern key', 'let i=u({commit:o()}),q;({i:q}=e);'],
+    ['a nested function parameter', 'let i=u({commit:o()}),r=(i)=>{i=o()};'],
+    ['a nested function var', 'let i=u({commit:o()});e&&function(){var i=u({x:o()})};'],
+    ['a block let', 'let i=u({commit:o()});{let i=o();i=H()}'],
+    ['a loop counter', 'let i=u({commit:o()});for(let i=0;i<1;i++);'],
+    ['a catch parameter', 'let i=u({commit:o()});try{f()}catch(i){i=o()}'],
+    ['an arrow parameter with an expression body', 'let i=u({commit:o()}),r=(i)=>i=o();'],
+    ['a block function declaration', 'let i=u({commit:o()});{function i(){}i=o()}'],
+    ['a block class declaration', 'let i=u({commit:o()});{class i{}i=o()}'],
+    [
+      'a var in a function nested in a function',
+      'let i=u({commit:o()}),r=()=>{(()=>{var i=o()})()};',
+    ],
+    ['a for-in let', 'let i=u({commit:o()});for(let i in e)i=o();'],
+    ['a loop with no head', 'let i=u({commit:o()});for(;;)break;'],
+  ])('does not count %s as a write to the member', (_, body) => {
+    expect(extractSettingsKeys(root(body)).map((k) => k.path)).toContain('attribution.commit');
   });
 
   it('throws on a binding cycle', () => {
