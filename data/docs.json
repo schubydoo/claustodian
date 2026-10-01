@@ -234,7 +234,7 @@
     {
       "symbol": "--config",
       "type": "cli_flag",
-      "description": "Set a `userConfig` option the plugin's manifest declares. Repeat the flag for each option. Requires Claude Code v2.1.147 or later",
+      "description": "Set a `userConfig` option the plugin's manifest declares. Repeat the flag for each option. Requires Claude Code v2.1.147 or later. A key written `<server>.<key>` sets a setting that a bundled MCP server declares in its own `user_config` instead, for a bundle file shipped inside the plugin. The `<server>.<key>` form requires Claude Code v2.1.285 or later",
       "doc_min_version": "2.1.147",
       "doc_page": "plugins/cli-reference"
     },
@@ -260,6 +260,13 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--data-size",
+      "type": "cli_flag",
+      "description": "Measure each installed plugin's saved data directory, or only the named plugin's, given as `name@marketplace`. Has no effect without `--json`. If the name has no install record, the command prints `--data-size names a plugin that is not installed` and exits `1` instead of printing the list. Requires Claude Code v2.1.285 or later",
+      "doc_min_version": "2.1.285",
+      "doc_page": "plugins/cli-reference"
+    },
+    {
       "symbol": "--debug",
       "type": "cli_flag",
       "description": "Enable debug mode with optional category filtering, such as `--debug='mcp,startup'` or `--debug='!1p'`. The filter binds only in the `=` form; a space-separated filter enables debug mode without filtering",
@@ -279,6 +286,13 @@
       "description": "Manifest description",
       "doc_min_version": null,
       "doc_page": "plugins/cli-reference"
+    },
+    {
+      "symbol": "--desktop",
+      "type": "cli_flag",
+      "description": "Open the Claude Desktop app on the current directory and exit without starting a session in the terminal. Add `--continue`, or `--resume` with a session ID, to open that session in Desktop instead. `--resume` here takes only a session ID, not a name or transcript path. Takes no prompt and no other flags except `--verbose` and the `--debug` flags, since the app starts the session itself. Available on macOS and x64 Windows when you're signed in with a Claude subscription. Requires Claude Code v2.1.285 or later",
+      "doc_min_version": "2.1.285",
+      "doc_page": "cli-reference"
     },
     {
       "symbol": "--disable-slash-commands",
@@ -447,6 +461,7 @@
       "doc_min_version": "2.1.268",
       "doc_page": "plugins/cli-reference",
       "scope_descriptions": {
+        "plugin configure": "Print the result as one JSON object on stdout. Without `--values-stdin`, the object carries the options' `schema` and `choices`, their starting `inputs`, and the `configured` and `unconfigured` option names. With `--values-stdin`, it carries the `saved` option names and, when they could be read back, the `unconfigured` ones",
         "plugin disable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
         "plugin enable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
         "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
@@ -573,7 +588,7 @@
     {
       "symbol": "--permission-mode",
       "type": "cli_flag",
-      "description": "Begin in a specified permission mode. Accepts `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`, or `manual` as an alias for `default`. The `manual` alias selects the permission mode the UI labels Manual and requires Claude Code v2.1.200 or later; `claude --help` lists it in place of `default`, and both values work. Overrides `defaultMode` from settings files. Without this flag or `--dangerously-skip-permissions`, a new session starts in the permission mode described in which permission mode a session starts in. For `-p`, that's `default` when nothing is configured",
+      "description": "Begin in a specified permission mode. Accepts `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`, or `manual` as an alias for `default`. The `manual` alias selects the permission mode the UI labels Manual and requires Claude Code v2.1.200 or later; `claude --help` lists it in place of `default`, and both values work. Overrides `defaultMode` from settings files. Without this flag or `--dangerously-skip-permissions`, a new session starts in the permission mode described in which permission mode a session starts in, which also covers what a `-p` run starts in",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -608,7 +623,7 @@
     {
       "symbol": "--print",
       "type": "cli_flag",
-      "description": "Print response without interactive mode (see Agent SDK documentation for programmatic usage details)",
+      "description": "Print response without interactive mode (see Agent SDK documentation for programmatic usage details). For `--resume` on a background session that is still running, see Resume a session",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -685,7 +700,7 @@
     {
       "symbol": "--resume",
       "type": "cli_flag",
-      "description": "Resume a specific session by ID or name, or show an interactive picker to choose a session. In place of an ID, you can pass the absolute path to a session's `.jsonl` transcript file. The picker and name search include sessions that added this directory with `/add-dir`. When you pass a session ID, Claude Code searches the current project directory and its git worktrees, then every other project on this machine. Before v2.1.223, the ID search covered only the current project directory and its git worktrees. Background sessions appear in the picker marked with `bg`",
+      "description": "Resume a specific session by ID or name, or show an interactive picker to choose a session. In place of an ID, you can pass the absolute path to a session's `.jsonl` transcript file. The picker and name search include sessions that added this directory with `/add-dir`. When you pass a session ID, Claude Code searches the current project directory and its git worktrees, then every other project on this machine. Before v2.1.223, the ID search covered only the current project directory and its git worktrees. Background sessions appear in the picker marked with `bg`. Resuming one that is still running opens that session in this terminal through `claude attach`, and a prompt you pass on the command line goes to it as its next turn. Before v2.1.285, Claude Code refused and printed the `claude attach` command to run instead",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -836,6 +851,13 @@
       "symbol": "--trust-plugin",
       "type": "cli_flag",
       "description": "Skip the first-run trust prompt, for CI. See What a run can access",
+      "doc_min_version": null,
+      "doc_page": "plugins/cli-reference"
+    },
+    {
+      "symbol": "--values-stdin",
+      "type": "cli_flag",
+      "description": "Read option values from stdin as a JSON object of single-line strings and save them. Options you leave out keep their saved values",
       "doc_min_version": null,
       "doc_page": "plugins/cli-reference"
     },
@@ -1436,7 +1458,7 @@
     {
       "symbol": "/resume",
       "type": "command",
-      "description": "Resume a conversation by ID or name, or open the session picker. Background sessions appear in the picker marked with `bg`; one that is still running can't be resumed here, so attach to it from `claude agents` or stop it there first. Alias: `/continue`",
+      "description": "Resume a conversation by ID or name, or open the session picker. Background sessions appear in the picker marked with `bg`. Resuming one that is still running, from the picker or by ID or name, opens that session: your current conversation moves to the background and this terminal attaches to the running one. Press `←` on an empty prompt to return to agent view, which also lists the conversation you left. Before v2.1.285, Claude Code refused and told you to open the session with `claude attach` or stop it first. Alias: `/continue`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1763,6 +1785,13 @@
       "doc_page": "settings-reference"
     },
     {
+      "symbol": "allowedProviders",
+      "type": "config_key",
+      "description": "List the services a machine may reach Claude through, such as the Anthropic API, Amazon Bedrock, or an LLM gateway. A session on a provider that isn't listed is refused at startup, at login, and when it next contacts the API, so switching to an unlisted provider mid-session is refused too. The refusal message names what selected the provider and the steps to continue. Requires Claude Code v2.1.285 or later.",
+      "doc_min_version": "2.1.285",
+      "doc_page": "settings-reference"
+    },
+    {
       "symbol": "allowManagedHooksOnly",
       "type": "config_key",
       "description": "Restrict hook execution to hooks your organization deploys.",
@@ -1794,6 +1823,13 @@
       "symbol": "apiKeyHelper",
       "type": "config_key",
       "description": "Run your own command to produce the credential Claude Code sends with model requests. Claude Code runs the command through the system shell, `/bin/sh` on macOS and Linux and `cmd` on Windows, and sends its output as both the `X-Api-Key` and `Authorization: Bearer` headers. Use it for dynamic or rotating credentials, such as short-lived tokens fetched from a vault.",
+      "doc_min_version": null,
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "appendPlugins",
+      "type": "config_key",
+      "description": "List the managed plugins whose mods run after every mod a user installs, in the listed order. An id listed in both `prependPlugins` and `appendPlugins` is prepended. In managed settings, Claude Code skips an id whose plugin doesn't count as your organization's.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -2683,6 +2719,13 @@
       "doc_page": "settings-reference"
     },
     {
+      "symbol": "prependPlugins",
+      "type": "config_key",
+      "description": "List the managed plugins whose mods run before every mod a user installs, in the listed order. When you set this key in managed settings, name `sec-default@builtin` in the list to keep the built-in guard. In managed settings, Claude Code skips an id whose plugin doesn't count as your organization's. See Install your organization's mods and set the order for those conditions and for how the two ordering keys work together.",
+      "doc_min_version": null,
+      "doc_page": "settings-reference"
+    },
+    {
       "symbol": "processWrapper",
       "type": "config_key",
       "description": "On macOS and Linux, place a corporate launcher command in front of the background processes Claude Code starts. Claude Code runs the launcher with its own command line appended, so the launcher must exec into Claude Code; see Run Claude Code behind a corporate launcher for the launcher contract. Requires Claude Code v2.1.210 or later.",
@@ -3106,7 +3149,7 @@
     {
       "symbol": "spinnerTipsOverride",
       "type": "config_key",
-      "description": "Add your own tips to the spinner tips that Claude Code shows while Claude works, or replace the built-in tips with yours. Claude Code puts your tips in the same rotation as the built-in ones: it picks the tip that has gone unshown the longest, skips tips still in their cooldown, and breaks ties by priority.",
+      "description": "Add your own tips to the spinner tips that Claude Code shows while Claude works, or replace the built-in tips with yours. Claude Code puts your tips in the same rotation as the built-in ones.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -4232,6 +4275,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_MODEL_ACCESS_FALLBACK",
+      "type": "env_var",
+      "description": "Set to `1` to stop Claude Code on Amazon Bedrock and Google Cloud's Agent Platform from switching to an older model when your account loses access to a session's model mid-session; the refused request fails at once instead. A fallback model chain you configure still switches on that refusal, and the startup model checks still fall back at launch. Requires Claude Code v2.1.285 or later",
+      "doc_min_version": "2.1.285",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_MOUSE",
       "type": "env_var",
       "description": "Set to `1` to disable mouse tracking in fullscreen rendering. Keyboard scrolling with `PgUp` and `PgDn` still works. Use this to keep your terminal's native copy-on-select behavior",
@@ -4334,6 +4384,13 @@
       "type": "env_var",
       "description": "Set to `1` to disable virtual scrolling in fullscreen rendering and render every message in the transcript. Use this if scrolling in fullscreen mode shows blank regions where messages should appear",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_WEB_FETCH",
+      "type": "env_var",
+      "description": "Set to `1` to turn off the WebFetch tool. The WebSearch tool stays available. Requires Claude Code v2.1.285 or later",
+      "doc_min_version": "2.1.285",
       "doc_page": "env-vars"
     },
     {
@@ -5055,6 +5112,13 @@
       "type": "env_var",
       "description": "Skip AWS authentication for Amazon Bedrock Mantle (for example, when using an LLM gateway)",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SKIP_MODEL_ACCESS_MEMORY",
+      "type": "env_var",
+      "description": "The startup model checks on Amazon Bedrock and Google Cloud's Agent Platform remember on this machine which models they found your account can't invoke, for up to a day. Set to `1` to turn that memory off. Requires Claude Code v2.1.285 or later",
+      "doc_min_version": "2.1.285",
       "doc_page": "env-vars"
     },
     {

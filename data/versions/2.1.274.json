@@ -2384,7 +2384,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Begin in a specified permission mode. Accepts `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`, or `manual` as an alias for `default`. The `manual` alias selects the permission mode the UI labels Manual and requires Claude Code v2.1.200 or later; `claude --help` lists it in place of `default`, and both values work. Overrides `defaultMode` from settings files. Without this flag or `--dangerously-skip-permissions`, a new session starts in the permission mode described in which permission mode a session starts in. For `-p`, that's `default` when nothing is configured",
+      "description": "Begin in a specified permission mode. Accepts `default`, `acceptEdits`, `plan`, `auto`, `dontAsk`, `bypassPermissions`, or `manual` as an alias for `default`. The `manual` alias selects the permission mode the UI labels Manual and requires Claude Code v2.1.200 or later; `claude --help` lists it in place of `default`, and both values work. Overrides `defaultMode` from settings files. Without this flag or `--dangerously-skip-permissions`, a new session starts in the permission mode described in which permission mode a session starts in, which also covers what a `-p` run starts in",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -2587,7 +2587,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Print response without interactive mode (see Agent SDK documentation for programmatic usage details)",
+      "description": "Print response without interactive mode (see Agent SDK documentation for programmatic usage details). For `--resume` on a background session that is still running, see Resume a session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -2879,8 +2879,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Resume a specific session by ID or name, or show an interactive picker to choose a session. In place of an ID, you can pass the absolute path to a session's `.jsonl` transcript file. The picker and name search include sessions that added this directory with `/add-dir`. When you pass a session ID, Claude Code searches the current project directory and its git worktrees, then every other project on this machine. Before v2.1.223, the ID search covered only the current project directory and its git worktrees. Background sessions appear in the picker marked with `bg`",
-      "description_source": "docs",
+      "description": "Resume a conversation by session ID, or open interactive picker with optional search term",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -5255,8 +5255,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Resume a conversation by ID or name, or open the session picker. Background sessions appear in the picker marked with `bg`; one that is still running can't be resumed here, so attach to it from `claude agents` or stop it there first. Alias: `/continue`",
-      "description_source": "docs",
+      "description": "Resume a previous conversation",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -5565,11 +5565,11 @@
       "first_seen": "2.1.119",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Stop the current background session. Only available while attached to a background session; the transcript and any worktree are kept. To detach without stopping, use `/exit` or press `←`",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -6126,13 +6126,13 @@
       "type": "config_key",
       "first_seen": "2.1.268",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Managed plugins (plugin@marketplace ids that managed enabledPlugins sets true) whose hooks run last among plugins, innermost, in the listed order: the last id listed sits just above the built-in plugins and sees each event as every other plugin left it. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "List the managed plugins whose mods run after every mod a user installs, in the listed order. An id listed in both `prependPlugins` and `appendPlugins` is prepended. In managed settings, Claude Code skips an id whose plugin doesn't count as your organization's.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "askUserQuestionTimeout",
@@ -8004,13 +8004,13 @@
       "type": "config_key",
       "first_seen": "2.1.268",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "Managed plugins (plugin@marketplace ids that managed enabledPlugins sets true) whose hooks run first, outermost, in the listed order: the first id listed sees every event before any other plugin and every result after it. Managed plugins not listed here or in appendPlugins follow the listed ones; user, project and marketplace plugins come after those; then appendPlugins; then the built-in plugins. The bundled sec-default@builtin seats itself outermost (on a machine with managed settings and for Team and Enterprise organizations) unless this list is set, in which case list sec-default@builtin where it should sit or leave it out. Any other id that is not an enabled managed plugin is skipped; an id listed in both keys is prepended. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "processWrapper",
@@ -9042,7 +9042,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Add your own tips to the spinner tips that Claude Code shows while Claude works, or replace the built-in tips with yours. Claude Code puts your tips in the same rotation as the built-in ones: it picks the tip that has gone unshown the longest, skips tips still in their cooldown, and breaks ties by priority.",
+      "description": "Add your own tips to the spinner tips that Claude Code shows while Claude works, or replace the built-in tips with yours. Claude Code puts your tips in the same rotation as the built-in ones.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -12165,11 +12165,11 @@
       "first_seen": "2.1.233",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "In screen reader mode, how many milliseconds Claude Code waits, with the cursor at the start of the line, before it writes a new or changed line. Default `50`. Set `0` to write immediately. Claude Code caps the wait at `5000`. Requires Claude Code v2.1.233 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {

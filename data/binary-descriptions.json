@@ -1091,6 +1091,12 @@
         "description": "Prefix for auto-generated Remote Control session names (default: hostname)"
       }
     ],
+    "cli_flag:--replace": [
+      {
+        "from": "2.1.287",
+        "description": "If this plugin is already installed from another marketplace, switch to this copy: install it, carry your plugin settings over, and uninstall the other. Only between Anthropic Directory and Anthropic's official marketplaces"
+      }
+    ],
     "cli_flag:--replay-user-messages": [
       {
         "from": "1.0.86",

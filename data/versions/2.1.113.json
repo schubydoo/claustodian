@@ -2798,8 +2798,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Resume a conversation by ID or name, or open the session picker. Background sessions appear in the picker marked with `bg`; one that is still running can't be resumed here, so attach to it from `claude agents` or stop it there first. Alias: `/continue`",
-      "description_source": "docs",
+      "description": "Resume a previous conversation",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
