@@ -277,6 +277,19 @@ describe('extractSymbols', () => {
     ]);
   });
 
+  it('scopes the /skill suppression to the placeholder phrase', () => {
+    // Only the placeholder usage is dropped. A later release that ships a real
+    // `/skill` command must still be read from its own bullet, including a
+    // bullet that names both usages.
+    expect(extractSymbols('Added `/skill` command to run one skill')).toEqual([
+      { symbol: '/skill', type: 'command' },
+    ]);
+    expect(
+      extractSymbols('Improved `/skill` names typed mid-message; run `/skill` to list them')
+    ).toEqual([{ symbol: '/skill', type: 'command' }]);
+    expect(CHANGELOG_SYMBOL_DENYLIST.has('/skill')).toBe(false);
+  });
+
   it('scopes the changelog-only suppression, leaving the binary denylist clean', () => {
     // Neither the git primitives nor the OS/shell env vars may leak into the
     // shared SYMBOL_DENYLIST that extract-bundle consults: the binary lane must
@@ -305,7 +318,6 @@ describe('extractSymbols', () => {
       '/home',
       '/tmp',
       '/var',
-      '/skill',
     ];
     // Membership: these particular tokens must be present, so the list is explicit.
     for (const token of changelogOnly) {
