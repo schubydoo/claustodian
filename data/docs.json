@@ -623,7 +623,7 @@
     {
       "symbol": "--print",
       "type": "cli_flag",
-      "description": "Print response without interactive mode (see Agent SDK documentation for programmatic usage details). For `--resume` on a background session that is still running, see Resume a session",
+      "description": "Print response without interactive mode (see Agent SDK documentation for programmatic usage details). For `--resume` on a background session that is still running, see Resume a running background session",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -919,7 +919,7 @@
     {
       "symbol": "/agents",
       "type": "command",
-      "description": "As of v2.1.198, running `/agents` prints a reminder to ask Claude to create or manage subagents, or to edit `.claude/agents/` or `~/.claude/agents/` directly. On v2.1.197 and earlier, opens an interactive interface for creating and managing subagent configurations",
+      "description": "Print a reminder to ask Claude to create or manage subagents, or to edit `.claude/agents/` or `~/.claude/agents/` directly. On v2.1.197 and earlier, opens an interactive interface for creating and managing subagent configurations",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1087,8 +1087,8 @@
     {
       "symbol": "/dataviz",
       "type": "command",
-      "description": "**Skill.** Design guidance for charts, graphs, and dashboards. Claude picks the chart form for the data, assigns color by role, validates the palette for colorblind safety and contrast with a bundled script, and applies mark, interaction, and accessibility rules. Uses a brand-neutral placeholder palette that you replace with your own. Requires Claude Code v2.1.198 or later",
-      "doc_min_version": "2.1.198",
+      "description": "**Skill.** Design guidance for charts, graphs, and dashboards. Claude picks the chart form for the data, assigns color by role, validates the palette for colorblind safety and contrast with a bundled script, and applies mark, interaction, and accessibility rules. Uses a brand-neutral placeholder palette that you replace with your own",
+      "doc_min_version": null,
       "doc_page": "commands"
     },
     {
@@ -1311,7 +1311,7 @@
     {
       "symbol": "/mcp",
       "type": "command",
-      "description": "Manage MCP server connections and OAuth authentication. Run with no argument to open the interactive list, pass `reconnect <server>` to reconnect one disconnected server, or pass `enable`/`disable` with a server name or `all` to change connection state without opening the dialog. Also available in non-interactive mode (`-p`), where running it with no argument prints a text summary of server status instead of opening the list; requires Claude Code v2.1.205 or later",
+      "description": "Manage MCP server connections and OAuth authentication. Run with no argument to open the interactive list, or pass `reconnect`, `enable`, or `disable` with a server name or `all` to change connection state without opening it. `reconnect all` retries every server that failed or needs authentication. Also available in non-interactive mode (`-p`), where running it with no argument prints a text summary of server status instead of opening the list; requires Claude Code v2.1.205 or later",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1369,6 +1369,13 @@
       "type": "command",
       "description": "Manage Claude Code plugins. Run with no argument to open the plugin menu, or pass a subcommand such as `list`, `install`, `enable`, or `disable` to act directly. Claude Code can activate a plugin during the install; the install summary tells you whether it did or whether to run `/reload-plugins`",
       "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
+      "symbol": "/plugin-authoring",
+      "type": "command",
+      "description": "Load the reference Claude works from to write a mod. Claude can load it on its own when you ask for a mod. This is a skill from a built-in plugin, which you can turn off in `/plugin`. Requires Claude Code v2.1.287 or later",
+      "doc_min_version": "2.1.287",
       "doc_page": "commands"
     },
     {
@@ -2027,7 +2034,7 @@
     {
       "symbol": "claudeInChromeDefaultEnabled",
       "type": "config_key",
-      "description": "Start every interactive CLI session with Chrome integration on, without passing `--chrome` each time. If you run `claude remote-control`, a session it starts for one of your project threads follows this key too, except in `bypassPermissions` mode. Running `/chrome` and selecting **Enabled by default** sets this key for you, as described in Enable Chrome by default. Appears in `/config` as **Claude in Chrome enabled by default**.",
+      "description": "Start every interactive CLI session with Chrome integration on, without passing `--chrome` each time. If you run `claude remote-control`, a session it starts for one of your project threads follows this key too, except in `bypassPermissions` mode. With Claude Code v2.1.287 or later, this key also applies to sessions in the VS Code extension: see Enable Chrome by default.",
       "doc_min_version": null,
       "doc_page": "settings-reference",
       "category": "global-config"
@@ -3703,7 +3710,7 @@
     {
       "symbol": "ANTHROPIC_FOUNDRY_RESOURCE",
       "type": "env_var",
-      "description": "Microsoft Foundry resource name (for example, `my-resource`). Required if `ANTHROPIC_FOUNDRY_BASE_URL` is not set (see Microsoft Foundry)",
+      "description": "Microsoft Foundry resource name (for example, `my-resource`). Claude Code refuses a URL or host name. Required if `ANTHROPIC_FOUNDRY_BASE_URL` is not set (see Microsoft Foundry)",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4235,7 +4242,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS",
       "type": "env_var",
-      "description": "Set to `1` to strip Anthropic-specific `anthropic-beta` request headers and beta tool-schema fields (such as `defer_loading` and `eager_input_streaming`) from API requests. Use this when a proxy gateway rejects requests with errors like \"Unexpected value(s) for the `anthropic-beta` header\" or \"Extra inputs are not permitted\". Standard fields (`name`, `description`, `input_schema`, `cache_control`) are preserved. MCP tool search is disabled and all MCP tools load upfront, even when you set `ENABLE_TOOL_SEARCH`. On Claude Code v2.1.227 or later, managed settings can keep tool search on. Disable pre-release capabilities covers where the override applies",
+      "description": "Set to `1` to strip pre-release `anthropic-beta` request headers, the body fields that pair with them, and beta tool-schema fields such as `defer_loading` and `eager_input_streaming` from API requests. Use this when a proxy gateway rejects requests with an `Unexpected value(s)` error for the `anthropic-beta` header or an `Extra inputs are not permitted` error. Disable pre-release capabilities lists what the variable removes, including MCP tool search, and what Claude Code keeps sending",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4977,7 +4984,7 @@
     {
       "symbol": "CLAUDE_CODE_RESUME_INTERRUPTED_TURN",
       "type": "env_var",
-      "description": "Set to `1` to automatically resume if the previous session ended mid-turn. Used in SDK mode so the model continues without requiring the SDK to re-send the prompt. To turn this off, unset the variable or set it to `0`. Before v2.1.221, Claude Code ignored `0` and other falsy values, so setting `0` still triggered the resume in non-interactive mode and unsetting the variable was the only way to turn it off",
+      "description": "Set to `1` to automatically resume if the previous session ended mid-turn. Used in SDK mode so the model continues without requiring the SDK to re-send the prompt. To turn this off, unset the variable or set it to `0`. For the VS Code chat panel, see Continue conversations after a reload",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
