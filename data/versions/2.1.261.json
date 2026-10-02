@@ -4495,7 +4495,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "View hook configurations for tool events",
+      "description": "View hook configurations",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5431,7 +5431,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Stop the current background session. Only available while attached to a background session; the transcript and any worktree are kept. To detach without stopping, use `/exit` or press `←`",
+      "description": "Stop the background session you're attached to, or the one you send it to as a peek reply; the transcript and any worktree are kept. To detach without stopping, use `/exit` or press `←`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -8390,7 +8390,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Let sandboxed commands bind to localhost ports on macOS, for example to start a dev server.",
+      "description": "Let sandboxed commands on macOS listen on network ports, for example to start a dev server, and connect to any port on localhost. A command that listens on a non-loopback address accepts connections from other machines. The key has no effect on Linux and WSL2, where each sandboxed command has its own loopback interface. To reach a server on the host from Linux or WSL2, see A command fails to reach a server on localhost.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8468,7 +8468,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Point the sandbox at your own HTTP proxy instead of the one Claude Code runs. Organizations do this to inspect HTTPS traffic, apply their own filtering rules, or log every request. When unset, Claude Code starts its own proxy for HTTP traffic.",
+      "description": "Point the sandbox at your own HTTP proxy instead of the one Claude Code runs. Organizations do this to inspect HTTPS traffic, apply their own filtering rules, or log requests. Your proxy takes over filtering, and Claude Code stops applying its domain lists and network prompts to traffic sent there. When unset, Claude Code starts its own proxy for HTTP traffic.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8481,7 +8481,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Point the sandbox at your own SOCKS5 proxy instead of the one Claude Code runs. When unset, Claude Code starts its own proxy for SOCKS traffic.",
+      "description": "Point the sandbox at your own SOCKS5 proxy instead of the one Claude Code runs. Your proxy takes over filtering, and Claude Code stops applying its domain lists and network prompts to traffic sent there. When unset, Claude Code starts its own proxy for SOCKS traffic.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -11838,8 +11838,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "In screen reader mode, how many milliseconds Claude Code waits, with the cursor at the start of the line, before it writes a new or changed line. Default `50`. Set `0` to write immediately. Claude Code caps the wait at `5000`. Requires Claude Code v2.1.233 or later",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
