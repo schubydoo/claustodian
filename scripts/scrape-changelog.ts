@@ -371,6 +371,22 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Phrases in which the changelog backticks a PLACEHOLDER, not a symbol. Each
+ * entry starts at the opening backtick of the token and runs into the prose
+ * after it, so only that usage is dropped. A token-wide entry in
+ * CHANGELOG_SYMBOL_DENYLIST fits a name Claude Code can never own (`/etc`,
+ * `GIT_DIR`); it is the wrong shape for a name a later release could ship as a
+ * real command, because it would discard that announcement too.
+ */
+export const CHANGELOG_PLACEHOLDER_PHRASES: readonly string[] = [
+  // "Any skill's name", from the 2.1.287 bullet "Improved `/skill` names typed
+  // mid-message: Claude is now told they are skills". No command or alias named
+  // `skill` is in the 2.1.287 binary's command registry; the real command is
+  // `/skills`.
+  '`/skill` names',
+];
+
+/**
  * Extracts backtick-delimited cli_flag / command / env_var tokens from a
  * single bullet's text. Returns unique {symbol, type} pairs ordered by where
  * they first appear in the text (left to right), regardless of which of the
@@ -387,6 +403,10 @@ export function extractSymbols(text: string): ExtractedSymbol[] {
         continue;
       }
       if (SYMBOL_DENYLIST.has(symbol) || CHANGELOG_SYMBOL_DENYLIST.has(symbol)) {
+        continue;
+      }
+      const start = match.index;
+      if (CHANGELOG_PLACEHOLDER_PHRASES.some((phrase) => text.startsWith(phrase, start))) {
         continue;
       }
       found.push({ symbol, type, index: match.index });
