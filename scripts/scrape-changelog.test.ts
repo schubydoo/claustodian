@@ -264,6 +264,19 @@ describe('extractSymbols', () => {
     expect(symbols).toEqual([]);
   });
 
+  it('drops the /skill placeholder named in the 2.1.287 mid-message bullet', () => {
+    // 2.1.287: `/skill` stands for "any skill's name", not a command. The real
+    // command is `/skills`, which the pattern still reads as its own token.
+    const symbols = extractSymbols(
+      'Improved `/skill` names typed mid-message: Claude is now told they are ' +
+        'skills, including `disable-model-invocation` ones'
+    );
+    expect(symbols).toEqual([]);
+    expect(extractSymbols('Added `/skills` menu')).toEqual([
+      { symbol: '/skills', type: 'command' },
+    ]);
+  });
+
   it('scopes the changelog-only suppression, leaving the binary denylist clean', () => {
     // Neither the git primitives nor the OS/shell env vars may leak into the
     // shared SYMBOL_DENYLIST that extract-bundle consults: the binary lane must
@@ -292,6 +305,7 @@ describe('extractSymbols', () => {
       '/home',
       '/tmp',
       '/var',
+      '/skill',
     ];
     // Membership: these particular tokens must be present, so the list is explicit.
     for (const token of changelogOnly) {

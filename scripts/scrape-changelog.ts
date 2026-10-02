@@ -368,6 +368,12 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   '/home',
   '/tmp',
   '/var',
+  // A placeholder for "any skill's name", from the 2.1.287 bullet "Improved
+  // `/skill` names typed mid-message: Claude is now told they are skills". No
+  // command or alias named `skill` is in the 2.1.287 binary's command registry;
+  // the real command is `/skills`. If a `/skill` command ships later, the binary
+  // lane still observes it, because this list is changelog-only.
+  '/skill',
 ]);
 
 /**
