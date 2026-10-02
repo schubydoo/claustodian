@@ -2378,7 +2378,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Microsoft Foundry resource name (for example, `my-resource`). Required if `ANTHROPIC_FOUNDRY_BASE_URL` is not set (see Microsoft Foundry)",
+      "description": "Microsoft Foundry resource name (for example, `my-resource`). Claude Code refuses a URL or host name. Required if `ANTHROPIC_FOUNDRY_BASE_URL` is not set (see Microsoft Foundry)",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -2820,7 +2820,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to strip Anthropic-specific `anthropic-beta` request headers and beta tool-schema fields (such as `defer_loading` and `eager_input_streaming`) from API requests. Use this when a proxy gateway rejects requests with errors like \"Unexpected value(s) for the `anthropic-beta` header\" or \"Extra inputs are not permitted\". Standard fields (`name`, `description`, `input_schema`, `cache_control`) are preserved.",
+      "description": "Set to `1` to strip pre-release `anthropic-beta` request headers, the body fields that pair with them, and beta tool-schema fields such as `defer_loading` and `eager_input_streaming` from API requests. Use this when a proxy gateway rejects requests with an `Unexpected value(s)` error for the `anthropic-beta` header or an `Extra inputs are not permitted` error. Disable pre-release capabilities lists what the variable removes, including MCP tool search, and what Claude Code keeps sending",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
