@@ -6142,7 +6142,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Let an unanswered `AskUserQuestion` dialog auto-continue after a period of idle time, submitting whatever options you had already selected. Set it when you step away and want Claude to continue without you. With the default, questions wait until you answer them. Requires Claude Code v2.1.200 or later.",
+      "description": "Let an unanswered `AskUserQuestion` dialog auto-continue after a period of idle time, submitting whatever options you had already selected. Set it when you step away and want Claude to continue without you. With the default, questions wait until you answer them. For when the timer pauses or never starts, see Question auto-continue timeout. Requires Claude Code v2.1.200 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8345,7 +8345,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allow `mask` substitution on plain HTTP requests as well as TLS-terminated HTTPS. On plain HTTP the upstream identity is unverified and the credential travels in cleartext, so leave this off outside trusted test networks. Requires Claude Code v2.1.199 or later.",
+      "description": "Allow `mask` substitution on plain HTTP requests as well as TLS-terminated HTTPS. On plain HTTP the upstream identity is unverified and the credential travels in cleartext, so leave this off outside trusted test networks.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8371,7 +8371,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Protect environment variables from sandboxed commands. With `\"mode\": \"deny\"`, Claude Code removes the variable from the environment of sandboxed commands. With `\"mode\": \"mask\"`, sandboxed commands see a per-session sentinel value, and the sandbox proxy substitutes the real value on outbound requests to that entry's `injectHosts`, so tools such as `gh` and `npm` keep authenticating without ever holding the real credential. `\"mode\": \"mask\"` requires Claude Code v2.1.199 or later.",
+      "description": "Protect environment variables from sandboxed commands. With `\"mode\": \"deny\"`, Claude Code removes the variable from the environment of sandboxed commands. With `\"mode\": \"mask\"`, sandboxed commands see a per-session sentinel value, and the sandbox proxy substitutes the real value on outbound requests to that entry's `injectHosts`, so tools such as `gh` and `npm` keep authenticating without ever holding the real credential.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9792,7 +9792,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose how background sessions isolate their file edits. With `\"worktree\"`, Claude Code blocks `Edit` and `Write` in the main checkout until the session calls `EnterWorktree`; with `\"none\"`, background jobs edit the working copy directly. Set `\"none\"` for a repository where git worktrees are impractical.",
+      "description": "Choose how background sessions isolate their file edits. If you moved a session to the background with `←` or `/background`, that session edits files in place whatever this key says. With `\"worktree\"`, Claude Code blocks `Edit` and `Write` in the main checkout until the session calls `EnterWorktree`; with `\"none\"`, background jobs edit the working copy directly. Set `\"none\"` for a repository where git worktrees are impractical.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -11782,7 +11782,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A default longer than 30 minutes also becomes the default time limit for background commands.",
+      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A default longer than 30 minutes also becomes the default time limit for background commands in unattended sessions.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -11808,7 +11808,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum timeout the model can set for a foreground Bash or PowerShell tool command, in milliseconds (default: 600000, or 10 minutes). The effective ceiling is the larger of this and `BASH_DEFAULT_TIMEOUT_MS`. An effective ceiling longer than 2 hours also becomes the maximum time limit for background commands.",
+      "description": "Maximum timeout the model can set for a foreground Bash or PowerShell tool command, in milliseconds (default: 600000, or 10 minutes). The effective ceiling is the larger of this and `BASH_DEFAULT_TIMEOUT_MS`. An effective ceiling longer than 2 hours also becomes the maximum time limit for background commands in unattended sessions.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -21742,7 +21742,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "On the v2 MCP client runtime only, whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `auto` to probe HTTP, claude.ai connector, and stdio servers; a server that doesn't answer the probe connects on the earlier protocol instead, as SSE and WebSocket servers always do. Set `legacy` to skip the probe for every server. Without the variable, Claude Code probes HTTP servers, and also probes claude.ai connector servers in sessions where it fetches feature flags. Any other value is ignored with a warning in the debug log. Requires Claude Code v2.1.221 or later",
+      "description": "On the v2 MCP client runtime only, whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `auto` to probe HTTP, claude.ai connector, and stdio servers, or `legacy` to probe none. With the variable unset, Claude Code probes the servers described under MCP client runtimes. Any other value is ignored with a warning in the debug log. Requires Claude Code v2.1.221 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
