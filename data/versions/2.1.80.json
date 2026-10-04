@@ -5013,7 +5013,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A default longer than 30 minutes also becomes the default time limit for background commands.",
+      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A default longer than 30 minutes also becomes the default time limit for background commands in unattended sessions.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -5039,7 +5039,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum timeout the model can set for a foreground Bash or PowerShell tool command, in milliseconds (default: 600000, or 10 minutes). The effective ceiling is the larger of this and `BASH_DEFAULT_TIMEOUT_MS`. An effective ceiling longer than 2 hours also becomes the maximum time limit for background commands.",
+      "description": "Maximum timeout the model can set for a foreground Bash or PowerShell tool command, in milliseconds (default: 600000, or 10 minutes). The effective ceiling is the larger of this and `BASH_DEFAULT_TIMEOUT_MS`. An effective ceiling longer than 2 hours also becomes the maximum time limit for background commands in unattended sessions.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
