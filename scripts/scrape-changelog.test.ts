@@ -157,6 +157,11 @@ describe('extractSymbols', () => {
         'assign an arithmetic expression to an integer shell variable (e.g. `OPTIND=1`/`0`, `RANDOM=2+2`)'
       )
     ).toEqual([]);
+    expect(
+      extractSymbols(
+        'Fixed Bash tool permission check to prompt before a `BASHPID` assignment whose value the shell would evaluate as arithmetic, instead of allowing it silently'
+      )
+    ).toEqual([]);
     // The temp-dir bullet drops the OS vars `TMPDIR`/`TMP`/`TEMP` but MUST keep the
     // real Claude Code vars it names alongside them — proving the drop is targeted,
     // not the whole bullet going empty.
