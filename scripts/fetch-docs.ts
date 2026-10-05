@@ -600,6 +600,27 @@ function scopeFromHeading(raw: string): string | undefined {
   return /^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)*$/.test(cleaned) ? cleaned : undefined;
 }
 
+/**
+ * Pages whose symbol definitions sit under known headings, with those headings. An
+ * ALLOWLIST, as `SETTINGS_SECTIONS` is one: a section absent from a listed page's
+ * set contributes nothing, so a new upstream table cannot silently start
+ * publishing symbols. A page absent from this map reads every table.
+ *
+ * env-vars excludes, on the page's own evidence:
+ *  - "What the subprocess environment scrub removes" — an EXAMPLE table. Its rows
+ *    name variables Claude Code strips from or leaves in a child environment
+ *    (`NPM_TOKEN`, `GH_TOKEN`, `GIT_CONFIG_KEY_<n>`), not variables it reads, and
+ *    its second column says what the scrub does, not what the variable does. Its
+ *    `CLAUDE_CONFIG_DIR` row also carries a "Requires v2.1.251" marker that dates
+ *    the scrub behaviour, which the min-version backfill stamped on the variable.
+ *
+ * `PAGE_MIN_SYMBOLS` is the guard on the other side: a renamed heading empties the
+ * page and trips its floor instead of reading as a mass removal.
+ */
+const PAGE_SYMBOL_SECTIONS: Partial<Record<string, ReadonlySet<string>>> = {
+  'env-vars': new Set(['Variables']),
+};
+
 export function parseDocPage(
   page: string,
   markdown: string,
@@ -608,10 +629,13 @@ export function parseDocPage(
   if (page === 'settings') return parseSettingsPage(page, markdown, knownConfigKeys);
   if (page === 'settings-reference') return parseSettingsReferencePage(page, markdown);
   const entries: DocEntry[] = [];
+  const sections = PAGE_SYMBOL_SECTIONS[page];
+  let section = '';
   let scope: string | undefined;
   for (const line of markdown.split('\n')) {
     const heading = /^#{2,4}\s+(.*)$/.exec(line);
     if (heading) {
+      section = (heading[1] as string).trim();
       // Any h2–h4 heading (the depths this regex matches) resets the scope. A
       // non-command subsection under a subcommand — `### Options` in `## plugin
       // init` — therefore
@@ -624,6 +648,7 @@ export function parseDocPage(
       continue;
     }
     if (!/^\s*\|/.test(line) || /^\s*\|\s*:?-{2,}/.test(line)) continue;
+    if (sections && !sections.has(section)) continue;
     const cells = splitTableRow(line)
       .slice(1, -1)
       .map((c) => c.trim());
