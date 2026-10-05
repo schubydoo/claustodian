@@ -42,7 +42,9 @@ function mockPageBody(url: string): string {
     if (page === 'env-vars') return `MOCK_ENV_${i}`;
     return `--${page.replace('/', '-')}-mock-${i}`;
   };
-  return rows.map((i) => `| \`${cell(i)}\` | A mocked symbol |`).join('\n');
+  const table = rows.map((i) => `| \`${cell(i)}\` | A mocked symbol |`).join('\n');
+  // env-vars publishes only from its "Variables" section.
+  return page === 'env-vars' ? `## Variables\n\n${table}` : table;
 }
 
 describe('symbolFromCell', () => {
@@ -227,14 +229,14 @@ describe('parseDocPage', () => {
 
   it('unescapes markdown backslash escapes so the literal backslash never surfaces', () => {
     const entry = parseDocPage(
-      'env-vars',
+      'cli-reference',
       '| `ANTHROPIC_SMALL_FAST_MODEL` | \\[DEPRECATED] a\\_b |'
     )[0];
     expect(entry?.description).toBe('[DEPRECATED] a_b');
   });
 
   it('keeps a backslash literal inside an inline code span (not treated as an escape)', () => {
-    const entry = parseDocPage('env-vars', '| `--xray` | uses `foo\\_bar` as a key |')[0];
+    const entry = parseDocPage('cli-reference', '| `--xray` | uses `foo\\_bar` as a key |')[0];
     expect(entry?.description).toBe('uses `foo\\_bar` as a key');
   });
 
@@ -276,8 +278,34 @@ describe('parseDocPage', () => {
     expect(entry?.doc_min_version).toBe('2.1.10');
   });
 
+  it('reads env-vars symbols only from the Variables section', () => {
+    // The live page's scrub section: an example table of variables Claude Code
+    // strips or keeps in a child environment, not variables it reads. Its
+    // CLAUDE_CONFIG_DIR row dates the scrub behaviour, not the variable.
+    const page = [
+      '| `LEADING_TABLE_VAR` | A table before any heading |',
+      '## Variables',
+      '| Variable | Purpose |',
+      '| :- | :- |',
+      '| `CLAUDE_CONFIG_DIR` | Override the configuration directory |',
+      '## What the subprocess environment scrub removes',
+      '| Example variable | What the scrub does |',
+      '| :- | :- |',
+      '| `NPM_TOKEN`, `DB_PASSWORD` | Removes it, because the name looks like a credential |',
+      '| `CLAUDE_CONFIG_DIR` | Removes it. Requires Claude Code v2.1.251 or later |',
+      '| `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_<n>` | Leaves it in place, whatever it holds |',
+    ].join('\n');
+    const entries = parseDocPage('env-vars', page);
+    expect(entries.map((e) => e.symbol)).toEqual(['CLAUDE_CONFIG_DIR']);
+    expect(buildDocsIndex([{ page: 'env-vars', markdown: page }]).symbols).toMatchObject([
+      { symbol: 'CLAUDE_CONFIG_DIR', doc_min_version: null },
+    ]);
+    // The same rows on a page with no section list still publish.
+    expect(parseDocPage('cli-reference', page).map((e) => e.symbol)).toContain('NPM_TOKEN');
+  });
+
   it('does not resurrect a deliberately-escaped link into active markdown', () => {
-    const entry = parseDocPage('env-vars', '| `--xray` | see \\[text\\]\\(url\\) here |')[0];
+    const entry = parseDocPage('cli-reference', '| `--xray` | see \\[text\\]\\(url\\) here |')[0];
     expect(entry?.description).toBe('see text here');
   });
 });
