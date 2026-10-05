@@ -333,6 +333,11 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   // the pattern's optional `=<value>` form; neither is a Claude Code variable.
   'OPTIND',
   'RANDOM',
+  // The same class, from the 2.1.288 bugfix bullet "prompt before a `BASHPID`
+  // assignment whose value the shell would evaluate as arithmetic". In the
+  // 2.1.289 binary the name appears only in the Bash command analyzer's sets of
+  // shell variable names; nothing reads it from the environment.
+  'BASHPID',
   // OS/shell environment variables Claude Code reads but does not own; the
   // changelog names them incidentally ("a stale `PATH`"; and the 2.1.251 bullet
   // "no longer set `CLAUDE_CONFIG_DIR`, `CLAUDE_CODE_TMPDIR`, or `TMPDIR`/`TMP`/
