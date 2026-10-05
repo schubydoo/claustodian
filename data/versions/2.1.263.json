@@ -3221,7 +3221,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Treat warnings as errors, so unrecognized fields and missing metadata that the runtime tolerates fail the run. Requires Claude Code v2.1.145 or later",
+      "description": "Treat warnings as errors, so unrecognized fields and missing metadata that the runtime tolerates fail the run",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
@@ -11458,6 +11458,19 @@
       "category": "cloud"
     },
     {
+      "symbol": "AWS_SECRET_ACCESS_KEY",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Removes it",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "cloud"
+    },
+    {
       "symbol": "BASH_DEFAULT_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "0.2.108",
@@ -12934,8 +12947,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "When `CLAUDE_AUTO_BACKGROUND_TASKS` is enabled, seconds between reminders to Claude to check on background subagents that are still running. Accepts a plain integer from `1` to `86400` only; any other value or spelling reads as unset. When unset, there are no check-in reminders. Requires Claude Code v2.1.248 or later",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
@@ -14383,11 +14395,12 @@
       "type": "env_var",
       "first_seen": "2.1.161",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to turn off the automatic model switch when a safety classifier flags a request, the behavior the `switchModelsOnFlag` setting controls",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -16998,7 +17011,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Ceiling in milliseconds on idle waiting for background subagents and workflows after the final turn in non-interactive mode with the `-p` flag. Idle waiting starts over each time Claude takes a turn to handle a background result. Default: `600000`, or 10 minutes. When idle waiting reaches the ceiling, Claude Code stops waiting for the remaining background tasks and exits. Set to `0` to wait indefinitely. This cap is separate from the five-second grace period that applies to plain background shells. Requires Claude Code v2.1.182 or later",
+      "description": "Ceiling in milliseconds on idle waiting for background work, such as subagents and workflows, after the final turn in non-interactive mode with the `-p` flag. Idle waiting starts over each time Claude takes a turn to handle a background result. Default: `600000`, or 10 minutes. When idle waiting reaches the ceiling, Claude Code stops waiting for the remaining background tasks and exits. Set to `0` to wait indefinitely. This cap is separate from the five-second grace period that applies to plain background shells. Requires Claude Code v2.1.182 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -18202,7 +18215,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to strip credentials from subprocess environments (Bash tool, hooks, MCP stdio servers): Anthropic and cloud provider credentials, any other variable that Claude Code recognizes as a credential, and credentials embedded in package registry URLs. The parent Claude process keeps these credentials for API calls, but child processes cannot read them, reducing exposure to prompt injection attacks that attempt to exfiltrate secrets via shell expansion. On v2.1.251 or later, the scrub also removes Claude Code's own configuration-store pointer variables (such as `CLAUDE_CONFIG_DIR`), so a child process cannot locate a relocated configuration directory. Leave the scrub unset if a subprocess needs these variables. On Linux, this also runs Bash subprocesses in an isolated PID namespace so they cannot read host process environments via `/proc`; as a side effect, `ps`, `pgrep`, and `kill` cannot see or signal host processes. `claude-code-action` sets this automatically when `allowed_non_write_users` is configured",
+      "description": "Set to `1` to strip credentials from the environments of the subprocesses Claude Code starts, such as Bash commands, hooks, and stdio MCP servers. The scrub recognizes a credential by its variable name or its value, and it leaves GitHub tokens and proxy settings in place. See What the subprocess environment scrub removes. `claude-code-action` sets this automatically when `allowed_non_write_users` is configured",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -18763,11 +18776,12 @@
       "type": "env_var",
       "first_seen": "2.1.217",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to limit how large the transcript file of a long `-p` or Agent SDK session grows. After each compaction, once the file is larger than 5 MB, Claude Code removes the history from before that compaction. Resuming the session restores the same conversation whether or not the file was trimmed. Set it in the environment you start Claude Code from, since a settings `env` block can't turn it on.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -20038,6 +20052,19 @@
       "category": "other"
     },
     {
+      "symbol": "DATABASE_URL",
+      "type": "env_var",
+      "first_seen": "2.1.160",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Removes it, because the value looks like a credential",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
       "symbol": "DEBUG",
       "type": "env_var",
       "first_seen": "0.2.9",
@@ -20636,6 +20663,71 @@
       "category": "other"
     },
     {
+      "symbol": "GH_ENTERPRISE_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.128",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Leaves it in place, so that `gh` and scripts that call the GitHub API keep working",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
+      "symbol": "GH_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.6",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Leaves it in place, so that `gh` and scripts that call the GitHub API keep working",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
+      "symbol": "GITHUB_ENTERPRISE_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.128",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Leaves it in place, so that `gh` and scripts that call the GitHub API keep working",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "ci"
+    },
+    {
+      "symbol": "GITHUB_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.6",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Leaves it in place, so that `gh` and scripts that call the GitHub API keep working",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "ci"
+    },
+    {
+      "symbol": "GIT_CONFIG_COUNT",
+      "type": "env_var",
+      "first_seen": "2.1.186",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Leaves it in place, whatever it holds",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
       "symbol": "GOOGLE_APPLICATION_CREDENTIALS",
       "type": "env_var",
       "first_seen": "0.2.9",
@@ -20730,7 +20822,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum number of tokens allowed in MCP tool responses. Claude Code displays a warning when output exceeds 10,000 tokens. Tools that declare `anthropic/maxResultSizeChars` use that character limit for text content instead, but image content from those tools is still subject to this variable (default: 25000)",
+      "description": "Maximum number of tokens allowed in MCP tool responses (default: 25000). Claude Code displays a warning when output exceeds 10,000 tokens. Tools that declare `anthropic/maxResultSizeChars` use that character limit for text content instead, but image content from those tools is still subject to this variable. A successful text result longer than 50,000 characters from a tool without that annotation is saved to a file regardless of this variable",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -20756,7 +20848,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024. See `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Opus 5.5, Sonnet 5.5, and the Fable models, which can't have thinking turned off. On third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5. Claude Code ignores nonzero values on adaptive reasoning models, except on the models where `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` turns adaptive reasoning off",
+      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024. See `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Opus 5.5, Sonnet 5.5, and the Fable models, which can't have thinking turned off. On third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5. For a positive value, Claude Code ignores the number itself on adaptive reasoning models, except when `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` turns adaptive reasoning off",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"

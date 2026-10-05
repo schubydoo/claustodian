@@ -422,6 +422,19 @@
       "category": "cloud"
     },
     {
+      "symbol": "AWS_SECRET_ACCESS_KEY",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Removes it",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "cloud"
+    },
+    {
       "symbol": "CLAUDE_CODE_USE_BEDROCK",
       "type": "env_var",
       "first_seen": "0.2.9",

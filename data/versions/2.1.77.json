@@ -4839,6 +4839,19 @@
       "category": "cloud"
     },
     {
+      "symbol": "AWS_SECRET_ACCESS_KEY",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Removes it",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "cloud"
+    },
+    {
       "symbol": "BASH_DEFAULT_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "0.2.108",
@@ -7662,6 +7675,32 @@
       "category": "claude-code"
     },
     {
+      "symbol": "GH_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.6",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Leaves it in place, so that `gh` and scripts that call the GitHub API keep working",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
+      "symbol": "GITHUB_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.6",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Leaves it in place, so that `gh` and scripts that call the GitHub API keep working",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "ci"
+    },
+    {
       "symbol": "GOOGLE_APPLICATION_CREDENTIALS",
       "type": "env_var",
       "first_seen": "0.2.9",
@@ -7744,7 +7783,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum number of tokens allowed in MCP tool responses. Claude Code displays a warning when output exceeds 10,000 tokens. Tools that declare `anthropic/maxResultSizeChars` use that character limit for text content instead, but image content from those tools is still subject to this variable (default: 25000)",
+      "description": "Maximum number of tokens allowed in MCP tool responses (default: 25000). Claude Code displays a warning when output exceeds 10,000 tokens. Tools that declare `anthropic/maxResultSizeChars` use that character limit for text content instead, but image content from those tools is still subject to this variable. A successful text result longer than 50,000 characters from a tool without that annotation is saved to a file regardless of this variable",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -7770,7 +7809,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024. See `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Opus 5.5, Sonnet 5.5, and the Fable models, which can't have thinking turned off. On third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5. Claude Code ignores nonzero values on adaptive reasoning models, except on the models where `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` turns adaptive reasoning off",
+      "description": "Fixed token budget for extended thinking. Claude Code caps it at one token below the request's max output tokens and never below 1,024. See `CLAUDE_CODE_MAX_OUTPUT_TOKENS` for how that limit is set. When unset and thinking is enabled, models with adaptive reasoning choose their own thinking depth, and other models use the cap. Set to `0` to disable thinking on the Anthropic API, except on Opus 5.5, Sonnet 5.5, and the Fable models, which can't have thinking turned off. On third-party providers, `0` omits the `thinking` parameter instead. With thinking turned off on the Anthropic API, Claude Code sends effort `high` instead of a higher level to models it knows don't accept that combination, such as Opus 5. For a positive value, Claude Code ignores the number itself on adaptive reasoning models, except when `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING` turns adaptive reasoning off",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
