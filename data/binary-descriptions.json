@@ -735,6 +735,12 @@
         "description": "Policy-tier settings JSON from a spawning parent process (SDK use only)"
       }
     ],
+    "cli_flag:--marketplace": [
+      {
+        "from": "2.1.292",
+        "description": "Install <plugin> (its bare name) from the marketplace at this source: owner/repo, a git or https URL, or a path. A marketplace not added yet is added first, in user settings, under the same checks as 'plugin marketplace add'"
+      }
+    ],
     "cli_flag:--max-budget-usd": [
       {
         "from": "2.0.30",
