@@ -575,6 +575,10 @@
       {
         "from": "2.1.284",
         "description": "For a program adding a marketplace from an install link: adds it as the install link does, then prints one JSON line, {\"name\": \"<marketplace>\", \"added\": true|false}, or before failing {\"refused\": {\"kind\": \"<kind>\", \"name\": \"<name>\", \"folder\"?: \"<path>\"}}"
+      },
+      {
+        "from": "2.1.290",
+        "description": "For a program adding a marketplace from an install link: adds it as the install link does, then prints one JSON line, {\"name\": \"<marketplace>\", \"added\": true|false}, or before failing {\"refused\": {\"kind\": \"<kind>\", \"name\": \"<name>\", \"folder\"?: \"<path>\", \"requested\"?: \"<another spelling of name>\"}}"
       }
     ],
     "cli_flag:--from-pr": [
@@ -3257,6 +3261,10 @@
       {
         "from": "2.1.182",
         "description": "When true in any settings source, claude.ai MCP cloud connectors are not auto-fetched or connected. Only gates auto-fetched connectors — a claudeai-proxy server passed explicitly (e.g. via --mcp-config or the SDK mcpServers option) still follows the normal MCP config trust flow. Any-source-true wins: a project can opt out, but a project-level false cannot override a user-level true."
+      },
+      {
+        "from": "2.1.290",
+        "description": "When true in any settings source, claude.ai MCP cloud connectors are not auto-fetched or connected, and a claudeai-proxy server passed explicitly (e.g. via --mcp-config or the SDK mcpServers option) does not connect either. Any-source-true wins: a project can opt out, but a project-level false cannot override a user-level true."
       }
     ],
     "config_key:disableCommandPluginSources": [
@@ -3525,6 +3533,12 @@
       {
         "from": "2.1.63",
         "description": "Allowlist of environment variable names HTTP hooks may interpolate into headers. When set, each hook's effective allowedEnvVars is the intersection with this list. If undefined, no restriction is applied. Arrays merge across settings sources (same semantics as allowedMcpServers)."
+      }
+    ],
+    "config_key:idleCompaction": [
+      {
+        "from": "2.1.290",
+        "description": "Set to false to stop Claude Code from compacting a long conversation while the session is idle. Setting it to true does not turn idle compaction on."
       }
     ],
     "config_key:includeCoAuthoredBy": [

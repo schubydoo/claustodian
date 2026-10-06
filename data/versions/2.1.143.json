@@ -8287,11 +8287,11 @@
       "first_seen": "1.0.128",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` to disable attachment processing. File mentions with `@` syntax are sent as plain text instead of being expanded into file content",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -11722,6 +11722,18 @@
       "confidence": "high",
       "description": "Set to `1` to force the 5-minute prompt cache TTL even when 1-hour TTL would otherwise apply.",
       "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
+    },
+    {
+      "symbol": "GH_HOST",
+      "type": "env_var",
+      "first_seen": "2.1.128",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
