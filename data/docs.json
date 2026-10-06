@@ -504,7 +504,7 @@
     {
       "symbol": "--max-budget-usd",
       "type": "cli_flag",
-      "description": "Maximum dollar amount to spend on API calls before stopping (print mode only). Spend from subagents counts toward the cap. When you return to a conversation with `--continue` or `--resume`, totals restored from earlier runs don't count toward it. Once spend reaches the cap, spawning another subagent fails with `Budget limit reached`, and Claude Code stops background subagents that are still running; the cap-enforcement behaviors require Claude Code v2.1.217 or later",
+      "description": "Maximum dollar amount to spend on API calls before stopping (print mode only). Claude Code checks the cap against its client-side cost estimate, which can differ from your bill. Spend from subagents counts toward the cap. When you return to a conversation with `--continue` or `--resume`, totals restored from earlier runs don't count toward it. Once spend reaches the cap, spawning another subagent fails with `Budget limit reached`, and Claude Code stops background subagents that are still running; the cap-enforcement behaviors require Claude Code v2.1.217 or later",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -1843,8 +1843,8 @@
     {
       "symbol": "askUserQuestionTimeout",
       "type": "config_key",
-      "description": "Let an unanswered `AskUserQuestion` dialog auto-continue after a period of idle time, submitting whatever options you had already selected. Set it when you step away and want Claude to continue without you. With the default, questions wait until you answer them. For when the timer pauses or never starts, see Question auto-continue timeout. Requires Claude Code v2.1.200 or later.",
-      "doc_min_version": "2.1.200",
+      "description": "Let an unanswered `AskUserQuestion` dialog auto-continue after a period of idle time, submitting whatever options you had already selected. Set it when you step away and want Claude to continue without you. With the default, questions wait until you answer them. For when the timer pauses or never starts, see Question auto-continue timeout.",
+      "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
