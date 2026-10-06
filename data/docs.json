@@ -248,7 +248,7 @@
     {
       "symbol": "--dangerously-load-development-channels",
       "type": "cli_flag",
-      "description": "Enable channels that are not on the approved allowlist, for local development. Accepts `plugin:<name>@<marketplace>` and `server:<name>` entries. Prompts for confirmation",
+      "description": "Enable channels that are not on the approved allowlist, for local development. Accepts `plugin:<name>@<marketplace>` and `server:<name>` entries. Prompts for confirmation, so it takes effect in interactive sessions. With `-p`, Claude Code ignores the flag",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -1514,7 +1514,7 @@
     {
       "symbol": "/scroll-speed",
       "type": "command",
-      "description": "Adjust mouse wheel scroll speed interactively, with a ruler you can scroll while the dialog is open to preview the change. Available in fullscreen rendering only and not in the JetBrains IDE terminal",
+      "description": "Adjust mouse wheel scroll speed interactively. Available in fullscreen rendering only and not in the JetBrains IDE terminal",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -3815,7 +3815,7 @@
     {
       "symbol": "BETA_TRACING_ENDPOINT",
       "type": "env_var",
-      "description": "OTLP endpoint for detailed beta tracing: with `ENABLE_BETA_TRACING_DETAILED=1`, logs and traces go there instead of to the configured exporters. Set it in your shell, user settings, or managed settings. Ignored in project and local settings",
+      "description": "OTLP/HTTP endpoint for detailed beta tracing: with `ENABLE_BETA_TRACING_DETAILED=1`, logs and traces go there instead of to the configured exporters. Set it in your shell, user settings, or managed settings. Ignored in project and local settings",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4643,6 +4643,13 @@
       "type": "env_var",
       "description": "How many minutes background work can keep an active goal waiting before Claude Code asks Claude to check on it. Default `30`. Set `0` to turn check-ins off. Give whole minutes in plain digits, at most `10080`, which is one week. Claude Code treats any other value as unset and uses the default. Requires Claude Code v2.1.234 or later",
       "doc_min_version": "2.1.234",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_GZIP_REQUEST_BODIES",
+      "type": "env_var",
+      "description": "Set to `0` to turn off gzip compression of Claude API, telemetry, and artifact publish request bodies sent to `api.anthropic.com`. By default, Claude Code compresses large request bodies on direct connections and skips compression when you send requests through a proxy, configure a client certificate, or set `NODE_EXTRA_CA_CERTS`. Use `0` if a TLS-inspecting proxy that Claude Code can't detect mishandles compressed requests",
+      "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
@@ -5698,7 +5705,7 @@
     {
       "symbol": "ENABLE_BETA_TRACING_DETAILED",
       "type": "env_var",
-      "description": "Set to `1`, together with `BETA_TRACING_ENDPOINT`, to turn on detailed beta tracing, which adds content-bearing span attributes and the `claude_code.hook` span. Interactive CLI sessions also require your organization to be allowlisted for the beta. Both variables are ignored in project and local settings",
+      "description": "Set to `1`, and set `BETA_TRACING_ENDPOINT` to your OTLP/HTTP collector endpoint, to turn on detailed beta tracing, which adds content-bearing span attributes and the `claude_code.hook` span. Interactive CLI sessions also require your organization to be allowlisted for the beta. Both variables are ignored in project and local settings",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
