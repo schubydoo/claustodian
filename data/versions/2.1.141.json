@@ -456,7 +456,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Enable channels that are not on the approved allowlist, for local development. Accepts `plugin:<name>@<marketplace>` and `server:<name>` entries. Prompts for confirmation",
+      "description": "Enable channels that are not on the approved allowlist, for local development. Accepts `plugin:<name>@<marketplace>` and `server:<name>` entries. Prompts for confirmation, so it takes effect in interactive sessions. With `-p`, Claude Code ignores the flag",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli-internal"
@@ -3133,7 +3133,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Adjust mouse wheel scroll speed interactively, with a ruler you can scroll while the dialog is open to preview the change. Available in fullscreen rendering only and not in the JetBrains IDE terminal",
+      "description": "Adjust mouse wheel scroll speed interactively. Available in fullscreen rendering only and not in the JetBrains IDE terminal",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -7263,7 +7263,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "OTLP endpoint for detailed beta tracing: with `ENABLE_BETA_TRACING_DETAILED=1`, logs and traces go there instead of to the configured exporters. Set it in your shell, user settings, or managed settings. Ignored in project and local settings",
+      "description": "OTLP/HTTP endpoint for detailed beta tracing: with `ENABLE_BETA_TRACING_DETAILED=1`, logs and traces go there instead of to the configured exporters. Set it in your shell, user settings, or managed settings. Ignored in project and local settings",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -11453,7 +11453,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1`, together with `BETA_TRACING_ENDPOINT`, to turn on detailed beta tracing, which adds content-bearing span attributes and the `claude_code.hook` span. Interactive CLI sessions also require your organization to be allowlisted for the beta. Both variables are ignored in project and local settings",
+      "description": "Set to `1`, and set `BETA_TRACING_ENDPOINT` to your OTLP/HTTP collector endpoint, to turn on detailed beta tracing, which adds content-bearing span attributes and the `claude_code.hook` span. Interactive CLI sessions also require your organization to be allowlisted for the beta. Both variables are ignored in project and local settings",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
