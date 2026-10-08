@@ -5871,7 +5871,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A default longer than 30 minutes also becomes the default time limit for background commands in unattended sessions.",
+      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A value above the default time limit for background commands replaces that default in unattended sessions.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -6592,7 +6592,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable 1M context window support. When set, 1M model variants are unavailable in the model picker, and Claude Code holds sessions on models with a native 1M window, such as Sonnet 5.5 and the Fable models, to a 200K window; see Extended context for how the hold is enforced. Useful for enterprise environments with compliance requirements. For its role in correcting the window for an unrecognized `[1m]` model ID, see Correct the window for a gateway or custom model ID",
+      "description": "Set to `1` to turn off 1M context window support. Claude Code removes `[1m]` model variants from the model picker and holds models that run with the 1M window by default to a 200K window. See Turn off 1M context. Useful for enterprise environments with compliance requirements. For its role in correcting the window for an unrecognized `[1m]` model ID, see Correct the window for a gateway or custom model ID",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"

@@ -3797,7 +3797,7 @@
     {
       "symbol": "BASH_DEFAULT_TIMEOUT_MS",
       "type": "env_var",
-      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A default longer than 30 minutes also becomes the default time limit for background commands in unattended sessions. The background time limit requires Claude Code v2.1.285 or later",
+      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A value above the default time limit for background commands replaces that default in unattended sessions. The background time limit requires Claude Code v2.1.285 or later",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4105,7 +4105,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_1M_CONTEXT",
       "type": "env_var",
-      "description": "Set to `1` to disable 1M context window support. When set, 1M model variants are unavailable in the model picker, and Claude Code holds sessions on models with a native 1M window, such as Sonnet 5.5 and the Fable models, to a 200K window; see Extended context for how the hold is enforced. Useful for enterprise environments with compliance requirements. For its role in correcting the window for an unrecognized `[1m]` model ID, see Correct the window for a gateway or custom model ID",
+      "description": "Set to `1` to turn off 1M context window support. Claude Code removes `[1m]` model variants from the model picker and holds models that run with the 1M window by default to a 200K window. See Turn off 1M context. Useful for enterprise environments with compliance requirements. For its role in correcting the window for an unrecognized `[1m]` model ID, see Correct the window for a gateway or custom model ID",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4973,7 +4973,7 @@
     {
       "symbol": "CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS",
       "type": "env_var",
-      "description": "Ceiling in milliseconds on idle waiting for background work, such as subagents and workflows, after the final turn in non-interactive mode with the `-p` flag. Idle waiting starts over each time Claude takes a turn to handle a background result. Default: `600000`, or 10 minutes. When idle waiting reaches the ceiling, Claude Code stops waiting for the remaining background tasks and exits. Set to `0` to wait indefinitely. This cap is separate from the five-second grace period that applies to plain background shells. Requires Claude Code v2.1.182 or later",
+      "description": "Ceiling in milliseconds on idle waiting for background work, such as subagents and workflows, after the final turn in non-interactive mode with the `-p` flag. Idle waiting starts over each time Claude takes a turn to handle a background result. Default: `600000`, or 10 minutes. When idle waiting reaches the ceiling, Claude Code stops waiting for the remaining background tasks. A running background command that the main conversation started holds the run open past it. Set to `0` to wait indefinitely. Requires Claude Code v2.1.182 or later",
       "doc_min_version": "2.1.182",
       "doc_page": "env-vars"
     },

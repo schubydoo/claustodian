@@ -989,6 +989,10 @@
       {
         "from": "2.1.64",
         "description": "HTTP port"
+      },
+      {
+        "from": "2.1.295",
+        "description": "Port to listen on with --transport http (default 0 = kernel-assigned; bound to 127.0.0.1 only)"
       }
     ],
     "cli_flag:--post": [
@@ -1135,6 +1139,12 @@
         "description": "With --from-link (not with --sparse or --scope): adds nothing and prints one JSON line, {\"existing\": \"<marketplace>\"} naming the added marketplace --from-link would reuse for this source, or {\"existing\": null} when it would reuse none"
       }
     ],
+    "cli_flag:--result-format": [
+      {
+        "from": "2.1.295",
+        "description": "Tool result content: raw (JSON of the tool output) or rendered (the text the model would see)"
+      }
+    ],
     "cli_flag:--resume": [
       {
         "from": "0.2.91",
@@ -1227,6 +1237,12 @@
       {
         "from": "2.1.97",
         "description": "Emit transcript_mirror frames on stdout (SDK-internal; set by ProcessTransport when sessionStore is configured)"
+      }
+    ],
+    "cli_flag:--session-tunnel": [
+      {
+        "from": "2.1.295",
+        "description": "With --transport http --port 28471: dial the session tunnel that relays tool calls; reads one line of JSON (session id, token, API address) from standard input"
       }
     ],
     "cli_flag:--setting-sources": [
@@ -3489,6 +3505,10 @@
       {
         "from": "2.1.227",
         "description": "Cloud gateway URL to pre-fill and auto-connect to during login, alongside forceLoginMethod: \"gateway\". Honored only from admin-controlled managed settings (MDM / managed-settings.json / policy helper); ignored in user, project, and remote-delivered settings."
+      },
+      {
+        "from": "2.1.295",
+        "description": "Cloud gateway URL to pre-fill during login, alongside forceLoginMethod: \"gateway\". Honored from admin-controlled managed settings (MDM / managed-settings.json / policy helper) and, on a machine with none of those, from your own user settings; ignored in project, local, flag, and remote-delivered settings."
       }
     ],
     "config_key:forceLoginMethod": [

@@ -3219,11 +3219,11 @@
       "first_seen": "2.1.145",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Treat warnings as errors, so unrecognized fields and missing metadata that the runtime tolerates fail the run",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "plugin validate"
@@ -7130,8 +7130,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set the gateway URL the `/login` Cloud gateway screen connects to, so people reach your cloud gateway without typing its address. The screen has no URL field: with this key set, it shows your gateway URL and connects when the person presses Enter; without it, it tells them to contact their IT administrator.",
-      "description_source": "docs",
+      "description": "Cloud gateway URL to pre-fill and auto-connect to during login, alongside forceLoginMethod: \"gateway\". Honored only from admin-controlled managed settings (MDM / managed-settings.json / policy helper); ignored in user, project, and remote-delivered settings.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -11465,7 +11465,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A default longer than 30 minutes also becomes the default time limit for background commands in unattended sessions.",
+      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A value above the default time limit for background commands replaces that default in unattended sessions.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -13739,7 +13739,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable 1M context window support. When set, 1M model variants are unavailable in the model picker, and Claude Code holds sessions on models with a native 1M window, such as Sonnet 5.5 and the Fable models, to a 200K window; see Extended context for how the hold is enforced. Useful for enterprise environments with compliance requirements. For its role in correcting the window for an unrecognized `[1m]` model ID, see Correct the window for a gateway or custom model ID",
+      "description": "Set to `1` to turn off 1M context window support. Claude Code removes `[1m]` model variants from the model picker and holds models that run with the 1M window by default to a 200K window. See Turn off 1M context. Useful for enterprise environments with compliance requirements. For its role in correcting the window for an unrecognized `[1m]` model ID, see Correct the window for a gateway or custom model ID",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -17001,7 +17001,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Ceiling in milliseconds on idle waiting for background work, such as subagents and workflows, after the final turn in non-interactive mode with the `-p` flag. Idle waiting starts over each time Claude takes a turn to handle a background result. Default: `600000`, or 10 minutes. When idle waiting reaches the ceiling, Claude Code stops waiting for the remaining background tasks and exits. Set to `0` to wait indefinitely. This cap is separate from the five-second grace period that applies to plain background shells. Requires Claude Code v2.1.182 or later",
+      "description": "Ceiling in milliseconds on idle waiting for background work, such as subagents and workflows, after the final turn in non-interactive mode with the `-p` flag. Idle waiting starts over each time Claude takes a turn to handle a background result. Default: `600000`, or 10 minutes. When idle waiting reaches the ceiling, Claude Code stops waiting for the remaining background tasks. A running background command that the main conversation started holds the run open past it. Set to `0` to wait indefinitely. Requires Claude Code v2.1.182 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"

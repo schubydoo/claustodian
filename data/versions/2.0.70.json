@@ -2829,7 +2829,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A default longer than 30 minutes also becomes the default time limit for background commands in unattended sessions.",
+      "description": "Default timeout for a foreground Bash or PowerShell tool command, in milliseconds (default: 120000, or 2 minutes). A value above the default time limit for background commands replaces that default in unattended sessions.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
