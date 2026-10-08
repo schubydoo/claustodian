@@ -4603,7 +4603,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "**Skill.** Run a setup checkup that diagnoses issues and can fix them. Checks installation health, including duplicate or leftover installs, `PATH` problems, and unparseable settings files. Finds unused skills, MCP servers, and plugins versus their context cost, flags slow hooks, and checks for a newer version on your release channel. Deduplicates local `CLAUDE.md` files against checked-in ones, trims checked-in `CLAUDE.md` files by cutting content Claude could derive from the codebase, and migrates the always-loaded guidance that remains into skills and nested `CLAUDE.md` files that load on demand. Also offers to make auto mode your default and to pre-approve frequently denied read-only commands. Reports findings first and asks for confirmation before changing anything. From the terminal, `claude doctor` prints read-only installation diagnostics without starting a session. Alias: `/checkup`. Run `/doctor prompt-audit` to have Claude audit your `CLAUDE.md` files, skills, and other configuration for outdated or conflicting instructions instead of running the checkup. The `prompt-audit` subcommand requires Claude Code v2.1.283 or later. The `CLAUDE.md` trim check requires Claude Code v2.1.206 or later. Before v2.1.205, `/doctor` opened a read-only diagnostics screen and pressing `f` sent the report to Claude",
+      "description": "**Skill.** Run a setup checkup that diagnoses installation, settings, extension, and `CLAUDE.md` problems and proposes fixes that Claude applies after you confirm. For what the checkup covers, or to audit your instructions with `prompt-audit` instead, see Check your setup with `/doctor`. The `prompt-audit` subcommand requires Claude Code v2.1.283 or later. Alias: `/checkup`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -8167,7 +8167,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose where Claude Code stores the plan files it writes in plan mode. Claude Code resolves the path relative to the project root and keeps the default when the path resolves outside it.",
+      "description": "Choose where Claude Code stores the plan files it writes in plan mode. Claude Code resolves the path relative to the project root.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -17065,11 +17065,12 @@
       "type": "env_var",
       "first_seen": "2.1.275",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to draw mod `Image` elements as pictures when your terminal draws kitty graphics protocol images with Unicode placeholders but is not auto-detected. See which terminals Claude Code detects and why it doesn't help inside tmux or screen",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -18137,7 +18138,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Cap on the total number of WebSearch calls one session can make (default: 200). When Claude reaches the cap, further WebSearch calls return a notice telling it to continue with the information it already gathered. Accepts a positive whole number with no upper bound. Anything else is ignored and the default applies, so the cap can be raised but not turned off. Requires Claude Code v2.1.212 or later",
+      "description": "Cap on WebSearch calls (default: 200). When Claude reaches the cap, further WebSearch calls return a notice telling it to continue with the information it already gathered. Accepts a positive whole number with no upper bound. Anything else is ignored and the default applies, so the cap can be raised but not turned off. Requires Claude Code v2.1.212 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -20083,7 +20084,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to use a shorter system prompt and abbreviated tool descriptions on any model. Set to `0`, `false`, `no`, or `off` to opt out even on models where the experiment or server configuration would otherwise enable it. The full tool set, hooks, MCP servers, and CLAUDE.md discovery remain enabled",
+      "description": "Choose between Claude Code's full system prompt and a shorter one with abbreviated tool descriptions. When unset, Haiku 4.5, Sonnet 5, Opus 4.7, and earlier models in those families use the full prompt by default, and newer models use the shorter one. Set to `1` to use the shorter prompt on any model. Set to `0`, `false`, `no`, or `off` to use the full prompt on any model, even where an experiment or server configuration would otherwise select the shorter one. Either prompt keeps the full tool set, hooks, MCP servers, and CLAUDE.md discovery",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"

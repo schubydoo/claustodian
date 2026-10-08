@@ -4212,7 +4212,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose where Claude Code stores the plan files it writes in plan mode. Claude Code resolves the path relative to the project root and keeps the default when the path resolves outside it.",
+      "description": "Choose where Claude Code stores the plan files it writes in plan mode. Claude Code resolves the path relative to the project root.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8754,7 +8754,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to use a shorter system prompt and abbreviated tool descriptions on any model. Set to `0`, `false`, `no`, or `off` to opt out even on models where the experiment or server configuration would otherwise enable it. The full tool set, hooks, MCP servers, and CLAUDE.md discovery remain enabled",
+      "description": "Choose between Claude Code's full system prompt and a shorter one with abbreviated tool descriptions. When unset, Haiku 4.5, Sonnet 5, Opus 4.7, and earlier models in those families use the full prompt by default, and newer models use the shorter one. Set to `1` to use the shorter prompt on any model. Set to `0`, `false`, `no`, or `off` to use the full prompt on any model, even where an experiment or server configuration would otherwise select the shorter one. Either prompt keeps the full tool set, hooks, MCP servers, and CLAUDE.md discovery",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
