@@ -409,11 +409,11 @@
       "first_seen": "2.1.51",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Maximum number of concurrent sessions. Default is 32. Cannot be used with `--spawn=session`.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/remote-control.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "remote-control"
@@ -9175,7 +9175,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "How many milliseconds before auto-continue the on-screen countdown appears on an unanswered `AskUserQuestion` dialog. Default `20000` (20 seconds), capped at the auto-continue timeout. Has no effect unless auto-continue is on; see the `askUserQuestionTimeout` setting and `CLAUDE_AFK_TIMEOUT_MS`. Requires Claude Code v2.1.198 or later",
+      "description": "How many milliseconds before auto-continue the on-screen countdown appears on an unanswered `AskUserQuestion` dialog. Default `20000` (20 seconds), capped at the auto-continue timeout. Has no effect unless auto-continue is on; see the `askUserQuestionTimeout` setting and `CLAUDE_AFK_TIMEOUT_MS`. Ignored in project and local settings. Requires Claude Code v2.1.198 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -9188,7 +9188,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "How many milliseconds of idle time before an unanswered `AskUserQuestion` dialog auto-continues without you. Auto-continue is off by default; opt in with the `askUserQuestionTimeout` setting. This variable is an override for demos and automated tests: when set, it takes precedence over that setting and turns auto-continue on even when the setting is unset or `never`. Setting `0` doesn't turn the timeout off; it closes the dialog immediately. In v2.1.198 and v2.1.199, auto-continue was on by default with a `60000` (60 seconds) timeout. Requires Claude Code v2.1.198 or later",
+      "description": "How many milliseconds of idle time before an unanswered `AskUserQuestion` dialog auto-continues without you. Auto-continue is off by default; opt in with the `askUserQuestionTimeout` setting. This variable is an override for demos and automated tests: when set, it takes precedence over that setting and turns auto-continue on even when the setting is unset or `never`. Setting `0` doesn't turn the timeout off; it closes the dialog immediately. Ignored in project and local settings. Before v2.1.200, auto-continue was on by default with a `60000` (60 seconds) timeout. Requires Claude Code v2.1.198 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -9335,7 +9335,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Stall timeout in milliseconds for subagents. Default `600000` (10 minutes); if you raise `CLAUDE_STREAM_IDLE_TIMEOUT_MS` while the stream watchdog is on, the default rises with it, as Handle slow or stalled API responses describes. The timer resets on each streaming progress event; if no progress arrives within the window, Claude Code aborts the subagent and reports the stall to the parent",
+      "description": "Stall timeout in milliseconds for subagents.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -10617,7 +10617,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable attachment processing. File mentions with `@` syntax are sent as plain text instead of being expanded into file content",
+      "description": "Set to `1` to disable attachment processing. File mentions with `@` syntax are sent as plain text instead of being expanded into file content. Ignored in project and local settings",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"

@@ -382,11 +382,11 @@
       "first_seen": "2.1.51",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Maximum number of concurrent sessions. Default is 32. Cannot be used with `--spawn=session`.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/remote-control.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "remote-control"
@@ -9130,7 +9130,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Stall timeout in milliseconds for subagents. Default `600000` (10 minutes); if you raise `CLAUDE_STREAM_IDLE_TIMEOUT_MS` while the stream watchdog is on, the default rises with it, as Handle slow or stalled API responses describes. The timer resets on each streaming progress event; if no progress arrives within the window, Claude Code aborts the subagent and reports the stall to the parent",
+      "description": "Stall timeout in milliseconds for subagents.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -10364,7 +10364,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable attachment processing. File mentions with `@` syntax are sent as plain text instead of being expanded into file content",
+      "description": "Set to `1` to disable attachment processing. File mentions with `@` syntax are sent as plain text instead of being expanded into file content. Ignored in project and local settings",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"

@@ -2603,7 +2603,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable attachment processing. File mentions with `@` syntax are sent as plain text instead of being expanded into file content",
+      "description": "Set to `1` to disable attachment processing. File mentions with `@` syntax are sent as plain text instead of being expanded into file content. Ignored in project and local settings",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
