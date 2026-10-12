@@ -1690,7 +1690,9 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         const params = new URLSearchParams(location.search);
         const put = (key, value) => (value ? params.set(key, value) : params.delete(key));
         put('search', $q.value.trim());
-        put('version', versionPinned ? $version.value : '');
+        // The snapshot on screen, not the picker: after a failed load the picker
+        // names a version that is not the one displayed.
+        put('version', versionPinned ? snapshot.claudeCodeVersion : '');
         put('type', $type.value === 'all' ? '' : $type.value);
         // A hidden category control holds a value that render() ignores.
         const category = $categoryWrap.hidden ? 'all' : $category.value;
@@ -1700,6 +1702,9 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         put('sort', $sort.selectedIndex > 0 ? $sort.value : '');
         put('per_page', $perPage.selectedIndex > 0 ? $perPage.value : '');
         put('group', $group.checked ? '1' : '');
+        // Collapsed groups take no page slots, so `page` means a different slice
+        // without them.
+        put('collapsed', $group.checked ? [...collapsedTypes].join(',') : '');
         put('page', page > 1 ? String(page) : '');
         const qs = params.toString();
         // replaceState, not pushState: one keystroke must not be one Back press.
@@ -1880,6 +1885,9 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             if ([...$sel.options].some((o) => o.value === v)) $sel.value = v;
           }
           $group.checked = params.get('group') === '1';
+          for (const t of (params.get('collapsed') ?? '').split(',')) {
+            if (t) collapsedTypes.add(t);
+          }
           $allVersions.checked = params.get('all') === '1';
           const urlPage = Number(params.get('page'));
           // Read from the index we already fetched: hardcoding these would go stale
