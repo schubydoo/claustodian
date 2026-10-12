@@ -1297,16 +1297,18 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       // Cross-version catalog (every symbol ever, with lifecycle + last_seen), lazily
       // fetched the first time "Search all versions" is enabled. null until loaded.
       let catalog = null;
-      // Shareable links: ?search=…&version=…&type=… pre-fills the three controls,
-      // and syncUrl() writes them back as they change. `versionPinned` is true once
+      // Shareable links: the query string pre-fills the controls, and syncUrl()
+      // writes them back as they change. `versionPinned` is true once
       // a version was asked for, by the link or by the picker. Until then the URL
       // carries no version, so a bare link keeps meaning "the latest release". A
       // pinned version stays in the URL even when it is the latest, or the link
       // would start to show a newer release after the next one ships. `urlType`
-      // holds the requested type until refreshTypeControl() can resolve it, because
-      // the Type options do not exist before the first snapshot loads.
+      // and `urlCategory` hold the requested values until the refresh*Control()
+      // functions can resolve them, because those options are built from the data
+      // and do not exist before the first source loads.
       let versionPinned = false;
       let urlType = null;
+      let urlCategory = null;
 
       // Display labels and canonical order for symbol types. The Type dropdown and
       // the grouped view both read this. A type NOT listed here still renders —
@@ -1574,6 +1576,10 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         // cli-internal, and config keys split settings / settings-internal /
         // global-config. Hardcoding env_var left those unfilterable.
         const type = $type.value;
+        // Taken once, here, so every exit below drops it: a category from the link
+        // must not come back after the user changes the type.
+        const wanted = urlCategory;
+        urlCategory = null;
         const cats =
           type === 'all'
             ? []
@@ -1591,7 +1597,7 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           $category.value = 'all';
           return;
         }
-        const prev = $category.value;
+        const prev = wanted ?? $category.value;
         $category.replaceChildren(
           optionEl('all', 'All categories'),
           ...cats.map((c) => optionEl(c, c))
@@ -1677,15 +1683,24 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         syncUrl();
       }
 
-      // Mirror the search, version and type controls into the address bar so the
-      // current view can be copied as a link. Defaults are omitted, and parameters
-      // this page does not own are left alone.
+      // Mirror the controls into the address bar so the current view can be copied
+      // as a link. Defaults are omitted, and parameters this page does not own are
+      // left alone.
       function syncUrl() {
         const params = new URLSearchParams(location.search);
         const put = (key, value) => (value ? params.set(key, value) : params.delete(key));
         put('search', $q.value.trim());
         put('version', versionPinned ? $version.value : '');
         put('type', $type.value === 'all' ? '' : $type.value);
+        // A hidden category control holds a value that render() ignores.
+        const category = $categoryWrap.hidden ? 'all' : $category.value;
+        put('category', category === 'all' ? '' : category);
+        put('all', $allVersions.checked ? '1' : '');
+        // The first option of each of these two is its default.
+        put('sort', $sort.selectedIndex > 0 ? $sort.value : '');
+        put('per_page', $perPage.selectedIndex > 0 ? $perPage.value : '');
+        put('group', $group.checked ? '1' : '');
+        put('page', page > 1 ? String(page) : '');
         const qs = params.toString();
         // replaceState, not pushState: one keystroke must not be one Back press.
         // Safari throws when it is called too often, and a stale address bar is
@@ -1799,6 +1814,24 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         $pagerTop.scrollIntoView({ block: 'start' });
       }
 
+      // Lazy-load the catalog the first time "Search all versions" is on; on
+      // failure, revert the toggle. Also keeps the version picker in step.
+      async function loadCatalog() {
+        if ($allVersions.checked && !catalog) {
+          $status.textContent = 'Loading the all-versions index…';
+          try {
+            const c = await getJSON(`${DATA}/catalog.json`);
+            catalog = c.symbols || [];
+            $status.textContent = '';
+          } catch (e) {
+            $status.textContent = `Could not load the all-versions index (${e.message}).`;
+            $allVersions.checked = false;
+          }
+        }
+        // The version picker doesn't apply to a cross-version search.
+        $version.disabled = $allVersions.checked;
+      }
+
       async function loadVersion(v) {
         $status.textContent = `Loading ${v}…`;
         try {
@@ -1837,6 +1870,18 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           $version.value = startVersion;
           $q.value = params.get('search') ?? '';
           urlType = params.get('type');
+          urlCategory = params.get('category');
+          // An <option> value the control does not have leaves it on its default.
+          for (const [key, $sel] of [
+            ['sort', $sort],
+            ['per_page', $perPage],
+          ]) {
+            const v = params.get(key);
+            if ([...$sel.options].some((o) => o.value === v)) $sel.value = v;
+          }
+          $group.checked = params.get('group') === '1';
+          $allVersions.checked = params.get('all') === '1';
+          const urlPage = Number(params.get('page'));
           // Read from the index we already fetched: hardcoding these would go stale
           // and a second request would be wasteful.
           if ($whyStats) {
@@ -1883,27 +1928,23 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             $q.focus();
           });
           $allVersions.addEventListener('change', async () => {
-            // Lazy-load the catalog the first time; on failure, revert the toggle.
-            if ($allVersions.checked && !catalog) {
-              $status.textContent = 'Loading the all-versions index…';
-              try {
-                const c = await getJSON(`${DATA}/catalog.json`);
-                catalog = c.symbols || [];
-                $status.textContent = '';
-              } catch (e) {
-                $status.textContent = `Could not load the all-versions index (${e.message}).`;
-                $allVersions.checked = false;
-              }
-            }
-            // The version picker doesn't apply to a cross-version search.
-            $version.disabled = $allVersions.checked;
+            await loadCatalog();
             // The catalog can carry a type no single snapshot has (a removed one),
             // so rebuild the Type dropdown when the source switches.
             refreshTypeControl();
             refreshCategoryControl();
             rerender();
           });
+          // ?all=1: the catalog must be the active source before the first
+          // refreshTypeControl(), or a type that only the catalog has (a removed
+          // one) is resolved against the snapshot and dropped.
+          await loadCatalog();
           await loadVersion(startVersion);
+          // loadVersion() ends on page 1. render() clamps a page past the end.
+          if (Number.isInteger(urlPage) && urlPage > 1) {
+            page = urlPage;
+            render();
+          }
         } catch (e) {
           $status.textContent = `Failed to load the dataset (${e.message}). If viewing locally, serve the folder over HTTP (e.g. "npx serve").`;
         }
