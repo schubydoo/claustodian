@@ -87,14 +87,14 @@
     {
       "symbol": "--allowed-tools",
       "type": "cli_flag",
-      "description": "Tools that execute without prompting for permission. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead. If you name one of the task-tracking tools here, Claude Code also opts the session in",
+      "description": "Tools that execute without prompting for permission, apart from reads from network paths. See permission rule syntax for pattern matching. To restrict which tools are available, use `--tools` instead. If you name one of the task-tracking tools here, Claude Code also opts the session in",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
     {
       "symbol": "--any",
       "type": "cli_flag",
-      "description": "Stop the background-session supervisor and the sessions it hosts. Pass `--keep-workers` to leave background sessions running so the next supervisor reconnects to them. `--any` confirms stopping an on-demand supervisor, which is the default. Use this to recover from an unresponsive supervisor",
+      "description": "Stop the background-session supervisor and the sessions it hosts. Pass `--keep-workers` to leave background sessions running for the next supervisor to reconnect to. `--any` confirms stopping an on-demand supervisor, which is the default. Use this to recover from an unresponsive supervisor",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -535,7 +535,7 @@
     {
       "symbol": "--mcp-config",
       "type": "cli_flag",
-      "description": "Load MCP servers from JSON files or strings (space-separated). When you pass this flag with `-p`, Claude Code waits for still-pending servers to connect before running the first turn, up to the `MCP_TIMEOUT` startup timeout, 30 seconds by default; a server with a cached tool list skips the wait and connects on first use. The wait requires Claude Code v2.1.221 or later",
+      "description": "Load MCP servers from JSON files or strings (space-separated). When you pass this flag with `-p`, Claude Code waits for still-pending servers to connect before running the first turn, up to the `MCP_TIMEOUT` startup timeout, 30 seconds by default; a server with a cached tool list skips the wait and connects on first use. In a self-hosted environment, a shorter wait applies instead. The wait requires Claude Code v2.1.221 or later",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -563,7 +563,7 @@
     {
       "symbol": "--name",
       "type": "cli_flag",
-      "description": "Set a display name for the session, shown in `/resume` and the terminal title. You can resume a named session with `claude --resume <name>`. In an interactive session, if another live session on this machine already uses the name, Claude Code applies a variant of it instead. <br /><br />`/rename` changes the name mid-session and also shows it on the prompt bar",
+      "description": "Set a display name for the session, shown in `/resume` and the terminal title. You can resume a named session with `claude --resume <name>`. <br /><br />`/rename` changes the name mid-session and also shows it on the prompt bar",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -783,7 +783,7 @@
     {
       "symbol": "--spawn",
       "type": "cli_flag",
-      "description": "How the server creates sessions.<br />• `same-dir` (default): all sessions share the current working directory, so they can conflict if editing the same files.<br />• `worktree`: each on-demand session gets its own git worktree. Requires a git repository.<br />• `session`: single-session mode. Serves exactly one session and rejects additional connections. Set at startup only.<br />Press `w` at runtime to toggle between `same-dir` and `worktree`.",
+      "description": "How the server creates sessions.<br />• `same-dir` (default): all sessions share the current working directory, so they can conflict if editing the same files.<br />• `worktree`: each on-demand session gets its own git worktree. Requires a git repository or a `WorktreeCreate` hook.<br />• `session`: single-session mode. Serves exactly one session and rejects additional connections. Set at startup only.<br />Press `w` at runtime to toggle between `same-dir` and `worktree`.",
       "doc_min_version": "2.1.51",
       "doc_page": "remote-control"
     },
@@ -1083,7 +1083,7 @@
     {
       "symbol": "/copy",
       "type": "command",
-      "description": "Copy the last assistant response to clipboard. Pass a number `N` to copy the Nth-latest response: `/copy 2` copies the second-to-last. When code blocks are present, shows an interactive picker to select individual blocks or the full response. Press `w` in the picker to write the selection to a file instead of the clipboard, which is useful over SSH",
+      "description": "Copy the last assistant response to clipboard. Pass a number `N` to copy the Nth-latest response: `/copy 2` copies the second-to-last. When code blocks or blockquotes are present, shows an interactive picker to select individual blocks or the full response. Press `w` in the picker to write the selection to a file instead of the clipboard, which is useful over SSH",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1321,7 +1321,7 @@
     {
       "symbol": "/mcp",
       "type": "command",
-      "description": "Manage MCP server connections and OAuth authentication. Run with no argument to open the interactive list, or pass `reconnect`, `enable`, or `disable` with a server name or `all` to change connection state without opening it. `reconnect all` retries every server that failed or needs authentication. Also available in non-interactive mode (`-p`), where running it with no argument prints a text summary of server status instead of opening the list; requires Claude Code v2.1.205 or later",
+      "description": "Manage MCP server connections and OAuth authentication. Run with no argument to open the interactive list, or pass `reconnect`, `enable`, or `disable` with a server name or `all` to change connection state without opening it. `reconnect all` retries every server that failed or needs authentication. In non-interactive mode (`-p`), running it with no argument prints a text summary of server status instead of opening the list; requires Claude Code v2.1.205 or later",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1468,7 +1468,7 @@
     {
       "symbol": "/rename",
       "type": "command",
-      "description": "Rename the current session and show the name on the prompt bar. Without a name, auto-generates one from conversation history. Also available in non-interactive mode (`-p`); requires Claude Code v2.1.205 or later. From every rename surface, including claude.ai and the desktop app, Claude Code replaces control and invisible characters in the new name with spaces and caps the name at 200 characters. If the name is empty once invisible characters are removed, Claude Code rejects it and shows `That name is empty once invisible characters are removed. Usage: /rename <name>`. The character replacement and length cap require Claude Code v2.1.221 or later. If another live session on this machine already uses a name you pass, Claude Code applies a variant of it instead",
+      "description": "Rename the current session and show the name on the prompt bar. Without a name, auto-generates one from conversation history. Also available in non-interactive mode (`-p`); requires Claude Code v2.1.205 or later. From every rename surface, including claude.ai and the desktop app, Claude Code replaces control and invisible characters in the new name with spaces and caps the name at 200 characters. If the name is empty once invisible characters are removed, Claude Code rejects it and shows `That name is empty once invisible characters are removed. Usage: /rename <name>`. The character replacement and length cap require Claude Code v2.1.221 or later",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2080,7 +2080,7 @@
     {
       "symbol": "copyFullResponse",
       "type": "config_key",
-      "description": "Make `/copy` copy the full response every time, without the picker it otherwise shows when the response contains code blocks. Selecting **Always copy full response** in that picker sets this key to `true`. Appears in `/config` as **Skip the /copy picker**.",
+      "description": "Make `/copy` copy the full response every time, without showing the picker. Selecting **Always copy full response** in that picker sets this key to `true`. Appears in `/config` as **Skip the /copy picker**.",
       "doc_min_version": null,
       "doc_page": "settings-reference",
       "category": "global-config"
@@ -2294,8 +2294,8 @@
     {
       "symbol": "enableArtifact",
       "type": "config_key",
-      "description": "Turn off the Artifact tool, which publishes session output as a private web page on claude.ai. When you turn the **Artifacts** row off in `/config`, Claude Code writes this key to your user settings, so you don't usually edit it by hand. Requires Claude Code v2.1.196 or later.",
-      "doc_min_version": "2.1.196",
+      "description": "Turn off the Artifact tool, which publishes session output as a private web page on claude.ai. When you turn the **Artifacts** row off in `/config`, Claude Code writes this key to your user settings, so you don't usually edit it by hand.",
+      "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
@@ -3180,7 +3180,7 @@
     {
       "symbol": "sshConfigs",
       "type": "config_key",
-      "description": "Add SSH connections to the Desktop environment dropdown. Administrators use it to distribute shared connections to a team. Connections you define in managed settings show as managed, so users can select them but can't edit or delete them in the app.",
+      "description": "Add SSH connections to the Desktop environment dropdown. Administrators use it to distribute shared connections to a team. Connections you define in managed settings show as managed. Users can select them and set their own **Worktree folder** for them, but can't edit anything else or delete them in the app.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3434,6 +3434,13 @@
       "symbol": "worktree.bgIsolation",
       "type": "config_key",
       "description": "Choose how background sessions isolate their file edits. If you moved a session to the background with `←` or `/background`, that session edits files in place whatever this key says. With `\"worktree\"`, Claude Code blocks `Edit` and `Write` in the main checkout until the session calls `EnterWorktree`; with `\"none\"`, background jobs edit the working copy directly. Set `\"none\"` for a repository where git worktrees are impractical.",
+      "doc_min_version": null,
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "worktree.location",
+      "type": "config_key",
+      "description": "Choose the folder on a remote machine where Desktop SSH sessions create their worktrees, instead of `<project-root>/.claude/worktrees/`. Only the desktop app reads this key: `--worktree`, the `EnterWorktree` tool, isolated subagents, and background sessions ignore it. Requires Claude Desktop v1.44121.0 or later.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3874,7 +3881,7 @@
     {
       "symbol": "CLAUDE_AUTO_BACKGROUND_TASKS",
       "type": "env_var",
-      "description": "Set to `1` to force-enable automatic backgrounding of long-running agent tasks. When enabled, subagents are moved to the background after running for approximately two minutes. Also enables automatic backgrounding of long MCP tool calls in non-interactive mode on Claude Code v2.1.212 or later",
+      "description": "Set to `1` to force-enable automatic backgrounding of long-running agent tasks. When enabled, a subagent moves to the background after running for approximately two minutes. If Claude queued a tool call such as a file edit behind the subagent, the subagent finishes in the foreground before that call starts. Also enables automatic backgrounding of long MCP tool calls in non-interactive mode on Claude Code v2.1.212 or later",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4203,7 +4210,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_BG_EXIT_HANDOFF",
       "type": "env_var",
-      "description": "Set to `1` to stop a background session's running background shell commands, dynamic workflows, and, as of v2.1.198, background subagents when the supervisor stops, restarts, or updates that session's process, instead of handing them to the session's next process. Affects only that handoff: backgrounding a session with `←` or `/background` still carries in-flight work over, and `CLAUDE_DISABLE_ADOPT` turns off both. Requires Claude Code v2.1.196 or later",
+      "description": "Set to `1` to stop a background session's running background shell commands, dynamic workflows, and, as of v2.1.198, background subagents when the supervisor stops, restarts, or updates that session's process, instead of handing them to the session's next process. Affects only that handoff: backgrounding a session with `←` or `/background` still carries in-flight background work over, and `CLAUDE_DISABLE_ADOPT` turns off both. Requires Claude Code v2.1.196 or later",
       "doc_min_version": "2.1.196",
       "doc_page": "env-vars"
     },
@@ -4406,7 +4413,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_TERMINAL_TITLE",
       "type": "env_var",
-      "description": "Set to `1` to disable automatic terminal title updates based on conversation context. This also skips the background small/fast-model request that generates a session title",
+      "description": "Set to `1` to disable automatic terminal title updates based on conversation context. This also skips the background small/fast-model request that generates a session title, and turns off status reports to your terminal",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4484,6 +4491,13 @@
       "symbol": "CLAUDE_CODE_ENABLE_BACKGROUND_PLUGIN_REFRESH",
       "type": "env_var",
       "description": "Set to `1` to refresh plugin state at turn boundaries in non-interactive mode after a background install completes. Off by default because the refresh changes the system prompt mid-session, which invalidates prompt caching for that turn",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_ENABLE_CFC",
+      "type": "env_var",
+      "description": "Set to `1` to start a CLI session with Chrome integration on, or `0` to start with it off. Takes precedence over the `claudeInChromeDefaultEnabled` setting. The `--chrome` and `--no-chrome` flags take precedence over both. Claude Code ignores `1` in project and local settings",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4567,7 +4581,7 @@
     {
       "symbol": "CLAUDE_CODE_FILE_READ_MAX_OUTPUT_TOKENS",
       "type": "env_var",
-      "description": "Override the default token limit for file reads. Useful when you need to read larger files in full",
+      "description": "Override the default token limit for file reads, which is 25,000 tokens. Useful when you need to read larger files in full. A read that Claude makes with the `allow_large` parameter can go past this limit when the context window has room",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4784,7 +4798,7 @@
     {
       "symbol": "CLAUDE_CODE_MCP_STARTUP_WAIT_MS",
       "type": "env_var",
-      "description": "How long in milliseconds the first turn of a non-interactive session waits for MCP servers that are still connecting, in place of the default first-turn wait. When set, the wait covers every pending server. Set to `0` to skip the wait. A `--permission-prompt-tool` server keeps its own `MCP_TIMEOUT` wait regardless of the value. Requires Claude Code v2.1.274 or later",
+      "description": "How long in milliseconds the first turn of a non-interactive session waits for MCP servers that are still connecting, in place of the default first-turn wait. When set, the wait covers every pending server; in a self-hosted environment, it changes only how long the wait lasts. Set to `0` to skip the wait. A `--permission-prompt-tool` server keeps its own `MCP_TIMEOUT` wait regardless of the value. Requires Claude Code v2.1.274 or later",
       "doc_min_version": "2.1.274",
       "doc_page": "env-vars"
     },
@@ -5505,7 +5519,7 @@
     {
       "symbol": "CLAUDE_ENV_FILE",
       "type": "env_var",
-      "description": "Path to a shell script whose contents Claude Code runs before each Bash command in the same shell process, so exports in the file are visible to the command. Use to persist virtualenv or conda activation across commands. Also populated dynamically by SessionStart, Setup, CwdChanged, and FileChanged hooks",
+      "description": "Path to a shell script whose contents Claude Code runs before each Bash command in the same shell process, so exports in the file are visible to the command. Use to persist virtualenv or conda activation across commands. PowerShell commands receive its variables too, in v2.1.296 or later, under the conditions in Persisted variables in PowerShell commands. Also populated dynamically by SessionStart, Setup, CwdChanged, and FileChanged hooks",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
