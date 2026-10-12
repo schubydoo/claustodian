@@ -1297,6 +1297,18 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       // Cross-version catalog (every symbol ever, with lifecycle + last_seen), lazily
       // fetched the first time "Search all versions" is enabled. null until loaded.
       let catalog = null;
+      // Shareable links: the query string pre-fills the controls, and syncUrl()
+      // writes them back as they change. `versionPinned` is true once
+      // a version was asked for, by the link or by the picker. Until then the URL
+      // carries no version, so a bare link keeps meaning "the latest release". A
+      // pinned version stays in the URL even when it is the latest, or the link
+      // would start to show a newer release after the next one ships. `urlType`
+      // and `urlCategory` hold the requested values until the refresh*Control()
+      // functions can resolve them, because those options are built from the data
+      // and do not exist before the first source loads.
+      let versionPinned = false;
+      let urlType = null;
+      let urlCategory = null;
 
       // Display labels and canonical order for symbol types. The Type dropdown and
       // the grouped view both read this. A type NOT listed here still renders —
@@ -1525,6 +1537,7 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             $allVersions.checked = false;
             $version.disabled = false;
             $version.value = sym.last_seen;
+            versionPinned = true;
             loadVersion(sym.last_seen);
           });
           li.appendChild(jump);
@@ -1537,8 +1550,17 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       // Keeps the leading "All types" option and the current selection when it is
       // still present; otherwise falls back to "all".
       function refreshTypeControl() {
-        const prev = $type.value;
+        let prev = $type.value;
         const types = orderedTypesIn(activeSource());
+        if (urlType) {
+          // An exact type name, or a prefix that matches one type only: `cli` is
+          // cli_flag, while `c` is ambiguous and falls through to "all".
+          const hits = types.includes(urlType)
+            ? [urlType]
+            : types.filter((t) => t.startsWith(urlType));
+          if (hits.length === 1) prev = hits[0];
+          urlType = null;
+        }
         const opts = [optionEl('all', 'All types')];
         for (const t of types) opts.push(optionEl(t, typeLabel(t)));
         $type.replaceChildren(...opts);
@@ -1554,6 +1576,10 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         // cli-internal, and config keys split settings / settings-internal /
         // global-config. Hardcoding env_var left those unfilterable.
         const type = $type.value;
+        // Taken once, here, so every exit below drops it: a category from the link
+        // must not come back after the user changes the type.
+        const wanted = urlCategory;
+        urlCategory = null;
         const cats =
           type === 'all'
             ? []
@@ -1571,7 +1597,7 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           $category.value = 'all';
           return;
         }
-        const prev = $category.value;
+        const prev = wanted ?? $category.value;
         $category.replaceChildren(
           optionEl('all', 'All categories'),
           ...cats.map((c) => optionEl(c, c))
@@ -1654,6 +1680,41 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           pageCount > 1 ? `${scope} — showing ${start + 1}\u2013${start + slice.length}` : scope;
         renderPager($pagerTop, pageCount);
         renderPager($pagerBottom, pageCount);
+        syncUrl();
+      }
+
+      // Mirror the controls into the address bar so the current view can be copied
+      // as a link. Defaults are omitted, and parameters this page does not own are
+      // left alone.
+      function syncUrl() {
+        const params = new URLSearchParams(location.search);
+        const put = (key, value) => (value ? params.set(key, value) : params.delete(key));
+        put('search', $q.value.trim());
+        // The snapshot on screen, not the picker: after a failed load the picker
+        // names a version that is not the one displayed.
+        put('version', versionPinned ? snapshot.claudeCodeVersion : '');
+        put('type', $type.value === 'all' ? '' : $type.value);
+        // A hidden category control holds a value that render() ignores.
+        const category = $categoryWrap.hidden ? 'all' : $category.value;
+        put('category', category === 'all' ? '' : category);
+        put('all', $allVersions.checked ? '1' : '');
+        // The first option of each of these two is its default.
+        put('sort', $sort.selectedIndex > 0 ? $sort.value : '');
+        put('per_page', $perPage.selectedIndex > 0 ? $perPage.value : '');
+        put('group', $group.checked ? '1' : '');
+        // Collapsed groups take no page slots, so `page` means a different slice
+        // without them.
+        put('collapsed', $group.checked ? [...collapsedTypes].join(',') : '');
+        put('page', page > 1 ? String(page) : '');
+        const qs = params.toString();
+        // replaceState, not pushState: one keystroke must not be one Back press.
+        // Safari throws when it is called too often, and a stale address bar is
+        // not worth breaking the search for.
+        try {
+          history.replaceState(null, '', location.pathname + (qs ? `?${qs}` : '') + location.hash);
+        } catch {
+          /* rate-limited; the next render tries again */
+        }
       }
 
       /**
@@ -1758,6 +1819,24 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         $pagerTop.scrollIntoView({ block: 'start' });
       }
 
+      // Lazy-load the catalog the first time "Search all versions" is on; on
+      // failure, revert the toggle. Also keeps the version picker in step.
+      async function loadCatalog() {
+        if ($allVersions.checked && !catalog) {
+          $status.textContent = 'Loading the all-versions index…';
+          try {
+            const c = await getJSON(`${DATA}/catalog.json`);
+            catalog = c.symbols || [];
+            $status.textContent = '';
+          } catch (e) {
+            $status.textContent = `Could not load the all-versions index (${e.message}).`;
+            $allVersions.checked = false;
+          }
+        }
+        // The version picker doesn't apply to a cross-version search.
+        $version.disabled = $allVersions.checked;
+      }
+
       async function loadVersion(v) {
         $status.textContent = `Loading ${v}…`;
         try {
@@ -1788,14 +1867,39 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           $version.replaceChildren(
             ...index.versions.map((v) => optionEl(v, v === index.latest ? `${v} (latest)` : v))
           );
-          $version.value = index.latest;
+          // An unknown or absent ?version= falls back to the latest release.
+          const params = new URLSearchParams(location.search);
+          const wanted = params.get('version');
+          versionPinned = index.versions.includes(wanted);
+          const startVersion = versionPinned ? wanted : index.latest;
+          $version.value = startVersion;
+          $q.value = params.get('search') ?? '';
+          urlType = params.get('type');
+          urlCategory = params.get('category');
+          // An <option> value the control does not have leaves it on its default.
+          for (const [key, $sel] of [
+            ['sort', $sort],
+            ['per_page', $perPage],
+          ]) {
+            const v = params.get(key);
+            if ([...$sel.options].some((o) => o.value === v)) $sel.value = v;
+          }
+          $group.checked = params.get('group') === '1';
+          for (const t of (params.get('collapsed') ?? '').split(',')) {
+            if (t) collapsedTypes.add(t);
+          }
+          $allVersions.checked = params.get('all') === '1';
+          const urlPage = Number(params.get('page'));
           // Read from the index we already fetched: hardcoding these would go stale
           // and a second request would be wasteful.
           if ($whyStats) {
             const oldest = index.versions[index.versions.length - 1];
             $whyStats.textContent = `${index.versions.length} tracked versions, ${oldest} to ${index.latest}.`;
           }
-          $version.addEventListener('change', () => loadVersion($version.value));
+          $version.addEventListener('change', () => {
+            versionPinned = true;
+            loadVersion($version.value);
+          });
           // Every control below changes the RESULT SET, so each resets to page 1.
           $sort.addEventListener('change', rerender);
           $type.addEventListener('change', () => {
@@ -1832,27 +1936,23 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             $q.focus();
           });
           $allVersions.addEventListener('change', async () => {
-            // Lazy-load the catalog the first time; on failure, revert the toggle.
-            if ($allVersions.checked && !catalog) {
-              $status.textContent = 'Loading the all-versions index…';
-              try {
-                const c = await getJSON(`${DATA}/catalog.json`);
-                catalog = c.symbols || [];
-                $status.textContent = '';
-              } catch (e) {
-                $status.textContent = `Could not load the all-versions index (${e.message}).`;
-                $allVersions.checked = false;
-              }
-            }
-            // The version picker doesn't apply to a cross-version search.
-            $version.disabled = $allVersions.checked;
+            await loadCatalog();
             // The catalog can carry a type no single snapshot has (a removed one),
             // so rebuild the Type dropdown when the source switches.
             refreshTypeControl();
             refreshCategoryControl();
             rerender();
           });
-          await loadVersion(index.latest);
+          // ?all=1: the catalog must be the active source before the first
+          // refreshTypeControl(), or a type that only the catalog has (a removed
+          // one) is resolved against the snapshot and dropped.
+          await loadCatalog();
+          await loadVersion(startVersion);
+          // loadVersion() ends on page 1. render() clamps a page past the end.
+          if (Number.isInteger(urlPage) && urlPage > 1) {
+            page = urlPage;
+            render();
+          }
         } catch (e) {
           $status.textContent = `Failed to load the dataset (${e.message}). If viewing locally, serve the folder over HTTP (e.g. "npx serve").`;
         }
