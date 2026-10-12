@@ -2885,7 +2885,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable automatic terminal title updates based on conversation context. This also skips the background small/fast-model request that generates a session title",
+      "description": "Set to `1` to disable automatic terminal title updates based on conversation context. This also skips the background small/fast-model request that generates a session title, and turns off status reports to your terminal",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -3513,7 +3513,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Path to a shell script whose contents Claude Code runs before each Bash command in the same shell process, so exports in the file are visible to the command. Use to persist virtualenv or conda activation across commands. Also populated dynamically by SessionStart, Setup, CwdChanged, and FileChanged hooks",
+      "description": "Path to a shell script whose contents Claude Code runs before each Bash command in the same shell process, so exports in the file are visible to the command. Use to persist virtualenv or conda activation across commands.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"

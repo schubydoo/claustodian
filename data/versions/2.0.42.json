@@ -2704,7 +2704,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable automatic terminal title updates based on conversation context. This also skips the background small/fast-model request that generates a session title",
+      "description": "Set to `1` to disable automatic terminal title updates based on conversation context. This also skips the background small/fast-model request that generates a session title, and turns off status reports to your terminal",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
