@@ -1297,6 +1297,16 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       // Cross-version catalog (every symbol ever, with lifecycle + last_seen), lazily
       // fetched the first time "Search all versions" is enabled. null until loaded.
       let catalog = null;
+      // Shareable links: ?search=…&version=…&type=… pre-fills the three controls,
+      // and syncUrl() writes them back as they change. `versionPinned` is true once
+      // a version was asked for, by the link or by the picker. Until then the URL
+      // carries no version, so a bare link keeps meaning "the latest release". A
+      // pinned version stays in the URL even when it is the latest, or the link
+      // would start to show a newer release after the next one ships. `urlType`
+      // holds the requested type until refreshTypeControl() can resolve it, because
+      // the Type options do not exist before the first snapshot loads.
+      let versionPinned = false;
+      let urlType = null;
 
       // Display labels and canonical order for symbol types. The Type dropdown and
       // the grouped view both read this. A type NOT listed here still renders —
@@ -1525,6 +1535,7 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             $allVersions.checked = false;
             $version.disabled = false;
             $version.value = sym.last_seen;
+            versionPinned = true;
             loadVersion(sym.last_seen);
           });
           li.appendChild(jump);
@@ -1537,8 +1548,17 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
       // Keeps the leading "All types" option and the current selection when it is
       // still present; otherwise falls back to "all".
       function refreshTypeControl() {
-        const prev = $type.value;
+        let prev = $type.value;
         const types = orderedTypesIn(activeSource());
+        if (urlType) {
+          // An exact type name, or a prefix that matches one type only: `cli` is
+          // cli_flag, while `c` is ambiguous and falls through to "all".
+          const hits = types.includes(urlType)
+            ? [urlType]
+            : types.filter((t) => t.startsWith(urlType));
+          if (hits.length === 1) prev = hits[0];
+          urlType = null;
+        }
         const opts = [optionEl('all', 'All types')];
         for (const t of types) opts.push(optionEl(t, typeLabel(t)));
         $type.replaceChildren(...opts);
@@ -1654,6 +1674,27 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           pageCount > 1 ? `${scope} — showing ${start + 1}\u2013${start + slice.length}` : scope;
         renderPager($pagerTop, pageCount);
         renderPager($pagerBottom, pageCount);
+        syncUrl();
+      }
+
+      // Mirror the search, version and type controls into the address bar so the
+      // current view can be copied as a link. Defaults are omitted, and parameters
+      // this page does not own are left alone.
+      function syncUrl() {
+        const params = new URLSearchParams(location.search);
+        const put = (key, value) => (value ? params.set(key, value) : params.delete(key));
+        put('search', $q.value.trim());
+        put('version', versionPinned ? $version.value : '');
+        put('type', $type.value === 'all' ? '' : $type.value);
+        const qs = params.toString();
+        // replaceState, not pushState: one keystroke must not be one Back press.
+        // Safari throws when it is called too often, and a stale address bar is
+        // not worth breaking the search for.
+        try {
+          history.replaceState(null, '', location.pathname + (qs ? `?${qs}` : '') + location.hash);
+        } catch {
+          /* rate-limited; the next render tries again */
+        }
       }
 
       /**
@@ -1788,14 +1829,24 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
           $version.replaceChildren(
             ...index.versions.map((v) => optionEl(v, v === index.latest ? `${v} (latest)` : v))
           );
-          $version.value = index.latest;
+          // An unknown or absent ?version= falls back to the latest release.
+          const params = new URLSearchParams(location.search);
+          const wanted = params.get('version');
+          versionPinned = index.versions.includes(wanted);
+          const startVersion = versionPinned ? wanted : index.latest;
+          $version.value = startVersion;
+          $q.value = params.get('search') ?? '';
+          urlType = params.get('type');
           // Read from the index we already fetched: hardcoding these would go stale
           // and a second request would be wasteful.
           if ($whyStats) {
             const oldest = index.versions[index.versions.length - 1];
             $whyStats.textContent = `${index.versions.length} tracked versions, ${oldest} to ${index.latest}.`;
           }
-          $version.addEventListener('change', () => loadVersion($version.value));
+          $version.addEventListener('change', () => {
+            versionPinned = true;
+            loadVersion($version.value);
+          });
           // Every control below changes the RESULT SET, so each resets to page 1.
           $sort.addEventListener('change', rerender);
           $type.addEventListener('change', () => {
@@ -1852,7 +1903,7 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
             refreshCategoryControl();
             rerender();
           });
-          await loadVersion(index.latest);
+          await loadVersion(startVersion);
         } catch (e) {
           $status.textContent = `Failed to load the dataset (${e.message}). If viewing locally, serve the folder over HTTP (e.g. "npx serve").`;
         }
