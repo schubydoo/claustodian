@@ -1047,8 +1047,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Manage MCP servers",
-      "description_source": "binary",
+      "description": "Manage MCP server connections and OAuth authentication. Run with no argument to open the interactive list, or pass `reconnect`, `enable`, or `disable` with a server name or `all` to change connection state without opening it. `reconnect all` retries every server that failed or needs authentication. In non-interactive mode (`-p`), running it with no argument prints a text summary of server status instead of opening the list",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3981,7 +3981,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override region for Claude 4.0 Opus when using Google Cloud's Agent Platform",
+      "description": "Override region for Claude Opus 4 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -3994,7 +3994,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override region for Claude 4.0 Sonnet when using Google Cloud's Agent Platform",
+      "description": "Override region for Claude Sonnet 4 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -4007,7 +4007,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override region for Claude 4.1 Opus when using Google Cloud's Agent Platform",
+      "description": "Override region for Claude Opus 4.1 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"

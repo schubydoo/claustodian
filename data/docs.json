@@ -1013,7 +1013,7 @@
     {
       "symbol": "/cd",
       "type": "command",
-      "description": "Move this session to a new working directory, keeping the conversation. Type a partial path to see matching directory suggestions; press `Tab` to accept one. The suggestions require Claude Code v2.1.206 or later. For what Claude Code applies from the new directory as soon as you move, and how `/cd` differs from `/add-dir`, see Move the session to another directory",
+      "description": "Move this session to a new working directory, keeping the conversation. Type a partial path to see matching directory suggestions; press `Tab` to accept one. For what Claude Code applies from the new directory as soon as you move, and how `/cd` differs from `/add-dir`, see Move the session to another directory",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1055,7 +1055,7 @@
     {
       "symbol": "/color",
       "type": "command",
-      "description": "Set the prompt bar color for the current session. Available colors: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan`. Use `default` to reset, or run with no argument to pick a random color. When Remote Control is connected, the color syncs to claude.ai/code. Also available in non-interactive mode (`-p`); requires Claude Code v2.1.205 or later",
+      "description": "Set the prompt bar color for the current session. Available colors: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan`. Use `default` to reset, or run with no argument to pick a random color. When Remote Control is connected, the color syncs to claude.ai/code. Also available in non-interactive mode (`-p`)",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1181,8 +1181,8 @@
     {
       "symbol": "/fast",
       "type": "command",
-      "description": "Toggle fast mode on or off. Run it while Claude is responding and Claude Code toggles fast mode without waiting for the turn to end, though the running turn finishes at its original speed. Before v2.1.242, Claude Code decided from a feature flag it fetched from Anthropic whether to run the command mid-turn or queue it until the turn finished, and always queued it in a session that doesn't fetch feature flags. Availability in non-interactive mode with `-p` is limited; see Toggle fast mode. Requires Claude Code v2.1.205 or later",
-      "doc_min_version": "2.1.205",
+      "description": "Toggle fast mode on or off. Run it while Claude is responding and Claude Code toggles fast mode without waiting for the turn to end, though the running turn finishes at its original speed. Before v2.1.242, Claude Code decided from a feature flag it fetched from Anthropic whether to run the command mid-turn or queue it until the turn finished, and always queued it in a session that doesn't fetch feature flags. Availability in non-interactive mode with `-p` is limited; see Toggle fast mode",
+      "doc_min_version": null,
       "doc_page": "commands"
     },
     {
@@ -1321,7 +1321,7 @@
     {
       "symbol": "/mcp",
       "type": "command",
-      "description": "Manage MCP server connections and OAuth authentication. Run with no argument to open the interactive list, or pass `reconnect`, `enable`, or `disable` with a server name or `all` to change connection state without opening it. `reconnect all` retries every server that failed or needs authentication. In non-interactive mode (`-p`), running it with no argument prints a text summary of server status instead of opening the list; requires Claude Code v2.1.205 or later",
+      "description": "Manage MCP server connections and OAuth authentication. Run with no argument to open the interactive list, or pass `reconnect`, `enable`, or `disable` with a server name or `all` to change connection state without opening it. `reconnect all` retries every server that failed or needs authentication. In non-interactive mode (`-p`), running it with no argument prints a text summary of server status instead of opening the list",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1454,7 +1454,7 @@
     {
       "symbol": "/remote-control",
       "type": "command",
-      "description": "Make this session available for Remote Control from claude.ai. Running it while signed out prints that Remote Control requires a claude.ai subscription and tells you how to sign in; before v2.1.206 it reported `Unknown command: /remote-control`. Alias: `/rc`",
+      "description": "Make this session available for Remote Control from claude.ai. Running it while signed out prints that Remote Control requires a claude.ai subscription and tells you how to sign in. Alias: `/rc`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1468,7 +1468,7 @@
     {
       "symbol": "/rename",
       "type": "command",
-      "description": "Rename the current session and show the name on the prompt bar. Without a name, auto-generates one from conversation history. Also available in non-interactive mode (`-p`); requires Claude Code v2.1.205 or later. From every rename surface, including claude.ai and the desktop app, Claude Code replaces control and invisible characters in the new name with spaces and caps the name at 200 characters. If the name is empty once invisible characters are removed, Claude Code rejects it and shows `That name is empty once invisible characters are removed. Usage: /rename <name>`. The character replacement and length cap require Claude Code v2.1.221 or later",
+      "description": "Rename the current session and show the name on the prompt bar. Without a name, auto-generates one from conversation history. Also available in non-interactive mode (`-p`). From every rename surface, including claude.ai and the desktop app, Claude Code replaces control and invisible characters in the new name with spaces and caps the name at 200 characters. If the name is empty once invisible characters are removed, Claude Code rejects it and shows `That name is empty once invisible characters are removed. Usage: /rename <name>`. The character replacement and length cap require Claude Code v2.1.221 or later",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2457,6 +2457,13 @@
       "symbol": "httpHookAllowedEnvVars",
       "type": "config_key",
       "description": "An HTTP hook can put the value of an environment variable into a request header, for example an `Authorization: Bearer $HOOK_TOKEN` header, but only for variables the hook lists in its own `allowedEnvVars`. This key sets an outer limit on that list for every HTTP hook: a hook can use a variable only if both its own `allowedEnvVars` and this key name it. Use it to stop a hook from reading a secret it shouldn't, even when the hook's definition asks for it.",
+      "doc_min_version": null,
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "idleCompaction",
+      "type": "config_key",
+      "description": "Idle compaction compacts a long conversation that you've stepped away from, shortly before its prompt cache expires. Your next message then sends a summary instead of the whole conversation. When you come back, the conversation shows `Compacted while idle, before the prompt cache expired`.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3958,7 +3965,7 @@
     {
       "symbol": "CLAUDE_CODE_ALWAYS_ENABLE_EFFORT",
       "type": "env_var",
-      "description": "Set to `1` to send the effort parameter with every request, even when Claude Code does not recognize the model ID as effort-capable. Use this when routing through an LLM gateway or third-party provider that serves models under custom identifiers. Models that reject the effort parameter at the API, including Claude 3 models, Sonnet 4.0 and 4.5, Opus 4.0 and 4.1, and Haiku 4.5, are still excluded so requests do not fail",
+      "description": "Set to `1` to send the effort parameter with every request, even when Claude Code does not recognize the model ID as effort-capable. Use this when routing through an LLM gateway or third-party provider that serves models under custom identifiers. Models that reject the effort parameter at the API, including Claude Opus 4.1, Claude Sonnet 4.5, Claude Haiku 4.5, and earlier models, are still excluded so requests do not fail",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4292,6 +4299,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_FILE_MENTIONS",
+      "type": "env_var",
+      "description": "Set to `1` to stop Claude Code from expanding `@` mentions of files and directories. Claude instead gets the mentioned paths with a note to read them using its file tools. Ignored in project and local settings. Requires Claude Code v2.1.299 or later",
+      "doc_min_version": "2.1.299",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_GIT_INSTRUCTIONS",
       "type": "env_var",
       "description": "Set to `1` to remove built-in commit and PR workflow instructions and the git status snapshot from Claude's context. Useful when using your own git workflow skills. Takes precedence over the `includeGitInstructions` setting when set",
@@ -4308,7 +4322,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_LEGACY_MODEL_REMAP",
       "type": "env_var",
-      "description": "Set to `1` to prevent automatic remapping of Opus 4.0 and 4.1 to the current Opus version on the Anthropic API. Use when you intentionally want to pin an older model. The remap does not run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
+      "description": "Set to `1` to prevent automatic remapping of Opus 4 and Opus 4.1 to the current Opus version on the Anthropic API. Use when you intentionally want to pin an older model. The remap does not run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4712,6 +4726,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_IDLE_COMPACT_MIN_TOKENS",
+      "type": "env_var",
+      "description": "Context size, in tokens, at which idle compaction applies to a conversation (default: `200000`). Accepts a positive whole number, and anything else is ignored. Values below `100000` are raised to `100000`, the lowest threshold. Idle compaction is on by default for conversations that meet its conditions. To turn it off, set `idleCompaction` to `false`. Requires Claude Code v2.1.290 or later",
+      "doc_min_version": "2.1.290",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS",
       "type": "env_var",
       "description": "How many subagents can be running in one session before the Agent tool refuses to spawn another (default: 20). Accepts a positive whole number in plain digits; anything else is ignored, so the variable can adjust the cap but can't disable it. Requires Claude Code v2.1.217 or later",
@@ -4728,7 +4749,7 @@
     {
       "symbol": "CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH",
       "type": "env_var",
-      "description": "Maximum length in characters of each MCP tool description and each MCP server's instructions that Claude Code sends to the model (default: 2048). Claude Code truncates longer text. Accepts a positive whole number in plain digits. Anything else is ignored and the default applies. Requires Claude Code v2.1.280 or later",
+      "description": "Maximum length in characters of each MCP tool description and each MCP server's instructions that Claude Code sends to the model. The value you set replaces both default limits: 4096, and 16384 for the description of a tool that Claude loads through tool search. Claude Code truncates longer text. Accepts a positive whole number in plain digits. Anything else is ignored and the defaults apply. Requires Claude Code v2.1.280 or later",
       "doc_min_version": "2.1.280",
       "doc_page": "env-vars"
     },
@@ -4926,6 +4947,13 @@
       "type": "env_var",
       "description": "Starting delay in milliseconds, in place of the default 500, of the exponential backoff between automatic retries of a request that the API rejects with a `529` overloaded error. Raise it to spread the retries over a longer window when the API is at capacity. Give whole milliseconds from 500 to 32000 in plain digits; Claude Code treats any other value as unset. Has no effect when `CLAUDE_CODE_RETRY_WATCHDOG` is set to `1`, or when the rejected request was sent in fast mode. Requires Claude Code v2.1.292 or later",
       "doc_min_version": "2.1.292",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_OVERLOADED_RETRY_MAX_DELAY_MS",
+      "type": "env_var",
+      "description": "Ceiling in milliseconds, in place of the default 32000, on the exponential backoff between automatic retries of a request that the API rejects with a `529` overloaded error. Raise it so that later retries keep spreading apart when the API is at capacity. Give whole milliseconds from 32000 to 64000 in plain digits; Claude Code treats any other value as unset. Has no effect when `CLAUDE_CODE_RETRY_WATCHDOG` is set to `1`, or when the rejected request was sent in fast mode. Requires Claude Code v2.1.296 or later",
+      "doc_min_version": "2.1.296",
       "doc_page": "env-vars"
     },
     {
@@ -5475,6 +5503,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_YOU_SHOULD_KNOW_DEBUG",
+      "type": "env_var",
+      "description": "Set to `1` to show, above the prompt, a line for each of the last three checks the You should know mod made in this session. Use it to confirm the mod is checking when no notes appear. Requires Claude Code v2.1.287 or later",
+      "doc_min_version": "2.1.287",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CONFIG_DIR",
       "type": "env_var",
       "description": "Override the configuration directory (default: `~/.claude`). All settings, session history, and plugins are stored under this path. For credentials, see where Claude Code stores credentials. Useful for running multiple accounts side by side: for example, `alias claude-work='CLAUDE_CONFIG_DIR=~/.claude-work claude'`. Set it in your shell, user settings, or managed settings. In a settings file, write the absolute path. Ignored in project and local settings",
@@ -5603,7 +5638,7 @@
     {
       "symbol": "DISABLE_AUTO_COMPACT",
       "type": "env_var",
-      "description": "Set to `1` to disable automatic compaction when approaching the context limit. The manual `/compact` command remains available. Use when you want explicit control over when compaction occurs. Overrides the `autoCompactEnabled` setting",
+      "description": "Set to `1` to disable automatic compaction when approaching the context limit, along with idle compaction. The manual `/compact` command remains available. Use when you want explicit control over when compaction occurs. Overrides the `autoCompactEnabled` setting",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -5792,7 +5827,7 @@
     {
       "symbol": "ENABLE_TOOL_SEARCH",
       "type": "env_var",
-      "description": "Controls MCP tool search. Unset, Claude Code defers all MCP tools by default. It still loads them upfront on Google Cloud's Agent Platform models earlier than the Claude 4.5 generation, on a Microsoft Foundry deployment hosted on Azure, and when `ANTHROPIC_BASE_URL` points to a non-first-party host. `true` always defers and sends the beta header, except on those same Agent Platform models and Microsoft Foundry deployments; requests fail on proxies that don't support `tool_reference`. `auto` loads upfront when tool definitions fit within 10% of context. `auto:N` sets a custom threshold, such as `auto:5` for 5%. `false` loads all tools upfront. A value you set yourself is ignored when `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` is set. Before v2.1.221, Claude Code disabled tool search for all models on Google Cloud's Agent Platform unless you set this variable to `true`",
+      "description": "Controls MCP tool search. Unset, Claude Code defers all MCP tools by default, and loads them upfront instead when `ANTHROPIC_BASE_URL` points to a non-first-party host. `true` keeps them deferred on such a host too. `auto` loads upfront when tool definitions fit within 10% of context. `auto:N` sets a custom threshold, such as `auto:5` for 5%. `false` loads all tools upfront. For the models and deployments that load every tool upfront whatever this value is, see Configure tool search",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -6107,21 +6142,21 @@
     {
       "symbol": "VERTEX_REGION_CLAUDE_4_0_OPUS",
       "type": "env_var",
-      "description": "Override region for Claude 4.0 Opus when using Google Cloud's Agent Platform",
+      "description": "Override region for Claude Opus 4 when using Google Cloud's Agent Platform",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
       "symbol": "VERTEX_REGION_CLAUDE_4_0_SONNET",
       "type": "env_var",
-      "description": "Override region for Claude 4.0 Sonnet when using Google Cloud's Agent Platform",
+      "description": "Override region for Claude Sonnet 4 when using Google Cloud's Agent Platform",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
       "symbol": "VERTEX_REGION_CLAUDE_4_1_OPUS",
       "type": "env_var",
-      "description": "Override region for Claude 4.1 Opus when using Google Cloud's Agent Platform",
+      "description": "Override region for Claude Opus 4.1 when using Google Cloud's Agent Platform",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },

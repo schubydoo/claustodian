@@ -1225,11 +1225,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Binary to spawn for child sessions. Default: this process's own binary.",
       "description_source": "help",
-      "source_url": null,
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "self-hosted-runner"
@@ -3958,7 +3958,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Move this session to a new working directory, keeping the conversation. Type a partial path to see matching directory suggestions; press `Tab` to accept one. The suggestions require Claude Code v2.1.206 or later. For what Claude Code applies from the new directory as soon as you move, and how `/cd` differs from `/add-dir`, see Move the session to another directory",
+      "description": "Move this session to a new working directory, keeping the conversation. Type a partial path to see matching directory suggestions; press `Tab` to accept one. For what Claude Code applies from the new directory as soon as you move, and how `/cd` differs from `/add-dir`, see Move the session to another directory",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4063,7 +4063,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the prompt bar color for the current session. Available colors: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan`. Use `default` to reset, or run with no argument to pick a random color. When Remote Control is connected, the color syncs to claude.ai/code. Also available in non-interactive mode (`-p`); requires Claude Code v2.1.205 or later",
+      "description": "Set the prompt bar color for the current session. Available colors: `red`, `blue`, `green`, `yellow`, `purple`, `orange`, `pink`, `cyan`. Use `default` to reset, or run with no argument to pick a random color. When Remote Control is connected, the color syncs to claude.ai/code. Also available in non-interactive mode (`-p`)",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4418,7 +4418,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Toggle fast mode on or off. Run it while Claude is responding and Claude Code toggles fast mode without waiting for the turn to end, though the running turn finishes at its original speed. Before v2.1.242, Claude Code decided from a feature flag it fetched from Anthropic whether to run the command mid-turn or queue it until the turn finished, and always queued it in a session that doesn't fetch feature flags. Availability in non-interactive mode with `-p` is limited; see Toggle fast mode. Requires Claude Code v2.1.205 or later",
+      "description": "Toggle fast mode on or off. Run it while Claude is responding and Claude Code toggles fast mode without waiting for the turn to end, though the running turn finishes at its original speed. Before v2.1.242, Claude Code decided from a feature flag it fetched from Anthropic whether to run the command mid-turn or queue it until the turn finished, and always queued it in a session that doesn't fetch feature flags. Availability in non-interactive mode with `-p` is limited; see Toggle fast mode",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4731,7 +4731,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Manage MCP server connections and OAuth authentication. Run with no argument to open the interactive list, or pass `reconnect`, `enable`, or `disable` with a server name or `all` to change connection state without opening it. `reconnect all` retries every server that failed or needs authentication. In non-interactive mode (`-p`), running it with no argument prints a text summary of server status instead of opening the list; requires Claude Code v2.1.205 or later",
+      "description": "Manage MCP server connections and OAuth authentication. Run with no argument to open the interactive list, or pass `reconnect`, `enable`, or `disable` with a server name or `all` to change connection state without opening it. `reconnect all` retries every server that failed or needs authentication. In non-interactive mode (`-p`), running it with no argument prints a text summary of server status instead of opening the list",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5121,7 +5121,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Make this session available for Remote Control from claude.ai. Running it while signed out prints that Remote Control requires a claude.ai subscription and tells you how to sign in; before v2.1.206 it reported `Unknown command: /remote-control`. Alias: `/rc`",
+      "description": "Make this session available for Remote Control from claude.ai. Running it while signed out prints that Remote Control requires a claude.ai subscription and tells you how to sign in. Alias: `/rc`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5147,7 +5147,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Rename the current session and show the name on the prompt bar. Without a name, auto-generates one from conversation history. Also available in non-interactive mode (`-p`); requires Claude Code v2.1.205 or later. From every rename surface, including claude.ai and the desktop app, Claude Code replaces control and invisible characters in the new name with spaces and caps the name at 200 characters. If the name is empty once invisible characters are removed, Claude Code rejects it and shows `That name is empty once invisible characters are removed. Usage: /rename <name>`. The character replacement and length cap require Claude Code v2.1.221 or later",
+      "description": "Rename the current session and show the name on the prompt bar. Without a name, auto-generates one from conversation history. Also available in non-interactive mode (`-p`). From every rename surface, including claude.ai and the desktop app, Claude Code replaces control and invisible characters in the new name with spaces and caps the name at 200 characters. If the name is empty once invisible characters are removed, Claude Code rejects it and shows `That name is empty once invisible characters are removed. Usage: /rename <name>`. The character replacement and length cap require Claude Code v2.1.221 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -12616,7 +12616,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to send the effort parameter with every request, even when Claude Code does not recognize the model ID as effort-capable. Use this when routing through an LLM gateway or third-party provider that serves models under custom identifiers. Models that reject the effort parameter at the API, including Claude 3 models, Sonnet 4.0 and 4.5, Opus 4.0 and 4.1, and Haiku 4.5, are still excluded so requests do not fail",
+      "description": "Set to `1` to send the effort parameter with every request, even when Claude Code does not recognize the model ID as effort-capable. Use this when routing through an LLM gateway or third-party provider that serves models under custom identifiers. Models that reject the effort parameter at the API, including Claude Opus 4.1, Claude Sonnet 4.5, Claude Haiku 4.5, and earlier models, are still excluded so requests do not fail",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -14327,7 +14327,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to prevent automatic remapping of Opus 4.0 and 4.1 to the current Opus version on the Anthropic API. Use when you intentionally want to pin an older model. The remap does not run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
+      "description": "Set to `1` to prevent automatic remapping of Opus 4 and Opus 4.1 to the current Opus version on the Anthropic API. Use when you intentionally want to pin an older model. The remap does not run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -20378,7 +20378,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to disable automatic compaction when approaching the context limit. The manual `/compact` command remains available. Use when you want explicit control over when compaction occurs. Overrides the `autoCompactEnabled` setting",
+      "description": "Set to `1` to disable automatic compaction when approaching the context limit, along with idle compaction. The manual `/compact` command remains available. Use when you want explicit control over when compaction occurs. Overrides the `autoCompactEnabled` setting",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -20824,7 +20824,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls MCP tool search. Unset, Claude Code defers all MCP tools by default. It still loads them upfront on Google Cloud's Agent Platform models earlier than the Claude 4.5 generation, on a Microsoft Foundry deployment hosted on Azure, and when `ANTHROPIC_BASE_URL` points to a non-first-party host. `true` always defers and sends the beta header, except on those same Agent Platform models and Microsoft Foundry deployments; requests fail on proxies that don't support `tool_reference`. `auto` loads upfront when tool definitions fit within 10% of context. `auto:N` sets a custom threshold, such as `auto:5` for 5%. `false` loads all tools upfront. A value you set yourself is ignored when `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` is set. Before v2.1.221, Claude Code disabled tool search for all models on Google Cloud's Agent Platform unless you set this variable to `true`",
+      "description": "Controls MCP tool search. Unset, Claude Code defers all MCP tools by default, and loads them upfront instead when `ANTHROPIC_BASE_URL` points to a non-first-party host. `true` keeps them deferred on such a host too. `auto` loads upfront when tool definitions fit within 10% of context. `auto:N` sets a custom threshold, such as `auto:5` for 5%. `false` loads all tools upfront. For the models and deployments that load every tool upfront whatever this value is, see Configure tool search",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -21812,7 +21812,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override region for Claude 4.0 Opus when using Google Cloud's Agent Platform",
+      "description": "Override region for Claude Opus 4 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -21825,7 +21825,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override region for Claude 4.0 Sonnet when using Google Cloud's Agent Platform",
+      "description": "Override region for Claude Sonnet 4 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -21838,7 +21838,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override region for Claude 4.1 Opus when using Google Cloud's Agent Platform",
+      "description": "Override region for Claude Opus 4.1 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
