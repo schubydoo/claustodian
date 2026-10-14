@@ -1700,7 +1700,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override region for Claude 4.0 Opus when using Google Cloud's Agent Platform",
+      "description": "Override region for Claude Opus 4 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -1713,7 +1713,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Override region for Claude 4.0 Sonnet when using Google Cloud's Agent Platform",
+      "description": "Override region for Claude Sonnet 4 when using Google Cloud's Agent Platform",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
