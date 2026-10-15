@@ -849,6 +849,21 @@
       "category": "cli"
     },
     {
+      "symbol": "--no-sandbox",
+      "type": "cli_flag",
+      "first_seen": "2.1.51",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli",
+      "scopes": [
+        "remote-control"
+      ]
+    },
+    {
       "symbol": "--no-session-persistence",
       "type": "cli_flag",
       "first_seen": "2.0.63",
@@ -1043,6 +1058,21 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli-internal",
       "description_source": "binary"
+    },
+    {
+      "symbol": "--sandbox",
+      "type": "cli_flag",
+      "first_seen": "2.1.51",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli",
+      "scopes": [
+        "remote-control"
+      ]
     },
     {
       "symbol": "--scope",
