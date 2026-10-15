@@ -42,6 +42,15 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   record until a separate data PR publishes the binary observations
   (`data/mod-observations.json`).
 
+- **`mod_method` records are published.** Every snapshot from 2.1.242 on now
+  carries the mods API methods available in that release, and
+  `data/mod-observations.json` holds their binary observation windows. Methods
+  renamed before the announcement leave at their rename: `$.fs.readFile`,
+  `$.fs.writeFile` and `$.fs.listDir` at 2.1.267, and `$.session.turnCount` at
+  2.1.268. `$.plugin.name`, `$.plugin.root` and `$.process.spawn` are absent from
+  the dispatch table, so their dates come from the docs and the changelog and are
+  marked `first_seen_estimated`.
+
 ## 2026-09-30
 
 ### Fixed
