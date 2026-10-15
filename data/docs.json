@@ -582,6 +582,13 @@
       "doc_page": "plugins/cli-reference"
     },
     {
+      "symbol": "--no-sandbox",
+      "type": "cli_flag",
+      "description": "Removed in v2.1.300. If you pass either flag, the server exits with an error instead of starting.",
+      "doc_min_version": "2.1.51",
+      "doc_page": "remote-control"
+    },
+    {
       "symbol": "--no-session-persistence",
       "type": "cli_flag",
       "description": "Disable session persistence so sessions are not saved to disk and cannot be resumed. Print mode only. The `CLAUDE_CODE_SKIP_PROMPT_HISTORY` environment variable does the same in any mode",
@@ -727,6 +734,13 @@
       "description": "Start with all customizations disabled to troubleshoot a broken configuration: CLAUDE.md, skills, plugins, hooks, MCP servers, custom commands and agents, output styles, workflows, custom themes, custom keybindings, status line and file-suggestion commands, LSP servers, and auto memory do not load. Authentication, model selection, built-in tools, and permissions work normally, which differs from `--bare`. Managed settings policy still applies, including policy-configured hooks, status line, and file-suggestion commands; managed plugins, managed skills, managed CLAUDE.md, and policy-configured MCP servers do not. Useful for checking whether a customization is what triggers automatic model fallback. Sets `CLAUDE_CODE_SAFE_MODE`",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--sandbox",
+      "type": "cli_flag",
+      "description": "Removed in v2.1.300. If you pass either flag, the server exits with an error instead of starting.",
+      "doc_min_version": "2.1.51",
+      "doc_page": "remote-control"
     },
     {
       "symbol": "--scaffold",
@@ -1048,7 +1062,7 @@
     {
       "symbol": "/code-review",
       "type": "command",
-      "description": "**Skill.** Review the current diff, or a PR number, branch, or path you pass, for correctness bugs. Depending on your model and effort level, the review also covers cleanup opportunities. Pass `--fix` to apply findings, `--comment` to post them on the GitHub PR or GitLab merge request, or `ultra` to run a deep cloud review. Posting to a GitLab merge request requires Claude Code v2.1.257 or later. With `ultra` on a `github.com` PR target, pass `--post` to preselect posting the finished findings to the PR in the launch dialog; `--post` requires Claude Code v2.1.227 or later. See Review a diff locally for the effort levels, targeting, and how it relates to `/simplify`. Alias: `/review`",
+      "description": "**Skill.** Review the current diff, or a PR number, branch, or path you pass, for correctness bugs. Depending on your model and effort level, the review also covers cleanup opportunities. Pass `--fix` to have Claude apply the findings, `--comment` to post them on the GitHub PR or GitLab merge request, or `ultra` to run a deep cloud review. Posting to a GitLab merge request requires Claude Code v2.1.257 or later. With `ultra` on a `github.com` PR target, pass `--post` to preselect posting the finished findings to the PR in the launch dialog; `--post` requires Claude Code v2.1.227 or later. See Review locally with `/code-review` for the effort levels, targeting, and how it relates to `/simplify`. Alias: `/review`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1482,7 +1496,7 @@
     {
       "symbol": "/review",
       "type": "command",
-      "description": "Alias of `/code-review`: reviews the current diff, or a PR number, branch, or path you pass, such as `/review 1234`, and takes the same effort levels and flags. With no level given, the review reuses the last `low` through `max` level you typed; see Review a diff locally for the exact rules. For a deep cloud review, use `/code-review ultra`. Before v2.1.223, `/review` was a separate command that ran a single-pass, read-only review of a GitHub pull request by number, listing open PRs to pick from when run with no argument; from v2.1.186 through v2.1.201, it ran the same multi-agent engine as `/code-review medium`",
+      "description": "Alias of `/code-review`: reviews the current diff, or a PR number, branch, or path you pass, such as `/review 1234`, and takes the same effort levels and flags. With no level given, the review reuses the last `low` through `max` level you typed; see Review locally with `/code-review` for the exact rules. For a deep cloud review, use `/code-review ultra`. Before v2.1.223, `/review` was a separate command that ran a single-pass, read-only review of a GitHub pull request by number, listing open PRs to pick from when run with no argument; from v2.1.186 through v2.1.201, it ran the same multi-agent engine as `/code-review medium`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -3998,6 +4012,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_ARTIFACT_PUBLISH_EDITS",
+      "type": "env_var",
+      "description": "Set to `0` to stop Claude from applying small changes to an artifact's file as part of publishing it. Claude then edits the file with its file-editing tools and publishes it as a separate step. Requires Claude Code v2.1.300 or later",
+      "doc_min_version": "2.1.300",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_ATTRIBUTION_HEADER",
       "type": "env_var",
       "description": "Set to `0` to omit the attribution block, which carries the client version and a prompt fingerprint, from the start of the system prompt. Caching on a direct connection to the Anthropic API is unaffected either way. In some direct-connection setups, Claude Code keeps the block on auto mode classifier requests even when you set `0`. In System prompt attribution block, check which connections and credentials this covers. Before v2.1.181 the block included a per-request token on custom base URLs and Microsoft Foundry connections, so on those versions set it to `0` when your LLM gateway caches on the request body or forwards requests to a third-party provider, or when you connect to Microsoft Foundry directly",
@@ -4749,7 +4770,7 @@
     {
       "symbol": "CLAUDE_CODE_MAX_MCP_DESCRIPTION_LENGTH",
       "type": "env_var",
-      "description": "Maximum length in characters of each MCP tool description and each MCP server's instructions that Claude Code sends to the model. The value you set replaces both default limits: 4096, and 16384 for the description of a tool that Claude loads through tool search. Claude Code truncates longer text. Accepts a positive whole number in plain digits. Anything else is ignored and the defaults apply. Requires Claude Code v2.1.280 or later",
+      "description": "Maximum length in characters of MCP tool descriptions and MCP server instructions that Claude Code sends to the model. The value you set replaces both default limits: 4096, and 16384 for the description of a tool that Claude loads through tool search. Accepts a positive whole number in plain digits. Anything else is ignored and the defaults apply. Requires Claude Code v2.1.280 or later",
       "doc_min_version": "2.1.280",
       "doc_page": "env-vars"
     },
