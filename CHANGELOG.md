@@ -16,6 +16,32 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-10-15
+
+### Added
+
+- **A `mod_method` symbol type, for the mods API.** Mods call Claude Code through
+  a `$` argument, as in `$.ui.toast(...)` or `$.command.register(...)`. Each method
+  becomes one record whose `symbol` is the call as a mod writes it, such as
+  `$.ui.toast`, with `category: "mods"`. The records carry no extra fields.
+
+  The binary lane reads each method as a key of the mods API dispatch table in the
+  release bundle. That table first ships in 2.1.242, while mods were announced in
+  2.1.287, so most methods date from 2.1.242. The date means the code shipped; it
+  does not say whether the API was usable before the announcement. The docs lane
+  reads the "Mods API methods" table of the mods reference page, and the changelog
+  lane reads backticked `$.ns.method` names. A method that only the binary shows
+  lands `status: active`, like a `control_message`.
+
+  A method is removed only where its name leaves both the dispatch table and the
+  rest of the bundle for good. Leaving the table alone is not a removal:
+  `$.ui.resolve` left it in 2.1.267 and is still a method.
+
+  `data/docs.json` lists the mods reference page from the next docs refresh, with
+  one `mod_method` entry per documented method. The snapshots carry no `mod_method`
+  record until a separate data PR publishes the binary observations
+  (`data/mod-observations.json`).
+
 ## 2026-09-30
 
 ### Fixed

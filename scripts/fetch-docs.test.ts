@@ -37,6 +37,15 @@ function mockPageBody(url: string): string {
       '\n\n'
     );
   }
+  if (page === 'plugins/mods/reference') {
+    // One namespace row per method keeps the yield equal to the floor.
+    return [
+      '## Mods API methods',
+      '| Namespace | Methods |',
+      '| :- | :- |',
+      ...rows.map((i) => `| \`$.mock${i}\` | \`call\` |`),
+    ].join('\n');
+  }
   const cell = (i: number): string => {
     if (page === 'commands') return `/mock-${i}`;
     if (page === 'env-vars') return `MOCK_ENV_${i}`;
@@ -530,6 +539,40 @@ describe('assertOfficialDocs', () => {
     ).toThrow(/source_pages/);
   });
 
+  it('accepts an index fetched before a later page joined DOC_PAGES', () => {
+    // A code PR that adds a page cannot also regenerate data/docs.json, so the
+    // committed index lags by that page until the next docs refresh.
+    expect(() =>
+      assertOfficialDocs({
+        $generated_by: '',
+        source_pages: official.slice(0, -1),
+        symbols: [entry('cli-reference')],
+      })
+    ).not.toThrow();
+  });
+
+  it('rejects source_pages that are empty, duplicated or out of order', () => {
+    for (const source_pages of [[], [official[0], official[0]], [official[1], official[0]]]) {
+      expect(() =>
+        assertOfficialDocs({
+          $generated_by: '',
+          source_pages: source_pages as string[],
+          symbols: [],
+        })
+      ).toThrow(/source_pages/);
+    }
+  });
+
+  it('rejects an entry from an official page the index did not fetch', () => {
+    expect(() =>
+      assertOfficialDocs({
+        $generated_by: '',
+        source_pages: official.slice(0, 1),
+        symbols: [entry('commands')],
+      })
+    ).toThrow(/doc_page/);
+  });
+
   it('rejects an entry referencing a non-official doc_page', () => {
     expect(() =>
       assertOfficialDocs({
@@ -962,5 +1005,94 @@ describe('buildDocsIndex — per-scope descriptions', () => {
       (s) => s.symbol === '/foo'
     );
     expect(foo?.scope_descriptions).toBeUndefined();
+  });
+});
+
+describe('parseDocPage — mods reference', () => {
+  // Rows copied verbatim from the mods reference page, plus an events table and a
+  // later section, which must contribute nothing.
+  const MODS_PAGE = [
+    '# Mods reference',
+    '## Events',
+    '| Event | Fires when | A hook can return |',
+    '| :- | :- | :- |',
+    '| [`tool.call`](/docs/en/plugins/mods/events#guard) | A tool is about to run | `next(e)` |',
+    '## Mods API methods',
+    'The mods API is the `$` argument every hook receives.',
+    '| Namespace | Methods |',
+    '| :- | :- |',
+    "| `$.plugin` | `name`, `root`: this plugin's name and directory |",
+    '| [`$.ui`](/docs/en/plugins/mods/interface#pick-where-to-draw) | `resolve`, `toast`, `blit` |',
+    "| `$.agent` | `register`, `spawn`, `list`. `list()` returns this session's subagents and teammates, each with a `status` of `pending`, `running`, `waiting`, `idle`, `completed`, `failed`, or `killed`, where `idle` and `waiting` require Claude Code v2.1.289 or later. |",
+    '| [`$.state`](/docs/en/plugins/mods/interface#keep-a-value-in-\\$-state) | Reactive state: `get`, `set`, with the helpers `atom`, `read`, `update`, `derive`, and `memberOf` imported from `claude-code` |',
+    '| `$.telemetry` | `log`, `mark`. A record is sent only when Claude Code or a built-in mod makes the call. |',
+    '## Render sites',
+    '| Site | What |',
+    '| :- | :- |',
+    '| `$.fake.site` | `nope` |',
+  ].join('\n');
+
+  const parsed = () => parseDocPage('plugins/mods/reference', MODS_PAGE);
+
+  it('reads each namespace row as one mod_method per listed method', () => {
+    expect(parsed().map((e) => e.symbol)).toEqual([
+      '$.plugin.name',
+      '$.plugin.root',
+      '$.ui.resolve',
+      '$.ui.toast',
+      '$.ui.blit',
+      '$.agent.register',
+      '$.agent.spawn',
+      '$.agent.list',
+      '$.state.get',
+      '$.state.set',
+      '$.telemetry.log',
+      '$.telemetry.mark',
+    ]);
+    expect(parsed().every((e) => e.type === 'mod_method')).toBe(true);
+  });
+
+  it('takes only the leading method list, not words from the notes after it', () => {
+    const symbols = parsed().map((e) => e.symbol);
+    for (const word of ['pending', 'idle', 'atom', 'memberOf', 'claude-code']) {
+      expect(symbols.some((s) => s.endsWith(`.${word}`))).toBe(false);
+    }
+  });
+
+  it('dates nothing from a version that a row note gives for something else', () => {
+    // `$.agent` says statuses require v2.1.289; that is not when `list` appeared.
+    expect(parsed().every((e) => e.doc_min_version === null)).toBe(true);
+  });
+
+  it('reads a list ending in "or", and names written as calls', () => {
+    const page = [
+      '## Mods API methods',
+      '| Namespace | Methods |',
+      '| :- | :- |',
+      '| `$.a` | `one`, `two`, or `three` |',
+      '| `$.c` | `list()`, `get()` |',
+    ].join('\n');
+    expect(parseDocPage('plugins/mods/reference', page).map((e) => e.symbol)).toEqual([
+      '$.a.one',
+      '$.a.two',
+      '$.a.three',
+      '$.c.list',
+      '$.c.get',
+    ]);
+  });
+
+  it('refuses a row in the methods table that it cannot read', () => {
+    // The page's floor catches a large loss; a single unreadable row would otherwise
+    // drop its methods without a word.
+    for (const row of ['| `$.ui` | `get_all`, `status` |', '| $.ui | `toast` |']) {
+      const page = ['## Mods API methods', '| Namespace | Methods |', '| :- | :- |', row].join(
+        '\n'
+      );
+      expect(() => parseDocPage('plugins/mods/reference', page)).toThrow(/Mods API methods/);
+    }
+  });
+
+  it('has a coverage floor, so an emptied section fails instead of reading as removals', () => {
+    expect(PAGE_MIN_SYMBOLS['plugins/mods/reference']).toBeGreaterThan(0);
   });
 });

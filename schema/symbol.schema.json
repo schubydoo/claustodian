@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://claustodian.dev/schema/symbol.schema.json",
   "title": "Claustodian Symbol Record",
-  "description": "One trackable Claude Code symbol (a CLI flag, environment variable, command, config key, internal config flag, or stream-json control message), along with its lifecycle metadata and provenance.",
+  "description": "One trackable Claude Code symbol (a CLI flag, environment variable, command, config key, internal config flag, stream-json control message, or mods API method), along with its lifecycle metadata and provenance.",
   "type": "object",
   "properties": {
     "symbol": {
@@ -18,7 +18,8 @@
         "command",
         "config_key",
         "internal_config_flag",
-        "control_message"
+        "control_message",
+        "mod_method"
       ],
       "description": "The kind of symbol this record describes."
     },

@@ -53,7 +53,9 @@ import {
   controlRecordDating,
   eraValueAt,
   loadControlObservations,
+  loadModObservations,
   type ControlObservation,
+  type ModObservation,
   loadBinaryObservations,
   promotionFor,
 } from './binary-lane.js';
@@ -92,7 +94,13 @@ export interface ExtractedSymbol {
 export interface SymbolRecord {
   symbol: string;
   type:
-    'cli_flag' | 'env_var' | 'command' | 'config_key' | 'internal_config_flag' | 'control_message';
+    | 'cli_flag'
+    | 'env_var'
+    | 'command'
+    | 'config_key'
+    | 'internal_config_flag'
+    | 'control_message'
+    | 'mod_method';
   /**
    * Carried by control_message records and by no other type — the schema REQUIRES both
    * there and FORBIDS both elsewhere, so a stray one fails validation as surely as a
@@ -197,6 +205,10 @@ const SYMBOL_PATTERNS: Array<[RegExp, ExtractedSymbolType]> = [
   // (Flags are never written `--flag=value` in this changelog, so cli_flag above
   // deliberately keeps the exact form.)
   [/`([A-Z][A-Z0-9_]{3,})(?:=[^`]*)?`/g, 'env_var'],
+  // A mods API call, written bare (`$.ui.notify`) or as a call (`$.ui.toast({ text })`,
+  // `$.session.usage().context`). Everything from the call's `(` to the closing
+  // backtick is consumed and left out of the symbol.
+  [/`(\$\.[a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*)(?:\([^`]*)?`/g, 'mod_method'],
 ];
 
 /**
@@ -478,6 +490,7 @@ export function categorize(symbol: string, type: ExtractedSymbolType): string {
   // Settings keys are their own surface; the env-var prefix rules below would
   // otherwise bucket them all as "other".
   if (type === 'config_key' || type === 'internal_config_flag') return 'settings';
+  if (type === 'mod_method') return 'mods';
   for (const [pattern, category] of ENV_CATEGORY_RULES) {
     if (pattern.test(symbol)) return category;
   }
@@ -751,6 +764,8 @@ function recordKeysFor(token: string): string[] {
   if (/^--[a-z][a-z0-9-]*$/.test(token)) return [`cli_flag:${token}`];
   if (/^\/[a-z][a-z0-9-]*$/.test(token)) return [`command:${token}`];
   if (/^[A-Z][A-Z0-9_]{3,}$/.test(token)) return [`env_var:${token}`];
+  // Before the dotted rule below, which would read `$.ui.toast` as a config key.
+  if (/^\$\.[a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*$/.test(token)) return [`mod_method:${token}`];
   if (/[a-z][A-Z]/.test(token) || token.includes('.')) return [`config_key:${token}`];
   return [];
 }
@@ -1237,7 +1252,9 @@ export function enrichSymbols(
     } else {
       estimated = !introducing;
     }
-    const description = doc ? doc.description : introducing ? record.description : '';
+    // A docs row with no description (every mod_method row) must not erase the
+    // changelog's. No other type has one: the generic parser drops such rows.
+    const description = doc?.description ? doc.description : introducing ? record.description : '';
     records.push(
       finalizeRecord({
         symbol: record.symbol,
@@ -1249,7 +1266,7 @@ export function enrichSymbols(
         provenance: 'changelog',
         confidence: estimated ? 'medium' : 'high',
         description,
-        description_source: doc ? 'docs' : description ? 'changelog' : undefined,
+        description_source: doc?.description ? 'docs' : description ? 'changelog' : undefined,
         source_url: record.source_url,
         category: record.category,
         ...(doc?.scope_descriptions ? { scope_descriptions: doc.scope_descriptions } : {}),
@@ -1273,7 +1290,7 @@ export function enrichSymbols(
         provenance: 'docs',
         confidence: hasMin ? 'high' : 'medium',
         description: entry.description,
-        description_source: 'docs',
+        description_source: entry.description ? 'docs' : undefined,
         source_url: `${DOCS_BASE}${entry.doc_page}.md`,
         // A page-declared category wins over the name-based guess. categorize()
         // sees only the symbol name, so it cannot tell a `~/.claude.json`
@@ -1350,7 +1367,8 @@ function describeFromPromotion(
  *  - binary-only additions — a symbol no other lane knows is appended as
  *    provenance:"binary" / status:"needs_review" (null source_url, empty
  *    description, confidence "medium"), carrying the observation's conservative
- *    `removed_in` (null unless it cleanly disappeared pre-cliff). Env vars are
+ *    `removed_in` (null unless it cleanly disappeared pre-cliff). A mod_method
+ *    lands status:"active" instead: its dispatch-table key is read by AST. Env vars are
  *    gated to first-party ones (isPublishableBinaryEnv); flags proved only by a
  *    subcommand's argv switch publish with their `scopes` when containment
  *    established the owning invocation and are withheld otherwise
@@ -1365,7 +1383,9 @@ function describeFromPromotion(
  *
  * Shared (changelog/docs) records keep their own removed_in — the binary lane
  * only corrects first_seen upward-in-time on them, never their lifecycle end;
- * the changelog stays the sole removal authority for confirmed symbols.
+ * the changelog stays the sole removal authority for confirmed symbols. The one
+ * exception is a mod_method, whose removal only the binary can show: the changelog
+ * never retracts a mention (see withModObservations for the documented case).
  */
 export function enrichWithBinary(
   records: SymbolRecord[],
@@ -1379,7 +1399,19 @@ export function enrichWithBinary(
     if (!obs) {
       return record;
     }
-    const described = describeFromPromotion(record, obs, binaryDescriptions);
+    const promoted = describeFromPromotion(record, obs, binaryDescriptions);
+    // A mod method's removal comes from the binary: the changelog never retracts a
+    // mention, so without this a changelog-named method would outlive the dispatch
+    // table that proved it. A documented method never gets here with a removal —
+    // see withModObservations.
+    const described =
+      obs.type === 'mod_method' && obs.removed_in !== null && promoted.removed_in === null
+        ? finalizeRecord({
+            ...promoted,
+            first_seen_estimated: promoted.first_seen_estimated === true,
+            removed_in: obs.removed_in,
+          })
+        : promoted;
     if (compareVersionsAsc(obs.first_seen, described.first_seen) >= 0) {
       return described;
     }
@@ -1427,6 +1459,10 @@ export function enrichWithBinary(
     // A maintainer-audited symbol graduates from the needs_review default to
     // active with a first-party description; everything else stays needs_review.
     const promo = promotionFor(obs.type, obs.symbol);
+    // A mod method is a key of the mods API dispatch table, read by AST under a floor
+    // guard — the standard control_message records meet, not the regex-lane evidence
+    // that keeps other binary-only symbols at needs_review.
+    const settled = promo !== undefined || obs.type === 'mod_method';
     merged.push(
       finalizeRecord({
         symbol: obs.symbol,
@@ -1434,7 +1470,7 @@ export function enrichWithBinary(
         first_seen: obs.first_seen,
         first_seen_estimated: false,
         removed_in: obs.removed_in,
-        status: promo ? 'active' : 'needs_review',
+        status: settled ? 'active' : 'needs_review',
         provenance: 'binary',
         confidence: promo ? 'high' : 'medium',
         description: promo ? promo.description : '',
@@ -1539,13 +1575,28 @@ export function buildEnrichedSnapshots(
   binary?: BinaryObservations,
   priorFirstSeen?: ReadonlyMap<string, string>,
   binaryDescriptions?: BinaryDescriptions['descriptions'],
-  control?: readonly ControlObservation[]
+  control?: readonly ControlObservation[],
+  mods?: readonly ModObservation[]
 ): VersionSnapshot[] {
   const collected = collectChangelogSymbols(blocks);
   const latest =
     blocks.map((block) => block.version).sort((a, b) => compareVersionsAsc(b, a))[0] ?? '';
-  const enriched = enrichSymbols(collected, docs, latest);
-  const withBinary = binary ? enrichWithBinary(enriched, binary, binaryDescriptions) : enriched;
+  // `mods` undefined means data/mod-observations.json does not exist yet, and then no
+  // lane publishes a mod_method record. The docs and changelog lanes would otherwise
+  // publish them through the release bot, dated at the tip, before the data PR that
+  // carries their binary dates — see the opt-in in backfill-binary.ts. An empty list
+  // closes the gate too: past the floor the distiller cannot produce one.
+  const publishMods = mods !== undefined && mods.length > 0;
+  const enriched = enrichSymbols(collected, docs, latest).filter(
+    (record) => publishMods || record.type !== 'mod_method'
+  );
+  const withBinary = binary
+    ? enrichWithBinary(
+        enriched,
+        withModObservations(binary, mods, modMethodsDocumented(docs)),
+        binaryDescriptions
+      )
+    : enriched;
   const withRemovals = applyChangelogRemovals(withBinary);
   const withDeprecations = applyChangelogDeprecations(withRemovals);
   const frozen = priorFirstSeen
@@ -1570,6 +1621,38 @@ export function buildEnrichedSnapshots(
       compareSymbolRecords
     ),
   }));
+}
+
+/** The mod methods the docs index lists. */
+const modMethodsDocumented = (docs: DocsIndex): ReadonlySet<string> =>
+  new Set(docs.symbols.filter((entry) => entry.type === 'mod_method').map((e) => e.symbol));
+
+/**
+ * The binary observations with each mod method added as a `mod_method` observation.
+ *
+ * A documented method keeps no binary removal. `ui.resolve` left the dispatch table
+ * at 2.1.267 and the docs still list it as a method: the docs row is current
+ * first-party evidence, and the table is not the only place a method can live.
+ */
+function withModObservations(
+  binary: BinaryObservations,
+  mods: readonly ModObservation[] | undefined,
+  documented: ReadonlySet<string>
+): BinaryObservations {
+  if (!mods || mods.length === 0) return binary;
+  return {
+    ...binary,
+    symbols: [
+      ...binary.symbols,
+      ...mods.map((obs) => ({
+        symbol: obs.symbol,
+        type: 'mod_method' as const,
+        first_seen: obs.first_seen,
+        last_seen: obs.last_seen,
+        removed_in: documented.has(obs.symbol) ? null : obs.removed_in,
+      })),
+    ],
+  };
 }
 
 /**
@@ -1682,6 +1765,9 @@ const BINARY_OBSERVATIONS_PATH = 'data/binary-observations.json';
  */
 const controlObservationsPath = (): string =>
   process.env.CLAUSTODIAN_CONTROL_OBSERVATIONS_PATH ?? 'data/control-observations.json';
+/** The committed mod observations, with the same test seam as the control file. */
+const modObservationsPath = (): string =>
+  process.env.CLAUSTODIAN_MOD_OBSERVATIONS_PATH ?? 'data/mod-observations.json';
 /** The committed per-version description timeline; not CLI-overridable. */
 const BINARY_DESCRIPTIONS_PATH = 'data/binary-descriptions.json';
 /** The committed data directory; regenerating it must use canonical sources. */
@@ -1722,40 +1808,69 @@ async function loadPriorFirstSeen(latestPath: string): Promise<Map<string, strin
 }
 
 /**
- * The reason to refuse a scrape that would drop every control record, or null.
+ * The reason to refuse a scrape that would drop every record an opt-in observation
+ * file publishes, or null.
  *
  * Two shapes of the same regression, and both must be checked. A MISSING observation
  * file is the obvious one. An EMPTY one is the same loss wearing a different shape:
  * `present` is true, `buildEnrichedSnapshots` attaches nothing, and the records
  * disappear with no error at all.
  *
- * Split out from `main` so it is reachable from a test without reaching through a
- * module-level path constant.
+ * The remedy names the opt-in flag. A plain `backfill-binary` does not write a file
+ * that is missing — the flag is what writes it the first time.
  */
+function observationRegressionRefusal(
+  lane: { path: string; type: SymbolRecord['type']; flag: string },
+  observations: { present: boolean; observations: readonly unknown[] },
+  priorHad: boolean
+): string | null {
+  if (!priorHad) return null;
+  if (observations.present && observations.observations.length > 0) return null;
+  return (
+    `${lane.path} is ${observations.present ? 'empty' : 'missing'}, but the ` +
+    `previous dataset published ${lane.type} records. Regenerating now would drop ` +
+    `every one of them, which downstream reads as a mass removal. Re-run ` +
+    `"npm run backfill-binary -- ${lane.flag}" (after a re-extract, which is what fills ` +
+    `the cache it reads) before scraping.`
+  );
+}
+
+/** The control_message case of observationRegressionRefusal. */
 export function controlRegressionRefusal(
   control: { present: boolean; observations: readonly ControlObservation[] },
   priorHadControl: boolean
 ): string | null {
-  if (!priorHadControl) return null;
-  if (control.present && control.observations.length > 0) return null;
-  return (
-    `${controlObservationsPath()} is ${control.present ? 'empty' : 'missing'}, but the ` +
-    `previous dataset published control_message records. Regenerating now would drop ` +
-    `every one of them, which downstream reads as a mass removal. Re-run ` +
-    `"npm run backfill-binary" (after a re-extract, which is what writes it) before ` +
-    `scraping.`
+  return observationRegressionRefusal(
+    { path: controlObservationsPath(), type: 'control_message', flag: '--control' },
+    control,
+    priorHadControl
+  );
+}
+
+/** The mod_method case of observationRegressionRefusal. */
+export function modRegressionRefusal(
+  mods: { present: boolean; observations: readonly ModObservation[] },
+  priorHadMods: boolean
+): string | null {
+  return observationRegressionRefusal(
+    { path: modObservationsPath(), type: 'mod_method', flag: '--mods' },
+    mods,
+    priorHadMods
   );
 }
 
 /**
- * Did the previous dataset publish any `control_message` record?
+ * Did the previous dataset publish any record of `type`?
  *
  * NOT read off `loadPriorFirstSeen`'s map, which keeps only records carrying
  * `first_seen_estimated: true` — a strictly narrower question that answers no once a
  * date is anchored. A missing prior snapshot is a genuine no; a malformed one is not,
  * hence the warning at the catch.
  */
-export async function priorDatasetHasControlRecords(latestPath: string): Promise<boolean> {
+export async function priorDatasetHasRecordsOfType(
+  latestPath: string,
+  type: SymbolRecord['type']
+): Promise<boolean> {
   let raw: string;
   try {
     raw = await readFile(latestPath, 'utf-8');
@@ -1770,14 +1885,18 @@ export async function priorDatasetHasControlRecords(latestPath: string): Promise
     // not fail the scrape that would replace it. That does disable the guard, so say
     // so out loud: silent is the property worth removing here, not the tolerance.
     console.warn(
-      `${latestPath} is not readable JSON, so the control-record regression guard ` +
+      `${latestPath} is not readable JSON, so the ${type} regression guard ` +
         `cannot consult it. If a re-extract has already run, verify the next dataset ` +
-        `still carries control_message records before publishing it.`
+        `still carries ${type} records before publishing it.`
     );
     return false;
   }
-  return (snapshot.symbols ?? []).some((s) => s.type === 'control_message');
+  return (snapshot.symbols ?? []).some((s) => s.type === type);
 }
+
+/** Did the previous dataset publish any `control_message` record? */
+export const priorDatasetHasControlRecords = (latestPath: string): Promise<boolean> =>
+  priorDatasetHasRecordsOfType(latestPath, 'control_message');
 
 interface CliOptions {
   changelogPath?: string;
@@ -1860,11 +1979,20 @@ export async function main(): Promise<number> {
   // An emptied file is the same failure wearing a different shape: `present` is true,
   // `buildEnrichedSnapshots` attaches nothing, and every record disappears without an
   // error. Both arms are checked, so neither can pass as the legitimate first run.
-  const controlObsPath = controlObservationsPath();
-  const control = await loadControlObservations(controlObsPath);
-  const priorHadControl = await priorDatasetHasControlRecords(join(options.outDir, 'latest.json'));
-  const refusal = controlRegressionRefusal(control, priorHadControl);
-  if (refusal) throw new Error(refusal);
+  const priorPath = join(options.outDir, 'latest.json');
+  const control = await loadControlObservations(controlObservationsPath());
+  const controlRefusal = controlRegressionRefusal(
+    control,
+    await priorDatasetHasControlRecords(priorPath)
+  );
+  if (controlRefusal) throw new Error(controlRefusal);
+  // The same guard for mod_method records, whose observation file is opt-in the same way.
+  const mods = await loadModObservations(modObservationsPath());
+  const modRefusal = modRegressionRefusal(
+    mods,
+    await priorDatasetHasRecordsOfType(priorPath, 'mod_method')
+  );
+  if (modRefusal) throw new Error(modRefusal);
 
   const snapshots = buildEnrichedSnapshots(
     blocks,
@@ -1872,7 +2000,8 @@ export async function main(): Promise<number> {
     binary,
     priorFirstSeen,
     binaryDescriptions.descriptions,
-    control.observations
+    control.observations,
+    mods.present ? mods.observations : undefined
   );
   const index = buildIndex(snapshots);
 

@@ -28,6 +28,7 @@ import {
   freezeEstimatedFirstSeen,
   isIntroducingBullet,
   isSubprocessFlagBullet,
+  latestVersionNamed,
   subprocessFlagExamples,
   loadDocsIndex,
   parseChangelog,
@@ -2500,5 +2501,178 @@ describe('assembleSnapshots — per-scope descriptions', () => {
     expect(kept).toBeDefined();
     expect(kept).toContain('Tag the release.');
     expect(kept).not.toContain('2.6.0');
+  });
+});
+
+describe('mod_method records', () => {
+  const docs = (symbols: DocsIndex['symbols']): DocsIndex => ({
+    $generated_by: 'scripts/fetch-docs.ts',
+    source_pages: [],
+    symbols,
+  });
+  const modDoc = (symbol: string) => ({
+    symbol,
+    type: 'mod_method' as const,
+    description: '',
+    doc_min_version: null,
+    doc_page: 'plugins/mods/reference',
+  });
+  const binary: BinaryObservations = {
+    $generated_by: 'scripts/backfill-binary.ts',
+    source: 'binary',
+    note: '',
+    observedVersions: ['2.1.242', '2.1.250', '2.1.300'],
+    symbols: [],
+  };
+  const blocks = parseChangelog(
+    '## 2.1.300\n\n- Added `$.ui.notify` for mods: raises a native notification\n\n' +
+      '## 2.1.250\n\n- Fixed a crash\n\n## 2.1.242\n\n- Fixed another crash\n'
+  );
+  const latestRecords = (snapshots: ReturnType<typeof buildEnrichedSnapshots>) =>
+    snapshots.find((snapshot) => snapshot.version === '2.1.300')?.symbols ?? [];
+
+  it('reads a backticked $. call from the changelog, with or without its arguments', () => {
+    expect(extractSymbols('Added `$.ui.notify` for mods')).toEqual([
+      { symbol: '$.ui.notify', type: 'mod_method' },
+    ]);
+    expect(extractSymbols('`$.ui.toast()` and `$.ui.toast({ text })`')).toEqual([
+      { symbol: '$.ui.toast', type: 'mod_method' },
+    ]);
+    // A call followed by a property access still names the method.
+    expect(extractSymbols('`$.session.usage().context`')).toEqual([
+      { symbol: '$.session.usage', type: 'mod_method' },
+    ]);
+    // A namespace alone is not a method.
+    expect(extractSymbols('the `$.ui` namespace')).toEqual([]);
+  });
+
+  it('categorizes every mod method as mods', () => {
+    expect(categorize('$.ui.toast', 'mod_method')).toBe('mods');
+  });
+
+  it('resolves a $. token in prose to its mod_method record, not a config key', () => {
+    const firstSeen = new Map([['mod_method:$.ui.toast', '2.1.250']]);
+    expect(latestVersionNamed('Use `$.ui.toast` instead.', firstSeen, new Set())).toBe('2.1.250');
+  });
+
+  it('publishes a binary-only method as active, dated from its first sighting', () => {
+    const records = latestRecords(
+      buildEnrichedSnapshots(blocks, docs([]), binary, undefined, undefined, undefined, [
+        { symbol: '$.ui.toast', first_seen: '2.1.242', last_seen: '2.1.300', removed_in: null },
+      ])
+    );
+    expect(records.find((r) => r.symbol === '$.ui.toast')).toMatchObject({
+      type: 'mod_method',
+      first_seen: '2.1.242',
+      status: 'active',
+      provenance: 'binary',
+      confidence: 'medium',
+      category: 'mods',
+    });
+  });
+
+  it('re-dates a docs and changelog method from an earlier binary sighting', () => {
+    const records = latestRecords(
+      buildEnrichedSnapshots(
+        blocks,
+        docs([modDoc('$.ui.notify'), modDoc('$.plugin.root')]),
+        binary,
+        undefined,
+        undefined,
+        undefined,
+        [{ symbol: '$.ui.notify', first_seen: '2.1.250', last_seen: '2.1.300', removed_in: null }]
+      )
+    );
+    const notify = records.find((r) => r.symbol === '$.ui.notify');
+    expect(notify).toMatchObject({ first_seen: '2.1.250', confidence: 'high' });
+    // The docs row has no description, so it must not erase the changelog's.
+    expect(notify?.description).toContain('raises a native notification');
+    expect(notify?.description_source).toBe('changelog');
+    // Docs-only: the docs row is the evidence, dated at the tip as an estimate.
+    expect(records.find((r) => r.symbol === '$.plugin.root')).toMatchObject({
+      provenance: 'docs',
+      first_seen_estimated: true,
+      category: 'mods',
+    });
+    expect(records.find((r) => r.symbol === '$.plugin.root')?.description_source).toBeUndefined();
+  });
+
+  it('removes a changelog-named method where it leaves the dispatch table', () => {
+    // The changelog never retracts a mention, so the binary is the only removal
+    // evidence a changelog-named method can have.
+    const snapshots = buildEnrichedSnapshots(
+      blocks,
+      docs([]),
+      binary,
+      undefined,
+      undefined,
+      undefined,
+      [
+        {
+          symbol: '$.ui.notify',
+          first_seen: '2.1.242',
+          last_seen: '2.1.242',
+          removed_in: '2.1.250',
+        },
+      ]
+    );
+    const has = (version: string) =>
+      snapshots
+        .find((snapshot) => snapshot.version === version)
+        ?.symbols.some((r) => r.symbol === '$.ui.notify');
+    expect(has('2.1.242')).toBe(true);
+    expect(has('2.1.250')).toBe(false);
+    expect(has('2.1.300')).toBe(false);
+  });
+
+  it('keeps a documented method live after it leaves the dispatch table', () => {
+    // `ui.resolve` left the table at 2.1.267 and is still a documented method: the
+    // docs row is current first-party evidence, so it outweighs the absence.
+    const records = latestRecords(
+      buildEnrichedSnapshots(
+        blocks,
+        docs([modDoc('$.ui.resolve')]),
+        binary,
+        undefined,
+        undefined,
+        undefined,
+        [
+          {
+            symbol: '$.ui.resolve',
+            first_seen: '2.1.242',
+            last_seen: '2.1.242',
+            removed_in: '2.1.250',
+          },
+        ]
+      )
+    );
+    expect(records.find((r) => r.symbol === '$.ui.resolve')).toMatchObject({
+      first_seen: '2.1.242',
+      removed_in: null,
+    });
+  });
+
+  it('publishes no mod_method from any lane until the observation file exists', () => {
+    const records = latestRecords(
+      buildEnrichedSnapshots(blocks, docs([modDoc('$.plugin.root')]), binary)
+    );
+    expect(records.some((r) => r.type === 'mod_method')).toBe(false);
+  });
+
+  it('keeps the gate closed for an empty observation file', () => {
+    // Past the floor the distiller cannot return no methods, so an empty file is a
+    // broken one; it must not publish docs and changelog records with no binary dates.
+    const records = latestRecords(
+      buildEnrichedSnapshots(
+        blocks,
+        docs([modDoc('$.plugin.root')]),
+        binary,
+        undefined,
+        undefined,
+        undefined,
+        []
+      )
+    );
+    expect(records.some((r) => r.type === 'mod_method')).toBe(false);
   });
 });

@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { extractControlMessages } from './control-lane.js';
+import { extractModMethods } from './mod-lane.js';
 import { extractSettingsKeys } from './settings-schema.js';
 import { sliceEmbeddedBundle } from './slice-bundle.js';
 import {
@@ -59,6 +60,22 @@ const FAKE_BUNDLE = [
     `else if(e.request.subtype==="can_use_tool")return 4;` +
     `return 0}`,
 ].join('');
+/** A mods API dispatch table: twelve dotted keys, every value a `{run}` object. */
+const MOD_METHODS = [
+  'clock.now',
+  'command.run',
+  'env.get',
+  'fs.read',
+  'fs.write',
+  'http.fetch',
+  'store.get',
+  'store.set',
+  'tool.list',
+  'ui.notice',
+  'ui.status',
+  'ui.toast',
+].map((key) => `$.${key}`);
+const MOD_TABLE = `\nvar MODS={${MOD_METHODS.map((m) => `"${m.slice(2)}":{run:(n)=>n}`).join(',')}};`;
 
 /** Fake a CDN manifest + binary response pair, keyed by URL substring. */
 function stubCdn(version: string, binary: string, checksum: string): void {
@@ -208,7 +225,12 @@ describe('buildCacheRecord', () => {
     } catch (e) {
       refusals.push((e as Error).message);
     }
-    expect(refusals).toHaveLength(3);
+    try {
+      extractModMethods('var x=1;', '2.1.242');
+    } catch (e) {
+      refusals.push((e as Error).message);
+    }
+    expect(refusals).toHaveLength(4);
     for (const message of refusals) expect(isDeterministicRefusal(message)).toBe(true);
     // And a transient failure must NOT be classified as deterministic.
     expect(isDeterministicRefusal('fetch failed')).toBe(false);
@@ -273,7 +295,13 @@ describe('buildCacheRecord', () => {
       'symbols',
       'controlCount',
       'controlMessages',
+      'modMethodCount',
+      'modMethods',
+      'modMentions',
     ]);
+    // 2.1.214 predates the mods API, so the mod half is an honest empty list.
+    expect(record.modMethodCount).toBe(0);
+    expect(record.modMethods).toEqual([]);
     // And the control half must be real, not an empty array standing in for it.
     expect(record.controlCount).toBe(record.controlMessages.length);
     expect(record.controlMessages.map((m) => m.symbol).sort()).toEqual([
@@ -283,6 +311,24 @@ describe('buildCacheRecord', () => {
       'set_model',
     ]);
     expect(record.controlMessages.every((m) => m.family === 'control_request')).toBe(true);
+  });
+});
+
+describe('buildCacheRecord — mods API', () => {
+  it('records the dispatch table keys from the floor on', () => {
+    const record = buildCacheRecord('2.1.250', Buffer.from(FAKE_BUNDLE + MOD_TABLE, 'utf-8'));
+    expect(record.modMethods).toEqual(MOD_METHODS);
+    expect(record.modMethodCount).toBe(MOD_METHODS.length);
+  });
+
+  it('refuses a release at or after the floor that has no dispatch table', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-refusal-'));
+    stubCdn('2.1.250', FAKE_BUNDLE, sha256(FAKE_BUNDLE));
+    const code = await main(['--version', '2.1.250', '--out', root]);
+
+    expect(code).toBe(CONTROL_REFUSAL_EXIT);
+    expect(existsSync(join(root, '2.1.250.json'))).toBe(false);
+    await rm(root, { recursive: true, force: true });
   });
 });
 

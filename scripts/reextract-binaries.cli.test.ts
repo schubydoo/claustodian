@@ -230,6 +230,9 @@ describe('reextract-binaries main()', () => {
       'symbols',
       'controlCount',
       'controlMessages',
+      'modMethodCount',
+      'modMethods',
+      'modMentions',
     ]);
     expect(existsSync(join(out, '3.0.0.json'))).toBe(false);
     expect(existsSync(join(out, '4.0.0.json'))).toBe(false); // refused, not extracted

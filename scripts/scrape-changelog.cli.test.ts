@@ -10,7 +10,9 @@ import { buildAjv, getValidator } from './validate-schema.js';
 import {
   controlRegressionRefusal,
   main,
+  modRegressionRefusal,
   priorDatasetHasControlRecords,
+  priorDatasetHasRecordsOfType,
 } from './scrape-changelog.js';
 
 const FIXTURE_CHANGELOG = `# Changelog
@@ -388,5 +390,38 @@ describe('controlRegressionRefusal', () => {
 
   it('allows the steady state', () => {
     expect(controlRegressionRefusal({ present: true, observations: some }, true)).toBeNull();
+  });
+});
+
+describe('modRegressionRefusal', () => {
+  const some = [{ symbol: '$.ui.toast' }] as never;
+  const none = [] as never;
+
+  it('refuses a missing file when the prior dataset had mod records, naming --mods', () => {
+    const reason = modRegressionRefusal({ present: false, observations: none }, true);
+    expect(reason).toContain('missing');
+    expect(reason).toContain('--mods');
+  });
+
+  it('refuses an EMPTY file, which drops the records just as silently', () => {
+    expect(modRegressionRefusal({ present: true, observations: none }, true)).toContain('empty');
+  });
+
+  it('allows absence before the records are first published', () => {
+    expect(modRegressionRefusal({ present: false, observations: none }, false)).toBeNull();
+    expect(modRegressionRefusal({ present: true, observations: some }, true)).toBeNull();
+  });
+});
+
+describe('priorDatasetHasRecordsOfType', () => {
+  it('answers per type', async () => {
+    const path = join(tmpdir(), `claustodian-prior-mod-${process.pid}.json`);
+    await writeFile(
+      path,
+      JSON.stringify({ symbols: [{ type: 'mod_method', symbol: '$.ui.toast' }] })
+    );
+    expect(await priorDatasetHasRecordsOfType(path, 'mod_method')).toBe(true);
+    expect(await priorDatasetHasRecordsOfType(path, 'control_message')).toBe(false);
+    await rm(path, { force: true });
   });
 });
