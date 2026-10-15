@@ -43,9 +43,18 @@ name: Claude Code Review
 # personal subscription quota — and cheaper, since it stops the job spinning up at all.
 # Advisory only: `contents: read` (Claude cannot push) and the instructions require a
 # COMMENT review, never REQUEST_CHANGES, so it can never gate a merge.
+#
+# zizmor (v1.31.0 and later) flags `issue_comment` as a dangerous trigger. It flags
+# the trigger itself and cannot see the job's `if:`, which is the gate: GitHub
+# evaluates it before a runner starts, so a comment from anyone but the owner never
+# gets a runner, a checkout or a secret. The trigger cannot be replaced. A
+# `workflow_dispatch` run needs a `prompt:`, which publishes nothing (see the banner
+# above). A label-triggered `pull_request` run gets no secrets on a fork PR, and the
+# `pull_request_target` variant that does is flagged by the same audit. The PR head
+# is checked out beside the base into `pr-head/` and never executed by a step.
 
 on:
-  issue_comment:
+  issue_comment: # zizmor: ignore[dangerous-triggers] owner-only job gate; see above
     types: [created]
 
 permissions:
