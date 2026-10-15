@@ -64,6 +64,11 @@ export function findMissingCoverage(
   // symbol the dataset intentionally dropped. (Deprecations still appear, so they
   // are covered normally.)
   const removed = new Set(CONFIRMED_REMOVALS.map((r) => keyFor(r.symbol, r.type)));
+  // The scrape publishes no mod_method record until data/mod-observations.json exists
+  // (see buildEnrichedSnapshots). Until the dataset carries the type, a changelog
+  // mention of one is not a gap. Once it does, the scrape's own regression guard
+  // refuses to lose the file, so the type stays enforced here.
+  const publishesMods = datasetSymbols.some((record) => record.type === 'mod_method');
 
   const blocks = parseChangelog(changelogMd);
   const missing: MissingSymbol[] = [];
@@ -71,6 +76,7 @@ export function findMissingCoverage(
   // collectChangelogSymbols already dedupes (first appearance wins) and applies
   // the scraper's exclusions, so we just diff its symbol set against the dataset.
   for (const { record } of collectChangelogSymbols(blocks).values()) {
+    if (record.type === 'mod_method' && !publishesMods) continue;
     const key = keyFor(record.symbol, record.type);
     if (!known.has(key) && !removed.has(key)) {
       missing.push({ symbol: record.symbol, type: record.type });

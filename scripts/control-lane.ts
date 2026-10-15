@@ -263,12 +263,12 @@ export interface ControlMessageObservation {
 /* -------------------------------------------------------------------------- */
 
 /** Minimal ESTree node. The parser's own types are structural; this is enough. */
-interface Node {
+export interface Node {
   type: string;
   [key: string]: unknown;
 }
 
-const isNode = (v: unknown): v is Node =>
+export const isNode = (v: unknown): v is Node =>
   typeof v === 'object' && v !== null && typeof (v as Node).type === 'string';
 
 const isStringLiteral = (n: unknown): n is Node & { value: string } =>
@@ -334,7 +334,7 @@ function singleStringArgument(n: unknown): string | undefined {
  * candidate order, last-write-wins on `schemaVariable`, and union order are all
  * unchanged by this.
  */
-function walk(root: Node, visit: (node: Node, ancestors: readonly Node[]) => void): void {
+export function walk(root: Node, visit: (node: Node, ancestors: readonly Node[]) => void): void {
   const ancestors: Node[] = [];
   const step = (node: unknown): void => {
     if (Array.isArray(node)) {
@@ -387,7 +387,7 @@ interface Candidate {
  * default. An earlier revision recorded 505 ms and 349 ms as the module figures;
  * they do not reproduce here, and 505 ms is today's SCRIPT timing for that bundle.
  */
-function parse(source: string): Node {
+export function parse(source: string): Node {
   let best: { errors: unknown[]; program: Node } | undefined;
   for (const sourceType of ['module', 'script'] as const) {
     const attempt = parseSync('bundle.js', source, { sourceType }) as unknown as {
@@ -801,14 +801,21 @@ export function controlMessageConfidence(
  * downstream, zero symbols reads as every symbol having been removed at once. The
  * union and split floors carry their own guards on top of that — see the three
  * checks at the end of this function.
+ *
+ * `onProgram` receives each parsed chunk once, before its AST is dropped, so another
+ * AST lane (the mods API, see mod-lane.ts) reads the same parse instead of paying for
+ * its own. The parse is the expensive step; see COST in the file header.
  */
 export function extractControlMessages(
   source: string | readonly string[],
-  version: string
+  version: string,
+  onProgram?: (program: Node) => void
 ): ControlMessageObservation[] {
-  const chunks = (typeof source === 'string' ? [source] : source).map((src) =>
-    collectCandidates(parse(src))
-  );
+  const chunks = (typeof source === 'string' ? [source] : source).map((src) => {
+    const program = parse(src);
+    onProgram?.(program);
+    return collectCandidates(program);
+  });
 
   // Dispatches and subtype candidates are string literals, so they are chunk-agnostic
   // and merge by concatenation. Only union membership crosses chunk boundaries.

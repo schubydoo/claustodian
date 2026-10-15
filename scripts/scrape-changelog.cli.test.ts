@@ -10,7 +10,9 @@ import { buildAjv, getValidator } from './validate-schema.js';
 import {
   controlRegressionRefusal,
   main,
+  modRegressionRefusal,
   priorDatasetHasControlRecords,
+  priorDatasetHasRecordsOfType,
 } from './scrape-changelog.js';
 
 const FIXTURE_CHANGELOG = `# Changelog
@@ -44,6 +46,7 @@ describe('scrape-changelog main()', () => {
   afterEach(async () => {
     logSpy?.mockRestore();
     delete process.env.CLAUSTODIAN_CONTROL_OBSERVATIONS_PATH;
+    delete process.env.CLAUSTODIAN_MOD_OBSERVATIONS_PATH;
     if (tmpDir) {
       await rm(tmpDir, { recursive: true, force: true });
       tmpDir = undefined;
@@ -310,6 +313,57 @@ describe('scrape-changelog main()', () => {
     const exitCode = await withArgv(['--changelog', changelogPath, '--out', outDir], main);
     expect(exitCode).toBe(0);
   });
+
+  const priorWithMods = JSON.stringify({
+    symbols: [{ symbol: '$.ui.toast', type: 'mod_method', first_seen: '2.1.242' }],
+  });
+
+  it('refuses to scrape when a prior dataset published mod records and the file is gone', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-scrape-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    const outDir = join(tmpDir, 'out');
+    await mkdir(outDir, { recursive: true });
+    await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
+    await writeFile(join(outDir, 'latest.json'), priorWithMods, 'utf-8');
+    process.env.CLAUSTODIAN_MOD_OBSERVATIONS_PATH = join(tmpDir, 'mod-observations.json');
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    await expect(withArgv(['--changelog', changelogPath, '--out', outDir], main)).rejects.toThrow(
+      /is missing, but the previous dataset published mod_method/
+    );
+  });
+
+  it('publishes mod records end to end once the observation file exists', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-scrape-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    const outDir = join(tmpDir, 'out');
+    await mkdir(outDir, { recursive: true });
+    await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
+    const modPath = join(tmpDir, 'mod-observations.json');
+    await writeFile(
+      modPath,
+      JSON.stringify({
+        $generated_by: 'scripts/backfill-binary.ts',
+        source: 'binary',
+        symbols: [
+          { symbol: '$.ui.toast', first_seen: '2.0.5', last_seen: '2.1.10', removed_in: null },
+        ],
+      }),
+      'utf-8'
+    );
+    process.env.CLAUSTODIAN_MOD_OBSERVATIONS_PATH = modPath;
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    expect(await withArgv(['--changelog', changelogPath, '--out', outDir], main)).toBe(0);
+    const latest = JSON.parse(await readFile(join(outDir, 'latest.json'), 'utf-8'));
+    expect(latest.symbols.find((s: { symbol: string }) => s.symbol === '$.ui.toast')).toMatchObject(
+      {
+        type: 'mod_method',
+        first_seen: '2.0.5',
+        status: 'active',
+      }
+    );
+  });
 });
 
 describe('priorDatasetHasControlRecords', () => {
@@ -388,5 +442,38 @@ describe('controlRegressionRefusal', () => {
 
   it('allows the steady state', () => {
     expect(controlRegressionRefusal({ present: true, observations: some }, true)).toBeNull();
+  });
+});
+
+describe('modRegressionRefusal', () => {
+  const some = [{ symbol: '$.ui.toast' }] as never;
+  const none = [] as never;
+
+  it('refuses a missing file when the prior dataset had mod records, naming --mods', () => {
+    const reason = modRegressionRefusal({ present: false, observations: none }, true);
+    expect(reason).toContain('missing');
+    expect(reason).toContain('--mods');
+  });
+
+  it('refuses an EMPTY file, which drops the records just as silently', () => {
+    expect(modRegressionRefusal({ present: true, observations: none }, true)).toContain('empty');
+  });
+
+  it('allows absence before the records are first published', () => {
+    expect(modRegressionRefusal({ present: false, observations: none }, false)).toBeNull();
+    expect(modRegressionRefusal({ present: true, observations: some }, true)).toBeNull();
+  });
+});
+
+describe('priorDatasetHasRecordsOfType', () => {
+  it('answers per type', async () => {
+    const path = join(tmpdir(), `claustodian-prior-mod-${process.pid}.json`);
+    await writeFile(
+      path,
+      JSON.stringify({ symbols: [{ type: 'mod_method', symbol: '$.ui.toast' }] })
+    );
+    expect(await priorDatasetHasRecordsOfType(path, 'mod_method')).toBe(true);
+    expect(await priorDatasetHasRecordsOfType(path, 'control_message')).toBe(false);
+    await rm(path, { force: true });
   });
 });

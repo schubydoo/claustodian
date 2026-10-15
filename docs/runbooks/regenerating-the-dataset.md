@@ -128,6 +128,13 @@ no longer needed — its presence is the opt-in, and the plain command keeps it 
 with the cache. A run that skips it leaves every gate downstream
 green on a dataset with no control records.
 
+⚠️ Step 2 treats `data/mod-observations.json` the same way, with `--mods`. Until that
+file exists, step 4 publishes no `mod_method` record from any lane, the docs and
+changelog lanes included. **Publishing them the first time is its own data PR**:
+`npm run backfill-binary -- --mods`, after a re-extract that scanned every cache entry
+for the mod lane. A cache entry written before the mod lane has no `modMethods` key,
+and step 2 refuses `--mods` while any entry lacks it.
+
 Step 3 must come after step 2. `fetch-docs` resolves settings-page key paths against
 `data/binary-observations.json`, because the docs group keys by topic rather than by
 JSON nesting — a "Permission settings" table can list a key the schema holds flat.

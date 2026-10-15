@@ -112,3 +112,20 @@ describe('findMissingCoverage', () => {
     expect(findMissingCoverage(changelog, dataset)).toEqual([]);
   });
 });
+
+describe('findMissingCoverage — mod_method', () => {
+  const changelog = '## 2.1.295\n\n- Added `$.ui.notify` for mods\n';
+  const mod = makeSymbol({ symbol: '$.ui.toast', type: 'mod_method', category: 'mods' });
+
+  it('does not demand a mod method while the dataset publishes none', () => {
+    // The scrape publishes no mod_method record until data/mod-observations.json
+    // exists, so demanding one here would fail every release-bot run until then.
+    expect(findMissingCoverage(changelog, [makeSymbol()])).toEqual([]);
+  });
+
+  it('demands a changelog-named mod method once the dataset publishes the type', () => {
+    expect(findMissingCoverage(changelog, [makeSymbol(), mod])).toEqual([
+      { symbol: '$.ui.notify', type: 'mod_method' },
+    ]);
+  });
+});

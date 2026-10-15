@@ -40,9 +40,10 @@ export const DOC_PAGES = [
   'remote-control',
   'settings',
   'settings-reference',
+  'plugins/mods/reference',
 ] as const;
 
-export type DocSymbolType = 'cli_flag' | 'command' | 'env_var' | 'config_key';
+export type DocSymbolType = 'cli_flag' | 'command' | 'env_var' | 'config_key' | 'mod_method';
 
 /**
  * Per-page baseline `min-version` for pages that state a feature-level
@@ -85,6 +86,7 @@ export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number
   'plugins/cli-reference': 10,
   'plugins/manifest-reference': 2,
   'remote-control': 1,
+  'plugins/mods/reference': 40,
 };
 
 /** Generic OS/shell env vars a doc may reference but that aren't Claude Code symbols. */
@@ -621,6 +623,63 @@ const PAGE_SYMBOL_SECTIONS: Partial<Record<string, ReadonlySet<string>>> = {
   'env-vars': new Set(['Variables']),
 };
 
+/**
+ * The "Mods API methods" table of the mods reference page. Each row names a
+ * namespace (`` `$.ui` ``, sometimes as a link) and lists its methods in backticks,
+ * often followed by notes that backtick other words: `$.agent` lists status values,
+ * and `$.state` names helper functions. So only the LEADING run of backticked words
+ * (optionally written as calls) joined by commas, "and" or "or" is read, which is
+ * the method list on every row.
+ *
+ * No row dates a method: a version in a note (`$.agent`'s v2.1.289) dates the note.
+ * The rows carry no per-method description either, so the description is empty and
+ * the binary lane dates the record.
+ */
+function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
+  const entries: DocEntry[] = [];
+  let inSection = false;
+  for (const line of markdown.split('\n')) {
+    const heading = /^##\s+(.*)$/.exec(line);
+    if (heading) {
+      inSection = (heading[1] as string).trim() === 'Mods API methods';
+      continue;
+    }
+    if (!inSection || !/^\s*\|/.test(line) || /^\s*\|\s*:?-{1,}/.test(line)) continue;
+    const [namespaceCell, methodsCell] = splitTableRow(line)
+      .slice(1, -1)
+      .map((c) => c.trim());
+    if (namespaceCell === 'Namespace') continue; // the header row
+    const namespace = /`\$\.([a-z][a-zA-Z0-9]*)`/.exec(namespaceCell ?? '')?.[1];
+    const run =
+      /^[^`]*((?:`[a-z][a-zA-Z0-9]*(?:\(\))?`(?:,\s*(?:(?:and|or)\s+)?|\s+(?:and|or)\s+)?)+)/.exec(
+        methodsCell ?? ''
+      );
+    const leading = run?.[1];
+    // A list that stops at a backtick stopped at a name it cannot read, so the rest
+    // of the list would be lost; the notes after a whole list start with prose.
+    const cutShort = run !== null && run.input.slice(run[0].length).startsWith('`');
+    // Every row of this table names methods, so a row this cannot read is a parser
+    // gap, not an empty row. The page floor only catches a large loss.
+    if (namespace === undefined || leading === undefined || cutShort) {
+      throw new Error(
+        `Docs page "${page}": a row of the "Mods API methods" table has no readable ` +
+          `namespace or method list: ${line.trim()}. Read the page and fix ` +
+          'parseModsReferencePage.'
+      );
+    }
+    for (const match of leading.matchAll(/`([a-z][a-zA-Z0-9]*)(?:\(\))?`/g)) {
+      entries.push({
+        symbol: `$.${namespace}.${match[1] as string}`,
+        type: 'mod_method',
+        description: '',
+        doc_min_version: null,
+        doc_page: page,
+      });
+    }
+  }
+  return entries;
+}
+
 export function parseDocPage(
   page: string,
   markdown: string,
@@ -628,6 +687,7 @@ export function parseDocPage(
 ): DocEntry[] {
   if (page === 'settings') return parseSettingsPage(page, markdown, knownConfigKeys);
   if (page === 'settings-reference') return parseSettingsReferencePage(page, markdown);
+  if (page === 'plugins/mods/reference') return parseModsReferencePage(page, markdown);
   const entries: DocEntry[] = [];
   const sections = PAGE_SYMBOL_SECTIONS[page];
   let section = '';
@@ -752,28 +812,44 @@ export function officialSourcePages(): string[] {
 }
 
 /**
- * Integrity guard for the committed docs index: its `source_pages` must be
- * exactly the official Claude Code docs URLs and every `doc_page` must be an
- * official page slug. Catches a hand-edited or corrupted `data/docs.json`
- * before its entries are published as `provenance: "docs"` with real-looking
- * `code.claude.com/docs` source URLs.
+ * Integrity guard for the committed docs index: every `source_pages` entry must be
+ * an official Claude Code docs URL, in `DOC_PAGES` order, with no duplicates, and
+ * every `doc_page` must be one of those fetched pages. Catches a hand-edited or
+ * corrupted `data/docs.json` before its entries are published as
+ * `provenance: "docs"` with real-looking `code.claude.com/docs` source URLs.
+ *
+ * The list may LACK an official page. A code change that adds a page to
+ * `DOC_PAGES` cannot regenerate `data/docs.json` in the same PR — data and code
+ * ship separately — so the committed index lags by that page until the next docs
+ * refresh. Requiring an exact match would fail every scrape in between. Yield is
+ * checked separately, at fetch time, by `assertDocsCoverage`.
  */
 export function assertOfficialDocs(docs: DocsIndex): void {
   const expected = officialSourcePages();
-  const sourcesMatch =
-    docs.source_pages.length === expected.length &&
-    expected.every((url, i) => docs.source_pages[i] === url);
-  if (!sourcesMatch) {
+  let cursor = 0;
+  const ordered = docs.source_pages.every((url) => {
+    const at = expected.indexOf(url, cursor);
+    cursor = at + 1;
+    return at !== -1;
+  });
+  if (docs.source_pages.length === 0 || !ordered) {
     throw new Error(
       'Docs index source_pages do not match the official Claude Code documentation pages ' +
         '(code.claude.com/docs); refusing to publish it as provenance:"docs". ' +
         'Regenerate with "npm run fetch-docs".'
     );
   }
+  const fetched = new Set(docs.source_pages);
   for (const entry of docs.symbols) {
     if (!OFFICIAL_DOC_PAGES.has(entry.doc_page)) {
       throw new Error(
         `Docs entry ${entry.symbol} references a non-official doc_page "${entry.doc_page}".`
+      );
+    }
+    if (!fetched.has(`${DOCS_BASE}${entry.doc_page}.md`)) {
+      throw new Error(
+        `Docs entry ${entry.symbol} references doc_page "${entry.doc_page}", which the ` +
+          'index did not fetch. Regenerate with "npm run fetch-docs".'
       );
     }
   }

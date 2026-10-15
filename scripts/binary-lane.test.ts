@@ -480,6 +480,8 @@ import {
   controlRecordDating,
   eraValueAt,
   loadControlObservations,
+  loadModObservations,
+  assertModObservations,
   type ControlObservation,
 } from './binary-lane.js';
 
@@ -656,4 +658,57 @@ describe('controlRecordDating — ceiling agrees with the extractor', () => {
       });
     }
   }
+});
+
+describe('loadModObservations', () => {
+  const envelope = (symbols: unknown[], generatedBy = 'scripts/backfill-binary.ts') => ({
+    $generated_by: generatedBy,
+    source: 'binary',
+    symbols,
+  });
+  const good = {
+    symbol: '$.ui.toast',
+    first_seen: '2.1.242',
+    last_seen: '2.1.300',
+    removed_in: null,
+  };
+
+  it('reports absence rather than throwing for a missing file', async () => {
+    const result = await loadModObservations('/tmp/claustodian-no-such-mod.json');
+    expect(result).toMatchObject({ observations: [], present: false });
+  });
+
+  it('reads a backfill-binary output', async () => {
+    const path = join(tmpdir(), `claustodian-mod-ok-${process.pid}.json`);
+    await writeFile(path, JSON.stringify(envelope([good])));
+    await expect(loadModObservations(path)).resolves.toEqual({
+      observations: [good],
+      present: true,
+    });
+    await rm(path, { force: true });
+  });
+
+  it('refuses a file that is not a backfill-binary output', async () => {
+    const path = join(tmpdir(), `claustodian-mod-forged-${process.pid}.json`);
+    await writeFile(path, JSON.stringify(envelope([good], 'hand-edited')));
+    await expect(loadModObservations(path)).rejects.toThrow(
+      /not a scripts\/backfill-binary.ts output/
+    );
+    await rm(path, { force: true });
+  });
+
+  it('accepts an envelope with no symbols array, which the loader rejects first', () => {
+    expect(() =>
+      assertModObservations({ $generated_by: 'scripts/backfill-binary.ts', source: 'binary' }, 'x')
+    ).not.toThrow();
+  });
+
+  it('refuses an entry missing a dating field', async () => {
+    const path = join(tmpdir(), `claustodian-mod-torn-${process.pid}.json`);
+    const torn: Partial<typeof good> = { ...good };
+    delete torn.removed_in;
+    await writeFile(path, JSON.stringify(envelope([torn])));
+    await expect(loadModObservations(path)).rejects.toThrow(/"removed_in"/);
+    await rm(path, { force: true });
+  });
 });

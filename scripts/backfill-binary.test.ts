@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   distillControlObservations,
   distillDescriptions,
+  distillModObservations,
   distillObservations,
   loadCacheFiles,
   main,
@@ -828,5 +829,229 @@ describe('distillControlObservations', () => {
     });
     const obs = distillControlObservations([twoSubtypes('2.1.63')]);
     expect(obs.map((o) => o.symbol)).toEqual(['add_directory', 'set_color']);
+  });
+});
+
+/** A fully scanned cache entry carrying only the mod lane's output. */
+const modEntry = (
+  version: string,
+  modMethods: string[],
+  modMentions: string[] = []
+): BinaryCacheFile => ({
+  version,
+  symbols: [],
+  controlMessages: [],
+  modMethods,
+  modMentions,
+});
+
+describe('distillModObservations', () => {
+  it('dates each method from its first and last scanned release', () => {
+    const obs = distillModObservations([
+      modEntry('2.1.250', ['$.ui.toast', '$.ui.status']),
+      modEntry('2.1.242', ['$.ui.toast']),
+      modEntry('2.1.260', ['$.ui.toast', '$.ui.status']),
+    ]);
+    expect(obs).toEqual([
+      { symbol: '$.ui.status', first_seen: '2.1.250', last_seen: '2.1.260', removed_in: null },
+      { symbol: '$.ui.toast', first_seen: '2.1.242', last_seen: '2.1.260', removed_in: null },
+    ]);
+  });
+
+  it('removes a method at the first scanned release after its last sighting', () => {
+    // The table is read whole, under a floor guard, so absence from it is evidence —
+    // unlike the regex lanes, whose recall ceiling keeps their removals below 2.1.160.
+    const obs = distillModObservations([
+      modEntry('2.1.242', ['$.ui.old', '$.ui.toast']),
+      modEntry('2.1.250', ['$.ui.old', '$.ui.toast']),
+      modEntry('2.1.260', ['$.ui.toast']),
+      modEntry('2.1.270', ['$.ui.toast']),
+    ]);
+    expect(obs.find((o) => o.symbol === '$.ui.old')).toMatchObject({
+      last_seen: '2.1.250',
+      removed_in: '2.1.260',
+    });
+  });
+
+  it('keeps a method live while the bundle still quotes it outside the table', () => {
+    // ui.resolve: out of the table at 2.1.267, still quoted (and still documented).
+    const obs = distillModObservations([
+      modEntry('2.1.242', ['$.ui.resolve', '$.ui.toast']),
+      modEntry('2.1.267', ['$.ui.toast'], ['$.ui.resolve']),
+      modEntry('2.1.300', ['$.ui.toast'], ['$.ui.resolve']),
+    ]);
+    expect(obs.find((o) => o.symbol === '$.ui.resolve')).toMatchObject({
+      first_seen: '2.1.242',
+      removed_in: null,
+    });
+  });
+
+  it('removes a method only where it leaves both the table and the bundle for good', () => {
+    // A synthetic history: out of the table, still quoted for a while, mentioned once
+    // more after a gap, then gone for good. Removal waits for the last absence run.
+    // `session.turns` keeps the namespace in the table, so absence is observable.
+    const obs = distillModObservations([
+      modEntry('2.1.242', ['$.session.turnCount', '$.session.turns']),
+      modEntry('2.1.268', ['$.session.turns'], ['$.session.turnCount']),
+      modEntry('2.1.270', ['$.session.turns'], []),
+      modEntry('2.1.280', ['$.session.turns'], ['$.session.turnCount']),
+      modEntry('2.1.290', ['$.session.turns'], []),
+      modEntry('2.1.300', ['$.session.turns'], []),
+    ]);
+    expect(obs.find((o) => o.symbol === '$.session.turnCount')).toEqual({
+      symbol: '$.session.turnCount',
+      first_seen: '2.1.242',
+      last_seen: '2.1.242',
+      removed_in: '2.1.290',
+    });
+  });
+
+  it('does not remove a method whose whole namespace left the table', () => {
+    // Mentions are scoped to the table's namespaces, so once a namespace has no key
+    // left, its methods are unobservable there — not absent.
+    const obs = distillModObservations([
+      modEntry('2.1.242', ['$.clock.now', '$.ui.toast']),
+      modEntry('2.1.250', ['$.ui.toast']),
+      modEntry('2.1.260', ['$.ui.toast']),
+    ]);
+    expect(obs.find((o) => o.symbol === '$.clock.now')?.removed_in).toBeNull();
+  });
+
+  it('reads an entry with no mentions key as mentioning nothing', () => {
+    const obs = distillModObservations([
+      modEntry('2.1.242', ['$.ui.old', '$.ui.toast']),
+      { version: '2.1.250', symbols: [], modMethods: ['$.ui.toast'] },
+    ]);
+    expect(obs.find((o) => o.symbol === '$.ui.old')).toEqual({
+      symbol: '$.ui.old',
+      first_seen: '2.1.242',
+      last_seen: '2.1.242',
+      removed_in: '2.1.250',
+    });
+  });
+
+  it('keeps a method live when it returns after a gap', () => {
+    const obs = distillModObservations([
+      modEntry('2.1.242', ['$.ui.flaky']),
+      modEntry('2.1.250', []),
+      modEntry('2.1.260', ['$.ui.flaky']),
+    ]);
+    expect(obs).toEqual([
+      { symbol: '$.ui.flaky', first_seen: '2.1.242', last_seen: '2.1.260', removed_in: null },
+    ]);
+  });
+
+  it('reads an empty list before the floor as scanned, not as a removal point', () => {
+    const obs = distillModObservations([
+      modEntry('2.1.241', []),
+      modEntry('2.1.242', ['$.ui.toast']),
+    ]);
+    expect(obs).toEqual([
+      { symbol: '$.ui.toast', first_seen: '2.1.242', last_seen: '2.1.242', removed_in: null },
+    ]);
+  });
+});
+
+describe('mod observations output', () => {
+  let root: string | undefined;
+  afterEach(async () => {
+    if (root) await rm(root, { recursive: true, force: true });
+    root = undefined;
+  });
+
+  async function cacheWith(entries: BinaryCacheFile[]): Promise<string> {
+    root = await mkdtemp(join(tmpdir(), 'claustodian-mod-out-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    for (const entry of entries) {
+      await writeFile(join(cache, `${entry.version}.json`), JSON.stringify(entry));
+    }
+    return cache;
+  }
+
+  it('writes the file on --mods, independent of the control opt-in', async () => {
+    const cache = await cacheWith([modEntry('2.1.242', ['$.ui.toast'])]);
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await main([
+      '--cache',
+      cache,
+      '--out',
+      join(root!, 'binary-observations.json'),
+      '--mods',
+    ]);
+
+    expect(exitCode).toBe(0);
+    expect(existsSync(join(root!, 'control-observations.json'))).toBe(false);
+    const written = JSON.parse(await readFile(join(root!, 'mod-observations.json'), 'utf-8'));
+    expect(written).toMatchObject({
+      $generated_by: 'scripts/backfill-binary.ts',
+      source: 'binary',
+      observedVersions: ['2.1.242'],
+      symbols: [
+        { symbol: '$.ui.toast', first_seen: '2.1.242', last_seen: '2.1.242', removed_in: null },
+      ],
+    });
+    logSpy.mockRestore();
+  });
+
+  it('does NOT write the file on a plain backfill, which is what the release bot runs', async () => {
+    const cache = await cacheWith([modEntry('2.1.242', ['$.ui.toast'])]);
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await main([
+      '--cache',
+      cache,
+      '--out',
+      join(root!, 'binary-observations.json'),
+    ]);
+
+    expect(existsSync(join(root!, 'mod-observations.json'))).toBe(false);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('--mods'));
+    expect(exitCode).toBe(0);
+    logSpy.mockRestore();
+  });
+
+  it('refuses --mods and writes nothing when any cache entry was never scanned', async () => {
+    const cache = await cacheWith([
+      modEntry('2.1.242', ['$.ui.toast']),
+      { version: '2.1.250', symbols: [], controlMessages: [] },
+    ]);
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await main([
+      '--cache',
+      cache,
+      '--out',
+      join(root!, 'binary-observations.json'),
+      '--mods',
+    ]);
+
+    expect(existsSync(join(root!, 'mod-observations.json'))).toBe(false);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('carry no mod-lane output'));
+    expect(exitCode).toBe(1);
+    logSpy.mockRestore();
+  });
+
+  it('still writes the mod file when the control lane skips', async () => {
+    // The two gates are independent: a control refusal must not starve the mod lane.
+    const cache = await cacheWith([
+      { version: '2.1.242', symbols: [], modMethods: ['$.ui.toast'] },
+    ]);
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await main([
+      '--cache',
+      cache,
+      '--out',
+      join(root!, 'binary-observations.json'),
+      '--mods',
+      '--control',
+    ]);
+
+    expect(existsSync(join(root!, 'mod-observations.json'))).toBe(true);
+    expect(existsSync(join(root!, 'control-observations.json'))).toBe(false);
+    expect(exitCode).toBe(1);
+    logSpy.mockRestore();
   });
 });

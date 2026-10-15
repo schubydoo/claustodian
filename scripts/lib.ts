@@ -10,20 +10,21 @@ import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 
 /** The symbol kinds the lanes extract. Lives here — a dependency-free leaf — so
- * lane modules share it without importing one another. The changelog lane only
- * ever produces the first three — its SYMBOL_PATTERNS classify backticked tokens
- * as flags, commands or env vars and nothing else. The docs lane adds `config_key`
- * from the settings tables, and the binary lane also reads settings keys out of
- * the embedded zod schema. This is the SCHEMA's `type` enum minus `control_message`,
- * and it is now narrower than `SymbolRecord`'s union, which carries that sixth member
- * because `controlRecordsFor` assembles those records. They are dated and shaped by
+ * lane modules share it without importing one another. The changelog lane
+ * produces flags, commands, env vars and mod methods — its SYMBOL_PATTERNS classify
+ * backticked tokens as those four and nothing else. The docs lane adds `config_key`
+ * from the settings tables and `mod_method` from the mods reference, and the binary
+ * lane also reads settings keys out of the embedded zod schema. This is the SCHEMA's
+ * `type` enum minus `control_message`, and it is narrower than `SymbolRecord`'s
+ * union, which carries `control_message` because `controlRecordsFor` assembles
+ * those records. They are dated and shaped by
  * the binary lane rather than extracted from changelog or docs TEXT, which is what
  * this type describes — so no value of this type is ever `control_message`.
  * Membership is not "what a lane produces" — nothing emits `internal_config_flag`
  * either, and it stays because it is a published contract; see settingsKeyCategory in
  * settings-schema.ts. */
 export type ExtractedSymbolType =
-  'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag';
+  'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag' | 'mod_method';
 
 export const CHANGELOG_URL =
   'https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md';

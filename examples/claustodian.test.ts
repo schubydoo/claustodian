@@ -25,6 +25,7 @@ const SYMBOL_TYPES = [
   'config_key',
   'internal_config_flag',
   'control_message',
+  'mod_method',
 ] as const;
 
 /**

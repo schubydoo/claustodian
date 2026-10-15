@@ -5,7 +5,8 @@
  * Minimal zero-dependency client for the Claustodian dataset.
  *
  * Claustodian answers: "does a Claude Code symbol (CLI flag / env var / slash
- * command / settings key / control message) exist in version Y, and what did it
+ * command / settings key / control message / mods API method) exist in version Y,
+ * and what did it
  * do at that version?" The data is
  * static JSON on GitHub Pages — this client just fetches it and applies the
  * three rules that matter (availability, removal=vanish, describe-at-version).
@@ -17,15 +18,22 @@
 
 export const DEFAULT_BASE = 'https://claustodian.dev/data';
 
-// All six values the schema's `type` enum allows. cli_flag, command, env_var and
+// All seven values the schema's `type` enum allows. cli_flag, command, env_var and
 // config_key are populated. internal_config_flag is reserved by the schema and
 // deliberately unused — internal-ness is carried by `category` (`settings-internal`),
 // because typing off a description would churn a record's identity every time
 // Anthropic edits the text. control_message records are published; they also carry
 // `family` and `direction` fields (see the schema) that this minimal client does
-// not model.
+// not model. mod_method records name a mods API call as a mod writes it, such as
+// `$.ui.toast`.
 export type SymbolType =
-  'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag' | 'control_message';
+  | 'cli_flag'
+  | 'command'
+  | 'env_var'
+  | 'config_key'
+  | 'internal_config_flag'
+  | 'control_message'
+  | 'mod_method';
 export type Status = 'active' | 'deprecated' | 'removed' | 'needs_review';
 export type Confidence = 'high' | 'medium' | 'low';
 

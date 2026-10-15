@@ -30,11 +30,11 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { extractControlMessages } from './control-lane.js';
 import { sliceEmbeddedChunks } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
 import { compareVersionsAsc, runCli } from './lib.js';
 import type { ControlMessageObservation } from './control-lane.js';
+import { extractControlAndModMethods } from './mod-lane.js';
 
 const DEFAULT_ARCHIVE_DIR = 'scratch/binaries';
 const DEFAULT_OUT_DIR = 'binary-cache';
@@ -248,8 +248,10 @@ export async function main(argv: string[]): Promise<number> {
     // never be read, and a default of `[]` here is exactly the silent-zero this lane
     // exists to refuse.
     let controlMessages: ControlMessageObservation[];
+    let modMethods: string[];
+    let modMentions: string[];
     try {
-      controlMessages = extractControlMessages(chunks, version);
+      ({ controlMessages, modMethods, modMentions } = extractControlAndModMethods(chunks, version));
     } catch (error) {
       controlFailures.push({ version, reason: (error as Error).message });
       continue;
@@ -263,6 +265,9 @@ export async function main(argv: string[]): Promise<number> {
         symbols,
         controlCount: controlMessages.length,
         controlMessages,
+        modMethodCount: modMethods.length,
+        modMethods,
+        modMentions,
       })
     );
     extracted++;
@@ -298,7 +303,7 @@ export async function main(argv: string[]): Promise<number> {
       failures: controlFailures,
     });
     console.error(
-      `\ncontrol lane refused ${controlFailures.length} version(s); their entries were ` +
+      `\nan AST lane (control or mod) refused ${controlFailures.length} version(s); their entries were ` +
         `NOT written, so the cache is incomplete and must not be backfilled from:\n` +
         controlFailures.map((f) => `  ${f.version}: ${f.reason}`).join('\n')
     );

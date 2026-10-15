@@ -28,7 +28,8 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { extractControlMessages, type ControlMessageObservation } from './control-lane.js';
+import type { ControlMessageObservation } from './control-lane.js';
+import { extractControlAndModMethods } from './mod-lane.js';
 import { sliceEmbeddedChunks } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
 import { compareVersionsAsc, runCli } from './lib.js';
@@ -130,7 +131,7 @@ async function fetchRetry(url: string, tries = 3): Promise<Response> {
 /**
  * The cache-file record for `version`, byte-identical to a full re-extraction.
  *
- * ⚠️ That invariant is why the control lane runs here too: this is the OTHER writer
+ * ⚠️ That invariant is why the control and mod lanes run here too: this is the OTHER writer
  * of `binary-cache/<version>.json`, so omitting a key it writes would leave the cache
  * holding two shapes.
  *
@@ -149,7 +150,7 @@ export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryC
   );
   const chunks = sliceEmbeddedChunks(artifact, version);
   const symbols = extractBundleSymbols(bundle, chunks);
-  const controlMessages = extractControlMessages(chunks, version);
+  const { controlMessages, modMethods, modMentions } = extractControlAndModMethods(chunks, version);
   return {
     version,
     source: 'binary',
@@ -157,6 +158,9 @@ export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryC
     symbols,
     controlCount: controlMessages.length,
     controlMessages,
+    modMethodCount: modMethods.length,
+    modMethods,
+    modMentions,
   };
 }
 
@@ -167,6 +171,10 @@ export interface BinaryCacheRecord {
   symbols: ReturnType<typeof extractBundleSymbols>;
   controlCount: number;
   controlMessages: ControlMessageObservation[];
+  modMethodCount: number;
+  modMethods: string[];
+  /** Method names quoted outside the table; see modEvidenceFrom. */
+  modMentions: string[];
 }
 
 /** Write `record` to `<outDir>/<version>.json` atomically (tmp + rename). */
@@ -258,6 +266,7 @@ export const CONTROL_REFUSAL_EXIT = 2;
  */
 const REFUSAL_PREFIXES = [
   'control lane:',
+  'mod lane:',
   'slice-bundle:',
   'settings schema:',
   // A release before FIRST_COMPILED_CACHE: refused on every retry, so an

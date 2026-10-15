@@ -19,8 +19,8 @@ context belongs in `AGENTS.md` / `CLAUDE.md`, which the reviewer already reads.
 ## What this project is
 
 Claustodian is a static, versioned dataset of the Claude Code surface — every CLI flag,
-environment variable, command, settings key and stream-json control message, tagged with
-the version it was first observed in. Three lanes (changelog, docs, release binaries) produce one JSON snapshot
+environment variable, command, settings key, stream-json control message and mods API
+method, tagged with the version it was first observed in. Three lanes (changelog, docs, release binaries) produce one JSON snapshot
 per release.
 
 **The whole value is that every claim is checkable against something Anthropic

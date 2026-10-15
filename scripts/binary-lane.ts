@@ -1342,48 +1342,64 @@ export interface ControlObservationsFile {
 export async function loadControlObservations(
   path: string
 ): Promise<{ observations: ControlObservation[]; present: boolean }> {
-  let raw: string;
-  try {
-    raw = await readFile(path, 'utf-8');
-  } catch (error) {
-    // ONLY a missing file is a legitimate absence — the opt-in state before the records
-    // are published. A permission or I/O error is a real failure that must not be read
-    // as "no control records", which downstream would ship as a mass removal.
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return { observations: [], present: false };
-    }
-    throw new Error(
-      `Cannot read control observations at ${path}: ${(error as Error).message}. ` +
-        `Refusing to treat an unreadable file as an absence of control messages.`,
-      { cause: error }
-    );
-  }
-  let parsed: ControlObservationsFile;
-  try {
-    parsed = JSON.parse(raw) as ControlObservationsFile;
-  } catch (error) {
-    // Both failure modes are loud, but only one was actionable: a syntactically broken
-    // file threw a bare SyntaxError while the missing-array case got guidance.
-    throw new Error(
-      `${path} exists but is not valid JSON. Refusing to treat an unreadable ` +
-        `observation file as an absence of control messages — regenerate it with ` +
-        `"npm run backfill-binary -- --control".`,
-      { cause: error }
-    );
-  }
-  if (!Array.isArray(parsed.symbols)) {
-    throw new Error(
-      `${path} exists but has no \`symbols\` array. Refusing to treat a malformed ` +
-        `observation file as an absence of control messages — regenerate it with ` +
-        `"npm run backfill-binary".`
-    );
-  }
+  const parsed = await readOptInObservations<ControlObservationsFile>(path, {
+    what: 'control observations',
+    absence: 'control messages',
+    regenerate: '"npm run backfill-binary -- --control"',
+  });
+  if (parsed === undefined) return { observations: [], present: false };
   // Checked HERE rather than at the call site, unlike the sibling evidence files.
   // Those are asserted in `main` because they have several readers; this has one, and
   // a guard the only caller can forget is a guard that gets forgotten — dropping such
   // a call passed the whole suite when it was written that way.
   assertControlObservations(parsed, path);
   return { observations: parsed.symbols, present: true };
+}
+
+/**
+ * Reads an opt-in observation file (`control-observations.json`,
+ * `mod-observations.json`). Returns undefined for a MISSING file and throws for
+ * every other failure, so the caller branches on presence, never on an empty array.
+ */
+async function readOptInObservations<T extends { symbols?: unknown[] }>(
+  path: string,
+  label: { what: string; absence: string; regenerate: string }
+): Promise<(T & { symbols: NonNullable<T['symbols']> }) | undefined> {
+  let raw: string;
+  try {
+    raw = await readFile(path, 'utf-8');
+  } catch (error) {
+    // ONLY a missing file is a legitimate absence — the opt-in state before the records
+    // are published. A permission or I/O error is a real failure that must not be read
+    // as "no records", which downstream would ship as a mass removal.
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
+    throw new Error(
+      `Cannot read ${label.what} at ${path}: ${(error as Error).message}. ` +
+        `Refusing to treat an unreadable file as an absence of ${label.absence}.`,
+      { cause: error }
+    );
+  }
+  let parsed: T;
+  try {
+    parsed = JSON.parse(raw) as T;
+  } catch (error) {
+    // Both failure modes are loud, but only one was actionable: a syntactically broken
+    // file threw a bare SyntaxError while the missing-array case got guidance.
+    throw new Error(
+      `${path} exists but is not valid JSON. Refusing to treat an unreadable ` +
+        `observation file as an absence of ${label.absence} — regenerate it with ` +
+        `${label.regenerate}.`,
+      { cause: error }
+    );
+  }
+  if (!Array.isArray(parsed.symbols)) {
+    throw new Error(
+      `${path} exists but has no \`symbols\` array. Refusing to treat a malformed ` +
+        `observation file as an absence of ${label.absence} — regenerate it with ` +
+        `${label.regenerate}.`
+    );
+  }
+  return parsed as T & { symbols: NonNullable<T['symbols']> };
 }
 
 /**
@@ -1427,6 +1443,71 @@ export function assertControlObservations(file: ControlObservationsFile, path: s
           `"admitted_at_first_seen" (the file was likely truncated or hand-edited). Regenerate ` +
           `with "npm run backfill-binary -- --control".`
       );
+    }
+  }
+}
+
+/**
+ * One mods API method's observation window, as `backfill-binary` distils it.
+ * `removed_in` is the first scanned release from which the method is neither a
+ * table key nor mentioned in the bundle, in every later scanned release too, while
+ * its namespace still has a table key; null otherwise. See distillModObservations.
+ */
+export interface ModObservation {
+  symbol: string;
+  first_seen: string;
+  last_seen: string;
+  removed_in: string | null;
+}
+
+/** The committed mod-observations envelope, as `backfill-binary` writes it. */
+export interface ModObservationsFile {
+  $generated_by?: string;
+  source?: string;
+  symbols?: ModObservation[];
+}
+
+/**
+ * Mod observations, plus whether the file existed. Absence is the opt-in state:
+ * `backfill-binary` writes the file only on `--mods` or when it already exists.
+ */
+export async function loadModObservations(
+  path: string
+): Promise<{ observations: ModObservation[]; present: boolean }> {
+  const parsed = await readOptInObservations<ModObservationsFile>(path, {
+    what: 'mod observations',
+    absence: 'mods API methods',
+    regenerate: '"npm run backfill-binary -- --mods"',
+  });
+  if (parsed === undefined) return { observations: [], present: false };
+  assertModObservations(parsed, path);
+  return { observations: parsed.symbols, present: true };
+}
+
+/**
+ * Refuses a mod-observations file that is not a `backfill-binary` output, or one
+ * with an entry missing a dating field. Every record built from it is stamped
+ * `provenance: "binary"`, so a hand-edited file would publish dates no extraction
+ * produced.
+ */
+export function assertModObservations(file: ModObservationsFile, path: string): void {
+  if (file.$generated_by !== GENERATED_BY || file.source !== SOURCE) {
+    throw new Error(
+      `Mod observations ${path} is not a scripts/backfill-binary.ts output ` +
+        `(got $generated_by=${JSON.stringify(file.$generated_by)}, source=${JSON.stringify(file.source)}); ` +
+        `refusing to publish it as provenance:"binary". Regenerate with ` +
+        `"npm run backfill-binary -- --mods".`
+    );
+  }
+  for (const entry of file.symbols ?? []) {
+    for (const field of ['symbol', 'first_seen', 'last_seen', 'removed_in'] as const) {
+      if (entry[field] === undefined) {
+        throw new Error(
+          `Mod observations ${path} is malformed: ${JSON.stringify(entry.symbol)} has no ` +
+            `"${field}" (the file was likely truncated or hand-edited). Regenerate with ` +
+            `"npm run backfill-binary -- --mods".`
+        );
+      }
     }
   }
 }

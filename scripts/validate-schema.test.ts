@@ -189,6 +189,26 @@ describe('symbol schema', () => {
   it('fails when a non-control_message record carries family', () => {
     expect(validate(validSymbol({ family: 'control_request' }))).toBe(false);
   });
+
+  const modMethod = (overrides: Record<string, unknown> = {}): Record<string, unknown> =>
+    validSymbol({
+      symbol: '$.ui.toast',
+      type: 'mod_method',
+      provenance: 'binary',
+      confidence: 'medium',
+      description: '',
+      source_url: null,
+      category: 'mods',
+      ...overrides,
+    });
+
+  it('accepts a mod_method record', () => {
+    expect(validate(modMethod())).toBe(true);
+  });
+
+  it('fails a mod_method record carrying the control_message fields', () => {
+    expect(validate(modMethod({ family: 'control_request', direction: null }))).toBe(false);
+  });
 });
 
 describe('snapshot schema', () => {
