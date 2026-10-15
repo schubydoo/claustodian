@@ -481,6 +481,7 @@ import {
   eraValueAt,
   loadControlObservations,
   loadModObservations,
+  assertModObservations,
   type ControlObservation,
 } from './binary-lane.js';
 
@@ -694,6 +695,12 @@ describe('loadModObservations', () => {
       /not a scripts\/backfill-binary.ts output/
     );
     await rm(path, { force: true });
+  });
+
+  it('accepts an envelope with no symbols array, which the loader rejects first', () => {
+    expect(() =>
+      assertModObservations({ $generated_by: 'scripts/backfill-binary.ts', source: 'binary' }, 'x')
+    ).not.toThrow();
   });
 
   it('refuses an entry missing a dating field', async () => {

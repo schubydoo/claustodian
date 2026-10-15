@@ -1450,8 +1450,8 @@ export function assertControlObservations(file: ControlObservationsFile, path: s
 /**
  * One mods API method's observation window, as `backfill-binary` distils it.
  * `removed_in` is the first scanned release from which the method is neither a
- * table key nor mentioned in the bundle, in every later scanned release too; null
- * otherwise. See distillModObservations.
+ * table key nor mentioned in the bundle, in every later scanned release too, while
+ * its namespace still has a table key; null otherwise. See distillModObservations.
  */
 export interface ModObservation {
   symbol: string;

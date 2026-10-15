@@ -650,13 +650,17 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
       .map((c) => c.trim());
     if (namespaceCell === 'Namespace') continue; // the header row
     const namespace = /`\$\.([a-z][a-zA-Z0-9]*)`/.exec(namespaceCell ?? '')?.[1];
-    const leading =
+    const run =
       /^[^`]*((?:`[a-z][a-zA-Z0-9]*(?:\(\))?`(?:,\s*(?:(?:and|or)\s+)?|\s+(?:and|or)\s+)?)+)/.exec(
         methodsCell ?? ''
-      )?.[1];
+      );
+    const leading = run?.[1];
+    // A list that stops at a backtick stopped at a name it cannot read, so the rest
+    // of the list would be lost; the notes after a whole list start with prose.
+    const cutShort = run !== null && (methodsCell ?? '').slice(run[0].length).startsWith('`');
     // Every row of this table names methods, so a row this cannot read is a parser
     // gap, not an empty row. The page floor only catches a large loss.
-    if (namespace === undefined || leading === undefined) {
+    if (namespace === undefined || leading === undefined || cutShort) {
       throw new Error(
         `Docs page "${page}": a row of the "Mods API methods" table has no readable ` +
           `namespace or method list: ${line.trim()}. Read the page and fix ` +

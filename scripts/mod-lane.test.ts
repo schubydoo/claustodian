@@ -121,6 +121,11 @@ describe('extractModEvidence', () => {
     });
   });
 
+  it('skips a tagged template whose raw text has no cooked value', () => {
+    // `String.raw` accepts an invalid escape, and its cooked value is then undefined.
+    expect(extractModEvidence([TABLE, 'String.raw`\\unicode`;'], '2.1.300').mentions).toEqual([]);
+  });
+
   it('does not count a table key as a mention of itself', () => {
     expect(extractModEvidence([TABLE, 'x("ui.toast");'], '2.1.300').mentions).toEqual([]);
   });

@@ -1084,7 +1084,14 @@ describe('parseDocPage — mods reference', () => {
   it('refuses a row in the methods table that it cannot read', () => {
     // The page's floor catches a large loss; a single unreadable row would otherwise
     // drop its methods without a word.
-    for (const row of ['| `$.ui` | `get_all`, `status` |', '| $.ui | `toast` |']) {
+    for (const row of [
+      '| `$.ui` | `get_all`, `status` |',
+      // A readable prefix must not hide an unreadable name later in the list.
+      '| `$.ui` | `toast`, `get_all`, `status` |',
+      '| $.ui | `toast` |',
+      '| `$.ui` |',
+      '|',
+    ]) {
       const page = ['## Mods API methods', '| Namespace | Methods |', '| :- | :- |', row].join(
         '\n'
       );

@@ -889,22 +889,45 @@ describe('distillModObservations', () => {
   it('removes a method only where it leaves both the table and the bundle for good', () => {
     // A synthetic history: out of the table, still quoted for a while, mentioned once
     // more after a gap, then gone for good. Removal waits for the last absence run.
+    // `session.turns` keeps the namespace in the table, so absence is observable.
     const obs = distillModObservations([
-      modEntry('2.1.242', ['$.session.turnCount']),
-      modEntry('2.1.268', [], ['$.session.turnCount']),
-      modEntry('2.1.270', [], []),
-      modEntry('2.1.280', [], ['$.session.turnCount']),
-      modEntry('2.1.290', [], []),
-      modEntry('2.1.300', [], []),
+      modEntry('2.1.242', ['$.session.turnCount', '$.session.turns']),
+      modEntry('2.1.268', ['$.session.turns'], ['$.session.turnCount']),
+      modEntry('2.1.270', ['$.session.turns'], []),
+      modEntry('2.1.280', ['$.session.turns'], ['$.session.turnCount']),
+      modEntry('2.1.290', ['$.session.turns'], []),
+      modEntry('2.1.300', ['$.session.turns'], []),
     ]);
-    expect(obs).toEqual([
-      {
-        symbol: '$.session.turnCount',
-        first_seen: '2.1.242',
-        last_seen: '2.1.242',
-        removed_in: '2.1.290',
-      },
+    expect(obs.find((o) => o.symbol === '$.session.turnCount')).toEqual({
+      symbol: '$.session.turnCount',
+      first_seen: '2.1.242',
+      last_seen: '2.1.242',
+      removed_in: '2.1.290',
+    });
+  });
+
+  it('does not remove a method whose whole namespace left the table', () => {
+    // Mentions are scoped to the table's namespaces, so once a namespace has no key
+    // left, its methods are unobservable there — not absent.
+    const obs = distillModObservations([
+      modEntry('2.1.242', ['$.clock.now', '$.ui.toast']),
+      modEntry('2.1.250', ['$.ui.toast']),
+      modEntry('2.1.260', ['$.ui.toast']),
     ]);
+    expect(obs.find((o) => o.symbol === '$.clock.now')?.removed_in).toBeNull();
+  });
+
+  it('reads an entry with no mentions key as mentioning nothing', () => {
+    const obs = distillModObservations([
+      modEntry('2.1.242', ['$.ui.old', '$.ui.toast']),
+      { version: '2.1.250', symbols: [], modMethods: ['$.ui.toast'] },
+    ]);
+    expect(obs.find((o) => o.symbol === '$.ui.old')).toEqual({
+      symbol: '$.ui.old',
+      first_seen: '2.1.242',
+      last_seen: '2.1.242',
+      removed_in: '2.1.250',
+    });
   });
 
   it('keeps a method live when it returns after a gap', () => {
