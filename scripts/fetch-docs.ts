@@ -657,7 +657,7 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
     const leading = run?.[1];
     // A list that stops at a backtick stopped at a name it cannot read, so the rest
     // of the list would be lost; the notes after a whole list start with prose.
-    const cutShort = run !== null && (methodsCell ?? '').slice(run[0].length).startsWith('`');
+    const cutShort = run !== null && run.input.slice(run[0].length).startsWith('`');
     // Every row of this table names methods, so a row this cannot read is a parser
     // gap, not an empty row. The page floor only catches a large loss.
     if (namespace === undefined || leading === undefined || cutShort) {
