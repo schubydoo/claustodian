@@ -87,6 +87,12 @@
         "description": "Enable bypassing all permission checks as an option, without it being enabled by default. Recommended only for sandboxes with no internet access."
       }
     ],
+    "cli_flag:--allow-other-models": [
+      {
+        "from": "2.1.302",
+        "description": "With --client-data-url: start on a model the document has no entry for, applying none of its per-model client data, instead of exiting. CLAUDE_CODE_ALLOW_OTHER_MODELS=1 does the same"
+      }
+    ],
     "cli_flag:--allow-real-servers": [
       {
         "from": "2.1.269",
@@ -271,6 +277,10 @@
       {
         "from": "2.1.283",
         "description": "URL for a signed configuration document. Claude Code exits if it cannot load it or it does not cover the selected model. Setting CLAUDE_CODE_CLIENT_DATA_URL instead keeps the URL out of the process list"
+      },
+      {
+        "from": "2.1.302",
+        "description": "URL for a signed configuration document. Claude Code exits if it cannot load it, or if it has no entry for the selected model and --allow-other-models is not set. Setting CLAUDE_CODE_CLIENT_DATA_URL instead keeps the URL out of the process list"
       }
     ],
     "cli_flag:--client-id": [
@@ -605,6 +615,12 @@
         "description": "Bind address"
       }
     ],
+    "cli_flag:--host-auth-is-org-sign-in": [
+      {
+        "from": "2.1.302",
+        "description": "The ANTHROPIC_AUTH_TOKEN this host manages is an Anthropic organization sign-in that it obtained itself (desktop hosts only)"
+      }
+    ],
     "cli_flag:--id-token": [
       {
         "from": "2.1.83",
@@ -639,6 +655,12 @@
       {
         "from": "1.0.109",
         "description": "Include partial message chunks as they arrive (only works with --print and --output-format=stream-json)"
+      }
+    ],
+    "cli_flag:--include-unsupported-models": [
+      {
+        "from": "2.1.302",
+        "description": "Offer models your account can use that this version of Claude Code does not know"
       }
     ],
     "cli_flag:--inherit-permission-mode": [

@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.301",
+  "claudeCodeVersion": "2.1.302",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -178,6 +178,19 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--allow-other-models",
+      "type": "cli_flag",
+      "first_seen": "2.1.302",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "With --client-data-url: start on a model the document has no entry for, applying none of its per-model client data, instead of exiting. CLAUDE_CODE_ALLOW_OTHER_MODELS=1 does the same",
+      "source_url": null,
+      "category": "cli-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "--allow-real-servers",
@@ -609,7 +622,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "URL for a signed configuration document. Claude Code exits if it cannot load it or it does not cover the selected model. Setting CLAUDE_CODE_CLIENT_DATA_URL instead keeps the URL out of the process list",
+      "description": "URL for a signed configuration document. Claude Code exits if it cannot load it, or if it has no entry for the selected model and --allow-other-models is not set. Setting CLAUDE_CODE_CLIENT_DATA_URL instead keeps the URL out of the process list",
       "source_url": null,
       "category": "cli-internal",
       "description_source": "binary"
@@ -1724,6 +1737,19 @@
       "description_source": "binary"
     },
     {
+      "symbol": "--host-auth-is-org-sign-in",
+      "type": "cli_flag",
+      "first_seen": "2.1.302",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "The ANTHROPIC_AUTH_TOKEN this host manages is an Anthropic organization sign-in that it obtained itself (desktop hosts only)",
+      "source_url": null,
+      "category": "cli-internal",
+      "description_source": "binary"
+    },
+    {
       "symbol": "--host-config-snapshot",
       "type": "cli_flag",
       "first_seen": "2.1.271",
@@ -1816,6 +1842,19 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--include-unsupported-models",
+      "type": "cli_flag",
+      "first_seen": "2.1.302",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Offer models your account can use that this version of Claude Code does not know",
+      "source_url": null,
+      "category": "cli-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "--inherit-permission-mode",
@@ -4762,11 +4801,11 @@
       "first_seen": "2.1.178",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Authorize design-system access for `/design-sync` with your claude.ai account",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -4788,11 +4827,11 @@
       "first_seen": "2.1.163",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "**Skill.** Convert your repo's React design system and upload it to Claude Design, so designs it produces use your real components. Optionally name the design system, for example `/design-sync Acme DS`. A first-time sync verifies every component and can take a few hours on a large repo. Available on the Anthropic API. It needs claude.ai, which the CLI doesn't contact on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or Claude Platform on AWS, or through a Claude apps gateway, so the command is unavailable there",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -13601,6 +13640,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_BG_GATEWAY_WITHHELD",
+      "type": "env_var",
+      "first_seen": "2.1.302",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_BG_ISOLATION",
       "type": "env_var",
       "first_seen": "2.1.119",
@@ -14197,6 +14248,18 @@
       "symbol": "CLAUDE_CODE_ALDER_WICKET",
       "type": "env_var",
       "first_seen": "2.1.217",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_ALLOW_OTHER_MODELS",
+      "type": "env_var",
+      "first_seen": "2.1.302",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -14965,11 +15028,12 @@
       "type": "env_var",
       "first_seen": "2.1.160",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `CLAUDE_CODE_AUTO_MODE_MODEL` to choose the model the client-side auto mode classifier uses; it does not change the model for server-side auto mode",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -15878,6 +15942,18 @@
       "symbol": "CLAUDE_CODE_DESKTOP_APP_VERSION",
       "type": "env_var",
       "first_seen": "2.1.267",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DESKTOP_SKILLS_PLUGIN_DIR",
+      "type": "env_var",
+      "first_seen": "2.1.302",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -19223,6 +19299,18 @@
       "symbol": "CLAUDE_CODE_MCP_SERVE_TOOL_OUTPUT",
       "type": "env_var",
       "first_seen": "2.1.295",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MCP_SERVE_WORKSPACE_ROOT",
+      "type": "env_var",
+      "first_seen": "2.1.302",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -25059,6 +25147,19 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_LOGRECORD_ATTRIBUTE_COUNT_LIMIT",
+      "type": "env_var",
+      "first_seen": "2.1.302",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "medium",
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
