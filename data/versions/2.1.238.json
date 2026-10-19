@@ -316,11 +316,11 @@
       "first_seen": "2.1.221",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set the auto-compact window for this session without changing your saved settings. Accepts the same values as `/autocompact`; that section covers the value forms and what overrides the flag. Requires Claude Code v2.1.221 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -900,11 +900,11 @@
       "first_seen": "2.0.60",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
-      "description": "Disable all skills and commands for this session",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "description": "Disable all skills",
+      "description_source": "binary",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -1647,8 +1647,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Get validated JSON output matching a JSON Schema after the agent completes its workflow (print mode only). See structured outputs. Claude Code exits with an error on an invalid schema and accepts the `format` keyword as an annotation without client-side validation",
-      "description_source": "docs",
+      "description": "JSON Schema for structured output validation. Example: {\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"}},\"required\":[\"name\"]}",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -2210,7 +2210,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Specify an MCP tool to handle permission prompts in non-interactive mode. Claude Code waits for that tool's MCP server to connect before running the first turn, up to the `MCP_TIMEOUT` startup timeout, 30 seconds by default. <br /><br />The prompt tool can't approve an MCP tool marked as requiring user interaction: Claude Code converts an `allow` result for one to a deny. This restriction requires Claude Code v2.1.199 or later",
+      "description": "Specify an MCP tool to handle permission prompts in non-interactive mode. Pass the full name, such as `mcp__<server>__<tool>`, of a tool on an MCP server that the run loads. Claude Code waits for that tool's MCP server to connect before running the first turn, up to the `MCP_TIMEOUT` startup timeout, 30 seconds by default. <br /><br />The prompt tool can't approve an MCP tool marked as requiring user interaction: Claude Code converts an `allow` result for one to a deny. This restriction requires Claude Code v2.1.199 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli-internal"
@@ -3291,8 +3291,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for the default set, or tool names like `\"Bash,Edit,Read\"`. On macOS, Linux, and WSL, the default set leaves out `Glob` and `Grep`, as described under Glob tool behavior. If you name one of the task-tracking tools here, Claude Code also opts the session in. The flag doesn't affect MCP tools; to deny those too, use `--disallowedTools \"mcp__*\"`. A list that omits `EndConversation` doesn't remove it; `\"\"` removes it only when no MCP tools remain",
-      "description_source": "docs",
+      "description": "Specify the list of available tools from the built-in set. Use \"\" to disable all tools, \"default\" to use all tools, or specify tool names (e.g. \"Bash,Edit,Read\").",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -3617,11 +3617,11 @@
       "first_seen": "2.1.198",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Draft `autoMode.environment` entries from your project and recent sessions, then review the draft and save it to your user settings. Requires a Pro, Max, or Team plan and Claude Code v2.1.228 or later. On native Windows, requires v2.1.233 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -3737,7 +3737,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Ask a side question about the current session without adding to the conversation. If you run `/btw` without a question, Claude Code shows your most recent side question so you can browse earlier answers; if you haven't asked one yet, Claude Code prints a usage line. Before v2.1.212, `/btw` required a question",
+      "description": "Ask a side question about the current session without adding to the conversation. If you run `/btw` without a question, Claude Code shows your most recent side question so you can browse earlier answers; if you haven't asked one yet, Claude Code prints a usage line",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4276,7 +4276,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Copy the current conversation into a new background session and keep working here. Pass a prompt and the copy starts working on it immediately; without one it waits in agent view for its first prompt. Except when the copy edits in place, Claude Code instructs it to create a worktree of its own before making code changes; the isolation instruction requires Claude Code v2.1.221 or later. To hand a side task to a subagent whose result comes back into this conversation, use `/subtask`; to switch into a copy yourself, use `/branch`. Requires Claude Code v2.1.212 or later; on v2.1.161 through v2.1.211, and whenever agent view is turned off, `/fork` starts a forked subagent instead",
+      "description": "Copy the current conversation into a new background session and keep working here. Pass a prompt and the copy starts working on it immediately; without one it waits in agent view for its first prompt. Except when the copy edits in place, Claude Code instructs it to create a worktree of its own before making code changes; the isolation instruction requires Claude Code v2.1.221 or later. To hand a side task to a subagent whose result comes back into this conversation, use `/subtask`; to switch into a copy yourself, use `/branch`. When agent view is turned off, `/fork` starts a forked subagent instead",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4768,11 +4768,11 @@
       "first_seen": "1.0.96",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "View and update your privacy settings. Only available for Pro and Max plan subscribers",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -5234,11 +5234,12 @@
       "symbol": "/subtask",
       "type": "command",
       "first_seen": "2.1.212",
+      "first_seen_estimated": true,
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
-      "confidence": "high",
-      "description": "Spawn a forked subagent: a background subagent that inherits the full conversation and works on the task while you keep working. Its result returns to this conversation when it finishes. To copy the conversation into a separate background session instead, use `/fork`. Requires Claude Code v2.1.212 or later; on v2.1.161 through v2.1.211 this command is `/fork`. When agent view is turned off, `/subtask` isn't available and `/fork` keeps the forked-subagent behavior",
+      "confidence": "medium",
+      "description": "Spawn a forked subagent: a background subagent that inherits the full conversation and works on the task while you keep working. Its result returns to this conversation when it finishes. To copy the conversation into a separate background session instead, use `/fork`. When agent view is turned off, `/subtask` isn't available and `/fork` spawns the forked subagent instead",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5264,7 +5265,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Generate a team onboarding guide from your Claude Code usage history. Claude analyzes your sessions, commands, and MCP server usage from the past 30 days and produces a markdown guide a teammate can paste as a first message to get set up quickly. For claude.ai subscribers on Pro, Max, Team, and Enterprise plans, also returns a share link teammates can open directly in Claude Code",
+      "description": "Generate a team onboarding guide from your Claude Code usage history. Claude analyzes your sessions, commands, and MCP server usage from the past 30 days. It produces a markdown guide a teammate can paste as a first message to get set up quickly. For claude.ai subscribers on Team and Enterprise plans, also returns a share link teammates can open directly in Claude Code",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -8434,7 +8435,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Add SSH connections to the Desktop environment dropdown. Administrators use it to distribute shared connections to a team. Connections you define in managed settings show as managed. Users can select them and set their own **Worktree folder** for them, but can't edit anything else or delete them in the app.",
+      "description": "Add SSH connections to the Desktop environment selector. Administrators use `sshConfigs` to distribute shared connections to a team. Users can select a managed connection and set their own **Worktree folder** for it. They can't edit its other fields or delete it in the app.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8807,7 +8808,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Map two-key INSERT-mode sequences to Escape in vim editor mode. Each key is exactly two printable characters typed in sequence, and `\"<Esc>\"` is the only supported target; Claude Code ignores other entries. Requires Claude Code v2.1.208 or later.",
+      "description": "Map two-key INSERT-mode sequences to Escape in vim editor mode. Each key is exactly two printable characters typed in sequence, and `\"<Esc>\"` is the only supported target; Claude Code ignores other entries.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -10664,7 +10665,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Timeout for API requests in milliseconds (default: 600000, or 10 minutes; maximum: 2147483647). A streaming request has to receive its response headers within it. Increase this when requests time out on slow networks or when routing through a proxy",
+      "description": "Time in milliseconds that each API request attempt has to receive its response headers (default: 600000, or 10 minutes; maximum: 2147483647). It doesn't limit how long a streaming response runs after that. When you set a positive value, each attempt at a non-streaming request has to finish within it. Increase this when requests time out on slow networks or when routing through a proxy",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -12049,11 +12050,11 @@
       "first_seen": "2.1.75",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set the auto-compact window in tokens, from `100000` to `1000000`. Accepts a plain integer such as `500000` only: a value like `500k` reads as `500` and clamps to the 100K minimum. The effective window is also capped at the model's context window. Takes precedence over the `/autocompact` command, the `--autocompact` flag, and the `autoCompactWindow` setting. The status line's `used_percentage` always measures against the model's full context window, so once this variable is set, that percentage no longer indicates when compaction will run",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -12089,8 +12090,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added `CLAUDE_CODE_AUTO_MODE_MODEL` to choose the model the client-side auto mode classifier uses; it does not change the model for server-side auto mode",
-      "description_source": "changelog",
+      "description": "Sets the model for the classifier requests Claude Code sends in auto mode. Use a full model ID such as `claude-sonnet-4-6`. For the cases where Claude Code ignores it, see Choose the classifier model.",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -12410,7 +12411,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Removed in v2.1.186 and now a no-op. Previously set a separate timeout for the connect, TLS, and response-header phase of a streaming API request. Use `API_TIMEOUT_MS` for the per-request timeout.",
+      "description": "Removed in v2.1.186 and now a no-op. Previously set a separate timeout for the connect, TLS, and response-header phase of a streaming API request. Use `API_TIMEOUT_MS` instead.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -13543,7 +13544,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `false` to turn off prompt suggestions, the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting, which is what the **Prompt suggestions** toggle in `/config` writes. Claude Code also pauses suggestions while your account is close to or at its usage limit. Set to `true` to keep them on until you reach the limit. Requires Claude Code v2.1.238 or later. See Prompt suggestions",
+      "description": "Set to `false` to turn off prompt suggestions, the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting, which is what the **Prompt suggestions** toggle in `/config` writes. Claude Code also pauses suggestions while your account is close to or at its usage limit. Set to `true` to keep that pause from applying until you reach the limit. Requires Claude Code v2.1.238 or later. See Prompt suggestions",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -13987,7 +13988,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Controls fork mode, which lets Claude spawn forked subagents itself and is on by default in interactive sessions only. Set to `1` to turn it on in `claude -p` and the Agent SDK as well, or `0` to turn it off in every kind of session. You can run `/subtask` whether or not fork mode is on. The interactive default requires Claude Code v2.1.232 or later; on earlier versions, set the variable to `1` to turn fork mode on",
+      "description": "Controls fork mode, which is on by default and lets Claude start forks on its own. While fork mode is on, Claude also can't wait for a subagent in interactive terminal, VS Code, or desktop sessions on your machine. Set to `0` to turn fork mode off. For versions, see Turn fork mode off",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -14752,7 +14753,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Cap on WebSearch calls (default: 200). When Claude reaches the cap, further WebSearch calls return a notice telling it to continue with the information it already gathered. Accepts a positive whole number with no upper bound. Anything else is ignored and the default applies, so the cap can be raised but not turned off. Requires Claude Code v2.1.212 or later",
+      "description": "Cap on WebSearch calls (default: 200). When Claude reaches the cap, further WebSearch calls return a notice telling it to continue with the information it already gathered and say so in its answer. Accepts a positive whole number with no upper bound. Anything else is ignored and the default applies, so the cap can be raised but not turned off. Requires Claude Code v2.1.212 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"

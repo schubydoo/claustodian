@@ -451,6 +451,10 @@
       {
         "from": "2.1.3",
         "description": "Disable all skills"
+      },
+      {
+        "from": "2.1.304",
+        "description": "Disable all skills and commands"
       }
     ],
     "cli_flag:--disallow-tools": [
@@ -725,6 +729,10 @@
       {
         "from": "2.0.45",
         "description": "JSON Schema for structured output validation. Example: {\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"}},\"required\":[\"name\"]}"
+      },
+      {
+        "from": "2.1.304",
+        "description": "JSON Schema for structured output validation (only works with --print). Example: {\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"}},\"required\":[\"name\"]}"
       }
     ],
     "cli_flag:--judge-model": [
@@ -1185,6 +1193,10 @@
       {
         "from": "2.0.58",
         "description": "Resume a conversation by session ID, or open interactive picker with optional search term"
+      },
+      {
+        "from": "2.1.304",
+        "description": "Resume a conversation by session ID or name, or open interactive picker with optional search term"
       }
     ],
     "cli_flag:--resume-drops-turn": [
@@ -1351,6 +1363,10 @@
       {
         "from": "2.1.265",
         "description": "Record the system prompt once per conversation and reuse it verbatim on every request and resume. on (the default): the prompt is rendered on the conversation's first request — a --system-prompt or --append-system-prompt included — sent, and recorded; every later request and resume sends the record as-is, even when a later launch passes different text, until the conversation is compacted. off: never record; the prompt is rendered fresh every request (for iterating on prompt text). No effect where system-prompt recording is not yet enabled."
+      },
+      {
+        "from": "2.1.304",
+        "description": "Record the system prompt once per conversation and reuse it verbatim on every request and resume. on (the default, except under --bare outside cloud and background sessions): the prompt is rendered on the conversation's first request — a --system-prompt or --append-system-prompt included — sent, and recorded; every later request and resume sends the record as-is, even when a later launch passes different text, until the conversation is compacted. off: never record; the prompt is rendered fresh every request (for iterating on prompt text)."
       }
     ],
     "cli_flag:--tag": [
@@ -1447,6 +1463,10 @@
       {
         "from": "2.0.77",
         "description": "Specify the list of available tools from the built-in set. Use \"\" to disable all tools, \"default\" to use all tools, or specify tool names (e.g. \"Bash,Edit,Read\")."
+      },
+      {
+        "from": "2.1.304",
+        "description": "Specify the list of available tools from the built-in set. Use \"\" to disable all tools, \"default\" to use the default set, or specify tool names (e.g. \"Bash,Edit,Read\")."
       }
     ],
     "cli_flag:--transport": [
@@ -4775,6 +4795,10 @@
       {
         "from": "2.1.233",
         "description": "@internal Emit a <total_tokens>N tokens left</total_tokens> block in the system prompt, after each tool result, and (when totalTokensReminderAfterUserTurn is on) after each regular user prompt. 'infinite' uses the literal value Infinite, 'fixed' uses 5000000, 'countdown' uses the live remaining context-window tokens, 'padded-countdown' counts down from totalTokensReminderBudget (re-anchoring to the full budget on each regular user prompt when totalTokensReminderAfterUserTurn is on — task-budget semantics). Defaults to padded-countdown. Env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER overrides."
+      },
+      {
+        "from": "2.1.304",
+        "description": "@internal Emit a <total_tokens>N tokens left</total_tokens> block in the system prompt, after each tool result, and (when totalTokensReminderAfterUserTurn is on) after each regular user prompt. 'infinite' uses the literal value Infinite, 'fixed' uses 5000000, 'countdown' uses the live remaining context-window tokens, 'padded-countdown' counts down from totalTokensReminderBudget (re-anchoring to the full budget on each regular user prompt when totalTokensReminderAfterUserTurn is on — task-budget semantics). Defaults to padded-countdown for a model with the total_tokens_reminder capability, else off. Env var CLAUDE_CODE_TOTAL_TOKENS_REMINDER overrides."
       }
     ],
     "config_key:totalTokensReminderAfterUserTurn": [

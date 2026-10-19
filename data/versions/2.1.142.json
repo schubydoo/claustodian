@@ -583,11 +583,11 @@
       "first_seen": "2.0.60",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
-      "description": "Disable all skills and commands for this session",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "description": "Disable all skills",
+      "description_source": "binary",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -1005,8 +1005,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Get validated JSON output matching a JSON Schema after the agent completes its workflow (print mode only). See structured outputs. Claude Code exits with an error on an invalid schema and accepts the `format` keyword as an annotation without client-side validation",
-      "description_source": "docs",
+      "description": "JSON Schema for structured output validation. Example: {\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"}},\"required\":[\"name\"]}",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -1867,8 +1867,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Restrict which built-in tools Claude can use. Use `\"\"` to disable all, `\"default\"` for the default set, or tool names like `\"Bash,Edit,Read\"`. On macOS, Linux, and WSL, the default set leaves out `Glob` and `Grep`, as described under Glob tool behavior. If you name one of the task-tracking tools here, Claude Code also opts the session in. The flag doesn't affect MCP tools; to deny those too, use `--disallowedTools \"mcp__*\"`. A list that omits `EndConversation` doesn't remove it; `\"\"` removes it only when no MCP tools remain",
-      "description_source": "docs",
+      "description": "Specify the list of available tools from the built-in set. Use \"\" to disable all tools, \"default\" to use all tools, or specify tool names (e.g. \"Bash,Edit,Read\").",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -2119,8 +2119,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Create a branch of the current conversation at this point",
-      "description_source": "binary",
+      "description": "Create a branch of the current conversation at this point, so you can try a different direction without losing the conversation as it stands. Switches you into the branch and preserves the original, which you can return to with `/resume`. To run a copy as a separate background session instead of switching into it, use `/fork`; to hand a side task to a subagent that reports back into this conversation, use `/subtask`",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2158,8 +2158,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Ask a quick side question without interrupting the main conversation",
-      "description_source": "binary",
+      "description": "Ask a side question about the current session without adding to the conversation. If you run `/btw` without a question, Claude Code shows your most recent side question so you can browse earlier answers; if you haven't asked one yet, Claude Code prints a usage line",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -2953,11 +2953,11 @@
       "first_seen": "1.0.96",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "View and update your privacy settings. Only available for Pro and Max plan subscribers",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -3345,7 +3345,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Generate a team onboarding guide from your Claude Code usage history. Claude analyzes your sessions, commands, and MCP server usage from the past 30 days and produces a markdown guide a teammate can paste as a first message to get set up quickly. For claude.ai subscribers on Pro, Max, Team, and Enterprise plans, also returns a share link teammates can open directly in Claude Code",
+      "description": "Generate a team onboarding guide from your Claude Code usage history. Claude analyzes your sessions, commands, and MCP server usage from the past 30 days. It produces a markdown guide a teammate can paste as a first message to get set up quickly. For claude.ai subscribers on Team and Enterprise plans, also returns a share link teammates can open directly in Claude Code",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5558,7 +5558,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Add SSH connections to the Desktop environment dropdown. Administrators use it to distribute shared connections to a team. Connections you define in managed settings show as managed. Users can select them and set their own **Worktree folder** for them, but can't edit anything else or delete them in the app.",
+      "description": "Add SSH connections to the Desktop environment selector. Administrators use `sshConfigs` to distribute shared connections to a team. Users can select a managed connection and set their own **Worktree folder** for it. They can't edit its other fields or delete it in the app.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7204,7 +7204,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Timeout for API requests in milliseconds (default: 600000, or 10 minutes; maximum: 2147483647). A streaming request has to receive its response headers within it. Increase this when requests time out on slow networks or when routing through a proxy",
+      "description": "Time in milliseconds that each API request attempt has to receive its response headers (default: 600000, or 10 minutes; maximum: 2147483647). It doesn't limit how long a streaming response runs after that. When you set a positive value, each attempt at a non-streaming request has to finish within it. Increase this when requests time out on slow networks or when routing through a proxy",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -7882,11 +7882,11 @@
       "first_seen": "2.1.75",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set the auto-compact window in tokens, from `100000` to `1000000`. Accepts a plain integer such as `500000` only: a value like `500k` reads as `500` and clamps to the 100K minimum. The effective window is also capped at the model's context window.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -8743,7 +8743,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `false` to turn off prompt suggestions, the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting, which is what the **Prompt suggestions** toggle in `/config` writes. Claude Code also pauses suggestions while your account is close to or at its usage limit. Set to `true` to keep them on until you reach the limit.",
+      "description": "Set to `false` to turn off prompt suggestions, the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting, which is what the **Prompt suggestions** toggle in `/config` writes. Claude Code also pauses suggestions while your account is close to or at its usage limit. Set to `true` to keep that pause from applying until you reach the limit.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -8991,7 +8991,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Controls fork mode, which lets Claude spawn forked subagents itself and is on by default in interactive sessions only. Set to `1` to turn it on in `claude -p` and the Agent SDK as well, or `0` to turn it off in every kind of session.",
+      "description": "Controls fork mode, which is on by default and lets Claude start forks on its own. While fork mode is on, Claude also can't wait for a subagent in interactive terminal, VS Code, or desktop sessions on your machine. Set to `0` to turn fork mode off. For versions, see Turn fork mode off",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
