@@ -1552,7 +1552,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Timeout for API requests in milliseconds (default: 600000, or 10 minutes; maximum: 2147483647). A streaming request has to receive its response headers within it. Increase this when requests time out on slow networks or when routing through a proxy",
+      "description": "Time in milliseconds that each API request attempt has to receive its response headers (default: 600000, or 10 minutes; maximum: 2147483647). It doesn't limit how long a streaming response runs after that. When you set a positive value, each attempt at a non-streaming request has to finish within it. Increase this when requests time out on slow networks or when routing through a proxy",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
