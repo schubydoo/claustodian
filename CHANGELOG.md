@@ -102,10 +102,16 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 - **A subcommand a flag gained later no longer appears in earlier snapshots.** Each
   binary-proved scope now dates from the first version whose binary proved it, not
-  from the flag's own `first_seen`. `--hooks-dir` ships at 2.1.224 under the runner,
-  but `daemon` accepts it only from 2.1.229. The 2.1.224 to 2.1.228 snapshots now
-  drop `daemon` from its `scopes`. `data/binary-observations.json` records such a
+  from the flag's own `first_seen`. `data/binary-observations.json` records such a
   scope's first version in `scope_first_seen`.
+
+- **`--hooks-dir` no longer lists `daemon` in its `scopes`.** The `daemon` scope
+  came from a Windows-only check that rejects the flag. From 2.1.229 to 2.1.241 that
+  check sat in the `daemon` module, and `claude daemon --help` does not list
+  `--hooks-dir`. The binary lane now ignores a case label that only throws when the
+  flag has another label. From 2.1.242 the same check had also hidden the real
+  scopes from the binary lane, so the runner and orchestrator scopes now come from
+  each release, not from the union.
 
 - **The binary lane reads env vars that Claude Code reads through a helper.** Some
   code reads a variable by passing its name to a helper, for example

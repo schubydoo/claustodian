@@ -212,7 +212,8 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
   for (const { symbol, type, versions, strongEvidence, scopeFrom, hiddenIn } of seenIn.values()) {
     const sorted = [...versions].sort(compareVersionsAsc);
     // A scope is evidence from the version that proved it, not from the flag's
-    // first_seen: the union alone back-dated `daemon` onto `--hooks-dir` at 2.1.224.
+    // first_seen, so a subcommand a later release adds is not back-dated onto older
+    // snapshots by the union.
     const lateScopes = [...scopeFrom]
       .filter(([, from]) => from !== sorted[0])
       .sort(([a], [b]) => a.localeCompare(b));

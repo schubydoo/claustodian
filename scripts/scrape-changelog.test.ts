@@ -1534,8 +1534,8 @@ describe('assembleSnapshots — per-version deprecation status', () => {
   });
 
   it('applies each binary scope from its own first version', () => {
-    // `--hooks-dir` ships under the runner, and `daemon` accepts it only later.
-    // Dating the union from first_seen claimed `claude daemon --hooks-dir` too early.
+    // The flag ships under the runner, and a second subcommand accepts it only later.
+    // Dating the union from first_seen would claim that subcommand too early.
     const snaps = assembleSnapshots(
       [rec({ symbol: '--hooks-dir', type: 'cli_flag', first_seen: '2.0.0', category: 'cli' })],
       blocks,

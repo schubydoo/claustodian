@@ -164,9 +164,9 @@ export interface BinaryObservation {
   scopes?: readonly string[];
   /**
    * The first version whose binary proved a scope, for each entry of `scopes`
-   * that arrived AFTER the flag's `first_seen`. `--hooks-dir` ships at 2.1.224
-   * under the runner, and `daemon` accepts it only from 2.1.229. A scope absent
-   * here dates from `first_seen`. Absent when every scope does.
+   * that arrived AFTER the flag's `first_seen`, so a subcommand a later release
+   * adds is not claimed for older snapshots. A scope absent here dates from
+   * `first_seen`. Absent when every scope does.
    */
   scope_first_seen?: Readonly<Record<string, string>>;
   /**

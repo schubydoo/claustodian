@@ -60,6 +60,21 @@ describe('extractSwitchCaseScopes', () => {
     expect(scopes.get('--no-verify')).toEqual(['self-hosted-runner decode-token']);
   });
 
+  it('does not scope a flag to the module of a label that only rejects it', () => {
+    // The 2.1.229 to 2.1.241 layout: one bundle, with the Windows check that rejects
+    // `--hooks-dir` inside the `daemon` module. It once gave the flag a daemon scope.
+    const rejects =
+      'function G(e,n="linux"){if(n!=="win32")return;switch(e){case"--hooks-dir":throw Error("--hooks-dir is not supported on Windows")}}';
+    const src =
+      mod('A5h', banner('self-hosted-runner') + parser(['--hooks-dir'])) +
+      mod('B5h', banner('self-hosted-runner orchestrator') + parser(['--hooks-dir'])) +
+      mod('C5h', banner('daemon') + rejects);
+    expect(extractSwitchCaseScopes(src).get('--hooks-dir')).toEqual([
+      'self-hosted-runner',
+      'self-hosted-runner orchestrator',
+    ]);
+  });
+
   it('withholds a flag whose module carries more than one usage banner', () => {
     // Two parsers bundled into one module: containment can no longer say which
     // one owns the label, so the scope is unknown rather than "probably both".
@@ -196,6 +211,33 @@ describe('extractSwitchCaseScopes — code-split era (2.1.242+)', () => {
         parser(['--force']),
     ];
     expect(extractSwitchCaseScopes(chunks).has('--force')).toBe(false);
+  });
+
+  it('ignores a label that only rejects the flag when another label accepts it', () => {
+    // The Windows check that throws for `--hooks-dir`. It is a case label, but it
+    // rejects the flag, so neither its bannerless chunk nor a banner beside it is a
+    // scope. Before 2.1.242 it sat in the `daemon` module and invented that scope.
+    const rejects =
+      'function G(e,n="linux"){if(n!=="win32")return;switch(e){case"--hooks-dir":throw Error("--hooks-dir is not supported on Windows")}}';
+    const runner = [
+      chunk('self-hosted-runner', ['--hooks-dir']),
+      chunk('self-hosted-runner orchestrator', ['--hooks-dir']),
+    ];
+    const both = ['self-hosted-runner', 'self-hosted-runner orchestrator'];
+    expect(extractSwitchCaseScopes([...runner, rejects]).get('--hooks-dir')).toEqual(both);
+    expect(
+      extractSwitchCaseScopes([...runner, banner('daemon') + rejects]).get('--hooks-dir')
+    ).toEqual(both);
+  });
+
+  it('keeps a rejecting label as the evidence when it is the flag’s only label', () => {
+    // `--sigkill-timeout-sec` only throws "was renamed", inside the runner parser.
+    const renamed =
+      banner('self-hosted-runner') +
+      'switch(o){case"--sigkill-timeout-sec":throw Error("--sigkill-timeout-sec was renamed")}';
+    expect(extractSwitchCaseScopes([renamed]).get('--sigkill-timeout-sec')).toEqual([
+      'self-hosted-runner',
+    ]);
   });
 
   it('keeps preamble handling for a multi-module chunk (the single-bundle era)', () => {

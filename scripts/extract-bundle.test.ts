@@ -842,6 +842,96 @@ describe('extractParamEnvVars — env vars read through a param bound to process
     expect(names(src)).toEqual(['CLAUDE_CODE_BS_AS_CTRL_BACKSPACE']);
   });
 
+  it('skips a read through a nested scope that binds the same name again', () => {
+    // Minified code reuses `e`: inside the arrow it is a list item, not process.env.
+    const arrow =
+      'function f(e){return e.CLAUDE_CODE_OUTER_READ||[{CLAUDE_CODE_ITEM:1}].map((e)=>e.CLAUDE_CODE_ITEM)}f(process.env);';
+    expect(names(arrow)).toEqual(['CLAUDE_CODE_OUTER_READ']);
+    const bare = 'function g(e){return[{}].map(e=>e.CLAUDE_CODE_BARE_ARROW)}g(process.env);';
+    expect(names(bare)).toEqual([]);
+    const nested =
+      'function h(e){return function (e) {return e.CLAUDE_CODE_NESTED_FN}({})}h(process.env);';
+    expect(names(nested)).toEqual([]);
+    const caught = 'function k(e){try{x()}catch(e){return e.CLAUDE_CODE_CAUGHT}}k(process.env);';
+    expect(names(caught)).toEqual([]);
+  });
+
+  it('resolves each read to its binding, not to a text span', () => {
+    // An outer read after an expression-bodied arrow that rebinds the name.
+    const after =
+      'function f(e){[{}].map(e=>e.CLAUDE_CODE_ITEM);return e.CLAUDE_CODE_AFTER_ARROW}f(process.env);';
+    expect(names(after)).toEqual(['CLAUDE_CODE_AFTER_ARROW']);
+    // A property key in a destructured parameter binds `x`, not `e`.
+    const key =
+      'function g(e){return[{}].map(({e:x})=>{return e.CLAUDE_CODE_KEY_ONLY})}g(process.env);';
+    expect(names(key)).toEqual(['CLAUDE_CODE_KEY_ONLY']);
+    // A default value with a call still declares `e` in the arrow.
+    const call =
+      'function h(e){return[{}].map((e=mk())=>e.CLAUDE_CODE_DEFAULT_CALL)}h(process.env);';
+    expect(names(call)).toEqual([]);
+    // Text inside a string is not a read.
+    const str = 'function k(e){return"e.CLAUDE_CODE_IN_STRING"}k(process.env);';
+    expect(names(str)).toEqual([]);
+    // An async helper keeps its `async`, so `await` parses and the check runs.
+    const awaits =
+      'async function a(e){await w();return[{}].map(e=>e.CLAUDE_CODE_ASYNC_ITEM)}a(process.env);';
+    expect(names(awaits)).toEqual([]);
+    // However `async` was spelled before it, the outer read is kept.
+    const spaced =
+      'async/*note*/function s(e){await w();return e.CLAUDE_CODE_ASYNC_OUTER}s(process.env);';
+    expect(names(spaced)).toEqual(['CLAUDE_CODE_ASYNC_OUTER']);
+    // A name from a default nested in a parameter is not the function's own parameter.
+    const nestedDefault = 'function n(t=(n=process.env)=>1){return n.CLAUDE_CODE_FREE_NAME}';
+    expect(names(nestedDefault)).toEqual([]);
+    // Text that does not parse proves nothing, so no read is taken from it.
+    const bad = 'function b(e){return e.CLAUDE_CODE_UNPARSED @}b(process.env);';
+    expect(names(bad)).toEqual([]);
+  });
+
+  it.each([
+    // [body of f(e), is the read the outer e?]
+    ['return[].map((...e)=>e.CLAUDE_CODE_T)', false],
+    ['return[].map(([e])=>e.CLAUDE_CODE_T)', false],
+    ['return[].map(({...e})=>e.CLAUDE_CODE_T)', false],
+    ['return function(){var e=1;return e.CLAUDE_CODE_T}', false],
+    ['return function(){if(1){var e=1}return e.CLAUDE_CODE_T}', false],
+    ['return function(){function e(){}return e.CLAUDE_CODE_T}', false],
+    ['return function e(){return e.CLAUDE_CODE_T}', false],
+    ['{let e=1;e.CLAUDE_CODE_T}', false],
+    ['{const e=1;e.CLAUDE_CODE_T}', false],
+    ['{class e{}e.CLAUDE_CODE_T}', false],
+    ['for(let e of[])e.CLAUDE_CODE_T', false],
+    ['for(const e in{})e.CLAUDE_CODE_T', false],
+    ['for(let e=0;;)e.CLAUDE_CODE_T', false],
+    ['class C{static{let e=1;e.CLAUDE_CODE_T}}', false],
+    ['for(var e of[])e.CLAUDE_CODE_T', true],
+    ['for(;;)e.CLAUDE_CODE_T', true],
+    ['try{}catch{return e.CLAUDE_CODE_T}', true],
+    ['return function(){var x=1;return e.CLAUDE_CODE_T}', true],
+    ['return x[e.CLAUDE_CODE_T]', true],
+    ['return{[e.CLAUDE_CODE_T]:1}', true],
+    ['return{e:e.CLAUDE_CODE_T}', true],
+    ['return function g(x=e.CLAUDE_CODE_T){var e;return x}', true],
+    ['switch(1){case 1:let e={};return e.CLAUDE_CODE_T}', false],
+    ['switch(1){case 1:function e(){}default:return e.CLAUDE_CODE_T}', false],
+    ['switch(e.CLAUDE_CODE_T){case 1:let e=1}', true],
+    ['switch(1){case 1:return e.CLAUDE_CODE_T}', true],
+    ['return class e{static x=e.CLAUDE_CODE_T}', false],
+    ['return class{static x=e.CLAUDE_CODE_T}', true],
+    ['return function g(e=1){return e.CLAUDE_CODE_T}', false],
+    ['return()=>{class C{static{var e=1}}return e.CLAUDE_CODE_T}', true],
+    ['class C{static{var e=1;e.CLAUDE_CODE_T}}', false],
+  ])('resolves %s to the outer parameter: %s', (body, outer) => {
+    expect(names(`function f(e){${body}}f(process.env);`)).toEqual(outer ? ['CLAUDE_CODE_T'] : []);
+  });
+
+  it('keeps a read through a nested scope that binds other names', () => {
+    // The real 2.1.306 proxy reader nests `E=(u,c)=>{…e[u]…}` and still reads e.
+    const src =
+      'function fWt(e){let n=e.CLAUDE_CODE_HTTP_PROXY,E=(u,c)=>{if(c&&e[u]===void 0)i[u]=c};return e.CLAUDE_CODE_HTTPS_PROXY}fWt(process.env);';
+    expect(names(src)).toEqual(['CLAUDE_CODE_HTTPS_PROXY', 'CLAUDE_CODE_HTTP_PROXY']);
+  });
+
   it('extracts from a destructure-default {env:n=process.env}, with no call site', () => {
     const src =
       'function h(t,{env:n=process.env}){return n.CLAUDE_CODE_AUTO_BACKGROUND_TIMEOUT_MS}';
