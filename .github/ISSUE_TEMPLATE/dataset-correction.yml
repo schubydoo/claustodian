@@ -31,6 +31,7 @@ body:
         - config_key
         - control_message
         - mod_method
+        - mod_event
         - not sure
     validations:
       required: true

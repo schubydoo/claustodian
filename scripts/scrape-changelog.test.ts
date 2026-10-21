@@ -2709,3 +2709,115 @@ describe('mod_method records', () => {
     expect(records.some((r) => r.type === 'mod_method')).toBe(false);
   });
 });
+
+describe('mod_event records', () => {
+  const docs = (symbols: DocsIndex['symbols']): DocsIndex => ({
+    $generated_by: 'scripts/fetch-docs.ts',
+    source_pages: [],
+    symbols,
+  });
+  const eventDoc = (symbol: string, description = 'It fires') => ({
+    symbol,
+    type: 'mod_event' as const,
+    description,
+    doc_min_version: null,
+    doc_page: 'plugins/mods/reference',
+  });
+  const binary: BinaryObservations = {
+    $generated_by: 'scripts/backfill-binary.ts',
+    source: 'binary',
+    note: '',
+    observedVersions: ['2.1.242', '2.1.250', '2.1.300'],
+    symbols: [],
+  };
+  const blocks = parseChangelog(
+    '## 2.1.300\n\n- Fixed a crash\n\n## 2.1.250\n\n- Fixed a crash\n\n## 2.1.242\n\n- Fixed another crash\n'
+  );
+  const obs = (symbol: string, first_seen = '2.1.242', removed_in: string | null = null) => ({
+    symbol,
+    first_seen,
+    last_seen: removed_in === null ? '2.1.300' : first_seen,
+    removed_in,
+  });
+  const METHODS = [obs('$.ui.close', '2.1.250'), obs('$.ui.toast')];
+  const snapshotsWith = (index: DocsIndex, events?: ReturnType<typeof obs>[]) =>
+    buildEnrichedSnapshots(blocks, index, binary, undefined, undefined, undefined, METHODS, events);
+  const latest = (snapshots: ReturnType<typeof buildEnrichedSnapshots>) =>
+    (snapshots.find((snapshot) => snapshot.version === '2.1.300')?.symbols ?? []).filter(
+      (r) => r.type === 'mod_event'
+    );
+
+  it('publishes a documented event with its docs description and its binary date', () => {
+    const records = latest(
+      snapshotsWith(docs([eventDoc('tool.call', 'A tool is about to run')]), [obs('tool.call')])
+    );
+    expect(records.find((r) => r.symbol === 'tool.call')).toMatchObject({
+      first_seen: '2.1.242',
+      status: 'active',
+      provenance: 'docs',
+      description: 'A tool is about to run',
+      category: 'mods',
+    });
+  });
+
+  it('publishes an undocumented literal event from the binary alone', () => {
+    // `prompt.change` is in the 2.1.300 event list and not in the docs.
+    const records = latest(snapshotsWith(docs([]), [obs('prompt.change', '2.1.250')]));
+    expect(records.find((r) => r.symbol === 'prompt.change')).toMatchObject({
+      first_seen: '2.1.250',
+      status: 'active',
+      provenance: 'binary',
+    });
+  });
+
+  it('dates a documented method event from its method, and repeats no other method', () => {
+    // `ui.close`: the docs list it as an event; the binary names it only as a method.
+    const records = latest(
+      snapshotsWith(docs([eventDoc('tool.call'), eventDoc('ui.close')]), [obs('tool.call')])
+    );
+    const close = records.find((r) => r.symbol === 'ui.close');
+    expect(close).toMatchObject({ first_seen: '2.1.250', removed_in: null });
+    // A binary date, not the docs lane's estimate at the tip.
+    expect(close?.first_seen_estimated).toBeUndefined();
+    // `$.ui.toast` is a method the docs do not list as an event: no event record.
+    expect(records.some((r) => r.symbol === 'ui.toast')).toBe(false);
+  });
+
+  it('removes an undocumented event where it leaves the list, and keeps a documented one', () => {
+    const snapshots = snapshotsWith(docs([eventDoc('ui.kept')]), [
+      obs('tool.call'),
+      obs('ui.gone', '2.1.242', '2.1.250'),
+      obs('ui.kept', '2.1.242', '2.1.250'),
+    ]);
+    const has = (version: string, symbol: string) =>
+      snapshots
+        .find((snapshot) => snapshot.version === version)
+        ?.symbols.some((r) => r.type === 'mod_event' && r.symbol === symbol);
+    expect(has('2.1.242', 'ui.gone')).toBe(true);
+    expect(has('2.1.250', 'ui.gone')).toBe(false);
+    expect(has('2.1.300', 'ui.kept')).toBe(true);
+  });
+
+  it('keeps an event live when it leaves the literals but its name is a live method', () => {
+    // By the docs rule every method is also an event, so an event that moved into
+    // the method spread still exists.
+    const snapshots = snapshotsWith(docs([]), [
+      obs('tool.call'),
+      obs('ui.close', '2.1.242', '2.1.250'),
+    ]);
+    const close = latest(snapshots).find((r) => r.symbol === 'ui.close');
+    expect(close).toMatchObject({ first_seen: '2.1.242', removed_in: null });
+  });
+
+  it('dates a literal event from its method when the method was seen first', () => {
+    // `$.ui.close` from 2.1.250; the literal `ui.close` only from 2.1.300.
+    const records = latest(snapshotsWith(docs([]), [obs('tool.call'), obs('ui.close', '2.1.300')]));
+    expect(records.find((r) => r.symbol === 'ui.close')?.first_seen).toBe('2.1.250');
+  });
+
+  it('publishes no mod_event from any lane until its observation file exists', () => {
+    expect(latest(snapshotsWith(docs([eventDoc('tool.call')])))).toEqual([]);
+    // An empty file is a broken one past the floor, so the gate stays closed.
+    expect(latest(snapshotsWith(docs([eventDoc('tool.call')]), []))).toEqual([]);
+  });
+});

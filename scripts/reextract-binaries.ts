@@ -250,8 +250,12 @@ export async function main(argv: string[]): Promise<number> {
     let controlMessages: ControlMessageObservation[];
     let modMethods: string[];
     let modMentions: string[];
+    let modEvents: string[];
     try {
-      ({ controlMessages, modMethods, modMentions } = extractControlAndModMethods(chunks, version));
+      ({ controlMessages, modMethods, modMentions, modEvents } = extractControlAndModMethods(
+        chunks,
+        version
+      ));
     } catch (error) {
       controlFailures.push({ version, reason: (error as Error).message });
       continue;
@@ -268,6 +272,8 @@ export async function main(argv: string[]): Promise<number> {
         modMethodCount: modMethods.length,
         modMethods,
         modMentions,
+        modEventCount: modEvents.length,
+        modEvents,
       })
     );
     extracted++;

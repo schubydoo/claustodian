@@ -43,7 +43,8 @@ export const DOC_PAGES = [
   'plugins/mods/reference',
 ] as const;
 
-export type DocSymbolType = 'cli_flag' | 'command' | 'env_var' | 'config_key' | 'mod_method';
+export type DocSymbolType =
+  'cli_flag' | 'command' | 'env_var' | 'config_key' | 'mod_method' | 'mod_event';
 
 /**
  * Per-page baseline `min-version` for pages that state a feature-level
@@ -87,6 +88,17 @@ export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number
   'plugins/manifest-reference': 2,
   'remote-control': 1,
   'plugins/mods/reference': 40,
+};
+
+/**
+ * Floors per symbol TYPE, for a type that shares a page with a larger one. The mods
+ * reference page holds both its method table and its event tables, and the method
+ * rows alone clear that page's floor, so an emptied Events section would pass it.
+ * Set near half the present yield, as the page floors are.
+ */
+export const TYPE_MIN_SYMBOLS: Partial<Record<DocSymbolType, number>> = {
+  mod_method: 40,
+  mod_event: 20,
 };
 
 /** Generic OS/shell env vars a doc may reference but that aren't Claude Code symbols. */
@@ -677,6 +689,71 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
       });
     }
   }
+  return [...entries, ...parseModsEventTables(page, markdown)];
+}
+
+/**
+ * The event tables of the mods reference page: every table whose first header cell
+ * is "Event", under whichever heading it sits, so a group moved out of "## Events"
+ * keeps its events. The first cell names one event or more in backticks
+ * (`` `prompt.fill`, `prompt.suggest` ``, sometimes as links), and the second says when
+ * it fires, which is the description. The "## Events" section also holds tables of
+ * event FIELDS (first header cell "Field"), whose `e.source` names are not events. Any
+ * other header in that section stops the run, because a renamed event table would
+ * otherwise drop its events without a word. So does a row that names no event, as for
+ * the method table.
+ */
+function parseModsEventTables(page: string, markdown: string): DocEntry[] {
+  const entries: DocEntry[] = [];
+  let inSection = false;
+  let inTable = false;
+  let eventTable = false;
+  for (const line of markdown.split('\n')) {
+    if (!/^\s*\|/.test(line)) {
+      // Any other line ends a table, a heading included.
+      inTable = false;
+      const heading = /^##\s+(.*)$/.exec(line);
+      if (heading) inSection = (heading[1] as string).trim() === 'Events';
+      continue;
+    }
+    if (/^\s*\|\s*:?-{1,}/.test(line)) continue;
+    const [nameCell, firesCell] = splitTableRow(line)
+      .slice(1, -1)
+      .map((c) => c.trim());
+    if (!inTable) {
+      // The first row of a table is its header.
+      inTable = true;
+      if (inSection && nameCell !== 'Event' && nameCell !== 'Field') {
+        throw new Error(
+          `Docs page "${page}": a table in the Events section has the header ` +
+            `${line.trim()}, which is neither an event table ("Event") nor a field ` +
+            'table ("Field"). Read the page and fix parseModsEventTables.'
+        );
+      }
+      eventTable = nameCell === 'Event';
+      continue;
+    }
+    if (!eventTable) continue;
+    const names = [...(nameCell ?? '').matchAll(/`([a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*)`/g)].map(
+      (match) => match[1] as string
+    );
+    const description = cleanCell(firesCell ?? '');
+    if (names.length === 0 || description.length < 3) {
+      throw new Error(
+        `Docs page "${page}": a row of an Events table has no readable event name or ` +
+          `description: ${line.trim()}. Read the page and fix parseModsEventTables.`
+      );
+    }
+    for (const symbol of names) {
+      entries.push({
+        symbol,
+        type: 'mod_event',
+        description,
+        doc_min_version: minVersion(firesCell ?? ''),
+        doc_page: page,
+      });
+    }
+  }
   return entries;
 }
 
@@ -873,6 +950,17 @@ export function assertDocsCoverage(docs: DocsIndex): void {
           `Either the page was restructured and the parser no longer reads it, or the ` +
           `symbols really went away. Read ${DOCS_BASE}${page}.md and fix the parser or ` +
           `the floor in PAGE_MIN_SYMBOLS before publishing this as provenance:"docs".`
+      );
+    }
+  }
+  for (const [type, floor] of Object.entries(TYPE_MIN_SYMBOLS)) {
+    const found = docs.symbols.filter((entry) => entry.type === type).length;
+    if (found < (floor as number)) {
+      throw new Error(
+        `The docs index holds ${found} ${type} symbols, below the floor of ${floor}. ` +
+          `Either the page that defines them was restructured and the parser no longer ` +
+          `reads it, or they really went away. Read the page and fix the parser or the ` +
+          `floor in TYPE_MIN_SYMBOLS before publishing this as provenance:"docs".`
       );
     }
   }

@@ -27,10 +27,28 @@
  *     in log, error and permission text, and they disagree with the table in both
  *     directions (`$.process.spawn` is a label but not a key; `$.session.append` is a
  *     key but only appears in a template literal as a label).
- *   - The event-name string array (`[...X, "tool.call", …]`). Every method is also
- *     an event, so that array mixes the two families and asserts neither alone.
+ *   - The event-name string array (`[...X, "tool.call", …]`), as evidence for a
+ *     METHOD. Every method is also an event, so that array spreads the method list
+ *     into itself and cannot tell the two apart. It is the EVENT evidence instead:
+ *     see the events section below.
  *   - The event tables. They share the dotted key shape but hold bare handlers,
  *     never `{run}` objects, so the `run` share rules them out.
+ *
+ * EVENTS. One array literal lists every event name the hooks engine accepts:
+ *
+ *   2.1.242  Dn=["PreToolUse","tool.call","ui.render", …,"engine.create",...Ct]
+ *   2.1.301  ZIe=[...Ve,"tool.call","tool.check", …,"engine.create",...FKn]
+ *
+ * Each dotted string literal in it is one event. The spreads are not read, and each
+ * must be a bare identifier, as every real one is: one is
+ * the method list (every method is also an event, and those publish as methods),
+ * and from 2.1.265 the other is the settings hook events as `classic.<Name>`. A
+ * bare capitalized literal (`PreToolUse`, before 2.1.265) is a settings hook event
+ * too, so it is skipped by name shape. Any other element throws, because the array
+ * is the whole event list and an element this rule cannot read would publish as a
+ * removal. The array is picked by shape: one spread or more, and at least
+ * MIN_EVENT_LITERALS dotted literals. If a second array ever has that shape too, the
+ * lane throws rather than guess (see modEventsFrom).
  *
  * FLOOR. The table first ships in MOD_METHOD_FLOOR; mods were only announced in
  * 2.1.287. At or after the floor, zero tables means the extractor lost the API and
@@ -56,6 +74,15 @@ const MIN_TABLE_KEYS = 10;
 
 /** A dispatch-table key: `namespace.method`. */
 const METHOD_KEY = /^[a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*$/;
+
+/**
+ * The fewest dotted literals the event array may have. Smaller arrays with a spread,
+ * such as `[...X,"turn.step","process.spawn"]`, are other lists of event names.
+ */
+const MIN_EVENT_LITERALS = 8;
+
+/** A settings hook event written bare, as the 2.1.242 event array writes `PreToolUse`. */
+const HOOK_EVENT_NAME = /^[A-Z][A-Za-z]*$/;
 
 /** A non-computed property key written as a string literal, else undefined. */
 function literalKey(property: unknown): string | undefined {
@@ -91,11 +118,40 @@ function describeProperty(property: Node): string {
     : `key "${key}"`;
 }
 
-/** One chunk's evidence: its candidate tables, and every method-shaped string. */
+/** A candidate event array: its event names, and every element it cannot read. */
+export interface ModEventArray {
+  events: string[];
+  /** An element that is neither a spread, a dotted literal, nor a bare hook event name. */
+  unreadable: string[];
+}
+
+/** One chunk's evidence: its candidate tables and event arrays, and every method-shaped string. */
 export interface ModEvidence {
   tables: ModTable[];
+  eventArrays: ModEventArray[];
   /** Every string literal, and template literal without substitutions, shaped `ns.method`. */
   names: string[];
+}
+
+/** The event array's reading of one array literal, or undefined when it is not a candidate. */
+function eventArrayOf(node: Node): ModEventArray | undefined {
+  const events: string[] = [];
+  const unreadable: string[] = [];
+  let spreads = 0;
+  for (const element of node.elements as Array<Node | null>) {
+    if (element?.type === 'SpreadElement') {
+      spreads += 1;
+      // Every real spread names a list bound elsewhere (the methods, the classic
+      // events). An inlined array or a conditional could carry events the rule never
+      // reads, so it is refused rather than skipped.
+      const argument = element.argument as Node;
+      if (argument.type !== 'Identifier') unreadable.push(`a spread of a ${argument.type}`);
+    } else if (element?.type === 'Literal' && typeof element.value === 'string') {
+      if (METHOD_KEY.test(element.value)) events.push(element.value);
+      else if (!HOOK_EVENT_NAME.test(element.value)) unreadable.push(`"${element.value}"`);
+    } else unreadable.push(element === null ? 'a hole' : `a ${element.type}`);
+  }
+  return spreads > 0 && events.length >= MIN_EVENT_LITERALS ? { events, unreadable } : undefined;
 }
 
 function stringValue(node: Node): string | undefined {
@@ -114,10 +170,16 @@ function stringValue(node: Node): string | undefined {
  */
 export function collectModEvidence(program: Node): ModEvidence {
   const tables: ModTable[] = [];
+  const eventArrays: ModEventArray[] = [];
   const names: string[] = [];
   walk(program, (node) => {
     const value = stringValue(node);
     if (value !== undefined && METHOD_KEY.test(value)) names.push(value);
+    if (node.type === 'ArrayExpression') {
+      const array = eventArrayOf(node);
+      if (array) eventArrays.push(array);
+      return;
+    }
     if (node.type !== 'ObjectExpression') return;
     const keys: string[] = [];
     const unreadable: string[] = [];
@@ -133,7 +195,42 @@ export function collectModEvidence(program: Node): ModEvidence {
     }
     if (keys.length >= MIN_TABLE_KEYS && runs * 2 >= keys.length) tables.push({ keys, unreadable });
   });
-  return { tables, names };
+  return { tables, eventArrays, names };
+}
+
+/**
+ * The events one release's event array lists, sorted. The array ships with the
+ * method table, so it shares MOD_METHOD_FLOOR and its refusals.
+ */
+export function modEventsFrom(evidence: readonly ModEvidence[], version: string): string[] {
+  // Below the floor the lane asserts nothing: the shape is weaker than the method
+  // table's, and an older array that happened to match would date events before the
+  // mods API existed.
+  if (compareVersionsAsc(version, MOD_METHOD_FLOOR) < 0) return [];
+  const arrays = evidence.flatMap((chunk) => chunk.eventArrays);
+  if (arrays.length > 1) {
+    throw new Error(
+      `mod lane: ${version} has ${arrays.length} arrays that look like the mods event ` +
+        'list. The rule can no longer tell which one is the list; read the bundle and ' +
+        'tighten eventArrayOf.'
+    );
+  }
+  if (arrays.length === 0) {
+    throw new Error(
+      `mod lane: ${version} has no mods event list, and every release since ` +
+        `${MOD_METHOD_FLOOR} has one. Refusing to report zero events, which would read ` +
+        'as every event removed at once.'
+    );
+  }
+  const [array] = arrays as [ModEventArray];
+  if (array.unreadable.length > 0) {
+    throw new Error(
+      `mod lane: ${version}'s mods event list holds ${array.unreadable.join(', ')}, which ` +
+        'this lane cannot read as an event. Read the bundle and teach eventArrayOf the ' +
+        'new shape.'
+    );
+  }
+  return [...new Set(array.events)].sort();
 }
 
 /**
@@ -208,6 +305,13 @@ export function extractModEvidence(
 export const extractModMethods = (source: string | readonly string[], version: string): string[] =>
   extractModEvidence(source, version).methods;
 
+/** The events alone, parsing each chunk; see extractModEvidence. */
+export const extractModEvents = (source: string | readonly string[], version: string): string[] =>
+  modEventsFrom(
+    (typeof source === 'string' ? [source] : source).map((src) => collectModEvidence(parse(src))),
+    version
+  );
+
 /** Runs both AST lanes over one parse of each chunk. */
 export function extractControlAndModMethods(
   source: string | readonly string[],
@@ -216,11 +320,17 @@ export function extractControlAndModMethods(
   controlMessages: ReturnType<typeof extractControlMessages>;
   modMethods: string[];
   modMentions: string[];
+  modEvents: string[];
 } {
   const evidence: ModEvidence[] = [];
   const controlMessages = extractControlMessages(source, version, (program) =>
     evidence.push(collectModEvidence(program))
   );
   const { methods, mentions } = modEvidenceFrom(evidence, version);
-  return { controlMessages, modMethods: methods, modMentions: mentions };
+  return {
+    controlMessages,
+    modMethods: methods,
+    modMentions: mentions,
+    modEvents: modEventsFrom(evidence, version),
+  };
 }

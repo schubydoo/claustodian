@@ -1472,18 +1472,20 @@ export interface ModObservationsFile {
 
 /**
  * Mod observations, plus whether the file existed. Absence is the opt-in state:
- * `backfill-binary` writes the file only on `--mods` or when it already exists.
+ * `backfill-binary` writes the file only on `flag` or when it already exists. The
+ * method file (`--mods`) and the event file (`--mod-events`) share one shape.
  */
 export async function loadModObservations(
-  path: string
+  path: string,
+  flag: '--mods' | '--mod-events' = '--mods'
 ): Promise<{ observations: ModObservation[]; present: boolean }> {
   const parsed = await readOptInObservations<ModObservationsFile>(path, {
-    what: 'mod observations',
-    absence: 'mods API methods',
-    regenerate: '"npm run backfill-binary -- --mods"',
+    what: flag === '--mods' ? 'mod observations' : 'mod event observations',
+    absence: flag === '--mods' ? 'mods API methods' : 'mods events',
+    regenerate: `"npm run backfill-binary -- ${flag}"`,
   });
   if (parsed === undefined) return { observations: [], present: false };
-  assertModObservations(parsed, path);
+  assertModObservations(parsed, path, flag);
   return { observations: parsed.symbols, present: true };
 }
 
@@ -1493,13 +1495,17 @@ export async function loadModObservations(
  * `provenance: "binary"`, so a hand-edited file would publish dates no extraction
  * produced.
  */
-export function assertModObservations(file: ModObservationsFile, path: string): void {
+export function assertModObservations(
+  file: ModObservationsFile,
+  path: string,
+  flag: '--mods' | '--mod-events' = '--mods'
+): void {
   if (file.$generated_by !== GENERATED_BY || file.source !== SOURCE) {
     throw new Error(
       `Mod observations ${path} is not a scripts/backfill-binary.ts output ` +
         `(got $generated_by=${JSON.stringify(file.$generated_by)}, source=${JSON.stringify(file.source)}); ` +
         `refusing to publish it as provenance:"binary". Regenerate with ` +
-        `"npm run backfill-binary -- --mods".`
+        `"npm run backfill-binary -- ${flag}".`
     );
   }
   for (const entry of file.symbols ?? []) {
@@ -1508,7 +1514,7 @@ export function assertModObservations(file: ModObservationsFile, path: string): 
         throw new Error(
           `Mod observations ${path} is malformed: ${JSON.stringify(entry.symbol)} has no ` +
             `"${field}" (the file was likely truncated or hand-edited). Regenerate with ` +
-            `"npm run backfill-binary -- --mods".`
+            `"npm run backfill-binary -- ${flag}".`
         );
       }
     }

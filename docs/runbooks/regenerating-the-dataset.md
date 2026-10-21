@@ -135,6 +135,11 @@ changelog lanes included. **Publishing them the first time is its own data PR**:
 for the mod lane. A cache entry written before the mod lane has no `modMethods` key,
 and step 2 refuses `--mods` while any entry lacks it.
 
+The same holds for `data/mod-event-observations.json` and `mod_event` records, with
+`--mod-events`. A cache entry written before the event list was read has no `modEvents`
+key, so the first publish needs a full re-extract, and step 2 refuses `--mod-events`
+until every entry has the key.
+
 Step 3 must come after step 2. `fetch-docs` resolves settings-page key paths against
 `data/binary-observations.json`, because the docs group keys by topic rather than by
 JSON nesting — a "Permission settings" table can list a key the schema holds flat.

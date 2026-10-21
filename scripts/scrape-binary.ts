@@ -150,7 +150,10 @@ export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryC
   );
   const chunks = sliceEmbeddedChunks(artifact, version);
   const symbols = extractBundleSymbols(bundle, chunks);
-  const { controlMessages, modMethods, modMentions } = extractControlAndModMethods(chunks, version);
+  const { controlMessages, modMethods, modMentions, modEvents } = extractControlAndModMethods(
+    chunks,
+    version
+  );
   return {
     version,
     source: 'binary',
@@ -161,6 +164,8 @@ export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryC
     modMethodCount: modMethods.length,
     modMethods,
     modMentions,
+    modEventCount: modEvents.length,
+    modEvents,
   };
 }
 
@@ -175,6 +180,9 @@ export interface BinaryCacheRecord {
   modMethods: string[];
   /** Method names quoted outside the table; see modEvidenceFrom. */
   modMentions: string[];
+  modEventCount: number;
+  /** The event-only names of the mods event list; see modEventsFrom. */
+  modEvents: string[];
 }
 
 /** Write `record` to `<outDir>/<version>.json` atomically (tmp + rename). */

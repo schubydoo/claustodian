@@ -6,6 +6,7 @@ import { extractControlMessages } from './control-lane.js';
 import {
   MOD_METHOD_FLOOR,
   extractControlAndModMethods,
+  extractModEvents,
   extractModEvidence,
   extractModMethods,
 } from './mod-lane.js';
@@ -34,6 +35,29 @@ const objectOf = (entries: ReadonlyArray<readonly [string, string]>) =>
   `{${entries.map(([key, value]) => `"${key}":${value}`).join(',')}}`;
 const TABLE = `var T=${objectOf(ENTRIES)};`;
 const METHODS = ENTRIES.map(([key]) => `$.${key}`).sort();
+
+/**
+ * The event list as 2.1.301 writes it: the settings hook events spread in as
+ * `classic.<Name>`, the event-only names as literals, and the method list spread at
+ * the end. Every literal must publish; neither spread may.
+ */
+const EVENT_NAMES = [
+  'tool.call',
+  'tool.check',
+  'ui.render',
+  'ui.resolve',
+  'agent.spawn',
+  'prompt.submit',
+  'session.start',
+  'turn.start',
+  'turn.complete',
+  'engine.create',
+];
+const EVENTS_OF = (literals: readonly string[], head = '...H,', tail = ',...M') =>
+  `var H=["PreToolUse"].map((e)=>\`classic.\${e}\`),M=["ui.toast","fs.read2"];` +
+  `var Z=[${head}${literals.map((name) => `"${name}"`).join(',')}${tail}];`;
+const EVENTS = EVENTS_OF(EVENT_NAMES);
+const EVENTS_SORTED = [...EVENT_NAMES].sort();
 
 /**
  * A miniature control protocol that passes every control-lane floor (a routed
@@ -153,9 +177,66 @@ describe('extractControlAndModMethods', () => {
     // refuse here — a bare `var a=1;` would be refused by the control lane first.
     expect(() => extractControlAndModMethods(CONTROL, '0.2.0')).not.toThrow();
     expect(() => extractControlAndModMethods([CONTROL], MOD_METHOD_FLOOR)).toThrow(/^mod lane: /);
-    const both = extractControlAndModMethods([CONTROL, TABLE], MOD_METHOD_FLOOR);
+    expect(() => extractControlAndModMethods([CONTROL, TABLE], MOD_METHOD_FLOOR)).toThrow(
+      /^mod lane: .*no mods event list/
+    );
+    const both = extractControlAndModMethods([CONTROL, TABLE, EVENTS], MOD_METHOD_FLOOR);
     expect(both.controlMessages).not.toEqual([]);
     expect(both.modMethods).toEqual(METHODS);
+    expect(both.modEvents).toEqual(EVENTS_SORTED);
+  });
+});
+
+describe('extractModEvents', () => {
+  it('reads each dotted literal of the event list, and neither spread', () => {
+    const events = extractModEvents([TABLE, EVENTS], '2.1.301');
+    expect(events).toEqual(EVENTS_SORTED);
+    // The method spread and the classic.* spread stay out.
+    expect(events).not.toContain('ui.toast');
+    expect(events.some((name) => name.startsWith('classic.'))).toBe(false);
+  });
+
+  it('skips a bare settings hook event, as the 2.1.242 list writes PreToolUse', () => {
+    const old = EVENTS_OF(EVENT_NAMES, '"PreToolUse",', ',...M');
+    expect(extractModEvents(old, '2.1.242')).toEqual(EVENTS_SORTED);
+  });
+
+  it('refuses an element it cannot read, which would otherwise publish as a removal', () => {
+    for (const odd of ['"not an event"', 'x', '`tool.tpl`', '"a.b.c"']) {
+      const source = EVENTS_OF([...EVENT_NAMES, 'PLACEHOLDER']).replace('"PLACEHOLDER"', odd);
+      expect(() => extractModEvents(source, '2.1.301')).toThrow(/^mod lane: .*cannot read/);
+    }
+  });
+
+  it('refuses a spread that is not a bare identifier, which could carry unread events', () => {
+    for (const tail of [',...["prompt.change"]', ',...(f?["prompt.change"]:[])', ',...g()']) {
+      const source = EVENTS_OF(EVENT_NAMES, '...H,', `,...M${tail}`);
+      expect(() => extractModEvents(source, '2.1.301')).toThrow(/^mod lane: .*a spread of/);
+    }
+  });
+
+  it('ignores an array with no spread, or with too few dotted literals', () => {
+    // 2.1.301 also holds `["classic.PreToolUse","tool.call",…]` with no spread, and
+    // `["turn.step","process.spawn"]`.
+    const noSpread = `var C=[${EVENT_NAMES.map((n) => `"${n}"`).join(',')}];`;
+    const small = 'var V=[...X,"turn.step","process.spawn"];';
+    expect(extractModEvents([noSpread, small, EVENTS], '2.1.301')).toEqual(EVENTS_SORTED);
+  });
+
+  it('refuses two event lists, because the rule can no longer tell which is the list', () => {
+    expect(() => extractModEvents([EVENTS, EVENTS], '2.1.301')).toThrow(/^mod lane: .*2 arrays/);
+  });
+
+  it('refuses a release at or after the floor with no event list', () => {
+    expect(() => extractModEvents('var a=1;', MOD_METHOD_FLOOR)).toThrow(/^mod lane: /);
+  });
+
+  it('reports nothing for a release before the floor with no event list', () => {
+    expect(extractModEvents('var a=1;', '2.1.241')).toEqual([]);
+  });
+
+  it('asserts nothing before the floor, even for an array with the event list shape', () => {
+    expect(extractModEvents(EVENTS, '2.1.241')).toEqual([]);
   });
 });
 

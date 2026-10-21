@@ -16,6 +16,33 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ---
 
+## 2026-10-21
+
+### Added
+
+- **A `mod_event` symbol type, for the events a mod hooks.** A mod reacts to Claude
+  Code by passing an event name to `on(...)`, as in `on('tool.call', hook)`. Each
+  event becomes one record whose `symbol` is that name, such as `tool.call` or
+  `turn.start`, with `category: "mods"`. The records carry no extra fields.
+
+  Every `mod_method` is also an event of the same name without `$.`: a hook on
+  `fs.read` intercepts other mods' `$.fs.read` calls. Those events are not repeated
+  as `mod_event` records. The exception is a method that the docs also list as an
+  event, such as `ui.close`. It gets a `mod_event` record dated from its method.
+  The `classic.<Name>` events, which are the settings hook events under another
+  name, are not published either.
+
+  The binary lane reads each string literal of the one array that lists every event
+  the hooks engine accepts. That array first ships in 2.1.242, the same release as
+  the mods API dispatch table, so most events date from 2.1.242. An event that only
+  the binary shows lands `status: active`, like a `mod_method`. The docs lane reads
+  the Events tables of the mods reference page, and each row's "Fires when" text is
+  the description. The changelog lane does not read events.
+
+  `data/docs.json` lists one `mod_event` entry per documented event from the next
+  docs refresh. The snapshots carry no `mod_event` record until a separate data PR
+  publishes the binary observations (`data/mod-event-observations.json`).
+
 ## 2026-10-15
 
 ### Added

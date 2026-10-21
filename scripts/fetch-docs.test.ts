@@ -16,6 +16,7 @@ import {
   PAGE_BASELINE_MIN_VERSION,
   PAGE_MIN_SYMBOLS,
   parseDocPage,
+  TYPE_MIN_SYMBOLS,
   splitTableRow,
   symbolFromCell,
   symbolsFromCell,
@@ -38,8 +39,14 @@ function mockPageBody(url: string): string {
     );
   }
   if (page === 'plugins/mods/reference') {
-    // One namespace row per method keeps the yield equal to the floor.
+    // One namespace row per method keeps the yield equal to the floor, and the
+    // events clear their type floor.
+    const events = Array.from({ length: TYPE_MIN_SYMBOLS.mod_event ?? 0 }, (_, i) => i);
     return [
+      '## Events',
+      '| Event | Fires when |',
+      '| :- | :- |',
+      ...events.map((i) => `| \`mock.event${i}\` | A mocked event fires |`),
       '## Mods API methods',
       '| Namespace | Methods |',
       '| :- | :- |',
@@ -838,18 +845,39 @@ describe('parseDocPage — settings-reference page', () => {
 });
 
 describe('assertDocsCoverage', () => {
-  const index = (counts: Record<string, number>) => ({
+  const index = (
+    counts: Record<string, number>,
+    modEvents = TYPE_MIN_SYMBOLS.mod_event ?? 0,
+    modMethods = TYPE_MIN_SYMBOLS.mod_method ?? 0
+  ) => ({
     $generated_by: 'scripts/fetch-docs.ts',
     source_pages: officialSourcePages(),
-    symbols: Object.entries(counts).flatMap(([doc_page, n]) =>
-      Array.from({ length: n }, (_, i) => ({
-        symbol: `--mock-${doc_page}-${i}`,
-        type: 'cli_flag' as const,
-        description: 'A mocked symbol',
+    symbols: [
+      ...Object.entries(counts).flatMap(([doc_page, n]) =>
+        Array.from({ length: n }, (_, i) => ({
+          symbol: `--mock-${doc_page}-${i}`,
+          type: 'cli_flag' as const,
+          description: 'A mocked symbol',
+          doc_min_version: null,
+          doc_page,
+        }))
+      ),
+      // Extra to the page counts above, so they never lift a page over its floor.
+      ...Array.from({ length: modEvents }, (_, i) => ({
+        symbol: `mock.event${i}`,
+        type: 'mod_event' as const,
+        description: 'A mocked event fires',
         doc_min_version: null,
-        doc_page,
-      }))
-    ),
+        doc_page: 'mock-types-page',
+      })),
+      ...Array.from({ length: modMethods }, (_, i) => ({
+        symbol: `$.mock.method${i}`,
+        type: 'mod_method' as const,
+        description: '',
+        doc_min_version: null,
+        doc_page: 'mock-types-page',
+      })),
+    ],
   });
   const atFloor = () =>
     Object.fromEntries(Object.entries(PAGE_MIN_SYMBOLS).map(([p, n]) => [p, n as number]));
@@ -862,6 +890,16 @@ describe('assertDocsCoverage', () => {
     const counts = { ...atFloor(), 'settings-reference': 0 };
     expect(() => assertDocsCoverage(index(counts))).toThrow(
       /"settings-reference" yielded 0 of the/
+    );
+  });
+
+  it('throws when one type collapses while its page still clears the page floor', () => {
+    // The mods reference page: the method rows alone clear the page floor.
+    expect(() => assertDocsCoverage(index(atFloor(), 1))).toThrow(/1 mod_event symbols/);
+    // And the other way round: the event rows alone clear the page floor, so an
+    // emptied method table must trip the method floor.
+    expect(() => assertDocsCoverage(index(atFloor(), TYPE_MIN_SYMBOLS.mod_event, 0))).toThrow(
+      /0 mod_method symbols/
     );
   });
 
@@ -1034,8 +1072,10 @@ describe('parseDocPage — mods reference', () => {
 
   const parsed = () => parseDocPage('plugins/mods/reference', MODS_PAGE);
 
+  const methods = () => parsed().filter((e) => e.type === 'mod_method');
+
   it('reads each namespace row as one mod_method per listed method', () => {
-    expect(parsed().map((e) => e.symbol)).toEqual([
+    expect(methods().map((e) => e.symbol)).toEqual([
       '$.plugin.name',
       '$.plugin.root',
       '$.ui.resolve',
@@ -1049,11 +1089,10 @@ describe('parseDocPage — mods reference', () => {
       '$.telemetry.log',
       '$.telemetry.mark',
     ]);
-    expect(parsed().every((e) => e.type === 'mod_method')).toBe(true);
   });
 
   it('takes only the leading method list, not words from the notes after it', () => {
-    const symbols = parsed().map((e) => e.symbol);
+    const symbols = methods().map((e) => e.symbol);
     for (const word of ['pending', 'idle', 'atom', 'memberOf', 'claude-code']) {
       expect(symbols.some((s) => s.endsWith(`.${word}`))).toBe(false);
     }
@@ -1061,7 +1100,7 @@ describe('parseDocPage — mods reference', () => {
 
   it('dates nothing from a version that a row note gives for something else', () => {
     // `$.agent` says statuses require v2.1.289; that is not when `list` appeared.
-    expect(parsed().every((e) => e.doc_min_version === null)).toBe(true);
+    expect(methods().every((e) => e.doc_min_version === null)).toBe(true);
   });
 
   it('reads a list ending in "or", and names written as calls', () => {
@@ -1101,5 +1140,102 @@ describe('parseDocPage — mods reference', () => {
 
   it('has a coverage floor, so an emptied section fails instead of reading as removals', () => {
     expect(PAGE_MIN_SYMBOLS['plugins/mods/reference']).toBeGreaterThan(0);
+  });
+});
+
+describe('parseDocPage — mods reference events', () => {
+  // Rows copied verbatim from the page's Events section, with a field table between
+  // two event tables, as the page has under `tool.check` and `skill.prompt`.
+  const EVENTS_PAGE = [
+    '## Events',
+    '### Tools',
+    '| Event | Fires when | A hook can return |',
+    '| :- | :- | :- |',
+    '| [`tool.call`](/docs/en/plugins/mods/events#guard-or-change-a-tool-call) | A tool is about to run | `next(e)`, `{ deny: reason }`, or `{ result }` |',
+    '#### Source and frontmatter fields on `skill.prompt`',
+    '| Field | Type | What it holds |',
+    '| :- | :- | :- |',
+    '| `e.source` | string | Who provides the skill |',
+    '### Prompts and what Claude reads',
+    '| Event | Fires when | A hook can return |',
+    '| :- | :- | :- |',
+    '| `prompt.fill`, `prompt.suggest` | Text is about to go into the prompt box as a draft, or as a dim suggestion | `next(e)` with changed text |',
+    '| `prompt.mention` | Claude Code is about to read a file that a prompt @-mentions. Requires Claude Code v2.1.290 or later. | `next({ ...e, path })` to read a different file, or `{ deny: reason }` |',
+    '### Interface',
+    '| Event | Fires when |',
+    '| :- | :- |',
+    '| `ui.close` | A pane is about to close. `e.id` is the pane. |',
+    '## Mods API methods',
+    '| Namespace | Methods |',
+    '| :- | :- |',
+    '| `$.ui` | `close` |',
+  ].join('\n');
+  const events = () =>
+    parseDocPage('plugins/mods/reference', EVENTS_PAGE).filter((e) => e.type === 'mod_event');
+
+  it('reads every event of every Events table, two names to a row where the row has two', () => {
+    expect(events().map((e) => e.symbol)).toEqual([
+      'tool.call',
+      'prompt.fill',
+      'prompt.suggest',
+      'prompt.mention',
+      'ui.close',
+    ]);
+  });
+
+  it('reads no name from a table of event fields', () => {
+    expect(events().some((e) => e.symbol.startsWith('e.'))).toBe(false);
+  });
+
+  it('describes each event with when it fires, and dates it from a version in that cell', () => {
+    const byName = new Map(events().map((e) => [e.symbol, e]));
+    expect(byName.get('tool.call')).toMatchObject({
+      description: 'A tool is about to run',
+      doc_min_version: null,
+    });
+    expect(byName.get('prompt.mention')?.doc_min_version).toBe('2.1.290');
+  });
+
+  it('refuses a row of an Events table that names no event', () => {
+    const page = [
+      '## Events',
+      '| Event | Fires when |',
+      '| :- | :- |',
+      '| tool.call | A tool is about to run |',
+    ].join('\n');
+    expect(() => parseDocPage('plugins/mods/reference', page)).toThrow(/Events table/);
+  });
+
+  it('reads an event table that moved under another heading', () => {
+    const page = [
+      '## Interface events',
+      '| Event | Fires when |',
+      '| :- | :- |',
+      '| `ui.close` | A pane is about to close |',
+      '## Render sites',
+      '| Site | `e.props` |',
+      '| :- | :- |',
+      '| `Pane` | `title` |',
+    ].join('\n');
+    expect(
+      parseDocPage('plugins/mods/reference', page)
+        .filter((e) => e.type === 'mod_event')
+        .map((e) => e.symbol)
+    ).toEqual(['ui.close']);
+  });
+
+  it('refuses a table in the Events section whose header it does not know', () => {
+    // A renamed event table would otherwise drop its events without a word.
+    const page = [
+      '## Events',
+      '| Event name | Fires when |',
+      '| :- | :- |',
+      '| `ui.close` | A pane is about to close |',
+    ].join('\n');
+    expect(() => parseDocPage('plugins/mods/reference', page)).toThrow(/neither an event table/);
+  });
+
+  it('has its own floor, so an emptied Events section fails beside a full method table', () => {
+    expect(TYPE_MIN_SYMBOLS.mod_event).toBeGreaterThan(0);
   });
 });
