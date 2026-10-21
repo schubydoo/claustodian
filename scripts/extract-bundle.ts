@@ -527,6 +527,55 @@ export function extractParamEnvVars(src: string): Map<string, string> {
 }
 
 /**
+ * Env vars read through a NAME-taking helper: `function St(e){let n=process.env[e];…}`
+ * called as `St("SELF_HOSTED_RUNNER_SIGKILL_GRACE_MS")`. The literal argument
+ * reaches `process.env[param]`, so the call is the same proof as an inline
+ * `process.env["NAME"]` read, and it carries the same evidence tag without a
+ * first-party name gate. Publication keeps its own gate (isPublishableBinaryEnv).
+ *
+ * A helper is a `function NAME(p,…){…}` whose body reads `process.env[p]` for its
+ * FIRST parameter, not as an assignment target. Each chunk is read in its own
+ * scope, because from 2.1.242 every chunk minifies its own names: 2.1.301 has
+ * three unrelated functions named `St`, and only one of them reads the env. A
+ * call is trusted only when every definition of the name in that chunk has the
+ * same text, the rule extractParamEnvVars uses. A call through an imported
+ * alias in another chunk is not followed, so it yields nothing rather than a
+ * guess.
+ */
+export function extractNameReaderEnvVars(chunks: readonly string[]): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const chunk of chunks) {
+    const defTexts = new Map<string, Set<string>>();
+    const readers = new Set<string>();
+    for (const m of chunk.matchAll(/\bfunction\s+([A-Za-z_$][\w$]*)\s*\(/g)) {
+      const name = m[1] as string;
+      const at = m.index as number;
+      const popen = at + m[0].length - 1;
+      const text = functionText(chunk, at, popen);
+      const texts = defTexts.get(name) ?? new Set<string>();
+      texts.add(text ?? `\0${at}`);
+      defTexts.set(name, texts);
+      if (text === undefined) continue;
+      const first = splitTopLevel(chunk.slice(popen + 1, matchBracket(chunk, popen)))[0]?.trim();
+      if (!first || !/^[A-Za-z_$][\w$]*$/.test(first)) continue;
+      const safe = first.replace(/[$]/g, '\\$&');
+      const read = new RegExp('(?<![\\w$.])process\\.env\\[\\s*' + safe + '\\s*\\](?!\\s*=(?!=))');
+      if (read.test(text.slice(text.indexOf('{')))) readers.add(name);
+    }
+    for (const m of chunk.matchAll(
+      /(?<![\w$.])([A-Za-z_$][\w$]*)\(\s*["'`]([A-Z][A-Z0-9_]{2,})["'`]\s*[,)]/g
+    )) {
+      const helper = m[1] as string;
+      if (!readers.has(helper) || defTexts.get(helper)?.size !== 1) continue;
+      const name = m[2] as string;
+      if (SYMBOL_DENYLIST.has(name)) continue;
+      out.set(name, categorize(name, 'env_var'));
+    }
+  }
+  return out;
+}
+
+/**
  * Flags with positive own-evidence. Scans every `--flag` occurrence and keeps a
  * flag the first time an occurrence carries registration or argv evidence in the
  * preceding window — so a flag that appears once as a subprocess arg and once in
@@ -780,8 +829,15 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
   // inline `process.env.NAME` read (that is why they share the `process-env`
   // evidence tag), reached one call away. Additive: only names no earlier path
   // already proved.
-  for (const [symbol, category] of extractParamEnvVars(src)) {
+  const paramReads = extractParamEnvVars(src);
+  for (const [symbol, category] of paramReads) {
     if (envReads.has(symbol) || registry.has(symbol) || accessor.has(symbol)) continue;
+    symbols.push({ symbol, type: 'env_var', category, evidence: 'process-env' });
+  }
+  // Env vars read by name through a helper. Additive only, like the path above.
+  for (const [symbol, category] of extractNameReaderEnvVars(scopeChunks ?? [src])) {
+    if (envReads.has(symbol) || registry.has(symbol) || accessor.has(symbol)) continue;
+    if (paramReads.has(symbol)) continue;
     symbols.push({ symbol, type: 'env_var', category, evidence: 'process-env' });
   }
   const flags = extractFlags(src);
