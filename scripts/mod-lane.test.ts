@@ -208,6 +208,13 @@ describe('extractModEvents', () => {
     }
   });
 
+  it('refuses a spread that is not a bare identifier, which could carry unread events', () => {
+    for (const tail of [',...["prompt.change"]', ',...(f?["prompt.change"]:[])', ',...g()']) {
+      const source = EVENTS_OF(EVENT_NAMES, '...H,', `,...M${tail}`);
+      expect(() => extractModEvents(source, '2.1.301')).toThrow(/^mod lane: .*a spread of/);
+    }
+  });
+
   it('ignores an array with no spread, or with too few dotted literals', () => {
     // 2.1.301 also holds `["classic.PreToolUse","tool.call",…]` with no spread, and
     // `["turn.step","process.spawn"]`.

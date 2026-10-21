@@ -1666,7 +1666,9 @@ const modMethodsDocumented = (docs: DocsIndex): ReadonlySet<string> =>
  * event, and the binary names it only as a method. An undocumented method event gets
  * no record, so the method records are not repeated as events.
  *
- * As for methods, a documented event keeps no binary removal.
+ * As for methods, a documented event keeps no binary removal. Neither does an event
+ * whose name is a live method: by the same docs rule it is still an event, only now
+ * reached through the method spread rather than a literal.
  */
 function withModEventObservations(
   binary: BinaryObservations,
@@ -1676,9 +1678,13 @@ function withModEventObservations(
 ): BinaryObservations {
   if (!events || events.length === 0) return binary;
   const literal = new Set(events.map((obs) => obs.symbol));
-  const methodEvents = (mods ?? [])
-    .map((obs) => ({ ...obs, symbol: obs.symbol.slice(2) }))
-    .filter((obs) => documented.has(obs.symbol) && !literal.has(obs.symbol));
+  const asEvents = (mods ?? []).map((obs) => ({ ...obs, symbol: obs.symbol.slice(2) }));
+  const liveMethods = new Set(
+    asEvents.filter((obs) => obs.removed_in === null).map((obs) => obs.symbol)
+  );
+  const methodEvents = asEvents.filter(
+    (obs) => documented.has(obs.symbol) && !literal.has(obs.symbol)
+  );
   return {
     ...binary,
     symbols: [
@@ -1688,7 +1694,8 @@ function withModEventObservations(
         type: 'mod_event' as const,
         first_seen: obs.first_seen,
         last_seen: obs.last_seen,
-        removed_in: documented.has(obs.symbol) ? null : obs.removed_in,
+        removed_in:
+          documented.has(obs.symbol) || liveMethods.has(obs.symbol) ? null : obs.removed_in,
       })),
     ],
   };

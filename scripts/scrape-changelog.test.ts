@@ -2798,6 +2798,17 @@ describe('mod_event records', () => {
     expect(has('2.1.300', 'ui.kept')).toBe(true);
   });
 
+  it('keeps an event live when it leaves the literals but its name is a live method', () => {
+    // By the docs rule every method is also an event, so an event that moved into
+    // the method spread still exists.
+    const snapshots = snapshotsWith(docs([]), [
+      obs('tool.call'),
+      obs('ui.close', '2.1.242', '2.1.250'),
+    ]);
+    const close = latest(snapshots).find((r) => r.symbol === 'ui.close');
+    expect(close).toMatchObject({ first_seen: '2.1.242', removed_in: null });
+  });
+
   it('publishes no mod_event from any lane until its observation file exists', () => {
     expect(latest(snapshotsWith(docs([eventDoc('tool.call')])))).toEqual([]);
     // An empty file is a broken one past the floor, so the gate stays closed.

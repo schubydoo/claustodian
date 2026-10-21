@@ -1206,6 +1206,24 @@ describe('parseDocPage — mods reference events', () => {
     expect(() => parseDocPage('plugins/mods/reference', page)).toThrow(/Events table/);
   });
 
+  it('reads an event table that moved under another heading', () => {
+    const page = [
+      '## Interface events',
+      '| Event | Fires when |',
+      '| :- | :- |',
+      '| `ui.close` | A pane is about to close |',
+      '## Render sites',
+      '| Site | `e.props` |',
+      '| :- | :- |',
+      '| `Pane` | `title` |',
+    ].join('\n');
+    expect(
+      parseDocPage('plugins/mods/reference', page)
+        .filter((e) => e.type === 'mod_event')
+        .map((e) => e.symbol)
+    ).toEqual(['ui.close']);
+  });
+
   it('refuses a table in the Events section whose header it does not know', () => {
     // A renamed event table would otherwise drop its events without a word.
     const page = [

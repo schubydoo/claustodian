@@ -693,14 +693,15 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
 }
 
 /**
- * The event tables of the mods reference page: every table under "## Events" whose
- * first header cell is "Event". The first cell names one event or more in backticks
+ * The event tables of the mods reference page: every table whose first header cell
+ * is "Event", under whichever heading it sits, so a group moved out of "## Events"
+ * keeps its events. The first cell names one event or more in backticks
  * (`` `prompt.fill`, `prompt.suggest` ``, sometimes as links), and the second says when
- * it fires, which is the description. The same section also holds tables of event
- * FIELDS (first header cell "Field"), whose `e.source` names are not events, so the
- * header picks the table. Any other header stops the run, because a renamed event
- * table would otherwise drop its events without a word. So does a row that names no
- * event, as for the method table.
+ * it fires, which is the description. The "## Events" section also holds tables of
+ * event FIELDS (first header cell "Field"), whose `e.source` names are not events. Any
+ * other header in that section stops the run, because a renamed event table would
+ * otherwise drop its events without a word. So does a row that names no event, as for
+ * the method table.
  */
 function parseModsEventTables(page: string, markdown: string): DocEntry[] {
   const entries: DocEntry[] = [];
@@ -708,23 +709,21 @@ function parseModsEventTables(page: string, markdown: string): DocEntry[] {
   let inTable = false;
   let eventTable = false;
   for (const line of markdown.split('\n')) {
-    const heading = /^##\s+(.*)$/.exec(line);
-    if (heading) {
-      inSection = (heading[1] as string).trim() === 'Events';
-      continue;
-    }
     if (!/^\s*\|/.test(line)) {
+      // Any other line ends a table, a heading included.
       inTable = false;
+      const heading = /^##\s+(.*)$/.exec(line);
+      if (heading) inSection = (heading[1] as string).trim() === 'Events';
       continue;
     }
-    if (!inSection || /^\s*\|\s*:?-{1,}/.test(line)) continue;
+    if (/^\s*\|\s*:?-{1,}/.test(line)) continue;
     const [nameCell, firesCell] = splitTableRow(line)
       .slice(1, -1)
       .map((c) => c.trim());
     if (!inTable) {
       // The first row of a table is its header.
       inTable = true;
-      if (nameCell !== 'Event' && nameCell !== 'Field') {
+      if (inSection && nameCell !== 'Event' && nameCell !== 'Field') {
         throw new Error(
           `Docs page "${page}": a table in the Events section has the header ` +
             `${line.trim()}, which is neither an event table ("Event") nor a field ` +

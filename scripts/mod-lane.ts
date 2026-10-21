@@ -39,7 +39,8 @@
  *   2.1.242  Dn=["PreToolUse","tool.call","ui.render", …,"engine.create",...Ct]
  *   2.1.301  ZIe=[...Ve,"tool.call","tool.check", …,"engine.create",...FKn]
  *
- * Each dotted string literal in it is one event. The spreads are not read: one is
+ * Each dotted string literal in it is one event. The spreads are not read, and each
+ * must be a bare identifier, as every real one is: one is
  * the method list (every method is also an event, and those publish as methods),
  * and from 2.1.265 the other is the settings hook events as `classic.<Name>`. A
  * bare capitalized literal (`PreToolUse`, before 2.1.265) is a settings hook event
@@ -138,8 +139,14 @@ function eventArrayOf(node: Node): ModEventArray | undefined {
   const unreadable: string[] = [];
   let spreads = 0;
   for (const element of node.elements as Array<Node | null>) {
-    if (element?.type === 'SpreadElement') spreads += 1;
-    else if (element?.type === 'Literal' && typeof element.value === 'string') {
+    if (element?.type === 'SpreadElement') {
+      spreads += 1;
+      // Every real spread names a list bound elsewhere (the methods, the classic
+      // events). An inlined array or a conditional could carry events the rule never
+      // reads, so it is refused rather than skipped.
+      const argument = element.argument as Node;
+      if (argument.type !== 'Identifier') unreadable.push(`a spread of a ${argument.type}`);
+    } else if (element?.type === 'Literal' && typeof element.value === 'string') {
       if (METHOD_KEY.test(element.value)) events.push(element.value);
       else if (!HOOK_EVENT_NAME.test(element.value)) unreadable.push(`"${element.value}"`);
     } else unreadable.push(element === null ? 'a hole' : `a ${element.type}`);
