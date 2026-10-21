@@ -32,6 +32,7 @@ body:
         - control_message
         - mod_method
         - mod_event
+        - mod_render_site
         - not sure
     validations:
       required: true

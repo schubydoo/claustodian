@@ -88,7 +88,8 @@ const MOD_EVENTS = [
 ];
 const MOD_TABLE =
   `\nvar MODS={${MOD_METHODS.map((m) => `"${m.slice(2)}":{run:(n)=>n}`).join(',')}};` +
-  `var M=[];var EV=[${MOD_EVENTS.map((e) => `"${e}"`).join(',')},...M];`;
+  `var M=[];var EV=[${MOD_EVENTS.map((e) => `"${e}"`).join(',')},...M];` +
+  `var U=Y.useRenderInput("Spinner",()=>({}),[]);`;
 
 /** Fake a CDN manifest + binary response pair, keyed by URL substring. */
 function stubCdn(version: string, binary: string, checksum: string): void {
@@ -313,12 +314,15 @@ describe('buildCacheRecord', () => {
       'modMentions',
       'modEventCount',
       'modEvents',
+      'modRenderSites',
+      'modRenderSitesListed',
     ]);
     // 2.1.214 predates the mods API, so the mod half is an honest empty list.
     expect(record.modMethodCount).toBe(0);
     expect(record.modMethods).toEqual([]);
     expect(record.modEventCount).toBe(0);
     expect(record.modEvents).toEqual([]);
+    expect(record).toMatchObject({ modRenderSites: [], modRenderSitesListed: false });
     // And the control half must be real, not an empty array standing in for it.
     expect(record.controlCount).toBe(record.controlMessages.length);
     expect(record.controlMessages.map((m) => m.symbol).sort()).toEqual([
@@ -338,6 +342,7 @@ describe('buildCacheRecord — mods API', () => {
     expect(record.modMethodCount).toBe(MOD_METHODS.length);
     expect(record.modEvents).toEqual(MOD_EVENTS);
     expect(record.modEventCount).toBe(MOD_EVENTS.length);
+    expect(record).toMatchObject({ modRenderSites: ['Spinner'], modRenderSitesListed: false });
   });
 
   it('refuses a release at or after the floor that has no dispatch table', async () => {

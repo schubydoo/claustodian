@@ -27,6 +27,7 @@ const SYMBOL_TYPES = [
   'control_message',
   'mod_method',
   'mod_event',
+  'mod_render_site',
 ] as const;
 
 /**

@@ -10,6 +10,7 @@ import {
   distillControlObservations,
   distillDescriptions,
   distillModEventObservations,
+  distillModRenderSiteObservations,
   distillModObservations,
   distillObservations,
   loadCacheFiles,
@@ -1007,6 +1008,78 @@ describe('distillModEventObservations', () => {
     expect(obs).toEqual([
       { symbol: 'tool.call', first_seen: '2.1.242', last_seen: '2.1.242', removed_in: null },
     ]);
+  });
+});
+
+describe('distillModRenderSiteObservations', () => {
+  const siteEntry = (version: string, sites: string[], listed: boolean): BinaryCacheFile => ({
+    version,
+    symbols: [],
+    modRenderSites: sites,
+    modRenderSitesListed: listed,
+  });
+
+  it('dates each site from its first and last proving release', () => {
+    expect(
+      distillModRenderSiteObservations([
+        siteEntry('2.1.250', ['Spinner', 'ToolUse'], false),
+        siteEntry('2.1.242', ['Spinner'], false),
+        siteEntry('2.1.290', ['Spinner', 'ToolUse'], true),
+      ])
+    ).toEqual([
+      { symbol: 'Spinner', first_seen: '2.1.242', last_seen: '2.1.290', removed_in: null },
+      { symbol: 'ToolUse', first_seen: '2.1.250', last_seen: '2.1.290', removed_in: null },
+    ]);
+  });
+
+  it('removes nothing on absence from the calls alone, before the enum ships', () => {
+    // AbovePrompt and Pane leave the useRenderInput calls at 2.1.269 and return
+    // in the enum at 2.1.285.
+    const obs = distillModRenderSiteObservations([
+      siteEntry('2.1.265', ['Pane', 'Spinner'], false),
+      siteEntry('2.1.269', ['Spinner'], false),
+      siteEntry('2.1.285', ['Pane', 'Spinner'], true),
+    ]);
+    expect(obs.find((o) => o.symbol === 'Pane')).toMatchObject({ removed_in: null });
+  });
+
+  it('removes a site at the first listed release after its last sighting', () => {
+    const obs = distillModRenderSiteObservations([
+      siteEntry('2.1.265', ['Old', 'Spinner'], false),
+      siteEntry('2.1.270', ['Spinner'], false),
+      siteEntry('2.1.285', ['Spinner'], true),
+      siteEntry('2.1.290', ['Spinner'], true),
+    ]);
+    expect(obs.find((o) => o.symbol === 'Old')).toEqual({
+      symbol: 'Old',
+      first_seen: '2.1.265',
+      last_seen: '2.1.265',
+      removed_in: '2.1.285',
+    });
+  });
+
+  it('refuses --mod-render-sites while a cache entry predates the site lane', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-site-out-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(
+      join(cache, '2.1.242.json'),
+      JSON.stringify(siteEntry('2.1.242', ['Spinner'], false))
+    );
+    await writeFile(
+      join(cache, '2.1.250.json'),
+      JSON.stringify({ version: '2.1.250', symbols: [] })
+    );
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const out = join(root, 'binary-observations.json');
+    expect(await main(['--cache', cache, '--out', out])).toBe(0);
+    expect(await main(['--cache', cache, '--out', out, '--mod-render-sites'])).toBe(1);
+    expect(existsSync(join(root, 'mod-render-site-observations.json'))).toBe(false);
+    await rm(join(cache, '2.1.250.json'));
+    expect(await main(['--cache', cache, '--out', out, '--mod-render-sites'])).toBe(0);
+    expect(existsSync(join(root, 'mod-render-site-observations.json'))).toBe(true);
+    logSpy.mockRestore();
+    await rm(root, { recursive: true, force: true });
   });
 });
 

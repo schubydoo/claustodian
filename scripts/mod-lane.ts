@@ -50,6 +50,9 @@
  * MIN_EVENT_LITERALS dotted literals. If a second array ever has that shape too, the
  * lane throws rather than guess (see modEventsFrom).
  *
+ * RENDER SITES. The places a mod can draw, read from a described zod enum and from
+ * the `useRenderInput` calls that draw them; see modRenderSitesFrom.
+ *
  * FLOOR. The table first ships in MOD_METHOD_FLOOR; mods were only announced in
  * 2.1.287. At or after the floor, zero tables means the extractor lost the API and
  * throws, because downstream zero methods reads as every method removed at once.
@@ -83,6 +86,15 @@ const MIN_EVENT_LITERALS = 8;
 
 /** A settings hook event written bare, as the 2.1.242 event array writes `PreToolUse`. */
 const HOOK_EVENT_NAME = /^[A-Z][A-Za-z]*$/;
+
+/** A render site's name, the value of `e.component` in a `ui.render` hook. */
+const RENDER_SITE_NAME = /^[A-Z][A-Za-z]*$/;
+
+/** The text the bundle gives the render-site enum, from RENDER_SITE_ENUM_FLOOR. */
+const RENDER_SITE_DESCRIBE = /^(?:@internal )?A component a plugin may draw through `ui\.render`/;
+
+/** First release whose bundle carries the described render-site enum. */
+export const RENDER_SITE_ENUM_FLOOR = '2.1.285';
 
 /** A non-computed property key written as a string literal, else undefined. */
 function literalKey(property: unknown): string | undefined {
@@ -131,6 +143,46 @@ export interface ModEvidence {
   eventArrays: ModEventArray[];
   /** Every string literal, and template literal without substitutions, shaped `ns.method`. */
   names: string[];
+  /** Each described render-site enum: its members, and every element it cannot read. */
+  siteEnums: Array<{ sites: string[]; unreadable: string[] }>;
+  /** The first argument of each `useRenderInput` call, or a note where it is not a name. */
+  siteCalls: string[];
+  siteCallsUnreadable: string[];
+}
+
+/**
+ * The members of a described render-site enum, or undefined when `node` is not one:
+ * `B([…]).describe("@internal A component a plugin may draw through `ui.render`…")`.
+ */
+function siteEnumOf(node: Node): { sites: string[]; unreadable: string[] } | undefined {
+  const callee = node.callee as Node;
+  const [text] = node.arguments as Node[];
+  if (
+    callee.type !== 'MemberExpression' ||
+    (callee.property as Node).name !== 'describe' ||
+    text?.type !== 'Literal' ||
+    typeof text.value !== 'string' ||
+    !RENDER_SITE_DESCRIBE.test(text.value)
+  ) {
+    return undefined;
+  }
+  const inner = callee.object as Node;
+  const [list] = inner.type === 'CallExpression' ? (inner.arguments as Node[]) : [];
+  if (list?.type !== 'ArrayExpression') {
+    return { sites: [], unreadable: [`an enum built from a ${String(list?.type ?? inner.type)}`] };
+  }
+  const sites: string[] = [];
+  const unreadable: string[] = [];
+  for (const element of list.elements as Array<Node | null>) {
+    if (
+      element?.type === 'Literal' &&
+      typeof element.value === 'string' &&
+      RENDER_SITE_NAME.test(element.value)
+    ) {
+      sites.push(element.value);
+    } else unreadable.push(element === null ? 'a hole' : `a ${element.type}`);
+  }
+  return { sites, unreadable };
 }
 
 /** The event array's reading of one array literal, or undefined when it is not a candidate. */
@@ -172,9 +224,31 @@ export function collectModEvidence(program: Node): ModEvidence {
   const tables: ModTable[] = [];
   const eventArrays: ModEventArray[] = [];
   const names: string[] = [];
+  const siteEnums: ModEvidence['siteEnums'] = [];
+  const siteCalls: string[] = [];
+  const siteCallsUnreadable: string[] = [];
   walk(program, (node) => {
     const value = stringValue(node);
     if (value !== undefined && METHOD_KEY.test(value)) names.push(value);
+    if (node.type === 'CallExpression') {
+      const siteEnum = siteEnumOf(node);
+      if (siteEnum) siteEnums.push(siteEnum);
+      const callee = node.callee as Node;
+      if (
+        callee.type === 'MemberExpression' &&
+        (callee.property as Node).name === 'useRenderInput'
+      ) {
+        const [site] = node.arguments as Node[];
+        if (
+          site?.type === 'Literal' &&
+          typeof site.value === 'string' &&
+          RENDER_SITE_NAME.test(site.value)
+        ) {
+          siteCalls.push(site.value);
+        } else siteCallsUnreadable.push(`a ${String(site?.type ?? 'missing')} argument`);
+      }
+      return;
+    }
     if (node.type === 'ArrayExpression') {
       const array = eventArrayOf(node);
       if (array) eventArrays.push(array);
@@ -195,7 +269,64 @@ export function collectModEvidence(program: Node): ModEvidence {
     }
     if (keys.length >= MIN_TABLE_KEYS && runs * 2 >= keys.length) tables.push({ keys, unreadable });
   });
-  return { tables, eventArrays, names };
+  return { tables, eventArrays, names, siteEnums, siteCalls, siteCallsUnreadable };
+}
+
+/**
+ * The render sites one release proves, sorted, and whether its render-site enum was
+ * read (`listed`). Two constructs, because neither covers every era:
+ *
+ *   - From RENDER_SITE_ENUM_FLOOR, a zod enum the bundle describes as "A component a
+ *     plugin may draw through `ui.render`". It is the whole list, so leaving it is
+ *     removal evidence, and it must be present.
+ *   - From MOD_METHOD_FLOOR, the first argument of each `X.useRenderInput("<Site>", …)`
+ *     call, the hook that draws a site. That set is NOT the whole list: `AbovePrompt`
+ *     and `Pane` stop appearing in it at 2.1.269 and are still sites. So a call proves a
+ *     site exists and dates it, and its absence proves nothing. distillModRenderSites
+ *     takes removals only from releases where `listed` is true.
+ *
+ * Below MOD_METHOD_FLOOR the lane asserts nothing.
+ */
+export function modRenderSitesFrom(
+  evidence: readonly ModEvidence[],
+  version: string
+): { sites: string[]; listed: boolean } {
+  if (compareVersionsAsc(version, MOD_METHOD_FLOOR) < 0) return { sites: [], listed: false };
+  const enums = evidence.flatMap((chunk) => chunk.siteEnums);
+  const calls = evidence.flatMap((chunk) => chunk.siteCalls);
+  const unreadable = [
+    ...evidence
+      .flatMap((chunk) => chunk.siteCallsUnreadable)
+      .map((n) => `useRenderInput with ${n}`),
+    ...enums.flatMap((e) => e.unreadable).map((n) => `the render-site enum holding ${n}`),
+  ];
+  if (enums.length > 1) {
+    throw new Error(
+      `mod lane: ${version} has ${enums.length} described render-site enums. The rule ` +
+        'can no longer tell which one is the list; read the bundle and tighten siteEnumOf.'
+    );
+  }
+  if (unreadable.length > 0) {
+    throw new Error(
+      `mod lane: ${version} has ${unreadable.join(', ')}, which this lane cannot read as a ` +
+        'render site. Read the bundle and teach collectModEvidence the new shape.'
+    );
+  }
+  const listed = enums.length === 1;
+  if (!listed && compareVersionsAsc(version, RENDER_SITE_ENUM_FLOOR) >= 0) {
+    throw new Error(
+      `mod lane: ${version} has no described render-site enum, and every release since ` +
+        `${RENDER_SITE_ENUM_FLOOR} has one. Refusing to report its sites from the ` +
+        'useRenderInput calls alone, which would read as removals.'
+    );
+  }
+  if (!listed && calls.length === 0) {
+    throw new Error(
+      `mod lane: ${version} has neither a render-site enum nor a useRenderInput call, and ` +
+        `every release since ${MOD_METHOD_FLOOR} has one or the other.`
+    );
+  }
+  return { sites: [...new Set([...calls, ...(enums[0]?.sites ?? [])])].sort(), listed };
 }
 
 /**
@@ -312,6 +443,16 @@ export const extractModEvents = (source: string | readonly string[], version: st
     version
   );
 
+/** The render sites alone, parsing each chunk; see modRenderSitesFrom. */
+export const extractModRenderSites = (
+  source: string | readonly string[],
+  version: string
+): { sites: string[]; listed: boolean } =>
+  modRenderSitesFrom(
+    (typeof source === 'string' ? [source] : source).map((src) => collectModEvidence(parse(src))),
+    version
+  );
+
 /** Runs both AST lanes over one parse of each chunk. */
 export function extractControlAndModMethods(
   source: string | readonly string[],
@@ -321,16 +462,21 @@ export function extractControlAndModMethods(
   modMethods: string[];
   modMentions: string[];
   modEvents: string[];
+  modRenderSites: string[];
+  modRenderSitesListed: boolean;
 } {
   const evidence: ModEvidence[] = [];
   const controlMessages = extractControlMessages(source, version, (program) =>
     evidence.push(collectModEvidence(program))
   );
   const { methods, mentions } = modEvidenceFrom(evidence, version);
+  const { sites, listed } = modRenderSitesFrom(evidence, version);
   return {
     controlMessages,
     modMethods: methods,
     modMentions: mentions,
     modEvents: modEventsFrom(evidence, version),
+    modRenderSites: sites,
+    modRenderSitesListed: listed,
   };
 }

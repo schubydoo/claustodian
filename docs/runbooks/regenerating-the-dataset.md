@@ -138,7 +138,9 @@ and step 2 refuses `--mods` while any entry lacks it.
 The same holds for `data/mod-event-observations.json` and `mod_event` records, with
 `--mod-events`. A cache entry written before the event list was read has no `modEvents`
 key, so the first publish needs a full re-extract, and step 2 refuses `--mod-events`
-until every entry has the key.
+until every entry has the key. `data/mod-render-site-observations.json` and
+`mod_render_site` records follow the same rule, with `--mod-render-sites` and the
+`modRenderSites` key.
 
 Step 3 must come after step 2. `fetch-docs` resolves settings-page key paths against
 `data/binary-observations.json`, because the docs group keys by topic rather than by

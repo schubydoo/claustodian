@@ -216,6 +216,10 @@ describe('symbol schema', () => {
     expect(validate(modEvent())).toBe(true);
     expect(validate(modEvent({ family: 'control_request', direction: null }))).toBe(false);
   });
+
+  it('accepts a mod_render_site record', () => {
+    expect(validate(modMethod({ symbol: 'AbovePrompt', type: 'mod_render_site' }))).toBe(true);
+  });
 });
 
 describe('snapshot schema', () => {

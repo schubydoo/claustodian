@@ -150,10 +150,14 @@ export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryC
   );
   const chunks = sliceEmbeddedChunks(artifact, version);
   const symbols = extractBundleSymbols(bundle, chunks);
-  const { controlMessages, modMethods, modMentions, modEvents } = extractControlAndModMethods(
-    chunks,
-    version
-  );
+  const {
+    controlMessages,
+    modMethods,
+    modMentions,
+    modEvents,
+    modRenderSites,
+    modRenderSitesListed,
+  } = extractControlAndModMethods(chunks, version);
   return {
     version,
     source: 'binary',
@@ -166,6 +170,8 @@ export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryC
     modMentions,
     modEventCount: modEvents.length,
     modEvents,
+    modRenderSites,
+    modRenderSitesListed,
   };
 }
 
@@ -183,6 +189,10 @@ export interface BinaryCacheRecord {
   modEventCount: number;
   /** The event-only names of the mods event list; see modEventsFrom. */
   modEvents: string[];
+  /** The render sites this release proves; see modRenderSitesFrom. */
+  modRenderSites: string[];
+  /** Whether the render-site enum was read, so absence from modRenderSites is evidence. */
+  modRenderSitesListed: boolean;
 }
 
 /** Write `record` to `<outDir>/<version>.json` atomically (tmp + rename). */

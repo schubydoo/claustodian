@@ -42,7 +42,12 @@ function mockPageBody(url: string): string {
     // One namespace row per method keeps the yield equal to the floor, and the
     // events clear their type floor.
     const events = Array.from({ length: TYPE_MIN_SYMBOLS.mod_event ?? 0 }, (_, i) => i);
+    const sites = Array.from({ length: TYPE_MIN_SYMBOLS.mod_render_site ?? 0 }, (_, i) => i);
     return [
+      '## Render sites',
+      '| Site | `e.props` |',
+      '| :- | :- |',
+      ...sites.map((i) => `| \`MockSite${String.fromCharCode(65 + i)}\` | none |`),
       '## Events',
       '| Event | Fires when |',
       '| :- | :- |',
@@ -848,7 +853,8 @@ describe('assertDocsCoverage', () => {
   const index = (
     counts: Record<string, number>,
     modEvents = TYPE_MIN_SYMBOLS.mod_event ?? 0,
-    modMethods = TYPE_MIN_SYMBOLS.mod_method ?? 0
+    modMethods = TYPE_MIN_SYMBOLS.mod_method ?? 0,
+    modRenderSites = TYPE_MIN_SYMBOLS.mod_render_site ?? 0
   ) => ({
     $generated_by: 'scripts/fetch-docs.ts',
     source_pages: officialSourcePages(),
@@ -873,6 +879,13 @@ describe('assertDocsCoverage', () => {
       ...Array.from({ length: modMethods }, (_, i) => ({
         symbol: `$.mock.method${i}`,
         type: 'mod_method' as const,
+        description: '',
+        doc_min_version: null,
+        doc_page: 'mock-types-page',
+      })),
+      ...Array.from({ length: modRenderSites }, (_, i) => ({
+        symbol: `MockSite${i}`,
+        type: 'mod_render_site' as const,
         description: '',
         doc_min_version: null,
         doc_page: 'mock-types-page',
@@ -1065,9 +1078,9 @@ describe('parseDocPage — mods reference', () => {
     '| [`$.state`](/docs/en/plugins/mods/interface#keep-a-value-in-\\$-state) | Reactive state: `get`, `set`, with the helpers `atom`, `read`, `update`, `derive`, and `memberOf` imported from `claude-code` |',
     '| `$.telemetry` | `log`, `mark`. A record is sent only when Claude Code or a built-in mod makes the call. |',
     '## Render sites',
-    '| Site | What |',
+    '| Site | `e.props` |',
     '| :- | :- |',
-    '| `$.fake.site` | `nope` |',
+    '| `Pane` | `title`, `$.fake.site` |',
   ].join('\n');
 
   const parsed = () => parseDocPage('plugins/mods/reference', MODS_PAGE);
@@ -1237,5 +1250,34 @@ describe('parseDocPage — mods reference events', () => {
 
   it('has its own floor, so an emptied Events section fails beside a full method table', () => {
     expect(TYPE_MIN_SYMBOLS.mod_event).toBeGreaterThan(0);
+  });
+});
+
+describe('parseDocPage — mods reference render sites', () => {
+  const sites = (page: string) =>
+    parseDocPage('plugins/mods/reference', page)
+      .filter((e) => e.type === 'mod_render_site')
+      .map((e) => e.symbol);
+
+  it('reads every site of the table, several to a row and through links', () => {
+    const page = [
+      '## Render sites',
+      '| Site | `e.props` | `e.requestId` | Rendered on |',
+      '| :- | :- | :- | :- |',
+      "| [`Pane`](/docs/en/plugins/mods/interface#pick-where-to-draw) | `title`, `view` | The pane's `id` | Terminal |",
+      "| `ToolUse`, `ToolResult`, `ToolGroup` | The tool's name | The tool call id | Terminal |",
+      '## Elements',
+      '| Element | Main props |',
+      '| :- | :- |',
+      '| `Box` | `key` |',
+    ].join('\n');
+    expect(sites(page)).toEqual(['Pane', 'ToolUse', 'ToolResult', 'ToolGroup']);
+  });
+
+  it('refuses an unknown header, and a row that names no site', () => {
+    const table = (header: string, row: string) =>
+      ['## Render sites', header, '| :- | :- |', row].join('\n');
+    expect(() => sites(table('| Component | What |', '| `Pane` | x |'))).toThrow(/not "Site"/);
+    expect(() => sites(table('| Site | What |', '| Pane | x |'))).toThrow(/names no site/);
   });
 });

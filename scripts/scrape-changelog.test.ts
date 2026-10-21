@@ -2821,3 +2821,79 @@ describe('mod_event records', () => {
     expect(latest(snapshotsWith(docs([eventDoc('tool.call')]), []))).toEqual([]);
   });
 });
+
+describe('mod_render_site records', () => {
+  const docs = (symbols: DocsIndex['symbols']): DocsIndex => ({
+    $generated_by: 'scripts/fetch-docs.ts',
+    source_pages: [],
+    symbols,
+  });
+  const siteDoc = (symbol: string) => ({
+    symbol,
+    type: 'mod_render_site' as const,
+    description: '',
+    doc_min_version: null,
+    doc_page: 'plugins/mods/reference',
+  });
+  const binary: BinaryObservations = {
+    $generated_by: 'scripts/backfill-binary.ts',
+    source: 'binary',
+    note: '',
+    observedVersions: ['2.1.242', '2.1.250', '2.1.300'],
+    symbols: [],
+  };
+  const blocks = parseChangelog(
+    '## 2.1.300\n\n- Fixed a crash\n\n## 2.1.250\n\n- Fixed a crash\n\n## 2.1.242\n\n- Fixed another crash\n'
+  );
+  const obs = (symbol: string, removed_in: string | null = null) => ({
+    symbol,
+    first_seen: '2.1.242',
+    last_seen: removed_in === null ? '2.1.300' : '2.1.242',
+    removed_in,
+  });
+  const run = (index: DocsIndex, sites?: ReturnType<typeof obs>[]) =>
+    buildEnrichedSnapshots(
+      blocks,
+      index,
+      binary,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      sites
+    );
+  const at = (snapshots: ReturnType<typeof run>, version: string) =>
+    (snapshots.find((s) => s.version === version)?.symbols ?? []).filter(
+      (r) => r.type === 'mod_render_site'
+    );
+
+  it('publishes a documented site with its binary date, and a binary-only site active', () => {
+    const records = at(run(docs([siteDoc('Pane')]), [obs('Pane'), obs('Spinner')]), '2.1.300');
+    expect(records.find((r) => r.symbol === 'Pane')).toMatchObject({
+      first_seen: '2.1.242',
+      provenance: 'docs',
+      category: 'mods',
+    });
+    expect(records.find((r) => r.symbol === 'Spinner')).toMatchObject({
+      status: 'active',
+      provenance: 'binary',
+    });
+  });
+
+  it('removes an undocumented site where the binary removes it, and keeps a documented one', () => {
+    const snapshots = run(docs([siteDoc('Kept')]), [
+      obs('Spinner'),
+      obs('Gone', '2.1.250'),
+      obs('Kept', '2.1.250'),
+    ]);
+    expect(at(snapshots, '2.1.242').some((r) => r.symbol === 'Gone')).toBe(true);
+    expect(at(snapshots, '2.1.250').some((r) => r.symbol === 'Gone')).toBe(false);
+    expect(at(snapshots, '2.1.300').some((r) => r.symbol === 'Kept')).toBe(true);
+  });
+
+  it('publishes no mod_render_site from any lane until its observation file exists', () => {
+    expect(at(run(docs([siteDoc('Pane')])), '2.1.300')).toEqual([]);
+    expect(at(run(docs([siteDoc('Pane')]), []), '2.1.300')).toEqual([]);
+  });
+});

@@ -5,8 +5,10 @@ import { describe, expect, it } from 'vitest';
 import { extractControlMessages } from './control-lane.js';
 import {
   MOD_METHOD_FLOOR,
+  RENDER_SITE_ENUM_FLOOR,
   extractControlAndModMethods,
   extractModEvents,
+  extractModRenderSites,
   extractModEvidence,
   extractModMethods,
 } from './mod-lane.js';
@@ -58,6 +60,13 @@ const EVENTS_OF = (literals: readonly string[], head = '...H,', tail = ',...M') 
   `var Z=[${head}${literals.map((name) => `"${name}"`).join(',')}${tail}];`;
 const EVENTS = EVENTS_OF(EVENT_NAMES);
 const EVENTS_SORTED = [...EVENT_NAMES].sort();
+
+/** Render sites as 2.1.242 draws them: one `useRenderInput("<Site>", …)` call each. */
+const SITE_CALLS = (sites: readonly string[]) =>
+  sites.map((site, i) => `var u${i}=Y.useRenderInput("${site}",()=>({}),[]);`).join('');
+/** The described enum, as releases from 2.1.285 write it. */
+const SITE_ENUM = (sites: readonly string[]) =>
+  `var S=B([${sites.map((s) => `"${s}"`).join(',')}]).describe("@internal A component a plugin may draw through \`ui.render\`: one name per render site");`;
 
 /**
  * A miniature control protocol that passes every control-lane floor (a routed
@@ -177,13 +186,69 @@ describe('extractControlAndModMethods', () => {
     // refuse here — a bare `var a=1;` would be refused by the control lane first.
     expect(() => extractControlAndModMethods(CONTROL, '0.2.0')).not.toThrow();
     expect(() => extractControlAndModMethods([CONTROL], MOD_METHOD_FLOOR)).toThrow(/^mod lane: /);
-    expect(() => extractControlAndModMethods([CONTROL, TABLE], MOD_METHOD_FLOOR)).toThrow(
-      /^mod lane: .*no mods event list/
+    expect(() =>
+      extractControlAndModMethods([CONTROL, TABLE, SITE_CALLS(['Spinner'])], MOD_METHOD_FLOOR)
+    ).toThrow(/^mod lane: .*no mods event list/);
+    const both = extractControlAndModMethods(
+      [CONTROL, TABLE, EVENTS, SITE_CALLS(['Spinner'])],
+      MOD_METHOD_FLOOR
     );
-    const both = extractControlAndModMethods([CONTROL, TABLE, EVENTS], MOD_METHOD_FLOOR);
     expect(both.controlMessages).not.toEqual([]);
     expect(both.modMethods).toEqual(METHODS);
     expect(both.modEvents).toEqual(EVENTS_SORTED);
+    expect(both).toMatchObject({ modRenderSites: ['Spinner'], modRenderSitesListed: false });
+  });
+});
+
+describe('extractModRenderSites', () => {
+  it('reads each useRenderInput site before the enum ships, unlisted', () => {
+    expect(extractModRenderSites(SITE_CALLS(['ToolUse', 'Spinner']), '2.1.250')).toEqual({
+      sites: ['Spinner', 'ToolUse'],
+      listed: false,
+    });
+  });
+
+  it('unions the enum with the calls, and marks the release listed', () => {
+    // `Pane` is in the enum only, as from 2.1.269 on; `Spinner` in both.
+    const source = [SITE_ENUM(['Spinner', 'Pane']), SITE_CALLS(['Spinner'])];
+    expect(extractModRenderSites(source, '2.1.301')).toEqual({
+      sites: ['Pane', 'Spinner'],
+      listed: true,
+    });
+  });
+
+  it('refuses a release at or after the enum floor without the enum', () => {
+    expect(() => extractModRenderSites(SITE_CALLS(['Spinner']), RENDER_SITE_ENUM_FLOOR)).toThrow(
+      /^mod lane: .*no described render-site enum/
+    );
+  });
+
+  it('refuses a release past the method floor with no site evidence at all', () => {
+    expect(() => extractModRenderSites('var a=1;', MOD_METHOD_FLOOR)).toThrow(
+      /^mod lane: .*neither a render-site enum/
+    );
+  });
+
+  it('refuses two enums, an enum element it cannot read, and a call it cannot read', () => {
+    const one = SITE_ENUM(['Spinner']);
+    expect(() => extractModRenderSites([one, one], '2.1.301')).toThrow(/2 described/);
+    expect(() =>
+      extractModRenderSites(one.replace('"Spinner"', '"Spinner",...X'), '2.1.301')
+    ).toThrow(/cannot read/);
+    expect(() =>
+      extractModRenderSites([one, 'Y.useRenderInput(site,()=>({}),[]);'], '2.1.301')
+    ).toThrow(/cannot read/);
+  });
+
+  it('ignores a describe call with other text, and asserts nothing before the floor', () => {
+    const other = 'var O=B(["Nope"]).describe("Some other enum");';
+    expect(extractModRenderSites([other, SITE_CALLS(['Spinner'])], '2.1.250').sites).toEqual([
+      'Spinner',
+    ]);
+    expect(extractModRenderSites(SITE_CALLS(['Spinner']), '2.1.241')).toEqual({
+      sites: [],
+      listed: false,
+    });
   });
 });
 

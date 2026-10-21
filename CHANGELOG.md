@@ -20,6 +20,24 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ### Added
 
+- **A `mod_render_site` symbol type, for the places a mod can draw.** A
+  `ui.render` hook receives the site it is drawing as `e.component`, such as
+  `AbovePrompt` or `ToolUse`. Each site becomes one record with that name as its
+  `symbol` and `category: "mods"`. The records carry no extra fields and no
+  description.
+
+  The binary lane reads two constructs. From 2.1.285 the bundle holds an enum of
+  every site, which it describes as the components a plugin may draw through
+  `ui.render`. From 2.1.242 each site is drawn through a `useRenderInput` call that
+  names it. Most sites therefore date from 2.1.242. Only the enum is the whole
+  list, so a site is removed only where it leaves the enum. The docs lane reads the
+  "Render sites" table of the mods reference page.
+
+  `data/docs.json` lists one `mod_render_site` entry per documented site from the
+  next docs refresh. The snapshots carry no `mod_render_site` record until a
+  separate data PR publishes the binary observations
+  (`data/mod-render-site-observations.json`).
+
 - **A `mod_event` symbol type, for the events a mod hooks.** A mod reacts to Claude
   Code by passing an event name to `on(...)`, as in `on('tool.call', hook)`. Each
   event becomes one record whose `symbol` is that name, such as `tool.call` or

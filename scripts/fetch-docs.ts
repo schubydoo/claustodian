@@ -44,7 +44,13 @@ export const DOC_PAGES = [
 ] as const;
 
 export type DocSymbolType =
-  'cli_flag' | 'command' | 'env_var' | 'config_key' | 'mod_method' | 'mod_event';
+  | 'cli_flag'
+  | 'command'
+  | 'env_var'
+  | 'config_key'
+  | 'mod_method'
+  | 'mod_event'
+  | 'mod_render_site';
 
 /**
  * Per-page baseline `min-version` for pages that state a feature-level
@@ -99,6 +105,7 @@ export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number
 export const TYPE_MIN_SYMBOLS: Partial<Record<DocSymbolType, number>> = {
   mod_method: 40,
   mod_event: 20,
+  mod_render_site: 8,
 };
 
 /** Generic OS/shell env vars a doc may reference but that aren't Claude Code symbols. */
@@ -689,7 +696,65 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
       });
     }
   }
-  return [...entries, ...parseModsEventTables(page, markdown)];
+  return [
+    ...entries,
+    ...parseModsEventTables(page, markdown),
+    ...parseModsRenderSiteTable(page, markdown),
+  ];
+}
+
+/**
+ * The "Render sites" table of the mods reference page. Its first cell names one site
+ * or more in backticks (`` `ToolUse`, `ToolResult`, `ToolGroup` ``, sometimes as a
+ * link). The other cells list props and apps, not what the site is, so the record
+ * carries no description and the binary lane dates it. The section holds one table,
+ * headed "Site"; any other header, and a row that names no site, stop the run.
+ */
+function parseModsRenderSiteTable(page: string, markdown: string): DocEntry[] {
+  const entries: DocEntry[] = [];
+  let inSection = false;
+  let inTable = false;
+  for (const line of markdown.split('\n')) {
+    if (!/^\s*\|/.test(line)) {
+      inTable = false;
+      const heading = /^##\s+(.*)$/.exec(line);
+      if (heading) inSection = (heading[1] as string).trim() === 'Render sites';
+      continue;
+    }
+    if (!inSection || /^\s*\|\s*:?-{1,}/.test(line)) continue;
+    const [nameCell] = splitTableRow(line)
+      .slice(1, -1)
+      .map((c) => c.trim());
+    if (!inTable) {
+      inTable = true;
+      if (nameCell !== 'Site') {
+        throw new Error(
+          `Docs page "${page}": the Render sites table has the header ${line.trim()}, not ` +
+            '"Site". Read the page and fix parseModsRenderSiteTable.'
+        );
+      }
+      continue;
+    }
+    const names = [...(nameCell ?? '').matchAll(/`([A-Z][A-Za-z]*)`/g)].map(
+      (match) => match[1] as string
+    );
+    if (names.length === 0) {
+      throw new Error(
+        `Docs page "${page}": a row of the Render sites table names no site: ` +
+          `${line.trim()}. Read the page and fix parseModsRenderSiteTable.`
+      );
+    }
+    for (const symbol of names) {
+      entries.push({
+        symbol,
+        type: 'mod_render_site',
+        description: '',
+        doc_min_version: null,
+        doc_page: page,
+      });
+    }
+  }
+  return entries;
 }
 
 /**
