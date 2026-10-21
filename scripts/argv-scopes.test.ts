@@ -60,6 +60,21 @@ describe('extractSwitchCaseScopes', () => {
     expect(scopes.get('--no-verify')).toEqual(['self-hosted-runner decode-token']);
   });
 
+  it('does not scope a flag to the module of a label that only rejects it', () => {
+    // The 2.1.229 to 2.1.241 layout: one bundle, with the Windows check that rejects
+    // `--hooks-dir` inside the `daemon` module. It once gave the flag a daemon scope.
+    const rejects =
+      'function G(e,n="linux"){if(n!=="win32")return;switch(e){case"--hooks-dir":throw Error("--hooks-dir is not supported on Windows")}}';
+    const src =
+      mod('A5h', banner('self-hosted-runner') + parser(['--hooks-dir'])) +
+      mod('B5h', banner('self-hosted-runner orchestrator') + parser(['--hooks-dir'])) +
+      mod('C5h', banner('daemon') + rejects);
+    expect(extractSwitchCaseScopes(src).get('--hooks-dir')).toEqual([
+      'self-hosted-runner',
+      'self-hosted-runner orchestrator',
+    ]);
+  });
+
   it('withholds a flag whose module carries more than one usage banner', () => {
     // Two parsers bundled into one module: containment can no longer say which
     // one owns the label, so the scope is unknown rather than "probably both".
