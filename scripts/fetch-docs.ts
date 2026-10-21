@@ -752,7 +752,7 @@ function assertReadableRow(
   if (
     isHeader &&
     header.length > 2 &&
-    !DESCRIPTION_HEADER.test(header[descriptionColumn(header)] ?? '')
+    !DESCRIPTION_HEADER.test(header[descriptionColumn(header)] as string)
   ) {
     throw new Error(
       `Docs page "${page}": a table in "${section}" has the header | ${header.join(' | ')} |, ` +

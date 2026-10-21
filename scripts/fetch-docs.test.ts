@@ -1454,6 +1454,24 @@ describe('parseDocPage — subcommand-scoped reference pages', () => {
     expect(entry(page(), '--not-a-flag')).toBeUndefined();
   });
 
+  it('refuses the page when the orchestrator paragraph drops "same defaults"', () => {
+    const changed = RUNNER.map((line) =>
+      line.replace('with the same defaults as the runner', 'too')
+    );
+    expect(() => index(page(changed))).toThrow(/accepts the runner flags with the same defaults/);
+  });
+
+  it('refuses an inherited flag that has no runner row to copy', () => {
+    const md = page().replace(/^\| `--log-level.*$/m, '');
+    expect(() => index(md)).toThrow(/names --log-level, which has no "self-hosted-runner" row/);
+  });
+
+  it('falls back to the second cell for a short row on a page without an allowlist', () => {
+    const md =
+      '## Flags\n| Flag | Default | Description |\n| :- | :- | :- |\n| `--short` | Short row text |';
+    expect(parseDocPage('plugins/cli-reference', md)[0]?.description).toBe('Short row text');
+  });
+
   it('refuses a table it cannot read by column', () => {
     // A renamed header would otherwise publish the Env var cell as the text.
     const renamed = RUNNER.map((line) =>

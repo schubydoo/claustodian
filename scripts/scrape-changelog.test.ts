@@ -2986,6 +2986,12 @@ describe('withDocScopeCoverage', () => {
     expect(withDocScopeCoverage(flag(), RUNNER, RUNNER)).toEqual(flag());
   });
 
+  it('empties the primary with no map when no documented scope is live', () => {
+    const out = withDocScopeCoverage(flag(), ['daemon'], RUNNER);
+    expect(out.description).toBe('');
+    expect(out).not.toHaveProperty('scope_descriptions');
+  });
+
   it('moves the text to the covered scopes when one scope is uncovered', () => {
     // `--api-url` is the JWKS endpoint under decode-token, which the page does not cover.
     const out = withDocScopeCoverage(
