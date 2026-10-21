@@ -50,7 +50,8 @@ export type DocSymbolType =
   | 'config_key'
   | 'mod_method'
   | 'mod_event'
-  | 'mod_render_site';
+  | 'mod_render_site'
+  | 'mod_element';
 
 /**
  * Per-page baseline `min-version` for pages that state a feature-level
@@ -106,6 +107,7 @@ export const TYPE_MIN_SYMBOLS: Partial<Record<DocSymbolType, number>> = {
   mod_method: 40,
   mod_event: 20,
   mod_render_site: 8,
+  mod_element: 6,
 };
 
 /** Generic OS/shell env vars a doc may reference but that aren't Claude Code symbols. */
@@ -700,6 +702,7 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
     ...entries,
     ...parseModsEventTables(page, markdown),
     ...parseModsRenderSiteTable(page, markdown),
+    ...parseModsElementTable(page, markdown),
   ];
 }
 
@@ -754,10 +757,70 @@ function parseModsRenderSiteTable(page: string, markdown: string): DocEntry[] {
         symbol: match[1] as string,
         type: 'mod_render_site',
         description: '',
-        doc_min_version: null,
+        doc_min_version: minVersion(line),
         doc_page: page,
       });
     }
+  }
+  return entries;
+}
+
+/**
+ * The "Elements" table of the mods reference page: the one table in that section
+ * whose first header cell is "Element". Its first cell names one element in backticks,
+ * plainly or as a link. The section also holds tables of props (`borderStyle`, spacing
+ * steps, typography), which are not elements and are skipped by their header. A second
+ * "Element" table, a table headed like one, and a first cell holding anything but an
+ * element name stop the run. The records carry no description: the other cells list
+ * props and apps. A "Requires Claude Code vX" note in the row dates the element.
+ */
+function parseModsElementTable(page: string, markdown: string): DocEntry[] {
+  const entries: DocEntry[] = [];
+  const refuse = (what: string, line: string): never => {
+    throw new Error(
+      `Docs page "${page}": ${what}: ${line.trim()}. Read the page and fix parseModsElementTable.`
+    );
+  };
+  const cellOfName = /^(?:\[`([A-Za-z]+)`\]\([^)\s]*\)|`([A-Za-z]+)`)$/;
+  let inSection = false;
+  let inFence = false;
+  let inTable = false;
+  let elementTable = false;
+  let elementTables = 0;
+  for (const line of markdown.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) inFence = !inFence;
+    if (inFence) continue;
+    if (!/^\s*\|/.test(line)) {
+      inTable = false;
+      const heading = /^##\s+(.*)$/.exec(line);
+      if (heading) inSection = (heading[1] as string).trim() === 'Elements';
+      continue;
+    }
+    if (!inSection || /^\s*\|\s*:?-{1,}/.test(line)) continue;
+    const nameCell = (splitTableRow(line).slice(1, -1)[0] ?? '').trim();
+    if (!inTable) {
+      inTable = true;
+      elementTable = nameCell === 'Element';
+      // A prop table is headed by the prop; a header that names elements some other way
+      // would hide a split of the Element table, so it stops the run.
+      if (!elementTable && /element/i.test(nameCell)) {
+        refuse('the Elements section holds a table headed like an element table', line);
+      }
+      if (elementTable && ++elementTables > 1)
+        refuse('the Elements section holds a second Element table', line);
+      continue;
+    }
+    if (!elementTable) continue;
+    const match = cellOfName.exec(nameCell);
+    if (!match)
+      refuse('a row of the Elements table holds something other than an element name', line);
+    entries.push({
+      symbol: (match?.[1] ?? match?.[2]) as string,
+      type: 'mod_element',
+      description: '',
+      doc_min_version: minVersion(line),
+      doc_page: page,
+    });
   }
   return entries;
 }

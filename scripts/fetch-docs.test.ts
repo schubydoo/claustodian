@@ -43,7 +43,12 @@ function mockPageBody(url: string): string {
     // events clear their type floor.
     const events = Array.from({ length: TYPE_MIN_SYMBOLS.mod_event ?? 0 }, (_, i) => i);
     const sites = Array.from({ length: TYPE_MIN_SYMBOLS.mod_render_site ?? 0 }, (_, i) => i);
+    const elements = Array.from({ length: TYPE_MIN_SYMBOLS.mod_element ?? 0 }, (_, i) => i);
     return [
+      '## Elements',
+      '| Element | Main props |',
+      '| :- | :- |',
+      ...elements.map((i) => `| \`MockEl${String.fromCharCode(65 + i)}\` | none |`),
       '## Render sites',
       '| Site | `e.props` |',
       '| :- | :- |',
@@ -854,7 +859,8 @@ describe('assertDocsCoverage', () => {
     counts: Record<string, number>,
     modEvents = TYPE_MIN_SYMBOLS.mod_event ?? 0,
     modMethods = TYPE_MIN_SYMBOLS.mod_method ?? 0,
-    modRenderSites = TYPE_MIN_SYMBOLS.mod_render_site ?? 0
+    modRenderSites = TYPE_MIN_SYMBOLS.mod_render_site ?? 0,
+    modElements = TYPE_MIN_SYMBOLS.mod_element ?? 0
   ) => ({
     $generated_by: 'scripts/fetch-docs.ts',
     source_pages: officialSourcePages(),
@@ -886,6 +892,13 @@ describe('assertDocsCoverage', () => {
       ...Array.from({ length: modRenderSites }, (_, i) => ({
         symbol: `MockSite${i}`,
         type: 'mod_render_site' as const,
+        description: '',
+        doc_min_version: null,
+        doc_page: 'mock-types-page',
+      })),
+      ...Array.from({ length: modElements }, (_, i) => ({
+        symbol: `MockEl${i}`,
+        type: 'mod_element' as const,
         description: '',
         doc_min_version: null,
         doc_page: 'mock-types-page',
@@ -1305,5 +1318,53 @@ describe('parseDocPage — mods reference render sites', () => {
       '```',
     ].join('\n');
     expect(sites(page)).toEqual([]);
+  });
+});
+
+describe('parseDocPage — mods reference elements', () => {
+  const elements = (page: string) =>
+    parseDocPage('plugins/mods/reference', page)
+      .filter((e) => e.type === 'mod_element')
+      .map((e) => e.symbol);
+  const ELEMENTS = [
+    '## Elements',
+    '| Element | Main props | Terminal |',
+    '| :- | :- | :-: |',
+    '| [`Box`](/docs/en/plugins/mods/interface#build-a-tree-from-elements) | `key` | ✓ |',
+    '| `Svg` | An SVG document | |',
+    '',
+    '### `Box` border styles',
+    '| `borderStyle` | What the terminal draws |',
+    '| :- | :- |',
+    "| `'single'` | Thin lines |",
+  ];
+
+  it('reads the Element table, linked or plain, and skips the prop tables', () => {
+    expect(elements(ELEMENTS.join('\n'))).toEqual(['Box', 'Svg']);
+  });
+
+  it('refuses a table headed like an element table, and reads a version note', () => {
+    const split = [
+      ...ELEMENTS.slice(0, 4),
+      '',
+      '| Desktop element | x |',
+      '| :- | :- |',
+      '| `Svg` | y |',
+    ];
+    expect(() => elements(split.join('\n'))).toThrow(/headed like an element table/);
+    const noted = ELEMENTS.map((l) =>
+      l.startsWith('| `Svg`') ? '| `Svg` | Requires Claude Code v2.1.290 or later | |' : l
+    );
+    const svg = parseDocPage('plugins/mods/reference', noted.join('\n')).find(
+      (e) => e.symbol === 'Svg'
+    );
+    expect(svg?.doc_min_version).toBe('2.1.290');
+  });
+
+  it('refuses a second Element table, and a cell holding more than one name', () => {
+    const second = [...ELEMENTS, '', '| Element | x |', '| :- | :- |', '| `Fake` | y |'];
+    expect(() => elements(second.join('\n'))).toThrow(/second Element table/);
+    const odd = ELEMENTS.map((l) => (l.startsWith('| `Svg`') ? '| `Svg` (or `Box`) | x | |' : l));
+    expect(() => elements(odd.join('\n'))).toThrow(/other than an element name/);
   });
 });

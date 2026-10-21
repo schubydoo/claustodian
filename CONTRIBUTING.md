@@ -35,6 +35,8 @@ A record whose accuracy depends on non-public material will be rejected. This po
 
 **Why `mod_render_site` is exempt too.** The mod lane reads each site from the render-site enum the bundle describes as the list of components a mod may draw, and from the `useRenderInput` calls that draw them, by AST. It refuses a release from 2.1.285 on that has no such enum, and any element or argument it cannot read.
 
+**Why `mod_element` is exempt too.** The mod lane reads each element from the one object that lists the elements each app can draw, by AST. It refuses a release that has no such object, two of them, or a name it cannot read.
+
 ## Data contract
 
 - JSON under `data/` is the **single source of truth**. YAML/TOML are generated in CI — never hand-edit them (they are gitignored).

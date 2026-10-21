@@ -53,6 +53,9 @@
  * RENDER SITES. The places a mod can draw, read from a described zod enum and from
  * the `useRenderInput` calls that draw them; see modRenderSitesFrom.
  *
+ * ELEMENTS. The element types a `ui.render` tree is built from, read from the
+ * per-app element lists; see modElementsFrom.
+ *
  * FLOOR. The table first ships in MOD_METHOD_FLOOR; mods were only announced in
  * 2.1.287. At or after the floor, zero tables means the extractor lost the API and
  * throws, because downstream zero methods reads as every method removed at once.
@@ -92,6 +95,15 @@ const RENDER_SITE_NAME = /^[A-Z][A-Za-z]*$/;
 
 /** The text the bundle gives the render-site enum, from RENDER_SITE_ENUM_FLOOR. */
 const RENDER_SITE_DESCRIBE = /^(?:@internal )?A component a plugin may draw through `ui\.render`/;
+
+/** An element name, the `type` of a node in a `ui.render` tree: `Box`, and early on `div`. */
+const ELEMENT_NAME = /^[A-Za-z]+$/;
+
+/**
+ * The fewest distinct elements the per-app lists may hold. They held 5 at 2.1.242 and
+ * grow after that, so a smaller object with a `terminal` key is something else.
+ */
+const MIN_ELEMENTS = 4;
 
 /** First release whose bundle carries the described render-site enum. */
 export const RENDER_SITE_ENUM_FLOOR = '2.1.285';
@@ -149,6 +161,45 @@ export interface ModEvidence {
   siteCalls: string[];
   /** A note for each such call whose first argument is not a site name. */
   siteCallsUnreadable: string[];
+  /** Each candidate per-app element list object: every element name it holds. */
+  elementLists: Array<{ elements: string[]; unreadable: string[] }>;
+}
+
+/**
+ * The elements of a per-app element list object, or undefined when `node` is not one:
+ * `{terminal:["Box","Text",…],desktop:[…],…}`, a `terminal` key, every value an array
+ * of string literals, and at least MIN_ELEMENTS distinct names, so a small look-alike
+ * such as `{terminal:[]}` is not picked. If a second object ever has that shape too,
+ * the lane throws rather than guess.
+ */
+function elementListsOf(node: Node): { elements: string[]; unreadable: string[] } | undefined {
+  const props = node.properties as Node[];
+  const keyOf = (p: Node) => (p.key as Node).name ?? (p.key as Node).value;
+  if (!props.some((p) => p.type === 'Property' && keyOf(p) === 'terminal')) return undefined;
+  const lists = props.every(
+    (p) =>
+      p.type === 'Property' &&
+      (p.value as Node).type === 'ArrayExpression' &&
+      ((p.value as Node).elements as Array<Node | null>).every(
+        (e) => e?.type === 'Literal' && typeof e.value === 'string'
+      )
+  );
+  if (!lists) return undefined;
+  const names = new Set(
+    props.flatMap((p) => ((p.value as Node).elements as Node[]).map((e) => String(e.value)))
+  );
+  if (names.size < MIN_ELEMENTS) return undefined;
+  const elements: string[] = [];
+  const unreadable: string[] = [];
+  for (const p of props) {
+    if (p.computed === true) unreadable.push('a computed app key');
+    for (const e of (p.value as Node).elements as Node[]) {
+      const name = String(e.value);
+      if (ELEMENT_NAME.test(name)) elements.push(name);
+      else unreadable.push(`"${name}"`);
+    }
+  }
+  return { elements, unreadable };
 }
 
 /**
@@ -228,6 +279,7 @@ export function collectModEvidence(program: Node): ModEvidence {
   const siteEnums: ModEvidence['siteEnums'] = [];
   const siteCalls: string[] = [];
   const siteCallsUnreadable: string[] = [];
+  const elementLists: ModEvidence['elementLists'] = [];
   walk(program, (node) => {
     const value = stringValue(node);
     if (value !== undefined && METHOD_KEY.test(value)) names.push(value);
@@ -256,6 +308,8 @@ export function collectModEvidence(program: Node): ModEvidence {
       return;
     }
     if (node.type !== 'ObjectExpression') return;
+    const elementList = elementListsOf(node);
+    if (elementList) elementLists.push(elementList);
     const keys: string[] = [];
     const unreadable: string[] = [];
     let runs = 0;
@@ -270,7 +324,41 @@ export function collectModEvidence(program: Node): ModEvidence {
     }
     if (keys.length >= MIN_TABLE_KEYS && runs * 2 >= keys.length) tables.push({ keys, unreadable });
   });
-  return { tables, eventArrays, names, siteEnums, siteCalls, siteCallsUnreadable };
+  return { tables, eventArrays, names, siteEnums, siteCalls, siteCallsUnreadable, elementLists };
+}
+
+/**
+ * The elements one release lists, sorted: the union of the per-app element lists, the
+ * apps a `ui.render` tree can draw in. The object is the whole list, so leaving it is
+ * a removal: `div`, `span` and `b` leave at 2.1.267. It ships with the method table, so
+ * it shares MOD_METHOD_FLOOR: below it the lane asserts nothing, and from it zero or
+ * two objects throw. Per-app support is not published; it varies by version.
+ */
+export function modElementsFrom(evidence: readonly ModEvidence[], version: string): string[] {
+  if (compareVersionsAsc(version, MOD_METHOD_FLOOR) < 0) return [];
+  const lists = evidence.flatMap((chunk) => chunk.elementLists);
+  if (lists.length > 1) {
+    throw new Error(
+      `mod lane: ${version} has ${lists.length} objects that look like the per-app element ` +
+        'lists. The rule can no longer tell which one it is; read the bundle and tighten ' +
+        'elementListsOf.'
+    );
+  }
+  if (lists.length === 0) {
+    throw new Error(
+      `mod lane: ${version} has no per-app element lists, and every release since ` +
+        `${MOD_METHOD_FLOOR} has them. Refusing to report zero elements, which would read ` +
+        'as every element removed at once.'
+    );
+  }
+  const [list] = lists as [ModEvidence['elementLists'][number]];
+  if (list.unreadable.length > 0) {
+    throw new Error(
+      `mod lane: ${version}'s element lists hold ${list.unreadable.join(', ')}, which this ` +
+        'lane cannot read as an element. Read the bundle and teach elementListsOf the new shape.'
+    );
+  }
+  return [...new Set(list.elements)].sort();
 }
 
 /**
@@ -457,6 +545,13 @@ export const extractModRenderSites = (
     version
   );
 
+/** The elements alone, parsing each chunk; see modElementsFrom. */
+export const extractModElements = (source: string | readonly string[], version: string): string[] =>
+  modElementsFrom(
+    (typeof source === 'string' ? [source] : source).map((src) => collectModEvidence(parse(src))),
+    version
+  );
+
 /** Runs both AST lanes over one parse of each chunk. */
 export function extractControlAndModMethods(
   source: string | readonly string[],
@@ -468,6 +563,7 @@ export function extractControlAndModMethods(
   modEvents: string[];
   modRenderSites: string[];
   modRenderSitesListed: boolean;
+  modElements: string[];
 } {
   const evidence: ModEvidence[] = [];
   const controlMessages = extractControlMessages(source, version, (program) =>
@@ -482,5 +578,6 @@ export function extractControlAndModMethods(
     modEvents: modEventsFrom(evidence, version),
     modRenderSites: sites,
     modRenderSitesListed: listed,
+    modElements: modElementsFrom(evidence, version),
   };
 }

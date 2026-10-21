@@ -53,6 +53,7 @@ export const SYMBOL_TYPES = [
   'mod_method',
   'mod_event',
   'mod_render_site',
+  'mod_element',
 ];
 
 /**
@@ -140,7 +141,7 @@ export const TOOLS = [
     name: 'get_symbol',
     title: 'Look up a symbol at a version',
     description:
-      'Whether a CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, or mods render site exists in a given Claude Code version, and its full record if so. A version snapshot contains only what was available at that version, so presence is availability — no first_seen arithmetic needed. Omit version to use the newest tracked release. A symbol name can exist as more than one type, so every match is returned.',
+      'Whether a CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, mods render site, or mods element exists in a given Claude Code version, and its full record if so. A version snapshot contains only what was available at that version, so presence is availability — no first_seen arithmetic needed. Omit version to use the newest tracked release. A symbol name can exist as more than one type, so every match is returned.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -366,7 +367,7 @@ export async function handleRpc(body, deps = {}) {
         capabilities: { tools: {} },
         _meta: { 'io.modelcontextprotocol/serverInfo': SERVER_INFO },
         instructions:
-          'Answers whether a Claude Code CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, or mods render site existed at a specific version. Presence in a version snapshot IS availability at that version. Every record traces to an official Anthropic artifact.',
+          'Answers whether a Claude Code CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, mods render site, or mods element existed at a specific version. Presence in a version snapshot IS availability at that version. Every record traces to an official Anthropic artifact.',
         ttlMs: 3600000,
         cacheScope: 'public',
       };

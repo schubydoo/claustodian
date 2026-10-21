@@ -20,6 +20,21 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ### Added
 
+- **A `mod_element` symbol type, for the elements a mod draws with.** A `ui.render`
+  hook returns a tree of elements, such as `Box`, `Text` or `Button`. Each element
+  becomes one record with that name as its `symbol` and `category: "mods"`. The
+  records carry no extra fields and no description.
+
+  The binary lane reads the one object that lists, for each app, the elements it
+  can draw. That object first ships in 2.1.242. It is the whole list, so an element
+  that leaves it is removed: `div`, `span` and `b` were elements until 2.1.267. Which
+  app draws which element is not published, because it changes from release to
+  release. The docs lane reads the "Elements" table of the mods reference page.
+
+  `data/docs.json` lists one `mod_element` entry per documented element from the
+  next docs refresh. The snapshots carry no `mod_element` record until a separate
+  data PR publishes the binary observations (`data/mod-element-observations.json`).
+
 - **A `mod_render_site` symbol type, for the places a mod can draw.** A
   `ui.render` hook receives the site it is drawing as `e.component`, such as
   `AbovePrompt` or `ToolUse`. Each site becomes one record with that name as its

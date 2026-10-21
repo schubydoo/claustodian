@@ -33,6 +33,7 @@ body:
         - mod_method
         - mod_event
         - mod_render_site
+        - mod_element
         - not sure
     validations:
       required: true

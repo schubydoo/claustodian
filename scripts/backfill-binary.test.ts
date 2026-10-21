@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   distillControlObservations,
   distillDescriptions,
+  distillModElementObservations,
   distillModEventObservations,
   distillModRenderSiteObservations,
   distillModObservations,
@@ -1008,6 +1009,54 @@ describe('distillModEventObservations', () => {
     expect(obs).toEqual([
       { symbol: 'tool.call', first_seen: '2.1.242', last_seen: '2.1.242', removed_in: null },
     ]);
+  });
+});
+
+describe('distillModElementObservations', () => {
+  const el = (version: string, modElements?: string[]): BinaryCacheFile => ({
+    version,
+    symbols: [],
+    modElements,
+  });
+
+  it('dates each element and removes one at the first release after it leaves the lists', () => {
+    // div, span and b leave the lists at 2.1.267.
+    expect(
+      distillModElementObservations([
+        el('2.1.242', ['Box', 'div']),
+        el('2.1.260', ['Box', 'Button', 'div']),
+        el('2.1.267', ['Box', 'Button']),
+        el('2.1.270', ['Box', 'Button']),
+      ])
+    ).toEqual([
+      { symbol: 'Box', first_seen: '2.1.242', last_seen: '2.1.270', removed_in: null },
+      { symbol: 'Button', first_seen: '2.1.260', last_seen: '2.1.270', removed_in: null },
+      { symbol: 'div', first_seen: '2.1.242', last_seen: '2.1.260', removed_in: '2.1.267' },
+    ]);
+  });
+
+  it('skips an entry never scanned for elements', () => {
+    expect(distillModElementObservations([el('2.1.242', ['Box']), el('2.1.250')])).toEqual([
+      { symbol: 'Box', first_seen: '2.1.242', last_seen: '2.1.242', removed_in: null },
+    ]);
+  });
+
+  it('refuses --mod-elements while a cache entry predates the element lane', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-el-out-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(join(cache, '2.1.242.json'), JSON.stringify(el('2.1.242', ['Box'])));
+    await writeFile(join(cache, '2.1.250.json'), JSON.stringify(el('2.1.250')));
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const out = join(root, 'binary-observations.json');
+    expect(await main(['--cache', cache, '--out', out])).toBe(0);
+    expect(await main(['--cache', cache, '--out', out, '--mod-elements'])).toBe(1);
+    expect(existsSync(join(root, 'mod-element-observations.json'))).toBe(false);
+    await rm(join(cache, '2.1.250.json'));
+    expect(await main(['--cache', cache, '--out', out, '--mod-elements'])).toBe(0);
+    expect(existsSync(join(root, 'mod-element-observations.json'))).toBe(true);
+    logSpy.mockRestore();
+    await rm(root, { recursive: true, force: true });
   });
 });
 

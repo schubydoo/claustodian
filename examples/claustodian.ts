@@ -5,7 +5,7 @@
  * Minimal zero-dependency client for the Claustodian dataset.
  *
  * Claustodian answers: "does a Claude Code symbol (CLI flag / env var / slash
- * command / settings key / control message / mods API method / mods event / mods render site) exist in version Y,
+ * command / settings key / control message / mods API method / mods event / mods render site / mods element) exist in version Y,
  * and what did it
  * do at that version?" The data is
  * static JSON on GitHub Pages — this client just fetches it and applies the
@@ -18,7 +18,7 @@
 
 export const DEFAULT_BASE = 'https://claustodian.dev/data';
 
-// All nine values the schema's `type` enum allows. cli_flag, command, env_var and
+// All ten values the schema's `type` enum allows. cli_flag, command, env_var and
 // config_key are populated. internal_config_flag is reserved by the schema and
 // deliberately unused — internal-ness is carried by `category` (`settings-internal`),
 // because typing off a description would churn a record's identity every time
@@ -28,7 +28,8 @@ export const DEFAULT_BASE = 'https://claustodian.dev/data';
 // `$.ui.toast`. mod_event records name an event a mod passes to on(), such as
 // `tool.call`. Every mod method is also an event named without `$.`; such an event
 // has a mod_event record only when the docs also list it as an event.
-// mod_render_site records name a place a mod can draw, such as `AbovePrompt`.
+// mod_render_site records name a place a mod can draw, such as `AbovePrompt`, and
+// mod_element records an element a mod draws with, such as `Box`.
 export type SymbolType =
   | 'cli_flag'
   | 'command'
@@ -38,7 +39,8 @@ export type SymbolType =
   | 'control_message'
   | 'mod_method'
   | 'mod_event'
-  | 'mod_render_site';
+  | 'mod_render_site'
+  | 'mod_element';
 export type Status = 'active' | 'deprecated' | 'removed' | 'needs_review';
 export type Confidence = 'high' | 'medium' | 'low';
 
