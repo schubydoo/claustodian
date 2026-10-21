@@ -5277,7 +5277,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls MCP tool search. Unset or `true` defers MCP tools, except in the cases that keep tool search off. `auto` loads upfront when tool definitions fit within 10% of context. `auto:N` sets a custom threshold, such as `auto:5` for 5%. `false` loads all tools upfront. If a gateway rejects tool search, see Tool search through an LLM gateway",
+      "description": "Controls MCP tool search. Unset or `true` defers MCP tools, except in the cases that keep tool search off. `auto` turns tool search on once definitions reach 10% of the context window. `auto:N` sets a custom threshold, such as `auto:5` for 5%. `false` loads all tools upfront. If a gateway rejects tool search, see Tool search through an LLM gateway",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"

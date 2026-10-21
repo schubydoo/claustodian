@@ -5820,7 +5820,7 @@
     {
       "symbol": "ENABLE_TOOL_SEARCH",
       "type": "env_var",
-      "description": "Controls MCP tool search. Unset or `true` defers MCP tools, except in the cases that keep tool search off. `auto` loads upfront when tool definitions fit within 10% of context. `auto:N` sets a custom threshold, such as `auto:5` for 5%. `false` loads all tools upfront. If a gateway rejects tool search, see Tool search through an LLM gateway",
+      "description": "Controls MCP tool search. Unset or `true` defers MCP tools, except in the cases that keep tool search off. `auto` turns tool search on once definitions reach 10% of the context window. `auto:N` sets a custom threshold, such as `auto:5` for 5%. `false` loads all tools upfront. If a gateway rejects tool search, see Tool search through an LLM gateway",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -7136,6 +7136,111 @@
     {
       "symbol": "$.ui.toast",
       "type": "mod_method",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "AbovePrompt",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "AskUserQuestion",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "AssistantMessage",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "CommandOutput",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "InfoNotice",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Pane",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "PromptHint",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "SessionMode",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Spinner",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ToolGroup",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ToolProgress",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ToolResult",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ToolUse",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "TurnDuration",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "UserMessage",
+      "type": "mod_render_site",
       "description": "",
       "doc_min_version": null,
       "doc_page": "plugins/mods/reference"
