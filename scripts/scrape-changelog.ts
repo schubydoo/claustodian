@@ -727,6 +727,8 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
 export interface BinaryScopeWindow {
   from: string;
   scopes: readonly string[];
+  /** Scopes proved later than `from`, each with its own first version. */
+  scopeFrom?: Readonly<Record<string, string>>;
 }
 
 /**
@@ -992,8 +994,10 @@ export function assembleSnapshots(
     // trade is documented in symbol-scopes.ts — but the binary lane KNOWS when it
     // saw the parser, so discarding that would be throwing away evidence we have.
     const observed = binaryScopes?.get(`${record.type}:${record.symbol}`);
-    const proved =
-      observed && compareVersionsAsc(version, observed.from) >= 0 ? observed.scopes : undefined;
+    const live = observed?.scopes.filter(
+      (scope) => compareVersionsAsc(version, observed.scopeFrom?.[scope] ?? observed.from) >= 0
+    );
+    const proved = live && live.length > 0 ? live : undefined;
     const scopes = scopesFor(record.type, record.symbol, proved);
     if (!scopes) {
       // No scopes at this version. A scope_descriptions map cannot be validated
@@ -1859,7 +1863,11 @@ function binaryScopeMap(binary?: BinaryObservations): ReadonlyMap<string, Binary
   const out = new Map<string, BinaryScopeWindow>();
   for (const obs of binary?.symbols ?? []) {
     if (obs.scopes?.length) {
-      out.set(`${obs.type}:${obs.symbol}`, { from: obs.first_seen, scopes: obs.scopes });
+      out.set(`${obs.type}:${obs.symbol}`, {
+        from: obs.first_seen,
+        scopes: obs.scopes,
+        ...(obs.scope_first_seen ? { scopeFrom: obs.scope_first_seen } : {}),
+      });
     }
   }
   return out;

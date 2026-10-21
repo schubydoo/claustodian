@@ -224,6 +224,28 @@ describe('distillObservations', () => {
       'self-hosted-runner decode-token',
       'self-hosted-runner orchestrator',
     ]);
+    // The union is not one window: the two later scopes keep their own first version.
+    expect(distillObservations(files).symbols[0]?.scope_first_seen).toEqual({
+      'self-hosted-runner': '2.1.226',
+      'self-hosted-runner decode-token': '2.1.226',
+    });
+  });
+
+  it('omits scope_first_seen when every scope dates from first_seen', () => {
+    const files: BinaryCacheFile[] = ['2.1.226', '2.1.224'].map((version) => ({
+      version,
+      symbols: [
+        {
+          symbol: '--hooks-dir',
+          type: 'cli_flag',
+          evidence: 'argv-switch',
+          scopes: ['self-hosted-runner'],
+        },
+      ],
+    }));
+    const [obs] = distillObservations(files).symbols;
+    expect(obs?.scopes).toEqual(['self-hosted-runner']);
+    expect(obs).not.toHaveProperty('scope_first_seen');
   });
 
   it('drops scopes together with the caveat when stronger evidence appears', () => {
