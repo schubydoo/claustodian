@@ -169,7 +169,8 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       type: ExtractedSymbolType;
       versions: string[];
       strongEvidence: boolean;
-      scopes: Set<string>;
+      /** Each scope, unioned across versions, with the earliest version that proved it. */
+      scopeFrom: Map<string, string>;
       /** Versions that registered the flag as hidden, collapsed into eras below. */
       hiddenIn: Set<string>;
     }
@@ -182,27 +183,39 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       // ANY version proved it by something other than a switch-case label, so the
       // scope caveat is dropped the moment better evidence exists.
       const strong = evidence !== 'argv-switch';
-      const entry = seenIn.get(key);
+      let entry = seenIn.get(key);
       if (entry) {
         entry.versions.push(file.version);
         entry.strongEvidence ||= strong;
-        for (const s of scopes ?? []) entry.scopes.add(s);
         if (hidden) entry.hiddenIn.add(file.version);
-      } else
-        seenIn.set(key, {
+      } else {
+        entry = {
           symbol,
           type,
           versions: [file.version],
           strongEvidence: strong,
-          scopes: new Set(scopes ?? []),
+          scopeFrom: new Map(),
           hiddenIn: new Set(hidden ? [file.version] : []),
-        });
+        };
+        seenIn.set(key, entry);
+      }
+      for (const s of scopes ?? []) {
+        const from = entry.scopeFrom.get(s);
+        if (from === undefined || compareVersionsAsc(file.version, from) < 0) {
+          entry.scopeFrom.set(s, file.version);
+        }
+      }
     }
   }
 
   const symbols: BinaryObservation[] = [];
-  for (const { symbol, type, versions, strongEvidence, scopes, hiddenIn } of seenIn.values()) {
+  for (const { symbol, type, versions, strongEvidence, scopeFrom, hiddenIn } of seenIn.values()) {
     const sorted = [...versions].sort(compareVersionsAsc);
+    // A scope is evidence from the version that proved it, not from the flag's
+    // first_seen: the union alone back-dated `daemon` onto `--hooks-dir` at 2.1.224.
+    const lateScopes = [...scopeFrom]
+      .filter(([, from]) => from !== sorted[0])
+      .sort(([a], [b]) => a.localeCompare(b));
     // Visibility is a TIMELINE, not a current state. Six flags flip between
     // hidden and public across the archive (--teleport, --task-budget, --cloud,
     // --interactive, --max-budget-usd, --remote-control), so collapsing to the
@@ -232,7 +245,8 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
         ? {}
         : {
             switch_case_only: true as const,
-            ...(scopes.size ? { scopes: [...scopes].sort() } : {}),
+            ...(scopeFrom.size ? { scopes: [...scopeFrom.keys()].sort() } : {}),
+            ...(lateScopes.length ? { scope_first_seen: Object.fromEntries(lateScopes) } : {}),
           }),
     });
   }
