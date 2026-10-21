@@ -108,10 +108,10 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 - **`--hooks-dir` no longer lists `daemon` in its `scopes`.** The `daemon` scope
   came from a Windows-only check that rejects the flag. From 2.1.229 to 2.1.241 that
   check sat in the `daemon` module, and `claude daemon --help` does not list
-  `--hooks-dir`. The binary lane now ignores a case label that only throws when the
-  flag has another label. From 2.1.242 the same check had also hidden the real
-  scopes from the binary lane, so the runner and orchestrator scopes now come from
-  each release, not from the union.
+  `--hooks-dir`. If a flag has another case label, the binary lane now ignores a
+  label that only throws. From 2.1.242 the same check also hid the real scopes from
+  the binary lane. The runner and orchestrator scopes now come from each release,
+  not from the union.
 
 - **The binary lane reads env vars that Claude Code reads through a helper.** Some
   code reads a variable by passing its name to a helper, for example
