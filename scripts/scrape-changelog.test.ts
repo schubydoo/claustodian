@@ -261,6 +261,15 @@ describe('extractSymbols', () => {
     }
   });
 
+  it('drops TERM and GIT_CONFIG named in the 2.1.305 runner bullets', () => {
+    for (const bullet of [
+      'Self-hosted runner: Fixed a start script that shares only its stdout with the runner or orchestrator failing with `Resource temporarily unavailable` when `TERM` is set (a 2.1.300 regression)',
+      'Self-hosted runner: Fixed repository access failing since 2.1.296 when a git credential helper or askpass program reads its settings through `GIT_CONFIG`',
+    ]) {
+      expect(extractSymbols(bullet)).toEqual([]);
+    }
+  });
+
   it('drops the Windows system variables named in the 2.1.282 settings bullet', () => {
     const symbols = extractSymbols(
       'Windows: Changed project and local settings `env` to no longer set ' +
@@ -310,6 +319,8 @@ describe('extractSymbols', () => {
       'GIT_CONFIG_COUNT',
       'GIT_SSL_CAINFO',
       'GIT_SSL_NO_VERIFY',
+      'GIT_CONFIG',
+      'TERM',
       'PATH',
       'HOME',
       'LANG',

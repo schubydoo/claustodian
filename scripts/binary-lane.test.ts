@@ -53,8 +53,8 @@ describe('audited env lists', () => {
   // These counts are an inventory check on the human audit (scratch/audit-buckets.md).
   // If you intentionally add/remove a var in binary-lane.ts, update the number here
   // AND record the rationale in the audit doc — a mismatch means the list drifted.
-  it('promote-cc holds the 57 audited first-party toggles', () => {
-    expect(PROMOTE_CC_ENV.size).toBe(57);
+  it('promote-cc holds the 58 audited first-party toggles', () => {
+    expect(PROMOTE_CC_ENV.size).toBe(58);
   });
 
   it('needs-review holds the 35 audited ambiguous vars', () => {

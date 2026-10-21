@@ -186,7 +186,7 @@ const GENERATED_BY = 'scripts/backfill-binary.ts';
 const SOURCE = 'binary';
 
 /**
- * promote-cc (57) — unprefixed env vars that are unambiguously Claude Code's own
+ * promote-cc (58) — unprefixed env vars that are unambiguously Claude Code's own
  * feature toggles (CC branches on them); they only skip the `CLAUDE_CODE_`
  * convention. Published as `provenance:binary` / `status:needs_review` and
  * recategorized to `claude-code`. Audited in scratch/audit-buckets.md.
@@ -228,6 +228,9 @@ export const PROMOTE_CC_ENV: ReadonlySet<string> = new Set([
   'ENABLE_SESSION_PERSISTENCE',
   'ENABLE_STRUCTURED_OUTPUT',
   'ENABLE_TOOL_RESULT_SIZE_LIMIT',
+  // Documented on the env-vars page until 2.1.305, when the page dropped it while
+  // the binary kept reading it. Without this entry the record leaves the snapshot.
+  'FALLBACK_FOR_ALL_PRIMARY_MODELS',
   'FORCE_AUTO_BACKGROUND_TASKS',
   'FORCE_CODE_TERMINAL',
   'MCP_OAUTH_CLIENT_METADATA_URL',
