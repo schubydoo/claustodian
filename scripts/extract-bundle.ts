@@ -534,8 +534,8 @@ export function extractParamEnvVars(src: string): Map<string, string> {
  * first-party name gate. Publication keeps its own gate (isPublishableBinaryEnv).
  *
  * A helper is a `function NAME(p,…){…}` whose body reads `process.env[p]` for its
- * FIRST parameter, not as an assignment target. Each chunk is read in its own
- * scope, because from 2.1.242 every chunk minifies its own names: 2.1.301 has
+ * FIRST parameter, not as an assignment or `delete` target. Each chunk is read in
+ * its own scope, because from 2.1.242 every chunk minifies its own names: 2.1.301 has
  * three unrelated functions named `St`, and only one of them reads the env. A
  * call is trusted only when every definition of the name in that chunk has the
  * same text, the rule extractParamEnvVars uses. A call through an imported
@@ -559,7 +559,10 @@ export function extractNameReaderEnvVars(chunks: readonly string[]): Map<string,
       const first = splitTopLevel(chunk.slice(popen + 1, matchBracket(chunk, popen)))[0]?.trim();
       if (!first || !/^[A-Za-z_$][\w$]*$/.test(first)) continue;
       const safe = first.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const read = new RegExp('(?<![\\w$.])process\\.env\\[\\s*' + safe + '\\s*\\](?!\\s*=(?!=))');
+      // A `delete` or an assignment target removes or sets the variable, never reads it.
+      const read = new RegExp(
+        '(?<![\\w$.])(?<!\\bdelete\\s+)process\\.env\\[\\s*' + safe + '\\s*\\](?!\\s*=(?!=))'
+      );
       if (read.test(text.slice(text.indexOf('{')))) readers.add(name);
     }
     for (const m of chunk.matchAll(

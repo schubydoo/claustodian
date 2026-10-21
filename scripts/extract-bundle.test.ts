@@ -1011,6 +1011,7 @@ describe('extractNameReaderEnvVars — env vars read by name through a helper', 
 
   it('requires a read of the FIRST parameter, not a write or another parameter', () => {
     expect(names('function W(e,t){process.env[e]=t}W("WRITTEN_NAME","1")')).toEqual([]);
+    expect(names('function U(e){delete process.env[e]}U("DELETED_NAME")')).toEqual([]);
     expect(names('function S(t,e){return process.env[e]}S("SECOND_PARAM")')).toEqual([]);
     expect(names('function Z(){return process.env.HOME}Z("NO_PARAM")')).toEqual([]);
   });
