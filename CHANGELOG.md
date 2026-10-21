@@ -20,6 +20,27 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 
 ### Added
 
+- **Four more docs pages feed the docs lane.** The self-hosted runner reference,
+  the telemetry (monitoring) page, the plugin evals page and the ultrareview page.
+  From the next docs refresh, the runner, orchestrator and SCM connector flags and
+  the runner's environment variables carry the docs' descriptions, as do the OTEL
+  exporter variables and the `plugin eval` and `ultrareview` flags. Some records
+  that were `needs_review` become `active`, and the snapshots gain documented
+  variables they lacked, such as `OTEL_EXPORTER_OTLP_PROTOCOL` and
+  `SELF_HOSTED_RUNNER_SIGKILL_GRACE_MS`.
+
+### Changed
+
+- **A flag documented for only some of its subcommands keeps that text per
+  subcommand.** If a docs page that ties its sections to subcommands describes a
+  flag under some of its subcommands, and the binary shows it under another one too,
+  the docs text now appears in `scope_descriptions` for the documented subcommands,
+  and `description` is empty. Before, the text would have been the primary and so
+  answered for every subcommand. `--api-url` is the case: the docs describe it for the runner, but under
+  `self-hosted-runner decode-token` it is a different endpoint. A flag whose
+  documented subcommands cover all of its subcommands is unchanged. `--capacity`
+  now has the runner text under `self-hosted-runner`, where its default is 1, not 32.
+
 - **A `mod_element` symbol type, for the elements a mod draws with.** A `ui.render`
   hook returns a tree of elements, such as `Box`, `Text` or `Button`. Each element
   becomes one record with that name as its `symbol` and `category: "mods"`. The

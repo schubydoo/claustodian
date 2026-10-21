@@ -948,11 +948,14 @@ export const PROMOTED_BINARY_SYMBOLS: ReadonlyMap<string, BinaryPromotion> = new
   // sweep that built the other entries never reached it — but asking it directly
   // works, which is the only thing that matters for evidence.
   //
-  // Six runner flags are deliberately NOT here and stay needs_review:
+  // Six runner flags are deliberately NOT here:
   //   --api-url / --health-port / --hooks-dir  differ in meaning per invocation
   //     (`--api-url` is the JWKS endpoint under decode-token, the control plane
-  //     elsewhere), and identity is `type:symbol`, so one record cannot hold both.
-  //     Same rule extractFlagDescriptions already applies to ambiguous specs.
+  //     elsewhere), and identity is `type:symbol`, so one quote cannot hold both.
+  //     Same rule extractFlagDescriptions already applies to ambiguous specs. The
+  //     self-hosted reference page now documents all three through the docs lane:
+  //     --health-port for every scope it has, --api-url and --hooks-dir per scope
+  //     only (see withDocScopeCoverage in scrape-changelog.ts).
   //   --pool-secret-file / --drain-wait-bg-tasks-sec  appear only in prose about the
   //     flag they alias, with no entry of their own to quote.
   //   --sigkill-timeout-sec  is accepted by the parser but absent from help entirely.

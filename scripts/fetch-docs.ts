@@ -41,6 +41,10 @@ export const DOC_PAGES = [
   'settings',
   'settings-reference',
   'plugins/mods/reference',
+  'self-hosted-environments-reference',
+  'monitoring-usage',
+  'plugin-evals',
+  'ultrareview',
 ] as const;
 
 export type DocSymbolType =
@@ -95,6 +99,10 @@ export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number
   'plugins/manifest-reference': 2,
   'remote-control': 1,
   'plugins/mods/reference': 40,
+  'self-hosted-environments-reference': 25,
+  'monitoring-usage': 10,
+  'plugin-evals': 2,
+  ultrareview: 1,
 };
 
 /**
@@ -164,6 +172,14 @@ export interface DocEntry {
    * the top-level `description` stays the first-seen (primary) one.
    */
   scope_descriptions?: Record<string, string>;
+  /**
+   * The subcommands the primary `description` was documented under, for an entry
+   * from a page whose sections SECTION_SCOPES ties to subcommands. The scrape lane
+   * keeps that text as the primary only while it covers every binary-proved scope
+   * of the flag; otherwise it moves the text to `scope_descriptions` for these
+   * scopes, so no record claims a meaning the docs gave for another subcommand.
+   */
+  doc_scopes?: string[];
 }
 
 export interface DocsIndex {
@@ -642,7 +658,114 @@ function scopeFromHeading(raw: string): string | undefined {
  */
 const PAGE_SYMBOL_SECTIONS: Partial<Record<string, ReadonlySet<string>>> = {
   'env-vars': new Set(['Variables']),
+  // The flag and env-var tables only; the Prometheus metrics tables name series.
+  'self-hosted-environments-reference': new Set([
+    'Runner CLI flags',
+    'Orchestrator CLI flags',
+    'SCM connector flags',
+    'Environment-variable-only settings',
+  ]),
+  // The env-var tables only; the attribute, metric and event tables define nothing.
+  'monitoring-usage': new Set([
+    'Common configuration variables',
+    'Metrics cardinality control',
+    'Traces (beta)',
+  ]),
+  'plugin-evals': new Set(['Command options']),
+  ultrareview: new Set(['Run ultrareview non-interactively']),
 };
+
+/**
+ * Pages whose flag sections each belong to one subcommand, though their headings
+ * are prose ("Runner CLI flags") that scopeFromHeading rightly rejects. The scope
+ * is the full invocation path after `claude`, as a record carries it. An entry from
+ * such a section records the scope its description was documented under, and the
+ * winner of a key gets `doc_scopes` (see DocEntry).
+ */
+const SECTION_SCOPES: Partial<Record<string, Readonly<Record<string, string>>>> = {
+  'self-hosted-environments-reference': {
+    'Runner CLI flags': 'self-hosted-runner',
+    'Orchestrator CLI flags': 'self-hosted-runner orchestrator',
+    'SCM connector flags': 'self-hosted-runner orchestrator',
+  },
+  'plugin-evals': { 'Command options': 'plugin eval' },
+  // The server flags table. Without it, `--capacity` keeps this page's text as the
+  // primary for `self-hosted-runner` too, where the default is 1, not 32.
+  'remote-control': { 'Start a Remote Control session': 'remote-control' },
+  ultrareview: { 'Run ultrareview non-interactively': 'ultrareview' },
+};
+
+/**
+ * Flags a page documents once and then says another subcommand accepts with the
+ * same defaults, read here as the same flag with the same meaning. The self-hosted
+ * reference says, under "Orchestrator CLI flags":
+ * "The `self-hosted-runner orchestrator` subcommand … accepts `--api-url`,
+ * `--environment-secret-file`, `--hooks-dir`, `--health-port`, and `--log-level`
+ * with the same defaults as the runner". Each flag then carries its runner text for
+ * the orchestrator scope too. parseDocPage refuses the page if that paragraph no
+ * longer names every flag, so the list cannot silently go stale.
+ */
+const SCOPE_INHERITANCE: Partial<
+  Record<string, { section: string; from: string; to: string; flags: readonly string[] }>
+> = {
+  'self-hosted-environments-reference': {
+    section: 'Orchestrator CLI flags',
+    from: 'self-hosted-runner',
+    to: 'self-hosted-runner orchestrator',
+    flags: [
+      '--api-url',
+      '--environment-secret-file',
+      '--hooks-dir',
+      '--health-port',
+      '--log-level',
+    ],
+  },
+};
+
+/**
+ * The column of a table that holds the description, read from its header row. Most
+ * tables put it second, but the self-hosted reference writes `Flag | Env var |
+ * Default | Description` and plugin-evals writes `Option | Default | Effect`, so the
+ * second column there is a variable name or a default value.
+ */
+function descriptionColumn(header: readonly string[]): number {
+  const named = header.findIndex((cell) => DESCRIPTION_HEADER.test(cell));
+  return named > 0 ? named : 1;
+}
+
+const DESCRIPTION_HEADER = /^(?:description|effect)$/i;
+
+/**
+ * Throws when an allowlisted table cannot be read by column. A header wider than
+ * two cells must name its description column, or descriptionColumn would fall
+ * back to the second cell and publish an env-var name or a default as the text.
+ * A stray line inside a table makes the next data row look like a header, so it
+ * fails here too. A row shorter than its header would read the wrong cell.
+ */
+function assertReadableRow(
+  page: string,
+  section: string,
+  cells: readonly string[],
+  header: readonly string[],
+  isHeader: boolean
+): void {
+  if (
+    isHeader &&
+    header.length > 2 &&
+    !DESCRIPTION_HEADER.test(header[descriptionColumn(header)] ?? '')
+  ) {
+    throw new Error(
+      `Docs page "${page}": a table in "${section}" has the header | ${header.join(' | ')} |, ` +
+        'which names no Description or Effect column. Read the page and update descriptionColumn.'
+    );
+  }
+  if (cells.length < header.length) {
+    throw new Error(
+      `Docs page "${page}": a row in "${section}" has ${cells.length} cells under a ` +
+        `${header.length}-cell header: | ${cells.join(' | ')} |`
+    );
+  }
+}
 
 /**
  * The "Mods API methods" table of the mods reference page. Each row names a
@@ -900,9 +1023,14 @@ export function parseDocPage(
   if (page === 'plugins/mods/reference') return parseModsReferencePage(page, markdown);
   const entries: DocEntry[] = [];
   const sections = PAGE_SYMBOL_SECTIONS[page];
+  const sectionScopes = SECTION_SCOPES[page];
   let section = '';
   let scope: string | undefined;
+  let inTable = false;
+  let descIndex = 1;
+  let header: string[] = [];
   for (const line of markdown.split('\n')) {
+    if (!/^\s*\|/.test(line)) inTable = false;
     const heading = /^#{2,4}\s+(.*)$/.exec(line);
     if (heading) {
       section = (heading[1] as string).trim();
@@ -914,18 +1042,26 @@ export function parseDocPage(
       // plugins-reference puts each flag table directly under its `### plugin <x>`
       // heading, so it does fire there. Revisit with heading-depth tracking only if
       // a page starts nesting flag tables under a non-command subsection.
-      scope = scopeFromHeading(heading[1] as string);
+      scope = sectionScopes?.[section] ?? scopeFromHeading(heading[1] as string);
       continue;
     }
     if (!/^\s*\|/.test(line) || /^\s*\|\s*:?-{2,}/.test(line)) continue;
-    if (sections && !sections.has(section)) continue;
     const cells = splitTableRow(line)
       .slice(1, -1)
       .map((c) => c.trim());
+    const isHeader = !inTable;
+    if (isHeader) {
+      // The first row of a table is its header; it names the description column.
+      inTable = true;
+      header = cells;
+      descIndex = descriptionColumn(cells);
+    }
+    if (sections && !sections.has(section)) continue;
+    if (sections) assertReadableRow(page, section, cells, header, isHeader);
     if (cells.length < 2) continue;
     // length >= 2 guarantees both are present, so the casts are safe.
     const symbolCell = cells[0] as string;
-    const descCell = cells[1] as string;
+    const descCell = cells[descIndex] ?? (cells[1] as string);
 
     const syms = symbolsFromCell(symbolCell);
     if (syms.length === 0) continue;
@@ -950,7 +1086,43 @@ export function parseDocPage(
       });
     }
   }
-  return entries;
+  return [...entries, ...inheritedEntries(page, markdown, entries)];
+}
+
+/** The SCOPE_INHERITANCE copies for `page`: each named flag again, under the `to` scope. */
+function inheritedEntries(
+  page: string,
+  markdown: string,
+  entries: readonly DocEntry[]
+): DocEntry[] {
+  const rule = SCOPE_INHERITANCE[page];
+  if (!rule) return [];
+  const lines = markdown.split('\n');
+  const start = lines.findIndex((line) => line.trim() === `## ${rule.section}`);
+  const end = lines.findIndex((line, i) => i > start && /^#{2,4}\s/.test(line));
+  const prose = lines
+    .slice(start + 1, end < 0 ? undefined : end)
+    .filter((line) => !/^\s*\|/.test(line))
+    .join(' ');
+  const missing = rule.flags.filter((flag) => !prose.includes(`\`${flag}\``));
+  if (start < 0 || !prose.includes('same defaults as the runner') || missing.length > 0) {
+    throw new Error(
+      `Docs page "${page}": the "${rule.section}" section no longer says it accepts ` +
+        `${missing.length > 0 ? missing.join(', ') : 'the runner flags'} with the same defaults ` +
+        'as the runner. Read the page and update SCOPE_INHERITANCE.'
+    );
+  }
+  return rule.flags.map((flag) => {
+    const from = entries.find(
+      (e) => e.symbol === flag && e.type === 'cli_flag' && e.scope === rule.from
+    );
+    if (!from) {
+      throw new Error(
+        `Docs page "${page}": SCOPE_INHERITANCE names ${flag}, which has no "${rule.from}" row to copy.`
+      );
+    }
+    return { ...from, scope: rule.to };
+  });
 }
 
 /** Merge per-page entries, first definition wins, sorted by type then symbol. */
@@ -998,6 +1170,13 @@ export function buildDocsIndex(
   for (const [key, winner] of seen) {
     delete winner.scope;
     const variants = scopeVariants.get(key);
+    if (variants && SECTION_SCOPES[winner.doc_page]) {
+      const covered = [...variants]
+        .filter(([, text]) => text === winner.description)
+        .map(([scope]) => scope)
+        .sort();
+      if (covered.length > 0) winner.doc_scopes = covered;
+    }
     if (!variants || variants.size < 2 || new Set(variants.values()).size < 2) continue;
     winner.scope_descriptions = Object.fromEntries(
       [...variants.entries()].sort(([a], [b]) => a.localeCompare(b))
