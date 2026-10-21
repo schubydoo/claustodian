@@ -957,7 +957,8 @@ export function assembleSnapshots(
   binaryDescriptions?: BinaryDescriptions['descriptions'],
   binaryScopes?: ReadonlyMap<string, BinaryScopeWindow>,
   binaryHidden?: ReadonlyMap<string, readonly HiddenEra[]>,
-  observedVersions?: readonly string[]
+  observedVersions?: readonly string[],
+  docScopes?: ReadonlyMap<string, readonly string[]>
 ): VersionSnapshot[] {
   const versionsOldestFirst = blocks
     .map((block) => block.version)
@@ -1013,7 +1014,7 @@ export function assembleSnapshots(
       if (Object.keys(filtered).length > 0) next.scope_descriptions = filtered;
       else delete next.scope_descriptions;
     }
-    return next;
+    return withDocScopeCoverage(next, scopes, docScopes?.get(`${record.type}:${record.symbol}`));
   };
 
   /** Same record unless the category actually differs — keeps snapshots stable. */
@@ -1217,6 +1218,41 @@ export function buildSnapshots(blocks: ChangelogBlock[]): VersionSnapshot[] {
     (collected) => collected.record
   );
   return assembleSnapshots(records, blocks);
+}
+
+/**
+ * Keeps a docs description as the primary only while the subcommands the docs gave
+ * it for cover every scope the flag has at this version. The schema makes the
+ * primary `description` the answer for any scope without its own override, so a
+ * primary documented for the runner would otherwise also describe, say, the
+ * `self-hosted-runner decode-token` `--api-url`, which is a different endpoint. When
+ * a scope is uncovered, the text moves to `scope_descriptions` for the scopes it was
+ * documented under (an override already there wins), and the primary is emptied.
+ *
+ * `covered` comes from a docs entry's `doc_scopes`, which only pages that tie their
+ * sections to subcommands set. A description that is not the docs text at this
+ * version (a binary era, a changelog bullet) is left alone.
+ */
+export function withDocScopeCoverage(
+  record: SymbolRecord,
+  scopes: readonly string[],
+  covered: readonly string[] | undefined
+): SymbolRecord {
+  if (!covered || record.description_source !== 'docs' || record.description === '') return record;
+  const overridden = new Set(Object.keys(record.scope_descriptions ?? {}));
+  if (scopes.every((scope) => covered.includes(scope) || overridden.has(scope))) return record;
+  const moved = Object.fromEntries(
+    covered.filter((scope) => scopes.includes(scope)).map((scope) => [scope, record.description])
+  );
+  const scopeDescriptions = { ...moved, ...record.scope_descriptions };
+  const next: SymbolRecord = { ...record, description: '' };
+  delete next.description_source;
+  if (Object.keys(scopeDescriptions).length > 0) {
+    next.scope_descriptions = Object.fromEntries(
+      Object.entries(scopeDescriptions).sort(([a], [b]) => a.localeCompare(b))
+    );
+  } else delete next.scope_descriptions;
+  return next;
 }
 
 /** Canonical key order + omits the optional fields when they don't apply. */
@@ -1656,7 +1692,12 @@ export function buildEnrichedSnapshots(
     binaryDescriptions,
     binaryScopeMap(binary),
     binaryHiddenMap(binary),
-    binary?.observedVersions
+    binary?.observedVersions,
+    new Map(
+      docs.symbols.flatMap((entry) =>
+        entry.doc_scopes ? [[`${entry.type}:${entry.symbol}`, entry.doc_scopes] as const] : []
+      )
+    )
   );
 
   // Control records join at SNAPSHOT level, not in the flat record list the other

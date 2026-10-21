@@ -69,8 +69,34 @@ function mockPageBody(url: string): string {
     return `--${page.replace('/', '-')}-mock-${i}`;
   };
   const table = rows.map((i) => `| \`${cell(i)}\` | A mocked symbol |`).join('\n');
-  // env-vars publishes only from its "Variables" section.
-  return page === 'env-vars' ? `## Variables\n\n${table}` : table;
+  if (page === 'self-hosted-environments-reference') {
+    // The runner section, plus the orchestrator paragraph SCOPE_INHERITANCE reads
+    // and a runner row for each flag it names.
+    const inherited = [
+      '--api-url',
+      '--environment-secret-file',
+      '--hooks-dir',
+      '--health-port',
+      '--log-level',
+    ];
+    return [
+      '## Runner CLI flags',
+      '| Flag | Description |',
+      '| :- | :- |',
+      table,
+      ...inherited.map((flag) => `| \`${flag}\` | A mocked runner flag |`),
+      '## Orchestrator CLI flags',
+      `It accepts ${inherited.map((f) => `\`${f}\``).join(', ')} with the same defaults as the runner.`,
+    ].join('\n');
+  }
+  // These pages publish only from an allowlisted section; the first one will do.
+  const section = {
+    'env-vars': 'Variables',
+    'monitoring-usage': 'Common configuration variables',
+    'plugin-evals': 'Command options',
+    ultrareview: 'Run ultrareview non-interactively',
+  }[page];
+  return section ? `## ${section}\n\n${table}` : table;
 }
 
 describe('symbolFromCell', () => {
@@ -1366,5 +1392,155 @@ describe('parseDocPage — mods reference elements', () => {
     expect(() => elements(second.join('\n'))).toThrow(/second Element table/);
     const odd = ELEMENTS.map((l) => (l.startsWith('| `Svg`') ? '| `Svg` (or `Box`) | x | |' : l));
     expect(() => elements(odd.join('\n'))).toThrow(/other than an element name/);
+  });
+});
+
+describe('parseDocPage — subcommand-scoped reference pages', () => {
+  const RUNNER = [
+    '## Runner CLI flags',
+    '| Flag | Env var | Default | Description |',
+    '| :- | :- | :- | :- |',
+    '| `--api-url <url>` | none | `https://api.anthropic.com` | API base URL. Override only for testing. |',
+    '| `--health-port <port>` | `SELF_HOSTED_RUNNER_HEALTH_PORT` | `8080` | Port for the `/healthz` listener. |',
+    '| `--base-dir <path>` | `SELF_HOSTED_RUNNER_BASE_DIR` | unset | Directory for repository checkouts. |',
+    '## Orchestrator CLI flags',
+    'The `self-hosted-runner orchestrator` subcommand accepts `--api-url`, `--environment-secret-file`, `--hooks-dir`, `--health-port`, and `--log-level` with the same defaults as the runner.',
+    '| Flag | Default | Description |',
+    '| :- | :- | :- |',
+    '| `--min-idle <n>` | `0` | Keep at least N idle session slots free. |',
+    '## Prometheus metrics',
+    '| Series | Notes |',
+    '| :- | :- |',
+    '| `--not-a-flag` | A metric series |',
+  ];
+  // The other two inherited flags need runner rows of their own.
+  const page = (lines = RUNNER) =>
+    [
+      ...lines.slice(0, 6),
+      '| `--environment-secret-file <path>` | none | unset | Path to the environment secret. |',
+      '| `--hooks-dir <path>` | none | unset | Directory of lifecycle hook scripts. |',
+      '| `--log-level <level>` | none | `info` | `info` or `debug` |',
+      ...lines.slice(6),
+    ].join('\n');
+  const index = (markdown: string) =>
+    buildDocsIndex([{ page: 'self-hosted-environments-reference', markdown }]).symbols;
+  const entry = (markdown: string, symbol: string) =>
+    index(markdown).find((e) => e.symbol === symbol);
+
+  it('reads the description column by its header, not by position', () => {
+    expect(entry(page(), '--base-dir')?.description).toBe('Directory for repository checkouts.');
+    const evals = [
+      '## Command options',
+      '| Option | Default | Effect |',
+      '| :- | :- | :- |',
+      '| `--keep-temp` | off | Keep every run sandbox |',
+    ].join('\n');
+    expect(parseDocPage('plugin-evals', evals)[0]?.description).toBe('Keep every run sandbox');
+  });
+
+  it('records the scopes a description covers, the inherited ones included', () => {
+    expect(entry(page(), '--base-dir')?.doc_scopes).toEqual(['self-hosted-runner']);
+    expect(entry(page(), '--min-idle')?.doc_scopes).toEqual(['self-hosted-runner orchestrator']);
+    // Named in the orchestrator paragraph: the runner text covers both scopes.
+    expect(entry(page(), '--api-url')?.doc_scopes).toEqual([
+      'self-hosted-runner',
+      'self-hosted-runner orchestrator',
+    ]);
+    // `scope` is internal and never reaches docs.json.
+    expect(entry(page(), '--api-url')).not.toHaveProperty('scope');
+  });
+
+  it('reads the Env var column as env vars with the row description', () => {
+    expect(entry(page(), 'SELF_HOSTED_RUNNER_HEALTH_PORT')).toMatchObject({
+      type: 'env_var',
+      description: 'Port for the `/healthz` listener.',
+      doc_page: 'self-hosted-environments-reference',
+    });
+    expect(entry(page(), 'SELF_HOSTED_RUNNER_BASE_DIR')?.description).toBe(
+      'Directory for repository checkouts.'
+    );
+    // A flag row still yields the flag, and "none" yields no env var.
+    expect(entry(page(), '--health-port')?.type).toBe('cli_flag');
+    expect(index(page()).filter((e) => e.type === 'env_var')).toHaveLength(2);
+  });
+
+  it('reads only the allowlisted sections', () => {
+    expect(entry(page(), '--not-a-flag')).toBeUndefined();
+  });
+
+  it('refuses the page when the orchestrator paragraph drops "same defaults"', () => {
+    const changed = RUNNER.map((line) =>
+      line.replace('with the same defaults as the runner', 'too')
+    );
+    expect(() => index(page(changed))).toThrow(/accepts the runner flags with the same defaults/);
+  });
+
+  it('refuses an inherited flag that has no runner row to copy', () => {
+    const md = page().replace(/^\| `--log-level.*$/m, '');
+    expect(() => index(md)).toThrow(/names --log-level, which has no "self-hosted-runner" row/);
+  });
+
+  it('falls back to the second cell for a short row on a page without an allowlist', () => {
+    const md =
+      '## Flags\n| Flag | Default | Description |\n| :- | :- | :- |\n| `--short` | Short row text |';
+    expect(parseDocPage('plugins/cli-reference', md)[0]?.description).toBe('Short row text');
+    // A short row with no Env var cell yields only the flag.
+    const env =
+      '## Flags\n| Flag | Description | Env var |\n| :- | :- | :- |\n| `--short` | Short row text |';
+    expect(parseDocPage('plugins/cli-reference', env).map((e) => e.symbol)).toEqual(['--short']);
+  });
+
+  it('refuses a table it cannot read by column', () => {
+    // A renamed header would otherwise publish the Env var cell as the text.
+    const renamed = RUNNER.map((line) =>
+      line.replace('| Default | Description |', '| Default | Details |')
+    );
+    expect(() => index(page(renamed))).toThrow(/names no Description or Effect column/);
+    // A stray line makes the next data row read as a header with no named column.
+    const stray = [...RUNNER.slice(0, 4), 'A note inside the table.', ...RUNNER.slice(4)];
+    expect(() => index(page(stray))).toThrow(/names no Description or Effect column/);
+    // A row that lost its last cell would read the Default cell.
+    const short = RUNNER.map((line) =>
+      line.startsWith('| `--base-dir') ? '| `--base-dir <path>` | none | unset |' : line
+    );
+    expect(() => index(page(short))).toThrow(/has 3 cells under a 4-cell header/);
+  });
+
+  it('refuses the page when the orchestrator paragraph stops naming an inherited flag', () => {
+    const changed = RUNNER.map((line) => line.replace('`--hooks-dir`, ', ''));
+    expect(() => index(page(changed))).toThrow(/--hooks-dir with the same defaults/);
+  });
+
+  it('keeps the runner text for a flag an earlier page wins', () => {
+    const rc = [
+      '## Start a Remote Control session',
+      '| Flag | Description |',
+      '| - | - |',
+      '| `--capacity <N>` | Maximum number of concurrent sessions. Default is 32. |',
+    ].join('\n');
+    const runner = page([
+      ...RUNNER.slice(0, 6),
+      '| `--capacity <n>` | none | `1` | Maximum concurrent sessions this runner handles. |',
+      ...RUNNER.slice(6),
+    ]);
+    const capacity = buildDocsIndex([
+      { page: 'remote-control', markdown: rc },
+      { page: 'self-hosted-environments-reference', markdown: runner },
+    ]).symbols.find((e) => e.symbol === '--capacity');
+    expect(capacity).toMatchObject({
+      description: 'Maximum number of concurrent sessions. Default is 32.',
+      doc_page: 'remote-control',
+      doc_scopes: ['remote-control'],
+      scope_descriptions: {
+        'remote-control': 'Maximum number of concurrent sessions. Default is 32.',
+        'self-hosted-runner': 'Maximum concurrent sessions this runner handles.',
+      },
+    });
+  });
+
+  it('sets no doc_scopes on a page without section scopes', () => {
+    const md = '## plugin init\n| Flag | Description |\n| :- | :- |\n| `--force` | Overwrite it |';
+    const winner = buildDocsIndex([{ page: 'plugins/cli-reference', markdown: md }]).symbols[0];
+    expect(winner?.doc_scopes).toBeUndefined();
   });
 });

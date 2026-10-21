@@ -78,8 +78,10 @@ interface SymbolFields {
    * Per-scope description overrides for a flag whose meaning differs by
    * subcommand — e.g. `--force` means "overwrite the .claude-plugin dir" under
    * `plugin init` but "tag despite a dirty tree" under `plugin tag`. Keys are a
-   * subset of `scopes`; read `scope_descriptions[scope] ?? description`. Absent
-   * (as on most flags) means the single `description` applies to every scope.
+   * subset of `scopes`; read `scope_descriptions[scope] ?? description`. A flag
+   * documented for only some of its subcommands has an empty `description` and its
+   * docs text here, e.g. `--api-url`. Absent (as on most flags) means the single
+   * `description` applies to every scope.
    */
   scope_descriptions?: Record<string, string>;
 }

@@ -8,6 +8,7 @@ import { buildAjv, getValidator } from './validate-schema.js';
 import { rm, writeFile } from 'node:fs/promises';
 
 import {
+  withDocScopeCoverage,
   assertCanonicalSourcesForCommittedData,
   assertNonEmptyDocs,
   buildEnrichedSnapshots,
@@ -2961,5 +2962,112 @@ describe('mod_element records', () => {
   it('publishes no mod_element from any lane until its observation file exists', () => {
     expect(at(run(docs([elDoc('Box')])), '2.1.300')).toEqual([]);
     expect(at(run(docs([elDoc('Box')]), []), '2.1.300')).toEqual([]);
+  });
+});
+
+describe('withDocScopeCoverage', () => {
+  const flag = (over: Partial<SymbolRecord> = {}): SymbolRecord => ({
+    symbol: '--api-url',
+    type: 'cli_flag',
+    first_seen: '2.1.224',
+    removed_in: null,
+    status: 'active',
+    provenance: 'docs',
+    confidence: 'high',
+    description: 'API base URL. Override only for testing.',
+    description_source: 'docs',
+    source_url: 'https://code.claude.com/docs/en/self-hosted-environments-reference.md',
+    category: 'cli',
+    ...over,
+  });
+  const RUNNER = ['self-hosted-runner', 'self-hosted-runner orchestrator'];
+
+  it('keeps the primary while the documented scopes cover every scope', () => {
+    expect(withDocScopeCoverage(flag(), RUNNER, RUNNER)).toEqual(flag());
+  });
+
+  it('empties the primary with no map when no documented scope is live', () => {
+    const out = withDocScopeCoverage(flag(), ['daemon'], RUNNER);
+    expect(out.description).toBe('');
+    expect(out).not.toHaveProperty('scope_descriptions');
+  });
+
+  it('moves the text to the covered scopes when one scope is uncovered', () => {
+    // `--api-url` is the JWKS endpoint under decode-token, which the page does not cover.
+    const out = withDocScopeCoverage(
+      flag(),
+      [...RUNNER, 'self-hosted-runner decode-token'],
+      RUNNER
+    );
+    expect(out.description).toBe('');
+    expect(out.description_source).toBeUndefined();
+    expect(out.scope_descriptions).toEqual({
+      'self-hosted-runner': 'API base URL. Override only for testing.',
+      'self-hosted-runner orchestrator': 'API base URL. Override only for testing.',
+    });
+  });
+
+  it('counts a scope with its own override as covered, and lets an override win', () => {
+    const withOverride = flag({ scope_descriptions: { daemon: 'Daemon hook dir' } });
+    expect(withDocScopeCoverage(withOverride, ['daemon', ...RUNNER], RUNNER)).toEqual(withOverride);
+    const partial = flag({ scope_descriptions: { 'self-hosted-runner': 'Runner text' } });
+    const out = withDocScopeCoverage(partial, ['daemon', ...RUNNER], RUNNER);
+    expect(out.scope_descriptions?.['self-hosted-runner']).toBe('Runner text');
+  });
+
+  it('leaves a description that is not the docs text alone, and a record without doc_scopes', () => {
+    const binary = flag({ description_source: 'binary' });
+    expect(withDocScopeCoverage(binary, ['daemon', ...RUNNER], RUNNER)).toEqual(binary);
+    expect(withDocScopeCoverage(flag(), ['daemon'], undefined)).toEqual(flag());
+  });
+
+  it('applies through a snapshot build, at the versions the binary proves the extra scope', () => {
+    const blocks = parseChangelog(
+      '## 2.1.300\n\n- Fixed a crash\n\n## 2.1.250\n\n- Fixed a crash\n\n## 2.1.200\n\n- Added `--api-url`\n'
+    );
+    const docs: DocsIndex = {
+      $generated_by: 'scripts/fetch-docs.ts',
+      source_pages: [],
+      symbols: [
+        {
+          symbol: '--api-url',
+          type: 'cli_flag',
+          description: 'API base URL. Override only for testing.',
+          doc_min_version: null,
+          doc_page: 'self-hosted-environments-reference',
+          doc_scopes: ['self-hosted-runner'],
+        },
+      ],
+    };
+    const binary: BinaryObservations = {
+      $generated_by: 'scripts/backfill-binary.ts',
+      source: 'binary',
+      note: '',
+      observedVersions: ['2.1.250', '2.1.300'],
+      symbols: [
+        {
+          symbol: '--api-url',
+          type: 'cli_flag',
+          first_seen: '2.1.250',
+          last_seen: '2.1.300',
+          removed_in: null,
+          scopes: ['self-hosted-runner', 'self-hosted-runner decode-token'],
+        },
+      ],
+    };
+    const at = (version: string) =>
+      buildEnrichedSnapshots(blocks, docs, binary)
+        .find((s) => s.version === version)
+        ?.symbols.find((r) => r.symbol === '--api-url');
+    // Before 2.1.250 the binary proves no scope, so nothing is uncovered and the
+    // docs text stays the primary.
+    expect(at('2.1.200')).toMatchObject({
+      description: 'API base URL. Override only for testing.',
+    });
+    expect(at('2.1.200')?.scope_descriptions).toBeUndefined();
+    expect(at('2.1.300')).toMatchObject({
+      description: '',
+      scope_descriptions: { 'self-hosted-runner': 'API base URL. Override only for testing.' },
+    });
   });
 });
