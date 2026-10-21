@@ -86,6 +86,16 @@ function moduleIndexAt(headers: readonly number[], offset: number): number {
  * `claude` invocation). Scoping it to decode-token would publish that
  * `claude --help` does not work. The unscoped occurrence disqualifies it.
  *
+ * A label whose case body only THROWS rejects the flag, so it is no evidence that
+ * the module accepts it. It counts only when the flag has no other label. The
+ * Windows check `switch(e){case"--hooks-dir":throw Error("--hooks-dir is not
+ * supported on Windows…")}` is the case: from 2.1.229 to 2.1.241 it sat in the
+ * `daemon` module and gave `--hooks-dir` a `daemon` scope that `claude daemon
+ * --help` does not list, and from 2.1.242 it is its own banner-less chunk and
+ * dropped the real runner scopes. Ignoring a rejection can never hide an
+ * acceptance, so the completeness guard still holds. `--sigkill-timeout-sec`,
+ * whose only label throws "was renamed", keeps the runner scope it had.
+ *
  * Returns an empty map for every release before 2.1.224, and for the npm-bundle
  * era whose few modules carry no banners at all — absence yields no scope, which
  * leaves those flags withheld exactly as they are today.
@@ -104,6 +114,7 @@ export function extractSwitchCaseScopes(input: string | readonly string[]): Map<
 
   const bannersByModule = new Map<string, Set<string>>();
   const modulesByFlag = new Map<string, Set<string | null>>();
+  const rejectingByFlag = new Map<string, Set<string | null>>();
 
   chunks.forEach((chunk, ci) => {
     const headers: number[] = [];
@@ -127,12 +138,20 @@ export function extractSwitchCaseScopes(input: string | readonly string[]): Map<
     }
     for (const m of chunk.matchAll(CASE_LABEL)) {
       // CASE_LABEL group 2 is non-optional, so a match always populates it.
-      let set = modulesByFlag.get(m[2]!);
-      if (!set) modulesByFlag.set(m[2]!, (set = new Set()));
+      const rejects = /^\s*throw\b/.test(
+        chunk.slice(m.index + m[0].length, m.index + m[0].length + 16)
+      );
+      const byFlag = rejects ? rejectingByFlag : modulesByFlag;
+      let set = byFlag.get(m[2]!);
+      if (!set) byFlag.set(m[2]!, (set = new Set()));
       set.add(keyFor(m.index));
     }
   });
 
+  // A flag only ever rejected keeps its rejecting labels as its evidence.
+  for (const [flag, modules] of rejectingByFlag) {
+    if (!modulesByFlag.has(flag)) modulesByFlag.set(flag, modules);
+  }
   const out = new Map<string, string[]>();
   for (const [flag, modules] of modulesByFlag) {
     const scopes = new Set<string>();

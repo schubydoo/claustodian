@@ -198,6 +198,33 @@ describe('extractSwitchCaseScopes — code-split era (2.1.242+)', () => {
     expect(extractSwitchCaseScopes(chunks).has('--force')).toBe(false);
   });
 
+  it('ignores a label that only rejects the flag when another label accepts it', () => {
+    // The Windows check that throws for `--hooks-dir`. It is a case label, but it
+    // rejects the flag, so neither its bannerless chunk nor a banner beside it is a
+    // scope. Before 2.1.242 it sat in the `daemon` module and invented that scope.
+    const rejects =
+      'function G(e,n="linux"){if(n!=="win32")return;switch(e){case"--hooks-dir":throw Error("--hooks-dir is not supported on Windows")}}';
+    const runner = [
+      chunk('self-hosted-runner', ['--hooks-dir']),
+      chunk('self-hosted-runner orchestrator', ['--hooks-dir']),
+    ];
+    const both = ['self-hosted-runner', 'self-hosted-runner orchestrator'];
+    expect(extractSwitchCaseScopes([...runner, rejects]).get('--hooks-dir')).toEqual(both);
+    expect(
+      extractSwitchCaseScopes([...runner, banner('daemon') + rejects]).get('--hooks-dir')
+    ).toEqual(both);
+  });
+
+  it('keeps a rejecting label as the evidence when it is the flag’s only label', () => {
+    // `--sigkill-timeout-sec` only throws "was renamed", inside the runner parser.
+    const renamed =
+      banner('self-hosted-runner') +
+      'switch(o){case"--sigkill-timeout-sec":throw Error("--sigkill-timeout-sec was renamed")}';
+    expect(extractSwitchCaseScopes([renamed]).get('--sigkill-timeout-sec')).toEqual([
+      'self-hosted-runner',
+    ]);
+  });
+
   it('keeps preamble handling for a multi-module chunk (the single-bundle era)', () => {
     // A string with headers is still the one pre-split bundle: a parser BEFORE the
     // first header sits in preamble, not a module, so it stays unscoped.
