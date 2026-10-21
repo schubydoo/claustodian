@@ -465,12 +465,17 @@ const FUNCTION_TYPES = new Set([
   'ArrowFunctionExpression',
 ]);
 
-/** True when a function body declares `name` with `var` or a function declaration. */
+/**
+ * True when a function body declares `name` with `var` or a function declaration.
+ * The search stops at a nested function and at a class static block, because
+ * each is its own `var` scope.
+ */
 function hoistsName(node: unknown, name: string): boolean {
   if (Array.isArray(node)) return node.some((n) => hoistsName(n, name));
   if (!isNode(node)) return false;
   if (FUNCTION_TYPES.has(node.type))
     return node.type === 'FunctionDeclaration' && patternBinds(node.id, name);
+  if (node.type === 'StaticBlock') return false;
   if (node.type === 'VariableDeclaration' && node.kind === 'var' && patternBinds(node, name))
     return true;
   return Object.entries(node).some(
@@ -495,12 +500,13 @@ function blockBinds(statements: unknown, name: string): boolean {
  * for exactly its own extent. oxc-parser resolves this, because the regular
  * expressions it replaces got property keys, default values and arrow bodies wrong.
  *
- * Returns undefined when the text does not parse. matchBracket finds the extent
- * and does not read comments, so in unminified bundled code an apostrophe in a
- * comment can end the text early (`getColorDepth` from supports-color, 2.1.113).
- * The caller then keeps every candidate read, as it did before this check.
+ * Returns undefined when the text does not parse, and the caller then takes no
+ * read from it: text that cannot be resolved proves nothing. matchBracket finds
+ * the extent and does not read comments, so in unminified bundled code an
+ * apostrophe in a comment can end the text early (`getColorDepth` from
+ * supports-color, 2.1.113). A 12-version subset re-extract loses no symbol to this.
  */
-function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
+function outerParamRefs(fnText: string, name: string, shift = 0): Set<number> | undefined {
   const parsed = parseSync('fn.js', `(${fnText})`) as unknown as {
     program: { body: AstNode[] };
     errors: unknown[];
@@ -510,6 +516,9 @@ function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
   const wrapped = isNode(statement) ? statement.expression : undefined;
   const fn = isNode(wrapped) ? wrapped.expression : undefined;
   if (parsed.errors.length > 0 || !isNode(fn) || !FUNCTION_TYPES.has(fn.type)) return undefined;
+  // The name must be one of this function's own parameters. A name taken from a
+  // default nested inside a parameter is some other binding.
+  if (!(fn.params as unknown[]).some((p) => patternBinds(p, name))) return undefined;
   const refs = new Set<number>();
   const walk = (node: unknown, hidden: boolean): void => {
     if (Array.isArray(node)) {
@@ -519,8 +528,8 @@ function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
     if (!isNode(node)) return;
     switch (node.type) {
       case 'Identifier':
-        // The wrapping `(` shifts every offset by one.
-        if (!hidden && node.name === name) refs.add(node.start - 1);
+        // The wrapping `(` shifts every offset by one, and an `async ` prefix by `shift`.
+        if (!hidden && node.name === name) refs.add(node.start - 1 - shift);
         return;
       case 'MemberExpression':
         walk(node.object, hidden);
@@ -534,8 +543,27 @@ function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
         walk(node.body, hidden || patternBinds(node.param, name));
         return;
       case 'BlockStatement':
-      case 'StaticBlock':
         walk(node.body, hidden || blockBinds(node.body, name));
+        return;
+      case 'SwitchStatement': {
+        // All cases share one lexical scope, which the discriminant is outside of.
+        walk(node.discriminant, hidden);
+        const statements = (node.cases as AstNode[]).flatMap((c) => c.consequent as AstNode[]);
+        const inner = hidden || blockBinds(statements, name);
+        for (const c of node.cases as AstNode[]) {
+          walk(c.test, inner);
+          walk(c.consequent, inner);
+        }
+        return;
+      }
+      case 'ClassExpression':
+        // A named class expression binds its name over the whole class.
+        for (const [key, value] of Object.entries(node))
+          if (key !== 'type') walk(value, hidden || patternBinds(node.id, name));
+        return;
+      case 'StaticBlock':
+        // A static block is a var scope as well as a block.
+        walk(node.body, hidden || blockBinds(node.body, name) || hoistsName(node.body, name));
         return;
       case 'ForStatement':
       case 'ForInStatement':
@@ -548,13 +576,14 @@ function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
       }
     }
     if (FUNCTION_TYPES.has(node.type) && node !== fn) {
-      const inner =
+      // Defaults run before the body exists, so a `var` in the body hides the
+      // name only in the body.
+      const inParams =
         hidden ||
         (node.type === 'FunctionExpression' && patternBinds(node.id, name)) ||
-        (node.params as unknown[]).some((p) => patternBinds(p, name)) ||
-        hoistsName(node.body, name);
-      walk(node.params, inner);
-      walk(node.body, inner);
+        (node.params as unknown[]).some((p) => patternBinds(p, name));
+      walk(node.params, inParams);
+      walk(node.body, inParams || hoistsName(node.body, name));
       return;
     }
     if (node === fn) {
@@ -663,8 +692,19 @@ export function extractParamEnvVars(src: string): Map<string, string> {
       let refs: Set<number> | undefined | null = null;
       for (const r of body.matchAll(re)) {
         // Offsets in the function text: `body` starts just inside its brace.
-        if (refs === null) refs = outerParamRefs(src.slice(m.index as number, bend + 1), bind.name);
-        if (refs && !refs.has(bi + 1 - (m.index as number) + (r.index as number))) continue;
+        // `async` sits before the `function` keyword. Without it, `await` does not parse.
+        const asyncPrefix = /\basync\s+$/.test(
+          src.slice(Math.max(0, (m.index as number) - 8), m.index as number)
+        );
+        if (refs === null) {
+          const fnText = src.slice(m.index as number, bend + 1);
+          refs = outerParamRefs(
+            asyncPrefix ? `async ${fnText}` : fnText,
+            bind.name,
+            asyncPrefix ? 6 : 0
+          );
+        }
+        if (!refs || !refs.has(bi + 1 - (m.index as number) + (r.index as number))) continue;
         const name = r[1] as string;
         if (SYMBOL_DENYLIST.has(name)) continue;
         const category = categorize(name, 'env_var');

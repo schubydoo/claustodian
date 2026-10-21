@@ -872,9 +872,16 @@ describe('extractParamEnvVars — env vars read through a param bound to process
     // Text inside a string is not a read.
     const str = 'function k(e){return"e.CLAUDE_CODE_IN_STRING"}k(process.env);';
     expect(names(str)).toEqual([]);
-    // Text that does not parse keeps every candidate read, as before the check.
+    // An async helper keeps its `async`, so `await` parses and the check runs.
+    const awaits =
+      'async function a(e){await w();return[{}].map(e=>e.CLAUDE_CODE_ASYNC_ITEM)}a(process.env);';
+    expect(names(awaits)).toEqual([]);
+    // A name from a default nested in a parameter is not the function's own parameter.
+    const nestedDefault = 'function n(t=(n=process.env)=>1){return n.CLAUDE_CODE_FREE_NAME}';
+    expect(names(nestedDefault)).toEqual([]);
+    // Text that does not parse proves nothing, so no read is taken from it.
     const bad = 'function b(e){return e.CLAUDE_CODE_UNPARSED @}b(process.env);';
-    expect(names(bad)).toEqual(['CLAUDE_CODE_UNPARSED']);
+    expect(names(bad)).toEqual([]);
   });
 
   it.each([
@@ -900,6 +907,16 @@ describe('extractParamEnvVars — env vars read through a param bound to process
     ['return x[e.CLAUDE_CODE_T]', true],
     ['return{[e.CLAUDE_CODE_T]:1}', true],
     ['return{e:e.CLAUDE_CODE_T}', true],
+    ['return function g(x=e.CLAUDE_CODE_T){var e;return x}', true],
+    ['switch(1){case 1:let e={};return e.CLAUDE_CODE_T}', false],
+    ['switch(1){case 1:function e(){}default:return e.CLAUDE_CODE_T}', false],
+    ['switch(e.CLAUDE_CODE_T){case 1:let e=1}', true],
+    ['switch(1){case 1:return e.CLAUDE_CODE_T}', true],
+    ['return class e{static x=e.CLAUDE_CODE_T}', false],
+    ['return class{static x=e.CLAUDE_CODE_T}', true],
+    ['return function g(e=1){return e.CLAUDE_CODE_T}', false],
+    ['return()=>{class C{static{var e=1}}return e.CLAUDE_CODE_T}', true],
+    ['class C{static{var e=1;e.CLAUDE_CODE_T}}', false],
   ])('resolves %s to the outer parameter: %s', (body, outer) => {
     expect(names(`function f(e){${body}}f(process.env);`)).toEqual(outer ? ['CLAUDE_CODE_T'] : []);
   });
