@@ -1685,11 +1685,20 @@ function withModEventObservations(
   const methodEvents = asEvents.filter(
     (obs) => documented.has(obs.symbol) && !literal.has(obs.symbol)
   );
+  // A literal event whose name is also a method existed as an event from the method's
+  // first sighting too, so it keeps the earlier of the two dates.
+  const methodFirstSeen = new Map(asEvents.map((obs) => [obs.symbol, obs.first_seen]));
+  const literalEvents = events.map((obs) => {
+    const method = methodFirstSeen.get(obs.symbol);
+    return method !== undefined && compareVersionsAsc(method, obs.first_seen) < 0
+      ? { ...obs, first_seen: method }
+      : obs;
+  });
   return {
     ...binary,
     symbols: [
       ...binary.symbols,
-      ...[...events, ...methodEvents].map((obs) => ({
+      ...[...literalEvents, ...methodEvents].map((obs) => ({
         symbol: obs.symbol,
         type: 'mod_event' as const,
         first_seen: obs.first_seen,

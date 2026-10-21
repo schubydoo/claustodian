@@ -2809,6 +2809,12 @@ describe('mod_event records', () => {
     expect(close).toMatchObject({ first_seen: '2.1.242', removed_in: null });
   });
 
+  it('dates a literal event from its method when the method was seen first', () => {
+    // `$.ui.close` from 2.1.250; the literal `ui.close` only from 2.1.300.
+    const records = latest(snapshotsWith(docs([]), [obs('tool.call'), obs('ui.close', '2.1.300')]));
+    expect(records.find((r) => r.symbol === 'ui.close')?.first_seen).toBe('2.1.250');
+  });
+
   it('publishes no mod_event from any lane until its observation file exists', () => {
     expect(latest(snapshotsWith(docs([eventDoc('tool.call')])))).toEqual([]);
     // An empty file is a broken one past the floor, so the gate stays closed.
