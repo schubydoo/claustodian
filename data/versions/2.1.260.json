@@ -1493,18 +1493,14 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "",
+      "description": "Directory of lifecycle hook scripts. See Lifecycle hooks.",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "cli",
       "scopes": [
-        "daemon",
         "self-hosted-runner",
         "self-hosted-runner orchestrator"
-      ],
-      "scope_descriptions": {
-        "self-hosted-runner": "Directory of lifecycle hook scripts. See Lifecycle hooks.",
-        "self-hosted-runner orchestrator": "Directory of lifecycle hook scripts. See Lifecycle hooks."
-      }
+      ]
     },
     {
       "symbol": "--host",

@@ -1668,13 +1668,9 @@
       "removed_in": null,
       "switch_case_only": true,
       "scopes": [
-        "daemon",
         "self-hosted-runner",
         "self-hosted-runner orchestrator"
-      ],
-      "scope_first_seen": {
-        "daemon": "2.1.229"
-      }
+      ]
     },
     {
       "symbol": "--host",
