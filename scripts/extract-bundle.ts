@@ -558,7 +558,7 @@ export function extractNameReaderEnvVars(chunks: readonly string[]): Map<string,
       if (text === undefined) continue;
       const first = splitTopLevel(chunk.slice(popen + 1, matchBracket(chunk, popen)))[0]?.trim();
       if (!first || !/^[A-Za-z_$][\w$]*$/.test(first)) continue;
-      const safe = first.replace(/[$]/g, '\\$&');
+      const safe = first.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const read = new RegExp('(?<![\\w$.])process\\.env\\[\\s*' + safe + '\\s*\\](?!\\s*=(?!=))');
       if (read.test(text.slice(text.indexOf('{')))) readers.add(name);
     }
