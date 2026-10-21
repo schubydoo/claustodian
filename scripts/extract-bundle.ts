@@ -425,6 +425,36 @@ function functionText(src: string, start: number, paramOpen: number): string | u
 }
 
 /**
+ * The spans of `body` where a nested function, `catch` clause or arrow binds
+ * `name` again, so a read of `name` there is not the outer parameter. A braced
+ * body ends at its closing brace. An arrow without braces is taken to run to the
+ * end of `body`, which can only drop reads, never add one.
+ */
+function shadowedSpans(body: string, name: string): Array<[number, number]> {
+  const safe = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const binds = (params: string): boolean =>
+    new RegExp('(?<![\\w$.])' + safe + '(?![\\w$])').test(params);
+  const spans: Array<[number, number]> = [];
+  const braced = (from: number, start: number): void => {
+    let open = from;
+    while (open < body.length && /\s/.test(body[open] as string)) open++;
+    const end = body[open] === '{' ? matchBracket(body, open) : -1;
+    spans.push([start, end < 0 ? body.length : end]);
+  };
+  for (const m of body.matchAll(/\b(?:function\s*[A-Za-z_$]?[\w$]*|catch)\s*\(/g)) {
+    const popen = (m.index as number) + m[0].length - 1;
+    const pend = matchBracket(body, popen);
+    if (pend >= 0 && binds(body.slice(popen + 1, pend))) braced(pend + 1, m.index as number);
+  }
+  for (const m of body.matchAll(/(?:\(([^()]*)\)|([A-Za-z_$][\w$]*))\s*=>/g)) {
+    // One of the two groups always matches: a parenthesised list or a bare name.
+    const params = m[1] ?? (m[2] as string);
+    if (binds(params)) braced((m.index as number) + m[0].length, m.index as number);
+  }
+  return spans;
+}
+
+/**
  * Env vars read through a PARAMETER bound to `process.env` — the reads the inline
  * `process.env.NAME` patterns miss. Two proven bindings:
  *
@@ -449,7 +479,9 @@ function functionText(src: string, start: number, paramOpen: number): string | u
  * CLAUDE_/ANTHROPIC_ convention the accessor-map path also uses), so a caller that
  * passes `process.env` down cannot make this publish an OS or third-party var. A
  * `param.NAME =` WRITE is skipped — that is Claude Code SETTING an env var for a
- * child process, not reading one it is given.
+ * child process, not reading one it is given. A read inside a nested function,
+ * `catch` or arrow that binds the same name again is skipped (shadowedSpans):
+ * minified code reuses short names, so `e` there is a different value.
  */
 export function extractParamEnvVars(src: string): Map<string, string> {
   // Pass 1: callee name -> argument positions that receive process.env.
@@ -514,7 +546,10 @@ export function extractParamEnvVars(src: string): Map<string, string> {
         '(?<![\\w$])' + safeName + '\\.([A-Z][A-Z0-9_]{2,})\\b(?!\\s*=(?!=))',
         'g'
       );
+      const shadowed = shadowedSpans(body, bind.name);
       for (const r of body.matchAll(re)) {
+        const at = r.index as number;
+        if (shadowed.some(([from, to]) => at >= from && at <= to)) continue;
         const name = r[1] as string;
         if (SYMBOL_DENYLIST.has(name)) continue;
         const category = categorize(name, 'env_var');

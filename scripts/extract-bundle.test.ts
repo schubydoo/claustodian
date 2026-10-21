@@ -842,6 +842,27 @@ describe('extractParamEnvVars — env vars read through a param bound to process
     expect(names(src)).toEqual(['CLAUDE_CODE_BS_AS_CTRL_BACKSPACE']);
   });
 
+  it('skips a read through a nested scope that binds the same name again', () => {
+    // Minified code reuses `e`: inside the arrow it is a list item, not process.env.
+    const arrow =
+      'function f(e){return e.CLAUDE_CODE_OUTER_READ||[{CLAUDE_CODE_ITEM:1}].map((e)=>e.CLAUDE_CODE_ITEM)}f(process.env);';
+    expect(names(arrow)).toEqual(['CLAUDE_CODE_OUTER_READ']);
+    const bare = 'function g(e){return[{}].map(e=>e.CLAUDE_CODE_BARE_ARROW)}g(process.env);';
+    expect(names(bare)).toEqual([]);
+    const nested =
+      'function h(e){return function (e) {return e.CLAUDE_CODE_NESTED_FN}({})}h(process.env);';
+    expect(names(nested)).toEqual([]);
+    const caught = 'function k(e){try{x()}catch(e){return e.CLAUDE_CODE_CAUGHT}}k(process.env);';
+    expect(names(caught)).toEqual([]);
+  });
+
+  it('keeps a read through a nested scope that binds other names', () => {
+    // The real 2.1.306 proxy reader nests `E=(u,c)=>{…e[u]…}` and still reads e.
+    const src =
+      'function fWt(e){let n=e.CLAUDE_CODE_HTTP_PROXY,E=(u,c)=>{if(c&&e[u]===void 0)i[u]=c};return e.CLAUDE_CODE_HTTPS_PROXY}fWt(process.env);';
+    expect(names(src)).toEqual(['CLAUDE_CODE_HTTPS_PROXY', 'CLAUDE_CODE_HTTP_PROXY']);
+  });
+
   it('extracts from a destructure-default {env:n=process.env}, with no call site', () => {
     const src =
       'function h(t,{env:n=process.env}){return n.CLAUDE_CODE_AUTO_BACKGROUND_TIMEOUT_MS}';
