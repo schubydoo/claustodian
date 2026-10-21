@@ -1012,6 +1012,20 @@ describe('extractNameReaderEnvVars — env vars read by name through a helper', 
   it('requires a read of the FIRST parameter, not a write or another parameter', () => {
     expect(names('function W(e,t){process.env[e]=t}W("WRITTEN_NAME","1")')).toEqual([]);
     expect(names('function U(e){delete process.env[e]}U("DELETED_NAME")')).toEqual([]);
+  });
+
+  it('requires a flat body, so a reused or rebound name cannot fake a read', () => {
+    // The read is the arrow's own `e`, not the helper's parameter.
+    expect(names('function f(e){return["HOME"].map(e=>process.env[e])}f("NESTED_ARROW")')).toEqual(
+      []
+    );
+    expect(
+      names('function g(e){return function(e){return process.env[e]}("HOME")}g("NESTED_FUNCTION")')
+    ).toEqual([]);
+    expect(names('function h(e){e="HOME";return process.env[e]}h("REASSIGNED")')).toEqual([]);
+    expect(
+      names('function k(e){for(const e of["HOME"])process.env[e];return 0}k("REDECLARED")')
+    ).toEqual([]);
     expect(names('function S(t,e){return process.env[e]}S("SECOND_PARAM")')).toEqual([]);
     expect(names('function Z(){return process.env.HOME}Z("NO_PARAM")')).toEqual([]);
   });

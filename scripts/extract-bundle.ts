@@ -534,7 +534,11 @@ export function extractParamEnvVars(src: string): Map<string, string> {
  * first-party name gate. Publication keeps its own gate (isPublishableBinaryEnv).
  *
  * A helper is a `function NAME(p,…){…}` whose body reads `process.env[p]` for its
- * FIRST parameter, not as an assignment or `delete` target. Each chunk is read in
+ * FIRST parameter, not as an assignment or `delete` target. The body must also be
+ * flat: no nested function, arrow, class or `catch`, and no assignment or
+ * declaration of the parameter. Minified code reuses short names, so in
+ * `function f(e){return["HOME"].map(e=>process.env[e])}` the read is the inner
+ * `e`, and only a flat body leaves one binding for the name. Each chunk is read in
  * its own scope, because from 2.1.242 every chunk minifies its own names: 2.1.301 has
  * three unrelated functions named `St`, and only one of them reads the env. A
  * call is trusted only when every definition of the name in that chunk has the
@@ -556,14 +560,26 @@ export function extractNameReaderEnvVars(chunks: readonly string[]): Map<string,
       texts.add(text ?? `\0${at}`);
       defTexts.set(name, texts);
       if (text === undefined) continue;
-      const first = splitTopLevel(chunk.slice(popen + 1, matchBracket(chunk, popen)))[0]?.trim();
+      const pend = matchBracket(chunk, popen);
+      const first = splitTopLevel(chunk.slice(popen + 1, pend))[0]?.trim();
       if (!first || !/^[A-Za-z_$][\w$]*$/.test(first)) continue;
+      const body = text.slice(pend - at + 1);
+      if (/\bfunction\b|=>|\bclass\b|\bcatch\b/.test(body)) continue;
       const safe = first.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const rebound = new RegExp(
+        '(?<![\\w$.])' +
+          safe +
+          '\\s*(?:[-+*/%&|^]|\\*\\*|<<|>>>?|\\?\\?|&&|\\|\\|)?=(?!=)|' +
+          '\\b(?:let|const|var)\\s+' +
+          safe +
+          '(?![\\w$])'
+      );
+      if (rebound.test(body)) continue;
       // A `delete` or an assignment target removes or sets the variable, never reads it.
       const read = new RegExp(
         '(?<![\\w$.])(?<!\\bdelete\\s+)process\\.env\\[\\s*' + safe + '\\s*\\](?!\\s*=(?!=))'
       );
-      if (read.test(text.slice(text.indexOf('{')))) readers.add(name);
+      if (read.test(body)) readers.add(name);
     }
     for (const m of chunk.matchAll(
       /(?<![\w$.])([A-Za-z_$][\w$]*)\(\s*["'`]([A-Z][A-Z0-9_]{2,})["'`]\s*[,)]/g
