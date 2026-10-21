@@ -917,6 +917,28 @@ describe('enrichWithBinary', () => {
     expect(byKey(out).get('config_key:model')?.category).toBe('settings');
   });
 
+  it('keeps FALLBACK_FOR_ALL_PRIMARY_MODELS once its docs record is gone', () => {
+    // 2.1.305: the env-vars page dropped it while the binary kept reading it.
+    // It has no CLAUDE_ prefix, so only PROMOTE_CC_ENV keeps it published.
+    const out = enrichWithBinary(
+      [],
+      binary([
+        {
+          symbol: 'FALLBACK_FOR_ALL_PRIMARY_MODELS',
+          type: 'env_var',
+          first_seen: '2.0.35',
+          last_seen: '2.1.305',
+        },
+      ])
+    );
+    expect(byKey(out).get('env_var:FALLBACK_FOR_ALL_PRIMARY_MODELS')).toMatchObject({
+      provenance: 'binary',
+      status: 'needs_review',
+      category: 'claude-code',
+      first_seen: '2.0.35',
+    });
+  });
+
   it('withholds a switch-case-only flag from the published set', () => {
     // Claude Code's own flag, but only ever seen as a `case"--x":` label in a
     // subcommand's argv parser. At 2.1.224 every such flag belongs to
