@@ -385,7 +385,8 @@
       "scope_descriptions": {
         "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
         "plugin list": "Print the list as JSON",
-        "plugin marketplace list": "Print the list as JSON"
+        "plugin marketplace list": "Print the list as JSON",
+        "ultrareview": "Print the raw `bugs.json` payload instead of the formatted findings"
       },
       "scopes": [
         "agents",
@@ -779,11 +780,11 @@
       "first_seen": "2.0.34",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "docs",
       "confidence": "high",
       "description": "Timeout in milliseconds (default: MCP_TOOL_TIMEOUT env var or effectively infinite)",
       "description_source": "binary",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/ultrareview.md",
       "category": "cli",
       "scopes": [
         "ultrareview"
@@ -4393,8 +4394,87 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "OTLP collector endpoint for all signals",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_HEADERS",
+      "type": "env_var",
+      "first_seen": "0.2.76",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Authentication headers for OTLP",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_LOGS_PROTOCOL",
+      "type": "env_var",
+      "first_seen": "1.0.7",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Protocol for logs, overrides general setting",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_METRICS_PROTOCOL",
+      "type": "env_var",
+      "first_seen": "0.2.76",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Protocol for metrics, overrides general setting",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE",
+      "type": "env_var",
+      "first_seen": "0.2.79",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Metrics temporality preference (default: `delta`). Set to `cumulative` if your backend expects cumulative temporality",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_PROTOCOL",
+      "type": "env_var",
+      "first_seen": "0.2.76",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Protocol for OTLP exporter, applies to all signals. Claude Code has no default protocol, so set this or the signal-specific protocol variable for each `otlp` exporter you enable",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL",
+      "type": "env_var",
+      "first_seen": "2.0.18",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Protocol for traces, overrides `OTEL_EXPORTER_OTLP_PROTOCOL`",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
       "category": "telemetry"
     },
     {
@@ -4405,8 +4485,22 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Logs/events exporter types, comma-separated. Use `none` to disable",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_LOGS_EXPORT_INTERVAL",
+      "type": "env_var",
+      "first_seen": "1.0.7",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Logs export interval in milliseconds (default: 5000)",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
       "category": "telemetry"
     },
     {
@@ -4443,8 +4537,61 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Metrics exporter types, comma-separated. Use `none` to disable",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_ACCOUNT_UUID",
+      "type": "env_var",
+      "first_seen": "0.2.78",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `false` to exclude account UUID from metrics attributes (default: included). See Monitoring",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_SESSION_ID",
+      "type": "env_var",
+      "first_seen": "0.2.78",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `false` to exclude session ID from metrics attributes (default: included). See Monitoring",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_VERSION",
+      "type": "env_var",
+      "first_seen": "0.2.78",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `true` to include Claude Code version in metrics attributes (default: excluded). See Monitoring",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_METRIC_EXPORT_INTERVAL",
+      "type": "env_var",
+      "first_seen": "0.2.76",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Export interval in milliseconds (default: 60000)",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
       "category": "telemetry"
     },
     {
@@ -4455,8 +4602,22 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Traces exporter types, comma-separated. Use `none` to disable",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_TRACES_EXPORT_INTERVAL",
+      "type": "env_var",
+      "first_seen": "2.0.18",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Span batch export interval in milliseconds (default: 5000)",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
       "category": "telemetry"
     },
     {

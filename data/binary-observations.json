@@ -1671,7 +1671,10 @@
         "daemon",
         "self-hosted-runner",
         "self-hosted-runner orchestrator"
-      ]
+      ],
+      "scope_first_seen": {
+        "daemon": "2.1.229"
+      }
     },
     {
       "symbol": "--host",
@@ -16312,6 +16315,13 @@
       "removed_in": null
     },
     {
+      "symbol": "OTEL_EXPORTER_OTLP_COMPRESSION",
+      "type": "env_var",
+      "first_seen": "0.2.76",
+      "last_seen": "2.0.72",
+      "removed_in": "2.0.73"
+    },
+    {
       "symbol": "OTEL_EXPORTER_OTLP_ENDPOINT",
       "type": "env_var",
       "first_seen": "0.2.76",
@@ -16387,6 +16397,13 @@
       "first_seen": "0.2.76",
       "last_seen": "2.1.306",
       "removed_in": null
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_TIMEOUT",
+      "type": "env_var",
+      "first_seen": "0.2.76",
+      "last_seen": "2.0.72",
+      "removed_in": "2.0.73"
     },
     {
       "symbol": "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
@@ -16497,6 +16514,48 @@
       "symbol": "OTEL_METRICS_EXPORTER",
       "type": "env_var",
       "first_seen": "0.2.76",
+      "last_seen": "2.1.306",
+      "removed_in": null
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_ACCOUNT_UUID",
+      "type": "env_var",
+      "first_seen": "0.2.78",
+      "last_seen": "2.1.306",
+      "removed_in": null
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_ENTRYPOINT",
+      "type": "env_var",
+      "first_seen": "2.1.152",
+      "last_seen": "2.1.306",
+      "removed_in": null
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_REPOSITORY",
+      "type": "env_var",
+      "first_seen": "2.1.269",
+      "last_seen": "2.1.306",
+      "removed_in": null
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_RESOURCE_ATTRIBUTES",
+      "type": "env_var",
+      "first_seen": "2.1.161",
+      "last_seen": "2.1.306",
+      "removed_in": null
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_SESSION_ID",
+      "type": "env_var",
+      "first_seen": "0.2.78",
+      "last_seen": "2.1.306",
+      "removed_in": null
+    },
+    {
+      "symbol": "OTEL_METRICS_INCLUDE_VERSION",
+      "type": "env_var",
+      "first_seen": "0.2.78",
       "last_seen": "2.1.306",
       "removed_in": null
     },
@@ -16648,6 +16707,20 @@
       "removed_in": null
     },
     {
+      "symbol": "RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED",
+      "type": "env_var",
+      "first_seen": "0.2.93",
+      "last_seen": "0.2.100",
+      "removed_in": "0.2.101"
+    },
+    {
+      "symbol": "RECOIL_GKS_ENABLED",
+      "type": "env_var",
+      "first_seen": "0.2.93",
+      "last_seen": "0.2.100",
+      "removed_in": "0.2.101"
+    },
+    {
       "symbol": "REGION_NAME",
       "type": "env_var",
       "first_seen": "0.2.9",
@@ -16753,6 +16826,13 @@
       "removed_in": null
     },
     {
+      "symbol": "SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS",
+      "type": "env_var",
+      "first_seen": "2.1.228",
+      "last_seen": "2.1.306",
+      "removed_in": null
+    },
+    {
       "symbol": "SELF_HOSTED_RUNNER_CLIENT_LABEL",
       "type": "env_var",
       "first_seen": "2.1.248",
@@ -16805,6 +16885,13 @@
       "symbol": "SELF_HOSTED_RUNNER_DRAIN_MARKER_FILE",
       "type": "env_var",
       "first_seen": "2.1.271",
+      "last_seen": "2.1.306",
+      "removed_in": null
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_DRAIN_WAIT_BG_TASKS_MS",
+      "type": "env_var",
+      "first_seen": "2.1.224",
       "last_seen": "2.1.306",
       "removed_in": null
     },
@@ -16879,6 +16966,13 @@
       "removed_in": null
     },
     {
+      "symbol": "SELF_HOSTED_RUNNER_MAX_LIFETIME_GRACE_MS",
+      "type": "env_var",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.306",
+      "removed_in": null
+    },
+    {
       "symbol": "SELF_HOSTED_RUNNER_MAX_LIFETIME_MS",
       "type": "env_var",
       "first_seen": "2.1.224",
@@ -16896,6 +16990,13 @@
       "symbol": "SELF_HOSTED_RUNNER_POST_SESSION_HOOK_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "2.1.224",
+      "last_seen": "2.1.306",
+      "removed_in": null
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_POST_TURN_SETTLE_MS",
+      "type": "env_var",
+      "first_seen": "2.1.275",
       "last_seen": "2.1.306",
       "removed_in": null
     },
@@ -16936,6 +17037,13 @@
     },
     {
       "symbol": "SELF_HOSTED_RUNNER_SESSION_STOP_GRACE_MS",
+      "type": "env_var",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.306",
+      "removed_in": null
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_SIGKILL_GRACE_MS",
       "type": "env_var",
       "first_seen": "2.1.224",
       "last_seen": "2.1.306",

@@ -15,7 +15,11 @@
     "https://code.claude.com/docs/en/remote-control.md",
     "https://code.claude.com/docs/en/settings.md",
     "https://code.claude.com/docs/en/settings-reference.md",
-    "https://code.claude.com/docs/en/plugins/mods/reference.md"
+    "https://code.claude.com/docs/en/plugins/mods/reference.md",
+    "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
+    "https://code.claude.com/docs/en/monitoring-usage.md",
+    "https://code.claude.com/docs/en/plugin-evals.md",
+    "https://code.claude.com/docs/en/ultrareview.md"
   ],
   "symbols": [
     {
@@ -79,6 +83,16 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--allow-real-servers",
+      "type": "cli_flag",
+      "description": "With `--mocks record`, also start the plugin's real MCP servers for servers that have no mock",
+      "doc_min_version": null,
+      "doc_page": "plugin-evals",
+      "doc_scopes": [
+        "plugin eval"
+      ]
+    },
+    {
       "symbol": "--allow-tools",
       "type": "cli_flag",
       "description": "Grant tools beyond the read-only set, such as `Bash`, `Write`, `Edit`, or `\"mcp__plugin_<plugin>_<server>__*\"`. See Grant tools",
@@ -98,6 +112,17 @@
       "description": "Stop the background-session supervisor and the sessions it hosts. Pass `--keep-workers` to leave background sessions running for the next supervisor to reconnect to. `--any` confirms stopping an on-demand supervisor, which is the default. Use this to recover from an unresponsive supervisor",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--api-url",
+      "type": "cli_flag",
+      "description": "API base URL. Override only for testing.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--append-subagent-system-prompt",
@@ -177,6 +202,16 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--base-dir",
+      "type": "cli_flag",
+      "description": "Directory for repository checkouts and per-session working directories. The runner needs write access to this path or its parent. The runner creates the directory at startup and exits with `cannot create or write to base directory` when it can't create or write to it. Before v2.1.225, the runner created the directory when the first session started, so an unusable path failed sessions rather than startup. On Windows, which isn't a supported runner host, there is no default: the runner exits at startup unless you pass the flag or set the variable. Use the same value on every runner in an environment. See Keep the base directory and capacity identical across runners.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--betas",
       "type": "cli_flag",
       "description": "Beta headers to include in API requests (API key users only)",
@@ -195,7 +230,14 @@
       "type": "cli_flag",
       "description": "Maximum number of concurrent sessions. Default is 32. Cannot be used with `--spawn=session`.",
       "doc_min_version": "2.1.51",
-      "doc_page": "remote-control"
+      "doc_page": "remote-control",
+      "doc_scopes": [
+        "remote-control"
+      ],
+      "scope_descriptions": {
+        "remote-control": "Maximum number of concurrent sessions. Default is 32. Cannot be used with `--spawn=session`.",
+        "self-hosted-runner": "Maximum concurrent sessions this runner handles. All sessions belong to the same locked owner. Use the same value on every runner in an environment; see Keep the base directory and capacity identical across runners."
+      }
     },
     {
       "symbol": "--channels",
@@ -219,6 +261,16 @@
       "doc_page": "plugins/cli-reference"
     },
     {
+      "symbol": "--client-label",
+      "type": "cli_flag",
+      "description": "Label the runner sends when it registers. The runner also reports it as the `client_label` label of `claude_code_self_hosted_runner_info`. Requires Claude Code v2.1.248 or later.",
+      "doc_min_version": "2.1.248",
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--cloud",
       "type": "cli_flag",
       "description": "With a task description, create a new cloud session. With a session ID (`session_...` or `cse_...`) or a claude.ai/code URL, queue a message into that existing session instead, with `-p`. See send a follow-up message.",
@@ -238,6 +290,26 @@
       "description": "Set a `userConfig` option the plugin's manifest declares. Repeat the flag for each option. A key written `<server>.<key>` sets a setting that a bundled MCP server declares in its own `user_config` instead, for a bundle file shipped inside the plugin. The `<server>.<key>` form requires Claude Code v2.1.285 or later",
       "doc_min_version": null,
       "doc_page": "plugins/cli-reference"
+    },
+    {
+      "symbol": "--configure-git",
+      "type": "cli_flag",
+      "description": "At startup, write global git identity, enable Anthropic commit signing, turn on git push negotiation, and install commit hooks that append a `Co-authored-by:` trailer. Push negotiation requires Claude Code v2.1.257 or later. See Configure git.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--confine-repo-settings",
+      "type": "cli_flag",
+      "description": "Sets the mode of the guard that flags a session when a repository's committed settings try to grant write or read access outside that session's own workspace, set environment variables, or override the operator's sandbox or hooks posture, such as `sandbox.enabled: false` or `disableAllHooks`. The default `warn` logs the violation and still starts the session, `enforce` refuses the session, and `off` disables the scan. See Harden your deployment.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--continue",
@@ -275,11 +347,41 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--debug-dir",
+      "type": "cli_flag",
+      "description": "Write each spawn request's work order and hook stderr to disk. Debug only; never set in production.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
       "symbol": "--debug-file",
       "type": "cli_flag",
       "description": "Write debug logs to a specific file path. Implicitly enables debug mode. Takes precedence over `CLAUDE_CODE_DEBUG_LOGS_DIR`",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--debug-token-dir",
+      "type": "cli_flag",
+      "description": "Write live tokens to disk for inspection. Debug only; don't use in production.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--defer-shutdown-max-min",
+      "type": "cli_flag",
+      "description": "On the first `SIGTERM` or `SIGINT`, keep serving the sessions already attached instead of draining them, then release whatever is still attached N minutes later and exit. Raise your host's stop timeout before you set this. See Defer the drain past the first signal. `0` disables. Requires Claude Code v2.1.238 or later.",
+      "doc_min_version": "2.1.238",
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--description",
@@ -308,6 +410,36 @@
       "description": "Deny rules. A bare tool name removes the matching tools from Claude's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only calls that match as written. A rule naming `EndConversation` can't remove it while any other tool remains",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--drain-grace-sec",
+      "type": "cli_flag",
+      "description": "Until the runner receives a shutdown signal or reaches its retire time, controls when the runner exits after its active sessions finish: `0` exits immediately without polling for more, and a positive value keeps the runner alive and re-polling the locked owner's queue for that many seconds first, at the cost of the per-session container isolation described in the hardening section. After a first signal you deferred with `--defer-shutdown-max-min`, the runner exits as soon as it holds no sessions, whatever you set here.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--drain-marker-file",
+      "type": "cli_flag",
+      "description": "Marker file that your host writes to announce a graceful drain before sending `SIGTERM`. When the file exists as the drain starts, the runner reports its exit to Anthropic as a host drain rather than a plain shutdown signal. The drain itself, including the `--drain-wait-sec` hold, runs the same as without the flag. Name a path on a local filesystem that sessions can't write to. Requires Claude Code v2.1.271 or later.",
+      "doc_min_version": "2.1.271",
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--drain-wait-sec",
+      "type": "cli_flag",
+      "description": "Once the drain starts, which is on `SIGTERM` unless you set `--defer-shutdown-max-min`, wait up to N seconds for each session's in-flight turn and background tasks to finish before terminating the child. During this wait, the runner counts a background task that has just finished as still running until the follow-up turn that reads its result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--dry-run",
@@ -342,6 +474,17 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--environment-secret-file",
+      "type": "cli_flag",
+      "description": "Path to a file containing the environment secret, or, for runners spawned by the orchestrator, the single-use work-order JWT. `SELF_HOSTED_RUNNER_ENVIRONMENT_SECRET` carries the secret value directly, not a file path. The older `--pool-secret-file` flag and `SELF_HOSTED_RUNNER_POOL_SECRET` variable still work and print a deprecation notice to stderr; preview-program runner builds older than 2.1.216 only recognize those older names.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
       "symbol": "--eval-dir",
       "type": "cli_flag",
       "description": "Directory below the plugin that holds the cases",
@@ -365,6 +508,36 @@
       "description": "Run a shell command as a PTY-backed background job instead of starting a Claude session. Use with `--bg` to launch from the shell",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--exec-path",
+      "type": "cli_flag",
+      "description": "Binary or wrapper script to spawn for each session. See Wrapper scripts.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--exit-if-unused-min",
+      "type": "cli_flag",
+      "description": "Exit after N minutes of polling with no work ever assigned, for autoscaler scale-down. `0` disables.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--expected-spawn-seconds",
+      "type": "cli_flag",
+      "description": "Expected p99 time from when the orchestrator receives a spawn request to when the runner registers, including any wait for capacity on your platform. The server enforces a range of 10 to 3600. Sent on every poll as the server-side lease: if no runner registers before it elapses, the session is re-offered with a fresh order ID. All replicas must share this value.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--fallback-model",
@@ -404,6 +577,78 @@
       "description": "Open the session picker filtered to sessions linked to a specific pull request. Accepts a PR number, a GitHub or GitHub Enterprise PR URL, a GitLab merge request URL, or a Bitbucket pull request URL. Sessions are linked automatically when Claude creates the pull request",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--git-host-rewrite",
+      "type": "cli_flag",
+      "description": "Rewrite `https://<from>/...` source URLs to `https://<to>/...` before cloning, for split-horizon DNS. Repeatable; flag only.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--git-ssh-rewrite",
+      "type": "cli_flag",
+      "description": "Rewrite `https://<host>/...` source URLs to `git@<host>:...` before cloning, for SSH-only git hosts. Repeatable; flag only.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--health-port",
+      "type": "cli_flag",
+      "description": "Port for the `/healthz` and `/metrics` listener. Set `0` to disable.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--hook-concurrency",
+      "type": "cli_flag",
+      "description": "Maximum `spawn-runner` hooks running in parallel. Also caps how many spawn requests are claimed per poll.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--hook-timeout",
+      "type": "cli_flag",
+      "description": "Terminate the hook's process tree after this many seconds. The timeout plus its 5-second kill grace must stay below `--expected-spawn-seconds`; the orchestrator enforces this at startup.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--hooks-dir",
+      "type": "cli_flag",
+      "description": "Directory of lifecycle hook scripts. See Lifecycle hooks.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--host-config-snapshot",
+      "type": "cli_flag",
+      "description": "Where the runner keeps the startup snapshot of the host config directory that it seeds each session from. `disk` copies the snapshot into a runner-owned directory under `--base-dir` and, at each session start, verifies every file against an in-memory digest. If a file in the copy has been modified, the session fails and the runner refuses sessions until you restart it. `memory` holds the whole snapshot on the heap, capped at 64 MiB; over the cap, sessions start without host config and show a notice saying so. When the runner can't write the disk snapshot, it logs the failure and uses `memory` for that run. Requires Claude Code v2.1.271 or later.",
+      "doc_min_version": "2.1.271",
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--ide",
@@ -473,7 +718,8 @@
         "plugin marketplace update": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format. Without a name, the command refuses `--json` and exits `1`. Requires Claude Code v2.1.287 or later",
         "plugin uninstall": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Can't be combined with `--prune`. Requires Claude Code v2.1.268 or later",
         "plugin update": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
-        "plugin validate": "Output the validation report as one JSON object with the same exit codes. Requires Claude Code v2.1.259 or later"
+        "plugin validate": "Output the validation report as one JSON object with the same exit codes. Requires Claude Code v2.1.259 or later",
+        "ultrareview": "Print the raw `bugs.json` payload instead of the formatted findings"
       }
     },
     {
@@ -496,6 +742,57 @@
       "description": "Preserve the plugin's persistent data directory, `~/.claude/plugins/data/<id>/`",
       "doc_min_version": null,
       "doc_page": "plugins/cli-reference"
+    },
+    {
+      "symbol": "--keep-temp",
+      "type": "cli_flag",
+      "description": "Keep every run's sandbox directory and print its path, for debugging what Claude produced",
+      "doc_min_version": null,
+      "doc_page": "plugin-evals",
+      "doc_scopes": [
+        "plugin eval"
+      ]
+    },
+    {
+      "symbol": "--kill-session-after-min",
+      "type": "cli_flag",
+      "description": "Limit a session to N minutes wall-clock, as a safety limit for stuck sessions. On v2.1.260 or later, the runner releases a session that reaches the limit so it can resume on its user's next message, and terminates it only if it's still on the runner when the `SELF_HOSTED_RUNNER_MAX_LIFETIME_GRACE_MS` grace window ends. Before v2.1.260, the runner terminated the session at the limit. See Some sessions don't count as idle for the details and how to choose a value. `0` disables.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--lock-to-account",
+      "type": "cli_flag",
+      "description": "Pre-lock the runner to a specific account at startup instead of locking on first session. Accepts an email address or `user_...` ID in the environment's organization. A pre-locked runner never picks up Claude Tag channel sessions, which have no account.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--log-file",
+      "type": "cli_flag",
+      "description": "Mirror runner logs to a file in addition to stdout and stderr, created with `0600` permissions. Required for `self-hosted-runner doctor` to tail logs locally.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--log-level",
+      "type": "cli_flag",
+      "description": "`info` or `debug`",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner",
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--maintenance",
@@ -547,6 +844,16 @@
       "doc_page": "plugins/cli-reference"
     },
     {
+      "symbol": "--min-idle",
+      "type": "cli_flag",
+      "description": "Keep at least N idle session slots free by spawning standby runners proactively. `0` disables pre-warming. Pair with the runner's `--exit-if-unused-min` so surplus standby runners reclaim themselves.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
       "symbol": "--mocks",
       "type": "cli_flag",
       "description": "`record` or `off`. See Mock MCP servers",
@@ -575,6 +882,16 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--no-post",
+      "type": "cli_flag",
+      "description": "Don't post the findings. This is the default, and if you pass both flags, Claude Code doesn't post. Requires Claude Code v2.1.227 or later",
+      "doc_min_version": "2.1.227",
+      "doc_page": "ultrareview",
+      "doc_scopes": [
+        "ultrareview"
+      ]
+    },
+    {
       "symbol": "--no-publish",
       "type": "cli_flag",
       "description": "Keep the HTML report local",
@@ -586,7 +903,10 @@
       "type": "cli_flag",
       "description": "Removed in v2.1.300. If you pass either flag, the server exits with an error instead of starting.",
       "doc_min_version": "2.1.51",
-      "doc_page": "remote-control"
+      "doc_page": "remote-control",
+      "doc_scopes": [
+        "remote-control"
+      ]
     },
     {
       "symbol": "--no-session-persistence",
@@ -594,6 +914,16 @@
       "description": "Disable session persistence so sessions are not saved to disk and cannot be resumed. Print mode only. The `CLAUDE_CODE_SKIP_PROMPT_HISTORY` environment variable does the same in any mode",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--output-dir",
+      "type": "cli_flag",
+      "description": "Where `aggregate-result.json` and `report.html` go",
+      "doc_min_version": null,
+      "doc_page": "plugin-evals",
+      "doc_scopes": [
+        "plugin eval"
+      ]
     },
     {
       "symbol": "--output-format",
@@ -638,6 +968,26 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--post",
+      "type": "cli_flag",
+      "description": "Post the finished findings to the pull request as one plain comment from your GitHub account. Works on `github.com` pull request targets; on other targets, Claude Code ignores the flag and says so. Requires Claude Code v2.1.227 or later",
+      "doc_min_version": "2.1.227",
+      "doc_page": "ultrareview",
+      "doc_scopes": [
+        "ultrareview"
+      ]
+    },
+    {
+      "symbol": "--post-session-hook-timeout-sec",
+      "type": "cli_flag",
+      "description": "Budget for the `post-session` hook on every session end, including runner shutdown",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--print",
       "type": "cli_flag",
       "description": "Print response without interactive mode (see Agent SDK documentation for programmatic usage details). For `--resume` on a background session that is still running, see Resume a running background session",
@@ -652,6 +1002,26 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--proxy-authorization-command",
+      "type": "cli_flag",
+      "description": "Shell command the runner runs for every connection to your egress proxy, using its trimmed stdout as the `Proxy-Authorization` header value. Requires `HTTPS_PROXY` or `HTTP_PROXY`, and can't be combined with `--proxy-authorization-file`. See Authenticate to an egress proxy. Requires Claude Code v2.1.238 or later.",
+      "doc_min_version": "2.1.238",
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--proxy-authorization-file",
+      "type": "cli_flag",
+      "description": "File the runner reads for every connection to your egress proxy, using its trimmed contents as the `Proxy-Authorization` header value. Use this flag for a token another process rotates in place. Carries the same requirements as `--proxy-authorization-command`, and can't be combined with it. See Authenticate to an egress proxy. Requires Claude Code v2.1.238 or later.",
+      "doc_min_version": "2.1.238",
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--prune",
       "type": "cli_flag",
       "description": "Also remove auto-installed dependencies that no remaining plugin needs",
@@ -659,11 +1029,31 @@
       "doc_page": "plugins/cli-reference"
     },
     {
+      "symbol": "--publish-report",
+      "type": "cli_flag",
+      "description": "Publish the report even where it would stay local by default, such as a run a Claude Code session started",
+      "doc_min_version": null,
+      "doc_page": "plugin-evals",
+      "doc_scopes": [
+        "plugin eval"
+      ]
+    },
+    {
       "symbol": "--push",
       "type": "cli_flag",
       "description": "Push the tag to `--remote` after creating it",
       "doc_min_version": null,
       "doc_page": "plugins/cli-reference"
+    },
+    {
+      "symbol": "--push-outcome-on-release",
+      "type": "cli_flag",
+      "description": "On a runner-initiated session end such as a drain or idle release, push tracked outcome branches to `origin` before deleting the workspace, so in-flight commits survive a restart. Best-effort; adds 30 seconds to the shutdown budget, and requires git 2.29 or newer to resume from the pushed branch. Restrict push access to `claude/*` refs before enabling; see Resumed sessions lose unpushed work. Repositories checked out via a `checkout` lifecycle hook aren't pushed; snapshot those from the `post-session` hook instead.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--rc",
@@ -678,6 +1068,16 @@
       "description": "With `--environment`, base the new session's checkout on a named ref instead of local `HEAD`",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--release-idle-session-min",
+      "type": "cli_flag",
+      "description": "Release a session slot after N minutes of inactivity once a turn finishes or the session waits for the user's action. A session that's still mid-turn, including one holding a never-finishing background task or an approval requested from inside a running tool call, doesn't count as idle; pair with `--kill-session-after-min` as the hard backstop. After a session's background task finishes, the runner considers the session busy until the follow-up turn that reads the result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window. Until the runner receives a shutdown signal or reaches its retire time, a release that leaves the runner with no active sessions starts the same exit path as a normal drain, governed by `--drain-grace-sec`. After a first signal you deferred with `--defer-shutdown-max-min`, the runner exits as soon as a release leaves it holding no sessions. `0` disables.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--remote",
@@ -701,6 +1101,16 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--remove-session-state",
+      "type": "cli_flag",
+      "description": "Remove a session's per-session directories under `<base-dir>/_sessions/` when the session ends on this runner, whatever the outcome. Reuse a pre-warmed checkout describes what they hold and who can read them when they stay. The removal is best-effort: the per-session directories stay in place when the runner is killed or reaches its drain deadline before cleanup runs. With the flag on, a failed or interrupted session's debug log isn't kept on disk. Requires Claude Code v2.1.268 or later.",
+      "doc_min_version": "2.1.268",
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--replay-user-messages",
       "type": "cli_flag",
       "description": "Re-emit user messages from stdin back on stdout for acknowledgment. Requires `--input-format stream-json` and `--output-format stream-json`",
@@ -722,6 +1132,16 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--retire-at",
+      "type": "cli_flag",
+      "description": "Retire the runner at an absolute Unix timestamp in seconds, for infrastructure that kills the runner at a known time; Runner lifecycle describes the release sequence and how to size the margin. Values before 2001 or after the year 5138 are rejected by the flag and ignored by the environment variable.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--runs",
       "type": "cli_flag",
       "description": "Runs per case in each arm",
@@ -740,7 +1160,10 @@
       "type": "cli_flag",
       "description": "Removed in v2.1.300. If you pass either flag, the server exits with an error instead of starting.",
       "doc_min_version": "2.1.51",
-      "doc_page": "remote-control"
+      "doc_page": "remote-control",
+      "doc_scopes": [
+        "remote-control"
+      ]
     },
     {
       "symbol": "--scaffold",
@@ -748,6 +1171,56 @@
       "description": "Run each case's `scaffold_script`",
       "doc_min_version": null,
       "doc_page": "plugins/cli-reference"
+    },
+    {
+      "symbol": "--scm-connector-ca-file",
+      "type": "cli_flag",
+      "description": "Extra CA bundle, in PEM format, for TLS connections to the GitHub Enterprise Server host.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--scm-connector-host",
+      "type": "cli_flag",
+      "description": "GitHub Enterprise Server hostname to forward requests to. Port defaults to `443`.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--scm-connector-host-rewrite",
+      "type": "cli_flag",
+      "description": "For end-to-end testing only: redirects the TCP connection while keeping the Host header and TLS SNI as `--scm-connector-host`.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--scm-connector-id",
+      "type": "cli_flag",
+      "description": "The numeric ID of your organization's GitHub Enterprise Server connection.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
+      "symbol": "--scm-connector-provider",
+      "type": "cli_flag",
+      "description": "Path segment identifying the provider, matching `^[a-z0-9-]{1,32}$`.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner orchestrator"
+      ]
     },
     {
       "symbol": "--scope",
@@ -767,11 +1240,31 @@
       }
     },
     {
+      "symbol": "--server-auto-mode-lists",
+      "type": "cli_flag",
+      "description": "Which of the auto mode classifier rule lists that the control plane sends with a session may reach that session: `all`, `no-allow`, or `none`. See Auto mode rule lists for what each value applies. An invalid value stops the runner at startup. Requires Claude Code v2.1.295 or later.",
+      "doc_min_version": "2.1.295",
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--session-id",
       "type": "cli_flag",
       "description": "Use a specific session ID for the conversation (must be a valid UUID)",
       "doc_min_version": null,
       "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--session-stop-grace-sec",
+      "type": "cli_flag",
+      "description": "How long to wait for the Claude process to exit cleanly after a session ends, before force-killing it. Raise the value if the child's own `SessionEnd` hooks need more time.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--setting-sources",
@@ -799,7 +1292,20 @@
       "type": "cli_flag",
       "description": "How the server creates sessions. • `same-dir` (default when no mode is saved): all sessions share the current working directory, so they can conflict if editing the same files. • `worktree`: each on-demand session gets its own git worktree. Requires a git repository or a `WorktreeCreate` hook. • `session`: single-session mode. Serves exactly one session and rejects additional connections. Set at startup only. Press `w` at runtime to toggle between `same-dir` and `worktree`. The mode you switch to becomes the default for this project.",
       "doc_min_version": "2.1.51",
-      "doc_page": "remote-control"
+      "doc_page": "remote-control",
+      "doc_scopes": [
+        "remote-control"
+      ]
+    },
+    {
+      "symbol": "--startup-timeout-min",
+      "type": "cli_flag",
+      "description": "Release a session slot if the child hasn't signaled on the activity channel that it initialized within N minutes. The N minutes start at spawn, after cloning, and start over at each `user` or `assistant` message the child emits before it has initialized or reported its state. Before v2.1.299, this timeout stopped applying at the session's first such message. For release after the init signal, see `--release-idle-session-min`. `0` disables.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--strict",
@@ -858,6 +1364,16 @@
       "doc_page": "plugins/cli-reference"
     },
     {
+      "symbol": "--timeout",
+      "type": "cli_flag",
+      "description": "Maximum minutes to wait for the review to finish. Defaults to 45",
+      "doc_min_version": null,
+      "doc_page": "ultrareview",
+      "doc_scopes": [
+        "ultrareview"
+      ]
+    },
+    {
       "symbol": "--tmux",
       "type": "cli_flag",
       "description": "Create a tmux session for the worktree. Requires `--worktree`. Uses iTerm2 native panes when available; pass `--tmux=classic` for traditional tmux",
@@ -877,6 +1393,26 @@
       "description": "Skip the first-run trust prompt, for CI. See What a run can access",
       "doc_min_version": null,
       "doc_page": "plugins/cli-reference"
+    },
+    {
+      "symbol": "--trust-workspace",
+      "type": "cli_flag",
+      "description": "Seed persisted trust for each session's repository paths so repo-committed `permissions.allow` and `additionalDirectories` are honored. Set `false` to drop repo-committed permission grants and configure allow rules in the host config's `settings.json` instead; repository-committed `sandbox.*` settings still apply either way, which is why the repo-settings guard scans them regardless of this flag.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--use-anthropic-git-proxy",
+      "type": "cli_flag",
+      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Supersedes the rewrite flags.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--values-stdin",
@@ -4586,6 +5122,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_ENHANCED_TELEMETRY_BETA",
+      "type": "env_var",
+      "description": "Enable span tracing (required). `ENABLE_ENHANCED_TELEMETRY_BETA` is also accepted",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
       "symbol": "CLAUDE_CODE_EXIT_AFTER_STOP_DELAY",
       "type": "env_var",
       "description": "Time in milliseconds to wait after the query loop becomes idle before automatically exiting. Useful for automated workflows and scripts using SDK mode",
@@ -5407,7 +5950,7 @@
     {
       "symbol": "CLAUDE_CODE_TRANSCRIPT_LOCAL_GC",
       "type": "env_var",
-      "description": "Set to `1` to limit how large the transcript file of a long `-p` or Agent SDK session grows. After each compaction, once the file is larger than 5 MB, Claude Code removes the history from before that compaction. Resuming the session restores the same conversation whether or not the file was trimmed. Set it in the environment you start Claude Code from, since a settings `env` block can't turn it on. Requires Claude Code v2.1.287 or later",
+      "description": "Set to `1` to limit how large the transcript file of a long `-p` or Agent SDK session grows. After each compaction, once the file is larger than 5 MB, Claude Code removes the history from before that compaction. On v2.1.296 or later, the file stays as it is when removing that history would shrink it by less than 10%. Resuming the session restores the same conversation whether or not the file was trimmed. Set it in the environment you start Claude Code from, since a settings `env` block can't turn it on. Requires Claude Code v2.1.287 or later",
       "doc_min_version": "2.1.287",
       "doc_page": "env-vars"
     },
@@ -5592,6 +6135,34 @@
       "description": "Prefix for auto-generated Remote Control session names when no explicit name is provided. Defaults to your machine's hostname, producing names like `myhost-graceful-unicorn`. The `--remote-control-session-name-prefix` CLI flag sets the same value for a single invocation",
       "doc_min_version": null,
       "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_FETCH_DEPTH",
+      "type": "env_var",
+      "description": "Git fetch depth for fresh clones. Set a positive integer, or `full` or `0` for a complete fetch. Repositories already present in the workspace keep their existing depth.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_FETCH_SERVER_PROGRESS_CAP_MS",
+      "type": "env_var",
+      "description": "How long in milliseconds, per attempt, a git fetch may wait for its first data while the git server's own progress numbers keep rising, as when the server prepares the pack for a large repository. `0` or `off` turns the wait off: such a fetch is then cut off after two minutes without data. Any other whole number is clamped to between `120000` and `1800000`, 2 to 30 minutes. Requires Claude Code v2.1.295 or later.",
+      "doc_min_version": "2.1.295",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_SKIP_GIT_VERIFY",
+      "type": "env_var",
+      "description": "When `1`, skip the `.git` presence check after a `checkout` hook runs. Set this when your hook materializes a non-git source.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_USE_GIT_PROXY",
+      "type": "env_var",
+      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Supersedes the rewrite flags.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
     },
     {
       "symbol": "CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS",
@@ -6000,6 +6571,97 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "OTEL_EXPORTER_OTLP_ENDPOINT",
+      "type": "env_var",
+      "description": "OTLP collector endpoint for all signals",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_HEADERS",
+      "type": "env_var",
+      "description": "Authentication headers for OTLP",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
+      "type": "env_var",
+      "description": "OTLP logs endpoint, overrides general setting",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_LOGS_HEADERS",
+      "type": "env_var",
+      "description": "Authentication headers for logs, merged with the general headers",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_LOGS_PROTOCOL",
+      "type": "env_var",
+      "description": "Protocol for logs, overrides general setting",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
+      "type": "env_var",
+      "description": "OTLP metrics endpoint, overrides general setting",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_METRICS_HEADERS",
+      "type": "env_var",
+      "description": "Authentication headers for metrics, merged with the general headers",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_METRICS_PROTOCOL",
+      "type": "env_var",
+      "description": "Protocol for metrics, overrides general setting",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE",
+      "type": "env_var",
+      "description": "Metrics temporality preference (default: `delta`). Set to `cumulative` if your backend expects cumulative temporality",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_PROTOCOL",
+      "type": "env_var",
+      "description": "Protocol for OTLP exporter, applies to all signals. Claude Code has no default protocol, so set this or the signal-specific protocol variable for each `otlp` exporter you enable",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+      "type": "env_var",
+      "description": "OTLP traces endpoint, overrides `OTEL_EXPORTER_OTLP_ENDPOINT`",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_TRACES_HEADERS",
+      "type": "env_var",
+      "description": "Authentication headers for traces, merged with `OTEL_EXPORTER_OTLP_HEADERS`",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL",
+      "type": "env_var",
+      "description": "Protocol for traces, overrides `OTEL_EXPORTER_OTLP_PROTOCOL`",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
       "symbol": "OTEL_LOG_ASSISTANT_RESPONSES",
       "type": "env_var",
       "description": "Set to `1` to include the model's response text on `assistant_response` OpenTelemetry log events. When unset, Claude Code uses the value of `OTEL_LOG_USER_PROMPTS` instead. Set to `0` to keep responses redacted even when `OTEL_LOG_USER_PROMPTS` is set. Set it in your shell, user settings, or managed settings. Ignored in project and local settings. Requires Claude Code v2.1.193 or later. See Monitoring",
@@ -6042,6 +6704,34 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "OTEL_LOGS_EXPORT_INTERVAL",
+      "type": "env_var",
+      "description": "Logs export interval in milliseconds (default: 5000)",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_LOGS_EXPORTER",
+      "type": "env_var",
+      "description": "Logs/events exporter types, comma-separated. Use `none` to disable",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_METRIC_EXPORT_INTERVAL",
+      "type": "env_var",
+      "description": "Export interval in milliseconds (default: 60000)",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_METRICS_EXPORTER",
+      "type": "env_var",
+      "description": "Metrics exporter types, comma-separated. Use `none` to disable",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
       "symbol": "OTEL_METRICS_INCLUDE_ACCOUNT_UUID",
       "type": "env_var",
       "description": "Set to `false` to exclude account UUID from metrics attributes (default: included). See Monitoring",
@@ -6082,6 +6772,258 @@
       "description": "Set to `true` to include Claude Code version in metrics attributes (default: excluded). See Monitoring",
       "doc_min_version": null,
       "doc_page": "env-vars"
+    },
+    {
+      "symbol": "OTEL_TRACES_EXPORT_INTERVAL",
+      "type": "env_var",
+      "description": "Span batch export interval in milliseconds (default: 5000)",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "OTEL_TRACES_EXPORTER",
+      "type": "env_var",
+      "description": "Traces exporter types, comma-separated. Use `none` to disable",
+      "doc_min_version": null,
+      "doc_page": "monitoring-usage"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_BASE_DIR",
+      "type": "env_var",
+      "description": "Directory for repository checkouts and per-session working directories. The runner needs write access to this path or its parent. The runner creates the directory at startup and exits with `cannot create or write to base directory` when it can't create or write to it. Before v2.1.225, the runner created the directory when the first session started, so an unusable path failed sessions rather than startup. On Windows, which isn't a supported runner host, there is no default: the runner exits at startup unless you pass the flag or set the variable. Use the same value on every runner in an environment. See Keep the base directory and capacity identical across runners.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS",
+      "type": "env_var",
+      "description": "How long the runner considers a session busy after a background task finishes while the follow-up turn that reads the result hasn't started. The `--drain-wait-sec` and `--release-idle-session-min` rows describe where the hold applies on drain and idle release, and Runner lifecycle describes where it applies on `--retire-at` retirement. `0` or an unusable value falls back to the default, so the hold can't be turned off. Requires Claude Code v2.1.228 or later.",
+      "doc_min_version": "2.1.228",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_CLIENT_LABEL",
+      "type": "env_var",
+      "description": "Label the runner sends when it registers. The runner also reports it as the `client_label` label of `claude_code_self_hosted_runner_info`. Requires Claude Code v2.1.248 or later.",
+      "doc_min_version": "2.1.248",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_CONFIGURE_GIT",
+      "type": "env_var",
+      "description": "At startup, write global git identity, enable Anthropic commit signing, turn on git push negotiation, and install commit hooks that append a `Co-authored-by:` trailer. Push negotiation requires Claude Code v2.1.257 or later. See Configure git.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_CONFINE_REPO_SETTINGS",
+      "type": "env_var",
+      "description": "Sets the mode of the guard that flags a session when a repository's committed settings try to grant write or read access outside that session's own workspace, set environment variables, or override the operator's sandbox or hooks posture, such as `sandbox.enabled: false` or `disableAllHooks`. The default `warn` logs the violation and still starts the session, `enforce` refuses the session, and `off` disables the scan. See Harden your deployment.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_DEBUG_TOKEN_DIR",
+      "type": "env_var",
+      "description": "Write live tokens to disk for inspection. Debug only; don't use in production.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_DEFER_SHUTDOWN_MAX_MS",
+      "type": "env_var",
+      "description": "On the first `SIGTERM` or `SIGINT`, keep serving the sessions already attached instead of draining them, then release whatever is still attached N minutes later and exit. Raise your host's stop timeout before you set this. See Defer the drain past the first signal. `0` disables. Requires Claude Code v2.1.238 or later.",
+      "doc_min_version": "2.1.238",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_DRAIN_GRACE_MS",
+      "type": "env_var",
+      "description": "Until the runner receives a shutdown signal or reaches its retire time, controls when the runner exits after its active sessions finish: `0` exits immediately without polling for more, and a positive value keeps the runner alive and re-polling the locked owner's queue for that many seconds first, at the cost of the per-session container isolation described in the hardening section. After a first signal you deferred with `--defer-shutdown-max-min`, the runner exits as soon as it holds no sessions, whatever you set here.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_DRAIN_MARKER_FILE",
+      "type": "env_var",
+      "description": "Marker file that your host writes to announce a graceful drain before sending `SIGTERM`. When the file exists as the drain starts, the runner reports its exit to Anthropic as a host drain rather than a plain shutdown signal. The drain itself, including the `--drain-wait-sec` hold, runs the same as without the flag. Name a path on a local filesystem that sessions can't write to. Requires Claude Code v2.1.271 or later.",
+      "doc_min_version": "2.1.271",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_DRAIN_WAIT_MS",
+      "type": "env_var",
+      "description": "Once the drain starts, which is on `SIGTERM` unless you set `--defer-shutdown-max-min`, wait up to N seconds for each session's in-flight turn and background tasks to finish before terminating the child. During this wait, the runner counts a background task that has just finished as still running until the follow-up turn that reads its result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_ENVIRONMENT_SECRET",
+      "type": "env_var",
+      "description": "Path to a file containing the environment secret, or, for runners spawned by the orchestrator, the single-use work-order JWT. `SELF_HOSTED_RUNNER_ENVIRONMENT_SECRET` carries the secret value directly, not a file path. The older `--pool-secret-file` flag and `SELF_HOSTED_RUNNER_POOL_SECRET` variable still work and print a deprecation notice to stderr; preview-program runner builds older than 2.1.216 only recognize those older names.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_EXEC_PATH",
+      "type": "env_var",
+      "description": "Binary or wrapper script to spawn for each session. See Wrapper scripts.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_HEALTH_PORT",
+      "type": "env_var",
+      "description": "Port for the `/healthz` and `/metrics` listener. Set `0` to disable.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_HOOKS_DIR",
+      "type": "env_var",
+      "description": "Directory of lifecycle hook scripts. See Lifecycle hooks.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_HOST_CONFIG_DIR",
+      "type": "env_var",
+      "description": "Directory captured into the runner's startup snapshot and seeded into each session's `CLAUDE_CONFIG_DIR`; changes on disk apply after a runner restart. Setting the variable also moves where the runner reads `.claude.json` for MCP seeding, so setting it, including to its own default, relocates that lookup; point at an empty directory to disable seeding entirely.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_HOST_CONFIG_SNAPSHOT",
+      "type": "env_var",
+      "description": "Where the runner keeps the startup snapshot of the host config directory that it seeds each session from. `disk` copies the snapshot into a runner-owned directory under `--base-dir` and, at each session start, verifies every file against an in-memory digest. If a file in the copy has been modified, the session fails and the runner refuses sessions until you restart it. `memory` holds the whole snapshot on the heap, capped at 64 MiB; over the cap, sessions start without host config and show a notice saying so. When the runner can't write the disk snapshot, it logs the failure and uses `memory` for that run. Requires Claude Code v2.1.271 or later.",
+      "doc_min_version": "2.1.271",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_IDLE_SHUTDOWN_MS",
+      "type": "env_var",
+      "description": "Exit after N minutes of polling with no work ever assigned, for autoscaler scale-down. `0` disables.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_LOCK_TO_ACCOUNT",
+      "type": "env_var",
+      "description": "Pre-lock the runner to a specific account at startup instead of locking on first session. Accepts an email address or `user_...` ID in the environment's organization. A pre-locked runner never picks up Claude Tag channel sessions, which have no account.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_LOG_FILE",
+      "type": "env_var",
+      "description": "Mirror runner logs to a file in addition to stdout and stderr, created with `0600` permissions. Required for `self-hosted-runner doctor` to tail logs locally.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_MAX_LIFETIME_GRACE_MS",
+      "type": "env_var",
+      "description": "How long the runner waits after a session reaches its `--kill-session-after-min` limit, for a running turn to finish or the release to complete, before it terminates the session",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_MAX_LIFETIME_MS",
+      "type": "env_var",
+      "description": "Limit a session to N minutes wall-clock, as a safety limit for stuck sessions. On v2.1.260 or later, the runner releases a session that reaches the limit so it can resume on its user's next message, and terminates it only if it's still on the runner when the `SELF_HOSTED_RUNNER_MAX_LIFETIME_GRACE_MS` grace window ends. Before v2.1.260, the runner terminated the session at the limit. See Some sessions don't count as idle for the details and how to choose a value. `0` disables.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_POST_SESSION_HOOK_TIMEOUT_MS",
+      "type": "env_var",
+      "description": "Budget for the `post-session` hook on every session end, including runner shutdown",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_POST_TURN_SETTLE_MS",
+      "type": "env_var",
+      "description": "Cap on how long the runner counts a session as busy for the `--drain-wait-sec` drain after a turn finishes, while the session's process reports the turn's end to Anthropic. `0` or an unusable value falls back to the default, so the hold can't be turned off. Requires Claude Code v2.1.275 or later.",
+      "doc_min_version": "2.1.275",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_PROXY_AUTHORIZATION_COMMAND",
+      "type": "env_var",
+      "description": "Shell command the runner runs for every connection to your egress proxy, using its trimmed stdout as the `Proxy-Authorization` header value. Requires `HTTPS_PROXY` or `HTTP_PROXY`, and can't be combined with `--proxy-authorization-file`. See Authenticate to an egress proxy. Requires Claude Code v2.1.238 or later.",
+      "doc_min_version": "2.1.238",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_PROXY_AUTHORIZATION_FILE",
+      "type": "env_var",
+      "description": "File the runner reads for every connection to your egress proxy, using its trimmed contents as the `Proxy-Authorization` header value. Use this flag for a token another process rotates in place. Carries the same requirements as `--proxy-authorization-command`, and can't be combined with it. See Authenticate to an egress proxy. Requires Claude Code v2.1.238 or later.",
+      "doc_min_version": "2.1.238",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_PUSH_OUTCOME_ON_RELEASE",
+      "type": "env_var",
+      "description": "On a runner-initiated session end such as a drain or idle release, push tracked outcome branches to `origin` before deleting the workspace, so in-flight commits survive a restart. Best-effort; adds 30 seconds to the shutdown budget, and requires git 2.29 or newer to resume from the pushed branch. Restrict push access to `claude/*` refs before enabling; see Resumed sessions lose unpushed work. Repositories checked out via a `checkout` lifecycle hook aren't pushed; snapshot those from the `post-session` hook instead.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_REMOVE_SESSION_STATE",
+      "type": "env_var",
+      "description": "Remove a session's per-session directories under `<base-dir>/_sessions/` when the session ends on this runner, whatever the outcome. Reuse a pre-warmed checkout describes what they hold and who can read them when they stay. The removal is best-effort: the per-session directories stay in place when the runner is killed or reaches its drain deadline before cleanup runs. With the flag on, a failed or interrupted session's debug log isn't kept on disk. Requires Claude Code v2.1.268 or later.",
+      "doc_min_version": "2.1.268",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_RETIRE_AT",
+      "type": "env_var",
+      "description": "Retire the runner at an absolute Unix timestamp in seconds, for infrastructure that kills the runner at a known time; Runner lifecycle describes the release sequence and how to size the margin. Values before 2001 or after the year 5138 are rejected by the flag and ignored by the environment variable.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_SERVER_AUTO_MODE_LISTS",
+      "type": "env_var",
+      "description": "Which of the auto mode classifier rule lists that the control plane sends with a session may reach that session: `all`, `no-allow`, or `none`. See Auto mode rule lists for what each value applies. An invalid value stops the runner at startup. Requires Claude Code v2.1.295 or later.",
+      "doc_min_version": "2.1.295",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_SESSION_IDLE_MS",
+      "type": "env_var",
+      "description": "Release a session slot after N minutes of inactivity once a turn finishes or the session waits for the user's action. A session that's still mid-turn, including one holding a never-finishing background task or an approval requested from inside a running tool call, doesn't count as idle; pair with `--kill-session-after-min` as the hard backstop. After a session's background task finishes, the runner considers the session busy until the follow-up turn that reads the result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window. Until the runner receives a shutdown signal or reaches its retire time, a release that leaves the runner with no active sessions starts the same exit path as a normal drain, governed by `--drain-grace-sec`. After a first signal you deferred with `--defer-shutdown-max-min`, the runner exits as soon as a release leaves it holding no sessions. `0` disables.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_SESSION_STOP_GRACE_MS",
+      "type": "env_var",
+      "description": "How long to wait for the Claude process to exit cleanly after a session ends, before force-killing it. Raise the value if the child's own `SessionEnd` hooks need more time.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_SIGKILL_GRACE_MS",
+      "type": "env_var",
+      "description": "How long the runner waits for the OS to deliver `SIGKILL` to a child stuck in uninterruptible I/O before exiting itself. Floored at `--post-session-hook-timeout-sec` plus 15 seconds, and 30 more when `--push-outcome-on-release` is set, so the effective minimum is 75 seconds at defaults.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_STARTUP_TIMEOUT_MS",
+      "type": "env_var",
+      "description": "Release a session slot if the child hasn't signaled on the activity channel that it initialized within N minutes. The N minutes start at spawn, after cloning, and start over at each `user` or `assistant` message the child emits before it has initialized or reported its state. Before v2.1.299, this timeout stopped applying at the session's first such message. For release after the init signal, see `--release-idle-session-min`. `0` disables.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_TRUST_WORKSPACE",
+      "type": "env_var",
+      "description": "Seed persisted trust for each session's repository paths so repo-committed `permissions.allow` and `additionalDirectories` are honored. Set `false` to drop repo-committed permission grants and configure allow rules in the host config's `settings.json` instead; repository-committed `sandbox.*` settings still apply either way, which is why the repo-settings guard scans them regardless of this flag.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
     },
     {
       "symbol": "SLASH_COMMAND_TOOL_CHAR_BUDGET",
