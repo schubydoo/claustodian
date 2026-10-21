@@ -107,6 +107,13 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   drop `daemon` from its `scopes`. `data/binary-observations.json` records such a
   scope's first version in `scope_first_seen`.
 
+- **The binary lane reads env vars that Claude Code reads through a helper.** Some
+  code reads a variable by passing its name to a helper, for example
+  `St("SELF_HOSTED_RUNNER_SIGKILL_GRACE_MS")`. The binary lane now counts that call
+  as a read. From the next full re-extract, variables documented only in the docs
+  get their real first version. `OTEL_METRICS_INCLUDE_VERSION` is one example: the
+  dataset estimates it at 2.1.205, but the binary reads it at 1.0.50.
+
 ## 2026-10-15
 
 ### Added

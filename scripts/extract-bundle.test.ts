@@ -11,6 +11,7 @@ import {
   extractEnvVars,
   extractFlagDescriptions,
   extractFlags,
+  extractNameReaderEnvVars,
   extractParamEnvVars,
   extractSkillCommands,
 } from './extract-bundle.js';
@@ -981,5 +982,74 @@ describe('extractParamEnvVars — env vars read through a param bound to process
     // lookbehind rejects it because `$` is an identifier char.
     const src = 'function k(e){return some$e.CLAUDE_CODE_NO}k(process.env);';
     expect(names(src)).toEqual([]);
+  });
+});
+
+describe('extractNameReaderEnvVars — env vars read by name through a helper', () => {
+  const names = (...chunks: string[]) => [...extractNameReaderEnvVars(chunks).keys()].sort();
+  // The 2.1.301 shape: a numeric reader called with each variable's name.
+  const ST = 'function St(e){let n=process.env[e];if(n===void 0||n==="")return 0;return Number(n)}';
+
+  it('reads the literal passed to a helper that reads process.env[param]', () => {
+    const src =
+      ST + 'x={grace:St("SELF_HOSTED_RUNNER_SIGKILL_GRACE_MS")||30000,y:St(\'OTHER_NAME\',1)}';
+    expect(names(src)).toEqual(['OTHER_NAME', 'SELF_HOSTED_RUNNER_SIGKILL_GRACE_MS']);
+  });
+
+  it('resolves the helper in its own chunk only', () => {
+    // Another chunk reuses the name for an unrelated function.
+    const other = 'function St(e){return e.map(String)}St("NOT_AN_ENV_VAR");';
+    expect(names(ST + 'St("RUNNER_A")', other)).toEqual(['RUNNER_A']);
+    expect(names(ST, 'St("NOT_READ_HERE")')).toEqual([]);
+  });
+
+  it('drops a name defined twice with different bodies in one chunk', () => {
+    expect(names(ST + 'function St(e){return e}St("AMBIGUOUS_NAME")')).toEqual([]);
+    // The same text twice is one function (a bundle embedded twice).
+    expect(names(ST + ST + 'St("EMBEDDED_TWICE")')).toEqual(['EMBEDDED_TWICE']);
+  });
+
+  it('requires a read of the FIRST parameter, not a write or another parameter', () => {
+    expect(names('function W(e,t){process.env[e]=t}W("WRITTEN_NAME","1")')).toEqual([]);
+    expect(names('function U(e){delete process.env[e]}U("DELETED_NAME")')).toEqual([]);
+  });
+
+  it('requires a flat body, so a reused or rebound name cannot fake a read', () => {
+    // The read is the arrow's own `e`, not the helper's parameter.
+    expect(names('function f(e){return["HOME"].map(e=>process.env[e])}f("NESTED_ARROW")')).toEqual(
+      []
+    );
+    expect(
+      names('function g(e){return function(e){return process.env[e]}("HOME")}g("NESTED_FUNCTION")')
+    ).toEqual([]);
+    expect(names('function h(e){e="HOME";return process.env[e]}h("REASSIGNED")')).toEqual([]);
+    expect(
+      names('function k(e){for(const e of["HOME"])process.env[e];return 0}k("REDECLARED")')
+    ).toEqual([]);
+    expect(names('function S(t,e){return process.env[e]}S("SECOND_PARAM")')).toEqual([]);
+    expect(names('function Z(){return process.env.HOME}Z("NO_PARAM")')).toEqual([]);
+  });
+
+  it('skips a denylisted name and a helper whose extent cannot be matched', () => {
+    // An errno code is never an env var, whatever reads it.
+    expect(names(ST + 'St("EACCES")')).toEqual([]);
+    // An unbalanced body makes the definition unreadable, so it proves nothing.
+    expect(names('function Q(e){let n=process.env[e];Q("UNBALANCED_NAME")')).toEqual([]);
+  });
+
+  it('adds the reads to a full extraction as process-env evidence', () => {
+    const src = ST + 'process.env.DIRECT_READ;St("DIRECT_READ");St("HELPER_ONLY_READ")';
+    const env = extractBundleSymbols(src, [src]).filter((sym) => sym.type === 'env_var');
+    expect(env.map((sym) => [sym.symbol, sym.evidence])).toEqual([
+      ['DIRECT_READ', 'process-env'],
+      ['HELPER_ONLY_READ', 'process-env'],
+    ]);
+    // A name the parameter path already found is not added twice.
+    const both =
+      ST + 'function P(e){return e.CLAUDE_CODE_BOTH}P(process.env);St("CLAUDE_CODE_BOTH")';
+    const found = extractBundleSymbols(both, [both]).filter(
+      (sym) => sym.symbol === 'CLAUDE_CODE_BOTH'
+    );
+    expect(found).toHaveLength(1);
   });
 });
