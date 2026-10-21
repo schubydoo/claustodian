@@ -88,7 +88,8 @@
       "scope_descriptions": {
         "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
         "plugin list": "Print the list as JSON",
-        "plugin marketplace list": "Print the list as JSON"
+        "plugin marketplace list": "Print the list as JSON",
+        "ultrareview": "Print the raw `bugs.json` payload instead of the formatted findings"
       },
       "scopes": [
         "agents",
