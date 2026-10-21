@@ -140,7 +140,8 @@ The same holds for `data/mod-event-observations.json` and `mod_event` records, w
 key, so the first publish needs a full re-extract, and step 2 refuses `--mod-events`
 until every entry has the key. `data/mod-render-site-observations.json` and
 `mod_render_site` records follow the same rule, with `--mod-render-sites` and the
-`modRenderSites` key.
+`modRenderSites` key, as do `data/mod-element-observations.json` and `mod_element`
+records, with `--mod-elements` and the `modElements` key.
 
 Step 3 must come after step 2. `fetch-docs` resolves settings-page key paths against
 `data/binary-observations.json`, because the docs group keys by topic rather than by

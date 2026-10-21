@@ -7,6 +7,7 @@ import {
   MOD_METHOD_FLOOR,
   RENDER_SITE_ENUM_FLOOR,
   extractControlAndModMethods,
+  extractModElements,
   extractModEvents,
   extractModRenderSites,
   extractModEvidence,
@@ -64,6 +65,17 @@ const EVENTS_SORTED = [...EVENT_NAMES].sort();
 /** Render sites as 2.1.242 draws them: one `useRenderInput("<Site>", …)` call each. */
 const SITE_CALLS = (sites: readonly string[]) =>
   sites.map((site, i) => `var u${i}=Y.useRenderInput("${site}",()=>({}),[]);`).join('');
+/** The per-app element lists, as 2.1.301 writes them. */
+const ELEMENT_LISTS = (
+  lists: Record<string, readonly string[]> = {
+    terminal: ['Box', 'Text', 'Button'],
+    desktop: ['Box', 'Svg'],
+  }
+) =>
+  `var A5={${Object.entries(lists)
+    .map(([app, names]) => `${app}:[${names.map((n) => `"${n}"`).join(',')}]`)
+    .join(',')}};`;
+
 /** The described enum, as releases from 2.1.285 write it. */
 const SITE_ENUM = (sites: readonly string[]) =>
   `var S=B([${sites.map((s) => `"${s}"`).join(',')}]).describe("@internal A component a plugin may draw through \`ui.render\`: one name per render site");`;
@@ -187,16 +199,20 @@ describe('extractControlAndModMethods', () => {
     expect(() => extractControlAndModMethods(CONTROL, '0.2.0')).not.toThrow();
     expect(() => extractControlAndModMethods([CONTROL], MOD_METHOD_FLOOR)).toThrow(/^mod lane: /);
     expect(() =>
-      extractControlAndModMethods([CONTROL, TABLE, SITE_CALLS(['Spinner'])], MOD_METHOD_FLOOR)
+      extractControlAndModMethods(
+        [CONTROL, TABLE, SITE_CALLS(['Spinner']), ELEMENT_LISTS()],
+        MOD_METHOD_FLOOR
+      )
     ).toThrow(/^mod lane: .*no mods event list/);
     const both = extractControlAndModMethods(
-      [CONTROL, TABLE, EVENTS, SITE_CALLS(['Spinner'])],
+      [CONTROL, TABLE, EVENTS, SITE_CALLS(['Spinner']), ELEMENT_LISTS()],
       MOD_METHOD_FLOOR
     );
     expect(both.controlMessages).not.toEqual([]);
     expect(both.modMethods).toEqual(METHODS);
     expect(both.modEvents).toEqual(EVENTS_SORTED);
     expect(both).toMatchObject({ modRenderSites: ['Spinner'], modRenderSitesListed: false });
+    expect(both.modElements).toEqual(['Box', 'Button', 'Svg', 'Text']);
   });
 });
 
@@ -312,5 +328,50 @@ describe('extractControlMessages onProgram', () => {
     extractControlMessages(['var a=1;', 'var b=2;'], '0.2.0', (program) => seen.push(program));
     expect(seen).toHaveLength(2);
     expect(seen.every((p) => (p as { type: string }).type === 'Program')).toBe(true);
+  });
+});
+
+describe('extractModElements', () => {
+  it('reads the union of the per-app lists, sorted, lower-case tags included', () => {
+    const source = ELEMENT_LISTS({ terminal: ['Box', 'Text', 'div'], desktop: ['div', 'Svg'] });
+    expect(extractModElements(source, '2.1.250')).toEqual(['Box', 'Svg', 'Text', 'div']);
+  });
+
+  it('ignores an object with a terminal key whose values are not all string lists', () => {
+    const other = 'var K={terminal:{bold:1},desktop:["x"]};var L={terminal:"x"};';
+    expect(extractModElements([other, ELEMENT_LISTS()], '2.1.301')).toEqual([
+      'Box',
+      'Button',
+      'Svg',
+      'Text',
+    ]);
+  });
+
+  it('refuses two element-list objects, none past the floor, and a name it cannot read', () => {
+    expect(() => extractModElements([ELEMENT_LISTS(), ELEMENT_LISTS()], '2.1.301')).toThrow(
+      /2 objects/
+    );
+    expect(() => extractModElements('var a=1;', MOD_METHOD_FLOOR)).toThrow(/no per-app element/);
+    expect(() =>
+      extractModElements(
+        ELEMENT_LISTS({ terminal: ['Box', 'Text', 'Button', 'my-box'] }),
+        '2.1.301'
+      )
+    ).toThrow(/cannot read/);
+  });
+
+  it('ignores a small look-alike, and throws when it is the only candidate', () => {
+    const decoy = 'var D={terminal:[],desktop:["inherit"]};';
+    expect(extractModElements([decoy, ELEMENT_LISTS()], '2.1.301')).toEqual([
+      'Box',
+      'Button',
+      'Svg',
+      'Text',
+    ]);
+    expect(() => extractModElements(decoy, '2.1.301')).toThrow(/no per-app element/);
+  });
+
+  it('asserts nothing before the floor', () => {
+    expect(extractModElements(ELEMENT_LISTS(), '2.1.241')).toEqual([]);
   });
 });

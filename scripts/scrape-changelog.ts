@@ -102,7 +102,8 @@ export interface SymbolRecord {
     | 'control_message'
     | 'mod_method'
     | 'mod_event'
-    | 'mod_render_site';
+    | 'mod_render_site'
+    | 'mod_element';
   /**
    * Carried by control_message records and by no other type — the schema REQUIRES both
    * there and FORBIDS both elsewhere, so a stray one fails validation as surely as a
@@ -493,13 +494,25 @@ const ENV_CATEGORY_RULES: ReadonlyArray<readonly [RegExp, string]> = [
   [/_PROXY$|^NO_PROXY$|^ALL_PROXY$/, 'network'],
 ];
 
+/**
+ * The mods types. Each is read by AST under a floor guard, as `control_message` is, so a
+ * record the binary alone proves lands `active`, and the binary is the removal authority
+ * for an undocumented one. A new type joins this list only by that same standard.
+ */
+const MOD_TYPES: ReadonlySet<string> = new Set([
+  'mod_method',
+  'mod_event',
+  'mod_render_site',
+  'mod_element',
+]);
+
 export function categorize(symbol: string, type: ExtractedSymbolType): string {
   if (type === 'cli_flag') return 'cli';
   if (type === 'command') return 'command';
   // Settings keys are their own surface; the env-var prefix rules below would
   // otherwise bucket them all as "other".
   if (type === 'config_key' || type === 'internal_config_flag') return 'settings';
-  if (type === 'mod_method' || type === 'mod_event' || type === 'mod_render_site') return 'mods';
+  if (MOD_TYPES.has(type)) return 'mods';
   for (const [pattern, category] of ENV_CATEGORY_RULES) {
     if (pattern.test(symbol)) return category;
   }
@@ -1412,11 +1425,9 @@ export function enrichWithBinary(
     // A mod method's removal comes from the binary: the changelog never retracts a
     // mention, so without this a changelog-named method would outlive the dispatch
     // table that proved it. A documented method never gets here with a removal —
-    // see withModObservations. A mod event is the same case.
+    // see withModObservations. Every MOD_TYPES type is the same case.
     const described =
-      (obs.type === 'mod_method' || obs.type === 'mod_event' || obs.type === 'mod_render_site') &&
-      obs.removed_in !== null &&
-      promoted.removed_in === null
+      MOD_TYPES.has(obs.type) && obs.removed_in !== null && promoted.removed_in === null
         ? finalizeRecord({
             ...promoted,
             first_seen_estimated: promoted.first_seen_estimated === true,
@@ -1470,15 +1481,10 @@ export function enrichWithBinary(
     // A maintainer-audited symbol graduates from the needs_review default to
     // active with a first-party description; everything else stays needs_review.
     const promo = promotionFor(obs.type, obs.symbol);
-    // A mod method is a key of the mods API dispatch table, and a mod event a literal
-    // of the event list, both read by AST under a floor guard — the standard
+    // Every MOD_TYPES type is read by AST under a floor guard — the standard
     // control_message records meet, not the regex-lane evidence that keeps other
     // binary-only symbols at needs_review.
-    const settled =
-      promo !== undefined ||
-      obs.type === 'mod_method' ||
-      obs.type === 'mod_event' ||
-      obs.type === 'mod_render_site';
+    const settled = promo !== undefined || MOD_TYPES.has(obs.type);
     merged.push(
       finalizeRecord({
         symbol: obs.symbol,
@@ -1594,7 +1600,8 @@ export function buildEnrichedSnapshots(
   control?: readonly ControlObservation[],
   mods?: readonly ModObservation[],
   modEvents?: readonly ModObservation[],
-  modRenderSites?: readonly ModObservation[]
+  modRenderSites?: readonly ModObservation[],
+  modElements?: readonly ModObservation[]
 ): VersionSnapshot[] {
   const collected = collectChangelogSymbols(blocks);
   const latest =
@@ -1603,29 +1610,37 @@ export function buildEnrichedSnapshots(
   // lane publishes a mod_method record. The docs and changelog lanes would otherwise
   // publish them through the release bot, dated at the tip, before the data PR that
   // carries their binary dates — see the opt-in in backfill-binary.ts. An empty list
-  // closes the gate too: past the floor the distiller cannot produce one. mod_event
-  // and mod_render_site records each have their own file and the same gate.
+  // closes the gate too: past the floor the distiller cannot produce one. Each other
+  // mod_* type has its own file and the same gate.
   const publishMods = mods !== undefined && mods.length > 0;
   const publishModEvents = modEvents !== undefined && modEvents.length > 0;
   const publishModRenderSites = modRenderSites !== undefined && modRenderSites.length > 0;
+  const publishModElements = modElements !== undefined && modElements.length > 0;
   const enriched = enrichSymbols(collected, docs, latest).filter(
     (record) =>
       (publishMods || record.type !== 'mod_method') &&
       (publishModEvents || record.type !== 'mod_event') &&
-      (publishModRenderSites || record.type !== 'mod_render_site')
+      (publishModRenderSites || record.type !== 'mod_render_site') &&
+      (publishModElements || record.type !== 'mod_element')
   );
   const withBinary = binary
     ? enrichWithBinary(
         enriched,
-        withModRenderSiteObservations(
-          withModEventObservations(
-            withModObservations(binary, mods, modMethodsDocumented(docs)),
-            publishModEvents ? modEvents : undefined,
-            mods,
-            documentedOfType(docs, 'mod_event')
+        withTypedModObservations(
+          withTypedModObservations(
+            withModEventObservations(
+              withModObservations(binary, mods, modMethodsDocumented(docs)),
+              publishModEvents ? modEvents : undefined,
+              mods,
+              documentedOfType(docs, 'mod_event')
+            ),
+            'mod_render_site',
+            publishModRenderSites ? modRenderSites : undefined,
+            documentedOfType(docs, 'mod_render_site')
           ),
-          publishModRenderSites ? modRenderSites : undefined,
-          documentedOfType(docs, 'mod_render_site')
+          'mod_element',
+          publishModElements ? modElements : undefined,
+          documentedOfType(docs, 'mod_element')
         ),
         binaryDescriptions
       )
@@ -1723,22 +1738,24 @@ function withModEventObservations(
 }
 
 /**
- * The binary observations with each mods render site added as a `mod_render_site`
- * observation. As for methods and events, a documented site keeps no binary removal.
+ * The binary observations with each mods render site or element added as an
+ * observation of `type`. As for methods and events, a documented one keeps no binary
+ * removal.
  */
-function withModRenderSiteObservations(
+function withTypedModObservations(
   binary: BinaryObservations,
-  sites: readonly ModObservation[] | undefined,
+  type: 'mod_render_site' | 'mod_element',
+  observations: readonly ModObservation[] | undefined,
   documented: ReadonlySet<string>
 ): BinaryObservations {
-  if (!sites || sites.length === 0) return binary;
+  if (!observations || observations.length === 0) return binary;
   return {
     ...binary,
     symbols: [
       ...binary.symbols,
-      ...sites.map((obs) => ({
+      ...observations.map((obs) => ({
         symbol: obs.symbol,
-        type: 'mod_render_site' as const,
+        type,
         first_seen: obs.first_seen,
         last_seen: obs.last_seen,
         removed_in: documented.has(obs.symbol) ? null : obs.removed_in,
@@ -1888,6 +1905,9 @@ const controlObservationsPath = (): string =>
 /** The committed mod observations, with the same test seam as the control file. */
 const modObservationsPath = (): string =>
   process.env.CLAUSTODIAN_MOD_OBSERVATIONS_PATH ?? 'data/mod-observations.json';
+/** The committed mod element observations, with the same test seam. */
+const modElementObservationsPath = (): string =>
+  process.env.CLAUSTODIAN_MOD_ELEMENT_OBSERVATIONS_PATH ?? 'data/mod-element-observations.json';
 /** The committed mod render site observations, with the same test seam. */
 const modRenderSiteObservationsPath = (): string =>
   process.env.CLAUSTODIAN_MOD_RENDER_SITE_OBSERVATIONS_PATH ??
@@ -2011,6 +2031,18 @@ export function modRenderSiteRegressionRefusal(
     },
     sites,
     priorHadSites
+  );
+}
+
+/** The mod_element case of observationRegressionRefusal. */
+export function modElementRegressionRefusal(
+  elements: { present: boolean; observations: readonly ModObservation[] },
+  priorHadElements: boolean
+): string | null {
+  return observationRegressionRefusal(
+    { path: modElementObservationsPath(), type: 'mod_element', flag: '--mod-elements' },
+    elements,
+    priorHadElements
   );
 }
 
@@ -2163,6 +2195,12 @@ export async function main(): Promise<number> {
     await priorDatasetHasRecordsOfType(priorPath, 'mod_render_site')
   );
   if (modRenderSiteRefusal) throw new Error(modRenderSiteRefusal);
+  const modElements = await loadModObservations(modElementObservationsPath(), '--mod-elements');
+  const modElementRefusal = modElementRegressionRefusal(
+    modElements,
+    await priorDatasetHasRecordsOfType(priorPath, 'mod_element')
+  );
+  if (modElementRefusal) throw new Error(modElementRefusal);
 
   const snapshots = buildEnrichedSnapshots(
     blocks,
@@ -2173,7 +2211,8 @@ export async function main(): Promise<number> {
     control.observations,
     mods.present ? mods.observations : undefined,
     modEvents.present ? modEvents.observations : undefined,
-    modRenderSites.present ? modRenderSites.observations : undefined
+    modRenderSites.present ? modRenderSites.observations : undefined,
+    modElements.present ? modElements.observations : undefined
   );
   const index = buildIndex(snapshots);
 

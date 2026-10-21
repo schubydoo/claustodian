@@ -12,7 +12,7 @@ equivalent and repeats the parts an agent needs in-context.
 ## The project
 
 A static, versioned dataset of the Claude Code surface — every CLI flag, environment
-variable, command, settings key, stream-json control message, mods API method, mods event and mods render site,
+variable, command, settings key, stream-json control message, mods API method, mods event, mods render site and mods element,
 tagged with the version it was first observed in.
 Three lanes (changelog, docs, release binaries) produce one JSON snapshot per release,
 published to <https://claustodian.dev>.
@@ -39,9 +39,9 @@ npm run fetch-docs           # 3. docs pages   -> data/docs.json
 npm run scrape -- --all      # 4. everything   -> data/versions/, index, latest
 ```
 
-⚠️ Publishing `control_message`, `mod_method`, `mod_event` and `mod_render_site` records is
-opt-in, and each is its own data PR — step 2 needs `--control`, `--mods`, `--mod-events` or
-`--mod-render-sites` the first time. The runbook has the
+⚠️ Publishing `control_message`, `mod_method`, `mod_event`, `mod_render_site` and `mod_element`
+records is opt-in, and each is its own data PR — step 2 needs `--control`, `--mods`,
+`--mod-events`, `--mod-render-sites` or `--mod-elements` the first time. The runbook has the
 reasoning.
 
 `fetch-docs` resolves settings key paths against `data/binary-observations.json`, so
@@ -51,18 +51,18 @@ this** — there is a reconciliation step that has to happen first.
 
 ## Architecture map
 
-| Path                          | What                                                                                                           |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `scripts/extract-bundle.ts`   | positive-evidence extraction from a release bundle                                                             |
-| `scripts/control-lane.ts`     | AST extraction of the stream-json control protocol                                                             |
-| `scripts/mod-lane.ts`         | AST extraction of the mods API dispatch table, event list and render sites                                     |
-| `scripts/binary-lane.ts`      | policy: what publishes, how it is categorised, re-dating                                                       |
-| `scripts/backfill-binary.ts`  | observations → `data/binary-observations.json` (+ `--control`, `--mods`, `--mod-events`, `--mod-render-sites`) |
-| `scripts/fetch-docs.ts`       | official docs pages → `data/docs.json`                                                                         |
-| `scripts/scrape-changelog.ts` | changelog + all lanes → `data/versions/*.json`                                                                 |
-| `schema/symbol.schema.json`   | the record contract                                                                                            |
-| `data/`                       | **generated** — never hand-edit                                                                                |
-| `site/index.html`             | the whole site, hand-written, no build step                                                                    |
+| Path                          | What                                                                                                                             |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `scripts/extract-bundle.ts`   | positive-evidence extraction from a release bundle                                                                               |
+| `scripts/control-lane.ts`     | AST extraction of the stream-json control protocol                                                                               |
+| `scripts/mod-lane.ts`         | AST extraction of the mods API dispatch table, events, render sites, elements                                                    |
+| `scripts/binary-lane.ts`      | policy: what publishes, how it is categorised, re-dating                                                                         |
+| `scripts/backfill-binary.ts`  | observations → `data/binary-observations.json` (+ `--control`, `--mods`, `--mod-events`, `--mod-render-sites`, `--mod-elements`) |
+| `scripts/fetch-docs.ts`       | official docs pages → `data/docs.json`                                                                                           |
+| `scripts/scrape-changelog.ts` | changelog + all lanes → `data/versions/*.json`                                                                                   |
+| `schema/symbol.schema.json`   | the record contract                                                                                                              |
+| `data/`                       | **generated** — never hand-edit                                                                                                  |
+| `site/index.html`             | the whole site, hand-written, no build step                                                                                      |
 
 Full detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 

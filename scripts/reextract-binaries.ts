@@ -253,6 +253,7 @@ export async function main(argv: string[]): Promise<number> {
     let modEvents: string[];
     let modRenderSites: string[];
     let modRenderSitesListed: boolean;
+    let modElements: string[];
     try {
       ({
         controlMessages,
@@ -261,6 +262,7 @@ export async function main(argv: string[]): Promise<number> {
         modEvents,
         modRenderSites,
         modRenderSitesListed,
+        modElements,
       } = extractControlAndModMethods(chunks, version));
     } catch (error) {
       controlFailures.push({ version, reason: (error as Error).message });
@@ -282,6 +284,7 @@ export async function main(argv: string[]): Promise<number> {
         modEvents,
         modRenderSites,
         modRenderSitesListed,
+        modElements,
       })
     );
     extracted++;

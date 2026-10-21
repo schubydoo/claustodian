@@ -1477,18 +1477,20 @@ export interface ModObservationsFile {
  */
 export async function loadModObservations(
   path: string,
-  flag: '--mods' | '--mod-events' | '--mod-render-sites' = '--mods'
+  flag: '--mods' | '--mod-events' | '--mod-render-sites' | '--mod-elements' = '--mods'
 ): Promise<{ observations: ModObservation[]; present: boolean }> {
   const parsed = await readOptInObservations<ModObservationsFile>(path, {
     what: {
       '--mods': 'mod observations',
       '--mod-events': 'mod event observations',
       '--mod-render-sites': 'mod render site observations',
+      '--mod-elements': 'mod element observations',
     }[flag],
     absence: {
       '--mods': 'mods API methods',
       '--mod-events': 'mods events',
       '--mod-render-sites': 'mods render sites',
+      '--mod-elements': 'mods elements',
     }[flag],
     regenerate: `"npm run backfill-binary -- ${flag}"`,
   });
@@ -1506,7 +1508,7 @@ export async function loadModObservations(
 export function assertModObservations(
   file: ModObservationsFile,
   path: string,
-  flag: '--mods' | '--mod-events' | '--mod-render-sites' = '--mods'
+  flag: '--mods' | '--mod-events' | '--mod-render-sites' | '--mod-elements' = '--mods'
 ): void {
   if (file.$generated_by !== GENERATED_BY || file.source !== SOURCE) {
     throw new Error(

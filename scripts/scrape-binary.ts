@@ -157,6 +157,7 @@ export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryC
     modEvents,
     modRenderSites,
     modRenderSitesListed,
+    modElements,
   } = extractControlAndModMethods(chunks, version);
   return {
     version,
@@ -172,6 +173,7 @@ export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryC
     modEvents,
     modRenderSites,
     modRenderSitesListed,
+    modElements,
   };
 }
 
@@ -193,6 +195,8 @@ export interface BinaryCacheRecord {
   modRenderSites: string[];
   /** Whether the render-site enum was read, so absence from modRenderSites is evidence. */
   modRenderSitesListed: boolean;
+  /** The element types this release lists; see modElementsFrom. */
+  modElements: string[];
 }
 
 /** Write `record` to `<outDir>/<version>.json` atomically (tmp + rename). */

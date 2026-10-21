@@ -237,6 +237,7 @@ describe('reextract-binaries main()', () => {
       'modEvents',
       'modRenderSites',
       'modRenderSitesListed',
+      'modElements',
     ]);
     expect(existsSync(join(out, '3.0.0.json'))).toBe(false);
     expect(existsSync(join(out, '4.0.0.json'))).toBe(false); // refused, not extracted
