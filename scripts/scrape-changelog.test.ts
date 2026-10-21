@@ -261,6 +261,15 @@ describe('extractSymbols', () => {
     }
   });
 
+  it('drops TERM and GIT_CONFIG named in the 2.1.305 runner bullets', () => {
+    for (const bullet of [
+      'Self-hosted runner: Fixed a start script that shares only its stdout with the runner or orchestrator failing with `Resource temporarily unavailable` when `TERM` is set (a 2.1.300 regression)',
+      'Self-hosted runner: Fixed repository access failing since 2.1.296 when a git credential helper or askpass program reads its settings through `GIT_CONFIG`',
+    ]) {
+      expect(extractSymbols(bullet)).toEqual([]);
+    }
+  });
+
   it('drops the Windows system variables named in the 2.1.282 settings bullet', () => {
     const symbols = extractSymbols(
       'Windows: Changed project and local settings `env` to no longer set ' +
@@ -310,6 +319,8 @@ describe('extractSymbols', () => {
       'GIT_CONFIG_COUNT',
       'GIT_SSL_CAINFO',
       'GIT_SSL_NO_VERIFY',
+      'GIT_CONFIG',
+      'TERM',
       'PATH',
       'HOME',
       'LANG',
@@ -904,6 +915,28 @@ describe('enrichWithBinary', () => {
       binary([{ symbol: 'model', type: 'config_key', first_seen: '2.1.180', last_seen: '2.1.224' }])
     );
     expect(byKey(out).get('config_key:model')?.category).toBe('settings');
+  });
+
+  it('keeps FALLBACK_FOR_ALL_PRIMARY_MODELS once its docs record is gone', () => {
+    // 2.1.305: the env-vars page dropped it while the binary kept reading it.
+    // It has no CLAUDE_ prefix, so only PROMOTE_CC_ENV keeps it published.
+    const out = enrichWithBinary(
+      [],
+      binary([
+        {
+          symbol: 'FALLBACK_FOR_ALL_PRIMARY_MODELS',
+          type: 'env_var',
+          first_seen: '2.0.35',
+          last_seen: '2.1.305',
+        },
+      ])
+    );
+    expect(byKey(out).get('env_var:FALLBACK_FOR_ALL_PRIMARY_MODELS')).toMatchObject({
+      provenance: 'binary',
+      status: 'needs_review',
+      category: 'claude-code',
+      first_seen: '2.0.35',
+    });
   });
 
   it('withholds a switch-case-only flag from the published set', () => {

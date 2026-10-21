@@ -332,6 +332,10 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   'GIT_CONFIG_COUNT',
   'GIT_SSL_CAINFO',
   'GIT_SSL_NO_VERIFY',
+  // From the 2.1.305 bullet "Self-hosted runner: Fixed repository access failing
+  // since 2.1.296 when a git credential helper or askpass program reads its
+  // settings through `GIT_CONFIG`". git reads it; the 2.1.305 binary does not.
+  'GIT_CONFIG',
   // The `gh` CLI / GitHub Actions auth-token convention, from the 2.1.251 bullet
   // "call the GitHub API directly (via `gh auth token`, `GH_TOKEN`, or
   // `GITHUB_TOKEN`)". Claude Code's GitHub integration reads these, but they are
@@ -367,6 +371,9 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   'XDG_DATA_HOME',
   'TMPDIR',
   'TEMP',
+  // The terminal type, from the 2.1.305 bullet "Self-hosted runner: Fixed a start
+  // script … failing with `Resource temporarily unavailable` when `TERM` is set".
+  'TERM',
   // A Windows system variable, from the 2.1.282 bullet "Windows: Changed project
   // and local settings `env` to no longer set `ALLUSERSPROFILE`, `SystemDrive`,
   // or the `CommonProgramFiles` variables". The other two are mixed case, which
