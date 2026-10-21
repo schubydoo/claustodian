@@ -1033,14 +1033,17 @@ describe('distillModRenderSiteObservations', () => {
   });
 
   it('removes nothing on absence from the calls alone, before the enum ships', () => {
-    // AbovePrompt and Pane leave the useRenderInput calls at 2.1.269 and return
-    // in the enum at 2.1.285.
+    // AbovePrompt and Pane leave the useRenderInput calls at 2.1.269. With no
+    // listed release after that, the absence must not become a removal.
     const obs = distillModRenderSiteObservations([
       siteEntry('2.1.265', ['Pane', 'Spinner'], false),
       siteEntry('2.1.269', ['Spinner'], false),
-      siteEntry('2.1.285', ['Pane', 'Spinner'], true),
+      siteEntry('2.1.280', ['Spinner'], false),
     ]);
-    expect(obs.find((o) => o.symbol === 'Pane')).toMatchObject({ removed_in: null });
+    expect(obs.find((o) => o.symbol === 'Pane')).toMatchObject({
+      last_seen: '2.1.265',
+      removed_in: null,
+    });
   });
 
   it('removes a site at the first listed release after its last sighting', () => {

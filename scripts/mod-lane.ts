@@ -145,8 +145,9 @@ export interface ModEvidence {
   names: string[];
   /** Each described render-site enum: its members, and every element it cannot read. */
   siteEnums: Array<{ sites: string[]; unreadable: string[] }>;
-  /** The first argument of each `useRenderInput` call, or a note where it is not a name. */
+  /** The first argument of each `X.useRenderInput` call that is a site name. */
   siteCalls: string[];
+  /** A note for each such call whose first argument is not a site name. */
   siteCallsUnreadable: string[];
 }
 
@@ -280,10 +281,13 @@ export function collectModEvidence(program: Node): ModEvidence {
  *     plugin may draw through `ui.render`". It is the whole list, so leaving it is
  *     removal evidence, and it must be present.
  *   - From MOD_METHOD_FLOOR, the first argument of each `X.useRenderInput("<Site>", …)`
- *     call, the hook that draws a site. That set is NOT the whole list: `AbovePrompt`
- *     and `Pane` stop appearing in it at 2.1.269 and are still sites. So a call proves a
- *     site exists and dates it, and its absence proves nothing. distillModRenderSites
- *     takes removals only from releases where `listed` is true.
+ *     member call, the hook that draws a site. A call proves a site exists and dates
+ *     it, but these calls are not the whole list. Some chunks call the hook through a
+ *     bare name imported from the chunk that exports it, and such names are reused by
+ *     unrelated helpers elsewhere, so those calls are not read. From 2.1.269 that is how
+ *     `AbovePrompt` and `Pane` are drawn. So absence from the calls proves nothing:
+ *     distillModRenderSiteObservations takes removals only from releases where
+ *     `listed` is true.
  *
  * Below MOD_METHOD_FLOOR the lane asserts nothing.
  */

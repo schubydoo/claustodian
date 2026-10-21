@@ -1277,7 +1277,33 @@ describe('parseDocPage — mods reference render sites', () => {
   it('refuses an unknown header, and a row that names no site', () => {
     const table = (header: string, row: string) =>
       ['## Render sites', header, '| :- | :- |', row].join('\n');
-    expect(() => sites(table('| Component | What |', '| `Pane` | x |'))).toThrow(/not "Site"/);
-    expect(() => sites(table('| Site | What |', '| Pane | x |'))).toThrow(/names no site/);
+    expect(() => sites(table('| Component | What |', '| `Pane` | x |'))).toThrow(
+      /other than "Site"/
+    );
+    expect(() => sites(table('| Site | What |', '| Pane | x |'))).toThrow(/other than site names/);
+  });
+
+  it('refuses a cell with words beside the names, and a second table', () => {
+    const page = (...rows: string[]) =>
+      ['## Render sites', '| Site | What |', '| :- | :- |', ...rows].join('\n');
+    expect(() => sites(page('| `CommandOutput` (wraps a `Box`) | x |'))).toThrow(
+      /other than site names/
+    );
+    expect(() =>
+      sites(page('| `Pane` | x |', '', '| Site | What |', '| :- | :- |', '| `Elements` | y |'))
+    ).toThrow(/second table/);
+  });
+
+  it('skips a Render sites example inside fenced code', () => {
+    const page = [
+      '## Elements',
+      '```md',
+      '## Render sites',
+      '| Site | What |',
+      '| :- | :- |',
+      '| `Fake` | x |',
+      '```',
+    ].join('\n');
+    expect(sites(page)).toEqual([]);
   });
 });

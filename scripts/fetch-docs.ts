@@ -706,15 +706,30 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
 /**
  * The "Render sites" table of the mods reference page. Its first cell names one site
  * or more in backticks (`` `ToolUse`, `ToolResult`, `ToolGroup` ``, sometimes as a
- * link). The other cells list props and apps, not what the site is, so the record
- * carries no description and the binary lane dates it. The section holds one table,
- * headed "Site"; any other header, and a row that names no site, stop the run.
+ * link), and nothing else. The other cells list props and apps, not what the site is,
+ * so the record carries no description and the binary lane dates it. The section holds
+ * one table, headed "Site". A second table, any other header, and a first cell holding
+ * anything but site names stop the run. Fenced code is skipped, so an example cannot
+ * open the section.
  */
 function parseModsRenderSiteTable(page: string, markdown: string): DocEntry[] {
   const entries: DocEntry[] = [];
+  const refuse = (what: string, line: string): never => {
+    throw new Error(
+      `Docs page "${page}": ${what}: ${line.trim()}. Read the page and fix ` +
+        'parseModsRenderSiteTable.'
+    );
+  };
+  // A site name written plainly or as a link, several to a cell, joined by commas.
+  const name = String.raw`(?:\[\`[A-Z][A-Za-z]*\`\]\([^)\s]*\)|\`[A-Z][A-Za-z]*\`)`;
+  const cellOfNames = new RegExp(`^${name}(?:,\\s*${name})*$`);
   let inSection = false;
+  let inFence = false;
+  let tables = 0;
   let inTable = false;
   for (const line of markdown.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) inFence = !inFence;
+    if (inFence) continue;
     if (!/^\s*\|/.test(line)) {
       inTable = false;
       const heading = /^##\s+(.*)$/.exec(line);
@@ -722,31 +737,21 @@ function parseModsRenderSiteTable(page: string, markdown: string): DocEntry[] {
       continue;
     }
     if (!inSection || /^\s*\|\s*:?-{1,}/.test(line)) continue;
-    const [nameCell] = splitTableRow(line)
-      .slice(1, -1)
-      .map((c) => c.trim());
+    const nameCell = (splitTableRow(line).slice(1, -1)[0] ?? '').trim();
     if (!inTable) {
       inTable = true;
-      if (nameCell !== 'Site') {
-        throw new Error(
-          `Docs page "${page}": the Render sites table has the header ${line.trim()}, not ` +
-            '"Site". Read the page and fix parseModsRenderSiteTable.'
-        );
-      }
+      tables += 1;
+      if (tables > 1) refuse('the Render sites section holds a second table', line);
+      if (nameCell !== 'Site')
+        refuse('the Render sites table has a header other than "Site"', line);
       continue;
     }
-    const names = [...(nameCell ?? '').matchAll(/`([A-Z][A-Za-z]*)`/g)].map(
-      (match) => match[1] as string
-    );
-    if (names.length === 0) {
-      throw new Error(
-        `Docs page "${page}": a row of the Render sites table names no site: ` +
-          `${line.trim()}. Read the page and fix parseModsRenderSiteTable.`
-      );
+    if (!cellOfNames.test(nameCell)) {
+      refuse('a row of the Render sites table holds something other than site names', line);
     }
-    for (const symbol of names) {
+    for (const match of nameCell.matchAll(/`([A-Z][A-Za-z]*)`/g)) {
       entries.push({
-        symbol,
+        symbol: match[1] as string,
         type: 'mod_render_site',
         description: '',
         doc_min_version: null,
