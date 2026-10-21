@@ -36,8 +36,8 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   subcommand.** If a docs page that ties its sections to subcommands describes a
   flag under some of its subcommands, and the binary shows it under another one too,
   the docs text now appears in `scope_descriptions` for the documented subcommands,
-  and `description` is empty. Before, the text would have been the primary and so
-  answered for every subcommand. `--api-url` is the case: the docs describe it for the runner, but under
+  and `description` is empty. Before, the text was the primary, so it answered for
+  every subcommand. `--api-url` is the case: the docs describe it for the runner, but under
   `self-hosted-runner decode-token` it is a different endpoint. A flag whose
   documented subcommands cover all of its subcommands is unchanged. `--capacity`
   now has the runner text under `self-hosted-runner`, where its default is 1, not 32.
@@ -99,6 +99,13 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
   publishes the binary observations (`data/mod-event-observations.json`).
 
 ### Fixed
+
+- **A subcommand a flag gained later no longer appears in earlier snapshots.** Each
+  binary-proved scope now dates from the first version whose binary proved it, not
+  from the flag's own `first_seen`. `--hooks-dir` ships at 2.1.224 under the runner,
+  but `daemon` accepts it only from 2.1.229. The 2.1.224 to 2.1.228 snapshots now
+  drop `daemon` from its `scopes`. `data/binary-observations.json` records such a
+  scope's first version in `scope_first_seen`.
 
 - **The binary lane reads env vars that Claude Code reads through a helper.** Some
   code reads a variable by passing its name to a helper, for example

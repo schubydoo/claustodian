@@ -1533,6 +1533,30 @@ describe('assembleSnapshots — per-version deprecation status', () => {
     expect(at('2.6.0')?.scopes).toEqual(['remote-control', 'self-hosted-runner']);
   });
 
+  it('applies each binary scope from its own first version', () => {
+    // `--hooks-dir` ships under the runner, and `daemon` accepts it only later.
+    // Dating the union from first_seen claimed `claude daemon --hooks-dir` too early.
+    const snaps = assembleSnapshots(
+      [rec({ symbol: '--hooks-dir', type: 'cli_flag', first_seen: '2.0.0', category: 'cli' })],
+      blocks,
+      undefined,
+      new Map([
+        [
+          'cli_flag:--hooks-dir',
+          {
+            from: '2.0.0',
+            scopes: ['daemon', 'self-hosted-runner'],
+            scopeFrom: { daemon: '2.4.0' },
+          },
+        ],
+      ])
+    );
+    const at = (v: string) =>
+      snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === '--hooks-dir');
+    expect(at('2.0.0')?.scopes).toEqual(['self-hosted-runner']);
+    expect(at('2.4.0')?.scopes).toEqual(['daemon', 'self-hosted-runner']);
+  });
+
   it('omits a binary-only scope entirely before its proving version', () => {
     // With nothing curated to fall back on, the field is absent rather than empty.
     const snaps = assembleSnapshots(
@@ -2962,6 +2986,43 @@ describe('mod_element records', () => {
   it('publishes no mod_element from any lane until its observation file exists', () => {
     expect(at(run(docs([elDoc('Box')])), '2.1.300')).toEqual([]);
     expect(at(run(docs([elDoc('Box')]), []), '2.1.300')).toEqual([]);
+  });
+});
+
+describe('binary scope dating through a snapshot build', () => {
+  it('reads scope_first_seen from the observations', () => {
+    const blocks = parseChangelog(
+      '## 2.1.229\n\n- Fixed a crash\n\n## 2.1.224\n\n- Fixed a crash\n'
+    );
+    const docs: DocsIndex = {
+      $generated_by: 'scripts/fetch-docs.ts',
+      source_pages: [],
+      symbols: [],
+    };
+    const binary: BinaryObservations = {
+      $generated_by: 'scripts/backfill-binary.ts',
+      source: 'binary',
+      note: '',
+      observedVersions: ['2.1.224', '2.1.229'],
+      symbols: [
+        {
+          symbol: '--hooks-dir',
+          type: 'cli_flag',
+          first_seen: '2.1.224',
+          last_seen: '2.1.229',
+          removed_in: null,
+          switch_case_only: true,
+          scopes: ['daemon', 'self-hosted-runner'],
+          scope_first_seen: { daemon: '2.1.229' },
+        },
+      ],
+    };
+    const at = (version: string) =>
+      buildEnrichedSnapshots(blocks, docs, binary)
+        .find((snap) => snap.version === version)
+        ?.symbols.find((r) => r.symbol === '--hooks-dir')?.scopes;
+    expect(at('2.1.224')).toEqual(['self-hosted-runner']);
+    expect(at('2.1.229')).toEqual(['daemon', 'self-hosted-runner']);
   });
 });
 
