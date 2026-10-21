@@ -9,6 +9,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   distillControlObservations,
   distillDescriptions,
+  distillModEventObservations,
   distillModObservations,
   distillObservations,
   loadCacheFiles,
@@ -949,6 +950,127 @@ describe('distillModObservations', () => {
     expect(obs).toEqual([
       { symbol: '$.ui.toast', first_seen: '2.1.242', last_seen: '2.1.242', removed_in: null },
     ]);
+  });
+});
+
+describe('distillModEventObservations', () => {
+  const eventEntry = (version: string, modEvents: string[]): BinaryCacheFile => ({
+    version,
+    symbols: [],
+    modEvents,
+  });
+
+  it('dates each event from its first and last scanned release', () => {
+    const obs = distillModEventObservations([
+      eventEntry('2.1.250', ['tool.call', 'ui.press']),
+      eventEntry('2.1.242', ['tool.call']),
+      eventEntry('2.1.260', ['tool.call', 'ui.press']),
+    ]);
+    expect(obs).toEqual([
+      { symbol: 'tool.call', first_seen: '2.1.242', last_seen: '2.1.260', removed_in: null },
+      { symbol: 'ui.press', first_seen: '2.1.250', last_seen: '2.1.260', removed_in: null },
+    ]);
+  });
+
+  it('removes an event at the first scanned release after its last sighting', () => {
+    // The list is the whole set of events the engine accepts, so leaving it is a removal.
+    const obs = distillModEventObservations([
+      eventEntry('2.1.242', ['tool.call', 'ui.old']),
+      eventEntry('2.1.250', ['tool.call', 'ui.old']),
+      eventEntry('2.1.260', ['tool.call']),
+      eventEntry('2.1.270', ['tool.call']),
+    ]);
+    expect(obs.find((o) => o.symbol === 'ui.old')).toEqual({
+      symbol: 'ui.old',
+      first_seen: '2.1.242',
+      last_seen: '2.1.250',
+      removed_in: '2.1.260',
+    });
+  });
+
+  it('keeps an event live when it returns after a gap', () => {
+    const obs = distillModEventObservations([
+      eventEntry('2.1.242', ['ui.flaky']),
+      eventEntry('2.1.250', []),
+      eventEntry('2.1.260', ['ui.flaky']),
+    ]);
+    expect(obs).toEqual([
+      { symbol: 'ui.flaky', first_seen: '2.1.242', last_seen: '2.1.260', removed_in: null },
+    ]);
+  });
+
+  it('skips an entry that was never scanned for events', () => {
+    const obs = distillModEventObservations([
+      eventEntry('2.1.242', ['tool.call']),
+      { version: '2.1.250', symbols: [], modMethods: ['$.ui.toast'] },
+    ]);
+    expect(obs).toEqual([
+      { symbol: 'tool.call', first_seen: '2.1.242', last_seen: '2.1.242', removed_in: null },
+    ]);
+  });
+});
+
+describe('mod event observations output', () => {
+  let root: string | undefined;
+  afterEach(async () => {
+    if (root) await rm(root, { recursive: true, force: true });
+    root = undefined;
+  });
+
+  async function cacheWith(entries: BinaryCacheFile[]): Promise<string> {
+    root = await mkdtemp(join(tmpdir(), 'claustodian-mod-event-out-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    for (const entry of entries) {
+      await writeFile(join(cache, `${entry.version}.json`), JSON.stringify(entry));
+    }
+    return cache;
+  }
+  const run = (cache: string, ...flags: string[]) =>
+    main(['--cache', cache, '--out', join(root!, 'binary-observations.json'), ...flags]);
+
+  it('writes the file on --mod-events, independent of --mods', async () => {
+    const cache = await cacheWith([
+      { version: '2.1.242', symbols: [], modMethods: ['$.ui.toast'], modEvents: ['tool.call'] },
+    ]);
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    expect(await run(cache, '--mod-events')).toBe(0);
+    expect(existsSync(join(root!, 'mod-observations.json'))).toBe(false);
+    const written = JSON.parse(await readFile(join(root!, 'mod-event-observations.json'), 'utf-8'));
+    expect(written).toMatchObject({
+      observedVersions: ['2.1.242'],
+      symbols: [
+        { symbol: 'tool.call', first_seen: '2.1.242', last_seen: '2.1.242', removed_in: null },
+      ],
+    });
+    logSpy.mockRestore();
+  });
+
+  it('does NOT write the file on a plain backfill, which is what the release bot runs', async () => {
+    const cache = await cacheWith([{ version: '2.1.242', symbols: [], modEvents: ['tool.call'] }]);
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    expect(await run(cache)).toBe(0);
+    expect(existsSync(join(root!, 'mod-event-observations.json'))).toBe(false);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('--mod-events'));
+    logSpy.mockRestore();
+  });
+
+  it('refuses --mod-events when a cache entry predates the event lane', async () => {
+    // Every committed cache entry written before this lane has modMethods but no
+    // modEvents, so --mods alone must still pass while --mod-events refuses.
+    const cache = await cacheWith([
+      { version: '2.1.242', symbols: [], modMethods: ['$.ui.toast'], modEvents: ['tool.call'] },
+      { version: '2.1.250', symbols: [], modMethods: ['$.ui.toast'] },
+    ]);
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    expect(await run(cache, '--mods')).toBe(0);
+    expect(await run(cache, '--mod-events')).toBe(1);
+    expect(existsSync(join(root!, 'mod-event-observations.json'))).toBe(false);
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('carry no mod-lane event output'));
+    logSpy.mockRestore();
   });
 });
 

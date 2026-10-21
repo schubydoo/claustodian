@@ -32,6 +32,7 @@ describe('CONFIRMED_REMOVALS', () => {
         'internal_config_flag',
         'control_message',
         'mod_method',
+        'mod_event',
       ]).toContain(r.type);
       const key = `${r.type}:${r.symbol}`;
       expect(keys.has(key)).toBe(false);
@@ -89,6 +90,7 @@ describe('CONFIRMED_DEPRECATIONS', () => {
         'internal_config_flag',
         'control_message',
         'mod_method',
+        'mod_event',
       ]).toContain(d.type);
       const key = `${d.type}:${d.symbol}`;
       expect(keys.has(key)).toBe(false);

@@ -13,7 +13,8 @@ import { pathToFileURL } from 'node:url';
  * lane modules share it without importing one another. The changelog lane
  * produces flags, commands, env vars and mod methods — its SYMBOL_PATTERNS classify
  * backticked tokens as those four and nothing else. The docs lane adds `config_key`
- * from the settings tables and `mod_method` from the mods reference, and the binary
+ * from the settings tables and `mod_method` and `mod_event` from the mods reference
+ * (the changelog lane never produces `mod_event`), and the binary
  * lane also reads settings keys out of the embedded zod schema. This is the SCHEMA's
  * `type` enum minus `control_message`, and it is narrower than `SymbolRecord`'s
  * union, which carries `control_message` because `controlRecordsFor` assembles
@@ -24,7 +25,13 @@ import { pathToFileURL } from 'node:url';
  * either, and it stays because it is a published contract; see settingsKeyCategory in
  * settings-schema.ts. */
 export type ExtractedSymbolType =
-  'cli_flag' | 'command' | 'env_var' | 'config_key' | 'internal_config_flag' | 'mod_method';
+  | 'cli_flag'
+  | 'command'
+  | 'env_var'
+  | 'config_key'
+  | 'internal_config_flag'
+  | 'mod_method'
+  | 'mod_event';
 
 export const CHANGELOG_URL =
   'https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md';

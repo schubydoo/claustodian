@@ -43,7 +43,8 @@ export const DOC_PAGES = [
   'plugins/mods/reference',
 ] as const;
 
-export type DocSymbolType = 'cli_flag' | 'command' | 'env_var' | 'config_key' | 'mod_method';
+export type DocSymbolType =
+  'cli_flag' | 'command' | 'env_var' | 'config_key' | 'mod_method' | 'mod_event';
 
 /**
  * Per-page baseline `min-version` for pages that state a feature-level
@@ -87,6 +88,16 @@ export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number
   'plugins/manifest-reference': 2,
   'remote-control': 1,
   'plugins/mods/reference': 40,
+};
+
+/**
+ * Floors per symbol TYPE, for a type that shares a page with a larger one. The mods
+ * reference page holds both its method table and its event tables, and the method
+ * rows alone clear that page's floor, so an emptied Events section would pass it.
+ * Set near half the present yield, as the page floors are.
+ */
+export const TYPE_MIN_SYMBOLS: Partial<Record<DocSymbolType, number>> = {
+  mod_event: 20,
 };
 
 /** Generic OS/shell env vars a doc may reference but that aren't Claude Code symbols. */
@@ -677,6 +688,63 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
       });
     }
   }
+  return [...entries, ...parseModsEventTables(page, markdown)];
+}
+
+/**
+ * The event tables of the mods reference page: every table under "## Events" whose
+ * header starts with "Event". The first cell names one event or more in backticks
+ * (`` `prompt.fill`, `prompt.suggest` ``, sometimes as links), and the second says when
+ * it fires, which is the description. The same section also holds tables of event
+ * FIELDS (header "Field"), whose `e.source` names are not events, so the header picks
+ * the table. A row that names no event stops the run, as for the method table.
+ */
+function parseModsEventTables(page: string, markdown: string): DocEntry[] {
+  const entries: DocEntry[] = [];
+  let inSection = false;
+  let inTable = false;
+  let eventTable = false;
+  for (const line of markdown.split('\n')) {
+    const heading = /^##\s+(.*)$/.exec(line);
+    if (heading) {
+      inSection = (heading[1] as string).trim() === 'Events';
+      continue;
+    }
+    if (!/^\s*\|/.test(line)) {
+      inTable = false;
+      continue;
+    }
+    if (!inSection || /^\s*\|\s*:?-{1,}/.test(line)) continue;
+    const [nameCell, firesCell] = splitTableRow(line)
+      .slice(1, -1)
+      .map((c) => c.trim());
+    if (!inTable) {
+      // The first row of a table is its header.
+      inTable = true;
+      eventTable = nameCell === 'Event';
+      continue;
+    }
+    if (!eventTable) continue;
+    const names = [...(nameCell ?? '').matchAll(/`([a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*)`/g)].map(
+      (match) => match[1] as string
+    );
+    const description = cleanCell(firesCell ?? '');
+    if (names.length === 0 || description.length < 3) {
+      throw new Error(
+        `Docs page "${page}": a row of an Events table has no readable event name or ` +
+          `description: ${line.trim()}. Read the page and fix parseModsEventTables.`
+      );
+    }
+    for (const symbol of names) {
+      entries.push({
+        symbol,
+        type: 'mod_event',
+        description,
+        doc_min_version: minVersion(firesCell ?? ''),
+        doc_page: page,
+      });
+    }
+  }
   return entries;
 }
 
@@ -873,6 +941,17 @@ export function assertDocsCoverage(docs: DocsIndex): void {
           `Either the page was restructured and the parser no longer reads it, or the ` +
           `symbols really went away. Read ${DOCS_BASE}${page}.md and fix the parser or ` +
           `the floor in PAGE_MIN_SYMBOLS before publishing this as provenance:"docs".`
+      );
+    }
+  }
+  for (const [type, floor] of Object.entries(TYPE_MIN_SYMBOLS)) {
+    const found = docs.symbols.filter((entry) => entry.type === type).length;
+    if (found < (floor as number)) {
+      throw new Error(
+        `The docs index holds ${found} ${type} symbols, below the floor of ${floor}. ` +
+          `Either the page that defines them was restructured and the parser no longer ` +
+          `reads it, or they really went away. Read the page and fix the parser or the ` +
+          `floor in TYPE_MIN_SYMBOLS before publishing this as provenance:"docs".`
       );
     }
   }

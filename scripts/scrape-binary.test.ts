@@ -75,7 +75,20 @@ const MOD_METHODS = [
   'ui.status',
   'ui.toast',
 ].map((key) => `$.${key}`);
-const MOD_TABLE = `\nvar MODS={${MOD_METHODS.map((m) => `"${m.slice(2)}":{run:(n)=>n}`).join(',')}};`;
+/** The mods event list: event-only literals, then the method list spread in. */
+const MOD_EVENTS = [
+  'agent.spawn',
+  'engine.create',
+  'prompt.submit',
+  'session.start',
+  'tool.call',
+  'tool.check',
+  'turn.complete',
+  'turn.start',
+];
+const MOD_TABLE =
+  `\nvar MODS={${MOD_METHODS.map((m) => `"${m.slice(2)}":{run:(n)=>n}`).join(',')}};` +
+  `var M=[];var EV=[${MOD_EVENTS.map((e) => `"${e}"`).join(',')},...M];`;
 
 /** Fake a CDN manifest + binary response pair, keyed by URL substring. */
 function stubCdn(version: string, binary: string, checksum: string): void {
@@ -298,10 +311,14 @@ describe('buildCacheRecord', () => {
       'modMethodCount',
       'modMethods',
       'modMentions',
+      'modEventCount',
+      'modEvents',
     ]);
     // 2.1.214 predates the mods API, so the mod half is an honest empty list.
     expect(record.modMethodCount).toBe(0);
     expect(record.modMethods).toEqual([]);
+    expect(record.modEventCount).toBe(0);
+    expect(record.modEvents).toEqual([]);
     // And the control half must be real, not an empty array standing in for it.
     expect(record.controlCount).toBe(record.controlMessages.length);
     expect(record.controlMessages.map((m) => m.symbol).sort()).toEqual([
@@ -319,6 +336,8 @@ describe('buildCacheRecord — mods API', () => {
     const record = buildCacheRecord('2.1.250', Buffer.from(FAKE_BUNDLE + MOD_TABLE, 'utf-8'));
     expect(record.modMethods).toEqual(MOD_METHODS);
     expect(record.modMethodCount).toBe(MOD_METHODS.length);
+    expect(record.modEvents).toEqual(MOD_EVENTS);
+    expect(record.modEventCount).toBe(MOD_EVENTS.length);
   });
 
   it('refuses a release at or after the floor that has no dispatch table', async () => {

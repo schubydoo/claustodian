@@ -100,7 +100,8 @@ export interface SymbolRecord {
     | 'config_key'
     | 'internal_config_flag'
     | 'control_message'
-    | 'mod_method';
+    | 'mod_method'
+    | 'mod_event';
   /**
    * Carried by control_message records and by no other type — the schema REQUIRES both
    * there and FORBIDS both elsewhere, so a stray one fails validation as surely as a
@@ -497,7 +498,7 @@ export function categorize(symbol: string, type: ExtractedSymbolType): string {
   // Settings keys are their own surface; the env-var prefix rules below would
   // otherwise bucket them all as "other".
   if (type === 'config_key' || type === 'internal_config_flag') return 'settings';
-  if (type === 'mod_method') return 'mods';
+  if (type === 'mod_method' || type === 'mod_event') return 'mods';
   for (const [pattern, category] of ENV_CATEGORY_RULES) {
     if (pattern.test(symbol)) return category;
   }
@@ -1410,9 +1411,11 @@ export function enrichWithBinary(
     // A mod method's removal comes from the binary: the changelog never retracts a
     // mention, so without this a changelog-named method would outlive the dispatch
     // table that proved it. A documented method never gets here with a removal —
-    // see withModObservations.
+    // see withModObservations. A mod event is the same case.
     const described =
-      obs.type === 'mod_method' && obs.removed_in !== null && promoted.removed_in === null
+      (obs.type === 'mod_method' || obs.type === 'mod_event') &&
+      obs.removed_in !== null &&
+      promoted.removed_in === null
         ? finalizeRecord({
             ...promoted,
             first_seen_estimated: promoted.first_seen_estimated === true,
@@ -1466,10 +1469,11 @@ export function enrichWithBinary(
     // A maintainer-audited symbol graduates from the needs_review default to
     // active with a first-party description; everything else stays needs_review.
     const promo = promotionFor(obs.type, obs.symbol);
-    // A mod method is a key of the mods API dispatch table, read by AST under a floor
-    // guard — the standard control_message records meet, not the regex-lane evidence
-    // that keeps other binary-only symbols at needs_review.
-    const settled = promo !== undefined || obs.type === 'mod_method';
+    // A mod method is a key of the mods API dispatch table, and a mod event a literal
+    // of the event list, both read by AST under a floor guard — the standard
+    // control_message records meet, not the regex-lane evidence that keeps other
+    // binary-only symbols at needs_review.
+    const settled = promo !== undefined || obs.type === 'mod_method' || obs.type === 'mod_event';
     merged.push(
       finalizeRecord({
         symbol: obs.symbol,
@@ -1583,7 +1587,8 @@ export function buildEnrichedSnapshots(
   priorFirstSeen?: ReadonlyMap<string, string>,
   binaryDescriptions?: BinaryDescriptions['descriptions'],
   control?: readonly ControlObservation[],
-  mods?: readonly ModObservation[]
+  mods?: readonly ModObservation[],
+  modEvents?: readonly ModObservation[]
 ): VersionSnapshot[] {
   const collected = collectChangelogSymbols(blocks);
   const latest =
@@ -1592,15 +1597,24 @@ export function buildEnrichedSnapshots(
   // lane publishes a mod_method record. The docs and changelog lanes would otherwise
   // publish them through the release bot, dated at the tip, before the data PR that
   // carries their binary dates — see the opt-in in backfill-binary.ts. An empty list
-  // closes the gate too: past the floor the distiller cannot produce one.
+  // closes the gate too: past the floor the distiller cannot produce one. mod_event
+  // records have their own file and the same gate.
   const publishMods = mods !== undefined && mods.length > 0;
+  const publishModEvents = modEvents !== undefined && modEvents.length > 0;
   const enriched = enrichSymbols(collected, docs, latest).filter(
-    (record) => publishMods || record.type !== 'mod_method'
+    (record) =>
+      (publishMods || record.type !== 'mod_method') &&
+      (publishModEvents || record.type !== 'mod_event')
   );
   const withBinary = binary
     ? enrichWithBinary(
         enriched,
-        withModObservations(binary, mods, modMethodsDocumented(docs)),
+        withModEventObservations(
+          withModObservations(binary, mods, modMethodsDocumented(docs)),
+          publishModEvents ? modEvents : undefined,
+          mods,
+          documentedOfType(docs, 'mod_event')
+        ),
         binaryDescriptions
       )
     : enriched;
@@ -1630,9 +1644,55 @@ export function buildEnrichedSnapshots(
   }));
 }
 
+/** The symbols of one type that the docs index lists. */
+const documentedOfType = (
+  docs: DocsIndex,
+  type: DocsIndex['symbols'][number]['type']
+): ReadonlySet<string> =>
+  new Set(docs.symbols.filter((entry) => entry.type === type).map((e) => e.symbol));
+
 /** The mod methods the docs index lists. */
 const modMethodsDocumented = (docs: DocsIndex): ReadonlySet<string> =>
-  new Set(docs.symbols.filter((entry) => entry.type === 'mod_method').map((e) => e.symbol));
+  documentedOfType(docs, 'mod_method');
+
+/**
+ * The binary observations with each mods event added as a `mod_event` observation.
+ *
+ * Two sources, both binary. The event list's literals are the event-only names. A
+ * DOCUMENTED event that the list does not name literally is a method event: the list
+ * spreads the method list in, and the docs say every method is also an event. Such an
+ * event takes the window of the method `$.<name>`, because the method's presence is
+ * what puts it in the list. `ui.close` is the case: the docs table lists it as an
+ * event, and the binary names it only as a method. An undocumented method event gets
+ * no record, so the method records are not repeated as events.
+ *
+ * As for methods, a documented event keeps no binary removal.
+ */
+function withModEventObservations(
+  binary: BinaryObservations,
+  events: readonly ModObservation[] | undefined,
+  mods: readonly ModObservation[] | undefined,
+  documented: ReadonlySet<string>
+): BinaryObservations {
+  if (!events || events.length === 0) return binary;
+  const literal = new Set(events.map((obs) => obs.symbol));
+  const methodEvents = (mods ?? [])
+    .map((obs) => ({ ...obs, symbol: obs.symbol.slice(2) }))
+    .filter((obs) => documented.has(obs.symbol) && !literal.has(obs.symbol));
+  return {
+    ...binary,
+    symbols: [
+      ...binary.symbols,
+      ...[...events, ...methodEvents].map((obs) => ({
+        symbol: obs.symbol,
+        type: 'mod_event' as const,
+        first_seen: obs.first_seen,
+        last_seen: obs.last_seen,
+        removed_in: documented.has(obs.symbol) ? null : obs.removed_in,
+      })),
+    ],
+  };
+}
 
 /**
  * The binary observations with each mod method added as a `mod_method` observation.
@@ -1775,6 +1835,9 @@ const controlObservationsPath = (): string =>
 /** The committed mod observations, with the same test seam as the control file. */
 const modObservationsPath = (): string =>
   process.env.CLAUSTODIAN_MOD_OBSERVATIONS_PATH ?? 'data/mod-observations.json';
+/** The committed mod event observations, with the same test seam. */
+const modEventObservationsPath = (): string =>
+  process.env.CLAUSTODIAN_MOD_EVENT_OBSERVATIONS_PATH ?? 'data/mod-event-observations.json';
 /** The committed per-version description timeline; not CLI-overridable. */
 const BINARY_DESCRIPTIONS_PATH = 'data/binary-descriptions.json';
 /** The committed data directory; regenerating it must use canonical sources. */
@@ -1863,6 +1926,18 @@ export function modRegressionRefusal(
     { path: modObservationsPath(), type: 'mod_method', flag: '--mods' },
     mods,
     priorHadMods
+  );
+}
+
+/** The mod_event case of observationRegressionRefusal. */
+export function modEventRegressionRefusal(
+  events: { present: boolean; observations: readonly ModObservation[] },
+  priorHadEvents: boolean
+): string | null {
+  return observationRegressionRefusal(
+    { path: modEventObservationsPath(), type: 'mod_event', flag: '--mod-events' },
+    events,
+    priorHadEvents
   );
 }
 
@@ -2000,6 +2075,12 @@ export async function main(): Promise<number> {
     await priorDatasetHasRecordsOfType(priorPath, 'mod_method')
   );
   if (modRefusal) throw new Error(modRefusal);
+  const modEvents = await loadModObservations(modEventObservationsPath(), '--mod-events');
+  const modEventRefusal = modEventRegressionRefusal(
+    modEvents,
+    await priorDatasetHasRecordsOfType(priorPath, 'mod_event')
+  );
+  if (modEventRefusal) throw new Error(modEventRefusal);
 
   const snapshots = buildEnrichedSnapshots(
     blocks,
@@ -2008,7 +2089,8 @@ export async function main(): Promise<number> {
     priorFirstSeen,
     binaryDescriptions.descriptions,
     control.observations,
-    mods.present ? mods.observations : undefined
+    mods.present ? mods.observations : undefined,
+    modEvents.present ? modEvents.observations : undefined
   );
   const index = buildIndex(snapshots);
 

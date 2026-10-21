@@ -209,6 +209,13 @@ describe('symbol schema', () => {
   it('fails a mod_method record carrying the control_message fields', () => {
     expect(validate(modMethod({ family: 'control_request', direction: null }))).toBe(false);
   });
+
+  it('accepts a mod_event record, and fails one carrying the control_message fields', () => {
+    const modEvent = (overrides: Record<string, unknown> = {}) =>
+      modMethod({ symbol: 'tool.call', type: 'mod_event', ...overrides });
+    expect(validate(modEvent())).toBe(true);
+    expect(validate(modEvent({ family: 'control_request', direction: null }))).toBe(false);
+  });
 });
 
 describe('snapshot schema', () => {
