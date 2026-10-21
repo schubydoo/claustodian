@@ -6245,6 +6245,90 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "Box",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Button",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Client",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Code",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Image",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Input",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Link",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Markdown",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Raster",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Select",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Svg",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Text",
+      "type": "mod_element",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
       "symbol": "agent.offer",
       "type": "mod_event",
       "description": "A subagent type is offered to Claude",
