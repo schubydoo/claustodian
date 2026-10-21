@@ -27,7 +27,7 @@ const latest = JSON.parse(
 
 const liveTypes = [...new Set(latest.symbols.map((s) => s.type))].sort();
 // The review page renders only needs_review rows, so it needs a colour for those
-// types and no more (control_message, mod_method and mod_event are pinned active and
+// types and no more (control_message and the mod_* types are pinned active and
 // never reach it).
 const reviewTypes = [
   ...new Set(latest.symbols.filter((s) => s.status === 'needs_review').map((s) => s.type)),

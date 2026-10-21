@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://claustodian.dev/schema/symbol.schema.json",
   "title": "Claustodian Symbol Record",
-  "description": "One trackable Claude Code symbol (a CLI flag, environment variable, command, config key, internal config flag, stream-json control message, mods API method, or mods event), along with its lifecycle metadata and provenance.",
+  "description": "One trackable Claude Code symbol (a CLI flag, environment variable, command, config key, internal config flag, stream-json control message, mods API method, mods event, or mods render site), along with its lifecycle metadata and provenance.",
   "type": "object",
   "properties": {
     "symbol": {
@@ -20,9 +20,10 @@
         "internal_config_flag",
         "control_message",
         "mod_method",
-        "mod_event"
+        "mod_event",
+        "mod_render_site"
       ],
-      "description": "The kind of symbol this record describes. A mod_event is a name a mod passes to on(), such as tool.call. Every mod_method is also an event of the same name without the $. prefix; such an event has a mod_event record only when the docs also list it as an event, as they do ui.close."
+      "description": "The kind of symbol this record describes. A mod_event is a name a mod passes to on(), such as tool.call. Every mod_method is also an event of the same name without the $. prefix; such an event has a mod_event record only when the docs also list it as an event, as they do ui.close. A mod_render_site is a place a mod can draw, the value of e.component in a ui.render hook, such as AbovePrompt."
     },
     "first_seen": {
       "type": "string",

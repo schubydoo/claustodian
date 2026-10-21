@@ -2,7 +2,7 @@
   "_comment": "OpenSSF Best Practices badge (passing level) proposed answers for Claustodian. Read by bestpractices.dev when the project entry is edited or re-run with 'Save (and continue)'. Status values: Met | Unmet | N/A ('?' / unknown are ignored, leaving any existing answer unchanged). Justifications are a starting point; the authorized maintainer reviews and confirms each before saving. Project: https://www.bestpractices.dev/en/projects/14130 - Repository: https://github.com/schubydoo/claustodian",
 
   "description_good_status": "Met",
-  "description_good_justification": "The README states up front what Claustodian is - a static, versioned, machine-parseable record of every Claude Code CLI flag, environment variable, command, config key, stream-json control message, mods API method, and mods event, each tagged with the version it first appeared in. https://github.com/schubydoo/claustodian",
+  "description_good_justification": "The README states up front what Claustodian is - a static, versioned, machine-parseable record of every Claude Code CLI flag, environment variable, command, config key, stream-json control message, mods API method, mods event, and mods render site, each tagged with the version it first appeared in. https://github.com/schubydoo/claustodian",
   "interact_status": "Met",
   "interact_justification": "Users can ask questions and interact through GitHub Issues. https://github.com/schubydoo/claustodian/issues",
   "contribution_status": "Met",

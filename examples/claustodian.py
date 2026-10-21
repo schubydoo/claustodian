@@ -4,7 +4,7 @@
 """Minimal stdlib-only client for the Claustodian dataset.
 
 Claustodian answers: "does a Claude Code symbol (CLI flag / env var / slash
-command / settings key / control message / mods API method / mods event) exist in version Y,
+command / settings key / control message / mods API method / mods event / mods render site) exist in version Y,
 and what did it
 do at that version?" The data is
 static JSON on GitHub Pages -- this client fetches it and applies the three rules

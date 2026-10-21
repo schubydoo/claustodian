@@ -44,7 +44,13 @@ export const DOC_PAGES = [
 ] as const;
 
 export type DocSymbolType =
-  'cli_flag' | 'command' | 'env_var' | 'config_key' | 'mod_method' | 'mod_event';
+  | 'cli_flag'
+  | 'command'
+  | 'env_var'
+  | 'config_key'
+  | 'mod_method'
+  | 'mod_event'
+  | 'mod_render_site';
 
 /**
  * Per-page baseline `min-version` for pages that state a feature-level
@@ -99,6 +105,7 @@ export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number
 export const TYPE_MIN_SYMBOLS: Partial<Record<DocSymbolType, number>> = {
   mod_method: 40,
   mod_event: 20,
+  mod_render_site: 8,
 };
 
 /** Generic OS/shell env vars a doc may reference but that aren't Claude Code symbols. */
@@ -689,7 +696,70 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
       });
     }
   }
-  return [...entries, ...parseModsEventTables(page, markdown)];
+  return [
+    ...entries,
+    ...parseModsEventTables(page, markdown),
+    ...parseModsRenderSiteTable(page, markdown),
+  ];
+}
+
+/**
+ * The "Render sites" table of the mods reference page. Its first cell names one site
+ * or more in backticks (`` `ToolUse`, `ToolResult`, `ToolGroup` ``, sometimes as a
+ * link), and nothing else. The other cells list props and apps, not what the site is,
+ * so the record carries no description and the binary lane dates it. The section holds
+ * one table, headed "Site". A second table, any other header, and a first cell holding
+ * anything but site names stop the run. Fenced code is skipped, so an example cannot
+ * open the section.
+ */
+function parseModsRenderSiteTable(page: string, markdown: string): DocEntry[] {
+  const entries: DocEntry[] = [];
+  const refuse = (what: string, line: string): never => {
+    throw new Error(
+      `Docs page "${page}": ${what}: ${line.trim()}. Read the page and fix ` +
+        'parseModsRenderSiteTable.'
+    );
+  };
+  // A site name written plainly or as a link, several to a cell, joined by commas.
+  const name = String.raw`(?:\[\`[A-Z][A-Za-z]*\`\]\([^)\s]*\)|\`[A-Z][A-Za-z]*\`)`;
+  const cellOfNames = new RegExp(`^${name}(?:,\\s*${name})*$`);
+  let inSection = false;
+  let inFence = false;
+  let tables = 0;
+  let inTable = false;
+  for (const line of markdown.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) inFence = !inFence;
+    if (inFence) continue;
+    if (!/^\s*\|/.test(line)) {
+      inTable = false;
+      const heading = /^##\s+(.*)$/.exec(line);
+      if (heading) inSection = (heading[1] as string).trim() === 'Render sites';
+      continue;
+    }
+    if (!inSection || /^\s*\|\s*:?-{1,}/.test(line)) continue;
+    const nameCell = (splitTableRow(line).slice(1, -1)[0] ?? '').trim();
+    if (!inTable) {
+      inTable = true;
+      tables += 1;
+      if (tables > 1) refuse('the Render sites section holds a second table', line);
+      if (nameCell !== 'Site')
+        refuse('the Render sites table has a header other than "Site"', line);
+      continue;
+    }
+    if (!cellOfNames.test(nameCell)) {
+      refuse('a row of the Render sites table holds something other than site names', line);
+    }
+    for (const match of nameCell.matchAll(/`([A-Z][A-Za-z]*)`/g)) {
+      entries.push({
+        symbol: match[1] as string,
+        type: 'mod_render_site',
+        description: '',
+        doc_min_version: null,
+        doc_page: page,
+      });
+    }
+  }
+  return entries;
 }
 
 /**
