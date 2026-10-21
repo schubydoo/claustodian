@@ -23,7 +23,8 @@ here instead. Check this file, not `schema-version.json`, to find out what is ne
 - **Four more docs pages feed the docs lane.** The self-hosted runner reference,
   the telemetry (monitoring) page, the plugin evals page and the ultrareview page.
   From the next docs refresh, the runner, orchestrator and SCM connector flags and
-  the runner's environment variables carry the docs' descriptions, as do the OTEL
+  the runner's environment variables carry the docs' descriptions (a variable the
+  runner table lists beside a flag takes that flag's text), as do the OTEL
   exporter variables and the `plugin eval` and `ultrareview` flags. Some records
   that were `needs_review` become `active`, and the snapshots gain documented
   variables they lacked, such as `OTEL_EXPORTER_OTLP_PROTOCOL` and

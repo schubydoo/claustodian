@@ -1450,6 +1450,20 @@ describe('parseDocPage — subcommand-scoped reference pages', () => {
     expect(entry(page(), '--api-url')).not.toHaveProperty('scope');
   });
 
+  it('reads the Env var column as env vars with the row description', () => {
+    expect(entry(page(), 'SELF_HOSTED_RUNNER_HEALTH_PORT')).toMatchObject({
+      type: 'env_var',
+      description: 'Port for the `/healthz` listener.',
+      doc_page: 'self-hosted-environments-reference',
+    });
+    expect(entry(page(), 'SELF_HOSTED_RUNNER_BASE_DIR')?.description).toBe(
+      'Directory for repository checkouts.'
+    );
+    // A flag row still yields the flag, and "none" yields no env var.
+    expect(entry(page(), '--health-port')?.type).toBe('cli_flag');
+    expect(index(page()).filter((e) => e.type === 'env_var')).toHaveLength(2);
+  });
+
   it('reads only the allowlisted sections', () => {
     expect(entry(page(), '--not-a-flag')).toBeUndefined();
   });
@@ -1470,6 +1484,10 @@ describe('parseDocPage — subcommand-scoped reference pages', () => {
     const md =
       '## Flags\n| Flag | Default | Description |\n| :- | :- | :- |\n| `--short` | Short row text |';
     expect(parseDocPage('plugins/cli-reference', md)[0]?.description).toBe('Short row text');
+    // A short row with no Env var cell yields only the flag.
+    const env =
+      '## Flags\n| Flag | Description | Env var |\n| :- | :- | :- |\n| `--short` | Short row text |';
+    expect(parseDocPage('plugins/cli-reference', env).map((e) => e.symbol)).toEqual(['--short']);
   });
 
   it('refuses a table it cannot read by column', () => {

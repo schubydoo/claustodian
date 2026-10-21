@@ -736,6 +736,16 @@ function descriptionColumn(header: readonly string[]): number {
 const DESCRIPTION_HEADER = /^(?:description|effect)$/i;
 
 /**
+ * The column that names the env var setting the same value as the row's flag, or
+ * -1. The self-hosted runner table writes `Flag | Env var | Default | Description`,
+ * and each variable there is documented by its flag's row.
+ */
+function envVarColumn(header: readonly string[]): number {
+  const named = header.findIndex((cell) => /^env(?:ironment)? var(?:iable)?$/i.test(cell));
+  return named > 0 ? named : -1;
+}
+
+/**
  * Throws when an allowlisted table cannot be read by column. A header wider than
  * two cells must name its description column, or descriptionColumn would fall
  * back to the second cell and publish an env-var name or a default as the text.
@@ -1028,6 +1038,7 @@ export function parseDocPage(
   let scope: string | undefined;
   let inTable = false;
   let descIndex = 1;
+  let envIndex = -1;
   let header: string[] = [];
   for (const line of markdown.split('\n')) {
     if (!/^\s*\|/.test(line)) inTable = false;
@@ -1055,6 +1066,7 @@ export function parseDocPage(
       inTable = true;
       header = cells;
       descIndex = descriptionColumn(cells);
+      envIndex = envVarColumn(cells);
     }
     if (sections && !sections.has(section)) continue;
     if (sections) assertReadableRow(page, section, cells, header, isHeader);
@@ -1063,7 +1075,11 @@ export function parseDocPage(
     const symbolCell = cells[0] as string;
     const descCell = cells[descIndex] ?? (cells[1] as string);
 
-    const syms = symbolsFromCell(symbolCell);
+    const envSyms =
+      envIndex > 0
+        ? symbolsFromCell(cells[envIndex] ?? '').filter((sym) => sym.type === 'env_var')
+        : [];
+    const syms = [...symbolsFromCell(symbolCell), ...envSyms];
     if (syms.length === 0) continue;
     const description = cleanCell(descCell);
     if (description.length < 3) continue;
