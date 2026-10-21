@@ -97,6 +97,7 @@ export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number
  * Set near half the present yield, as the page floors are.
  */
 export const TYPE_MIN_SYMBOLS: Partial<Record<DocSymbolType, number>> = {
+  mod_method: 40,
   mod_event: 20,
 };
 
@@ -693,11 +694,13 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
 
 /**
  * The event tables of the mods reference page: every table under "## Events" whose
- * header starts with "Event". The first cell names one event or more in backticks
+ * first header cell is "Event". The first cell names one event or more in backticks
  * (`` `prompt.fill`, `prompt.suggest` ``, sometimes as links), and the second says when
  * it fires, which is the description. The same section also holds tables of event
- * FIELDS (header "Field"), whose `e.source` names are not events, so the header picks
- * the table. A row that names no event stops the run, as for the method table.
+ * FIELDS (first header cell "Field"), whose `e.source` names are not events, so the
+ * header picks the table. Any other header stops the run, because a renamed event
+ * table would otherwise drop its events without a word. So does a row that names no
+ * event, as for the method table.
  */
 function parseModsEventTables(page: string, markdown: string): DocEntry[] {
   const entries: DocEntry[] = [];
@@ -721,6 +724,13 @@ function parseModsEventTables(page: string, markdown: string): DocEntry[] {
     if (!inTable) {
       // The first row of a table is its header.
       inTable = true;
+      if (nameCell !== 'Event' && nameCell !== 'Field') {
+        throw new Error(
+          `Docs page "${page}": a table in the Events section has the header ` +
+            `${line.trim()}, which is neither an event table ("Event") nor a field ` +
+            'table ("Field"). Read the page and fix parseModsEventTables.'
+        );
+      }
       eventTable = nameCell === 'Event';
       continue;
     }

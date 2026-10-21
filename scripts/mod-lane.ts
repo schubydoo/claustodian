@@ -196,6 +196,10 @@ export function collectModEvidence(program: Node): ModEvidence {
  * method table, so it shares MOD_METHOD_FLOOR and its refusals.
  */
 export function modEventsFrom(evidence: readonly ModEvidence[], version: string): string[] {
+  // Below the floor the lane asserts nothing: the shape is weaker than the method
+  // table's, and an older array that happened to match would date events before the
+  // mods API existed.
+  if (compareVersionsAsc(version, MOD_METHOD_FLOOR) < 0) return [];
   const arrays = evidence.flatMap((chunk) => chunk.eventArrays);
   if (arrays.length > 1) {
     throw new Error(
@@ -205,7 +209,6 @@ export function modEventsFrom(evidence: readonly ModEvidence[], version: string)
     );
   }
   if (arrays.length === 0) {
-    if (compareVersionsAsc(version, MOD_METHOD_FLOOR) < 0) return [];
     throw new Error(
       `mod lane: ${version} has no mods event list, and every release since ` +
         `${MOD_METHOD_FLOOR} has one. Refusing to report zero events, which would read ` +

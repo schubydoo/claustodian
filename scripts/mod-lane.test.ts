@@ -227,6 +227,10 @@ describe('extractModEvents', () => {
   it('reports nothing for a release before the floor with no event list', () => {
     expect(extractModEvents('var a=1;', '2.1.241')).toEqual([]);
   });
+
+  it('asserts nothing before the floor, even for an array with the event list shape', () => {
+    expect(extractModEvents(EVENTS, '2.1.241')).toEqual([]);
+  });
 });
 
 describe('extractControlMessages onProgram', () => {

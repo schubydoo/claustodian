@@ -845,7 +845,11 @@ describe('parseDocPage — settings-reference page', () => {
 });
 
 describe('assertDocsCoverage', () => {
-  const index = (counts: Record<string, number>, modEvents = TYPE_MIN_SYMBOLS.mod_event ?? 0) => ({
+  const index = (
+    counts: Record<string, number>,
+    modEvents = TYPE_MIN_SYMBOLS.mod_event ?? 0,
+    modMethods = TYPE_MIN_SYMBOLS.mod_method ?? 0
+  ) => ({
     $generated_by: 'scripts/fetch-docs.ts',
     source_pages: officialSourcePages(),
     symbols: [
@@ -864,7 +868,14 @@ describe('assertDocsCoverage', () => {
         type: 'mod_event' as const,
         description: 'A mocked event fires',
         doc_min_version: null,
-        doc_page: 'mock-events-page',
+        doc_page: 'mock-types-page',
+      })),
+      ...Array.from({ length: modMethods }, (_, i) => ({
+        symbol: `$.mock.method${i}`,
+        type: 'mod_method' as const,
+        description: '',
+        doc_min_version: null,
+        doc_page: 'mock-types-page',
       })),
     ],
   });
@@ -885,6 +896,11 @@ describe('assertDocsCoverage', () => {
   it('throws when one type collapses while its page still clears the page floor', () => {
     // The mods reference page: the method rows alone clear the page floor.
     expect(() => assertDocsCoverage(index(atFloor(), 1))).toThrow(/1 mod_event symbols/);
+    // And the other way round: the event rows alone clear the page floor, so an
+    // emptied method table must trip the method floor.
+    expect(() => assertDocsCoverage(index(atFloor(), TYPE_MIN_SYMBOLS.mod_event, 0))).toThrow(
+      /0 mod_method symbols/
+    );
   });
 
   it('throws on a partial collapse, not only an empty page', () => {
@@ -1188,6 +1204,17 @@ describe('parseDocPage — mods reference events', () => {
       '| tool.call | A tool is about to run |',
     ].join('\n');
     expect(() => parseDocPage('plugins/mods/reference', page)).toThrow(/Events table/);
+  });
+
+  it('refuses a table in the Events section whose header it does not know', () => {
+    // A renamed event table would otherwise drop its events without a word.
+    const page = [
+      '## Events',
+      '| Event name | Fires when |',
+      '| :- | :- |',
+      '| `ui.close` | A pane is about to close |',
+    ].join('\n');
+    expect(() => parseDocPage('plugins/mods/reference', page)).toThrow(/neither an event table/);
   });
 
   it('has its own floor, so an emptied Events section fails beside a full method table', () => {
