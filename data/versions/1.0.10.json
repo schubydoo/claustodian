@@ -851,7 +851,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Override the API endpoint to route requests through a proxy or gateway. When set to a non-first-party host, MCP tool search is disabled by default. Set `ENABLE_TOOL_SEARCH=true` if your proxy forwards `tool_reference` blocks.",
+      "description": "Override the API endpoint to route requests through a proxy or gateway. For what happens when that gateway rejects MCP tool search, see Tool search through an LLM gateway.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -942,7 +942,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Time in milliseconds that each API request attempt has to receive its response headers (default: 600000, or 10 minutes; maximum: 2147483647). It doesn't limit how long a streaming response runs after that. When you set a positive value, each attempt at a non-streaming request has to finish within it. Increase this when requests time out on slow networks or when routing through a proxy",
+      "description": "Time in milliseconds that each API request attempt has to receive its response headers. It doesn't limit how long a streaming response runs after that. The default is 600000, or 10 minutes, and the maximum is 2147483647. When you set a positive value, each attempt at a non-streaming request has to finish within it. Increase this when requests time out on slow networks or when routing through a proxy.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
