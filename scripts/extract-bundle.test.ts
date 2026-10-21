@@ -876,6 +876,10 @@ describe('extractParamEnvVars — env vars read through a param bound to process
     const awaits =
       'async function a(e){await w();return[{}].map(e=>e.CLAUDE_CODE_ASYNC_ITEM)}a(process.env);';
     expect(names(awaits)).toEqual([]);
+    // However `async` was spelled before it, the outer read is kept.
+    const spaced =
+      'async/*note*/function s(e){await w();return e.CLAUDE_CODE_ASYNC_OUTER}s(process.env);';
+    expect(names(spaced)).toEqual(['CLAUDE_CODE_ASYNC_OUTER']);
     // A name from a default nested in a parameter is not the function's own parameter.
     const nestedDefault = 'function n(t=(n=process.env)=>1){return n.CLAUDE_CODE_FREE_NAME}';
     expect(names(nestedDefault)).toEqual([]);

@@ -506,11 +506,21 @@ function blockBinds(statements: unknown, name: string): boolean {
  * apostrophe in a comment can end the text early (`getColorDepth` from
  * supports-color, 2.1.113). A 12-version subset re-extract loses no symbol to this.
  */
-function outerParamRefs(fnText: string, name: string, shift = 0): Set<number> | undefined {
-  const parsed = parseSync('fn.js', `(${fnText})`) as unknown as {
-    program: { body: AstNode[] };
-    errors: unknown[];
-  };
+function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
+  const parse = (text: string) =>
+    parseSync('fn.js', `(${text})`) as unknown as {
+      program: { body: AstNode[] };
+      errors: unknown[];
+    };
+  // The text starts at `function`, so an async function has lost its `async`, and
+  // `await` in it does not parse. Retry with the keyword back: `await` is valid
+  // only in an async function, so whatever spelled it before is irrelevant.
+  let shift = 0;
+  let parsed = parse(fnText);
+  if (parsed.errors.length > 0) {
+    shift = 'async '.length;
+    parsed = parse(`async ${fnText}`);
+  }
   const statement = parsed.program.body[0];
   // oxc keeps the wrapping parentheses as a ParenthesizedExpression node.
   const wrapped = isNode(statement) ? statement.expression : undefined;
@@ -692,18 +702,7 @@ export function extractParamEnvVars(src: string): Map<string, string> {
       let refs: Set<number> | undefined | null = null;
       for (const r of body.matchAll(re)) {
         // Offsets in the function text: `body` starts just inside its brace.
-        // `async` sits before the `function` keyword. Without it, `await` does not parse.
-        const asyncPrefix = /\basync\s+$/.test(
-          src.slice(Math.max(0, (m.index as number) - 8), m.index as number)
-        );
-        if (refs === null) {
-          const fnText = src.slice(m.index as number, bend + 1);
-          refs = outerParamRefs(
-            asyncPrefix ? `async ${fnText}` : fnText,
-            bind.name,
-            asyncPrefix ? 6 : 0
-          );
-        }
+        if (refs === null) refs = outerParamRefs(src.slice(m.index as number, bend + 1), bind.name);
         if (!refs || !refs.has(bi + 1 - (m.index as number) + (r.index as number))) continue;
         const name = r[1] as string;
         if (SYMBOL_DENYLIST.has(name)) continue;
