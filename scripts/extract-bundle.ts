@@ -31,6 +31,7 @@
  * This is extraction only — no acquisition (download/unpack) and no cross-version
  * diffing. The backfill and the forward CI wrap this with those concerns.
  */
+import { parseSync } from 'oxc-parser';
 import { extractSwitchCaseScopes } from './argv-scopes.js';
 import { isAccessorEvidenceEnv } from './binary-lane.js';
 import { extractRegistryEnvVars } from './env-registry.js';
@@ -424,34 +425,147 @@ function functionText(src: string, start: number, paramOpen: number): string | u
   return bodyEnd < 0 ? undefined : src.slice(start, bodyEnd + 1);
 }
 
+/** An ESTree node as oxc-parser emits it. */
+interface AstNode {
+  type: string;
+  start: number;
+  [key: string]: unknown;
+}
+
+const isNode = (value: unknown): value is AstNode =>
+  typeof value === 'object' && value !== null && typeof (value as AstNode).type === 'string';
+
+/** True when the binding pattern `pattern` declares `name`. */
+function patternBinds(pattern: unknown, name: string): boolean {
+  if (!isNode(pattern)) return false;
+  switch (pattern.type) {
+    case 'Identifier':
+      return pattern.name === name;
+    case 'AssignmentPattern':
+      return patternBinds(pattern.left, name);
+    case 'RestElement':
+      return patternBinds(pattern.argument, name);
+    case 'ArrayPattern':
+      return (pattern.elements as unknown[]).some((el) => patternBinds(el, name));
+    case 'ObjectPattern':
+      return (pattern.properties as AstNode[]).some((prop) =>
+        patternBinds(prop.type === 'RestElement' ? prop.argument : prop.value, name)
+      );
+    case 'VariableDeclaration':
+      return (pattern.declarations as AstNode[]).some((d) => patternBinds(d.id, name));
+    /* v8 ignore next 2 -- a binding pattern in a parameter, catch or declaration is always one of the types above */
+    default:
+      return false;
+  }
+}
+
+const FUNCTION_TYPES = new Set([
+  'FunctionDeclaration',
+  'FunctionExpression',
+  'ArrowFunctionExpression',
+]);
+
+/** True when a function body declares `name` with `var` or a function declaration. */
+function hoistsName(node: unknown, name: string): boolean {
+  if (Array.isArray(node)) return node.some((n) => hoistsName(n, name));
+  if (!isNode(node)) return false;
+  if (FUNCTION_TYPES.has(node.type))
+    return node.type === 'FunctionDeclaration' && patternBinds(node.id, name);
+  if (node.type === 'VariableDeclaration' && node.kind === 'var' && patternBinds(node, name))
+    return true;
+  return Object.entries(node).some(
+    ([key, value]) => key !== 'type' && typeof value === 'object' && hoistsName(value, name)
+  );
+}
+
+/** True when a block's own statements declare `name` lexically. */
+function blockBinds(statements: unknown, name: string): boolean {
+  return (statements as AstNode[]).some(
+    (st) =>
+      (st.type === 'VariableDeclaration' && st.kind !== 'var' && patternBinds(st, name)) ||
+      ((st.type === 'ClassDeclaration' || st.type === 'FunctionDeclaration') &&
+        patternBinds(st.id, name))
+  );
+}
+
 /**
- * The spans of `body` where a nested function, `catch` clause or arrow binds
- * `name` again, so a read of `name` there is not the outer parameter. A braced
- * body ends at its closing brace. An arrow without braces is taken to run to the
- * end of `body`, which can only drop reads, never add one.
+ * The offsets in `fnText`, a whole `function …(…){…}`, of every identifier `name`
+ * that refers to the function's own parameter. Minified code reuses short names,
+ * so a nested function, arrow, `catch` or block that binds `name` again hides it
+ * for exactly its own extent. oxc-parser resolves this, because the regular
+ * expressions it replaces got property keys, default values and arrow bodies wrong.
+ *
+ * Returns undefined when the text does not parse. matchBracket finds the extent
+ * and does not read comments, so in unminified bundled code an apostrophe in a
+ * comment can end the text early (`getColorDepth` from supports-color, 2.1.113).
+ * The caller then keeps every candidate read, as it did before this check.
  */
-function shadowedSpans(body: string, name: string): Array<[number, number]> {
-  const safe = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const binds = (params: string): boolean =>
-    new RegExp('(?<![\\w$.])' + safe + '(?![\\w$])').test(params);
-  const spans: Array<[number, number]> = [];
-  const braced = (from: number, start: number): void => {
-    let open = from;
-    while (open < body.length && /\s/.test(body[open] as string)) open++;
-    const end = body[open] === '{' ? matchBracket(body, open) : -1;
-    spans.push([start, end < 0 ? body.length : end]);
+function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
+  const parsed = parseSync('fn.js', `(${fnText})`) as unknown as {
+    program: { body: AstNode[] };
+    errors: unknown[];
   };
-  for (const m of body.matchAll(/\b(?:function\s*[A-Za-z_$]?[\w$]*|catch)\s*\(/g)) {
-    const popen = (m.index as number) + m[0].length - 1;
-    const pend = matchBracket(body, popen);
-    if (pend >= 0 && binds(body.slice(popen + 1, pend))) braced(pend + 1, m.index as number);
-  }
-  for (const m of body.matchAll(/(?:\(([^()]*)\)|([A-Za-z_$][\w$]*))\s*=>/g)) {
-    // One of the two groups always matches: a parenthesised list or a bare name.
-    const params = m[1] ?? (m[2] as string);
-    if (binds(params)) braced((m.index as number) + m[0].length, m.index as number);
-  }
-  return spans;
+  const statement = parsed.program.body[0];
+  // oxc keeps the wrapping parentheses as a ParenthesizedExpression node.
+  const wrapped = isNode(statement) ? statement.expression : undefined;
+  const fn = isNode(wrapped) ? wrapped.expression : undefined;
+  if (parsed.errors.length > 0 || !isNode(fn) || !FUNCTION_TYPES.has(fn.type)) return undefined;
+  const refs = new Set<number>();
+  const walk = (node: unknown, hidden: boolean): void => {
+    if (Array.isArray(node)) {
+      for (const n of node) walk(n, hidden);
+      return;
+    }
+    if (!isNode(node)) return;
+    switch (node.type) {
+      case 'Identifier':
+        // The wrapping `(` shifts every offset by one.
+        if (!hidden && node.name === name) refs.add(node.start - 1);
+        return;
+      case 'MemberExpression':
+        walk(node.object, hidden);
+        if (node.computed) walk(node.property, hidden);
+        return;
+      case 'Property':
+        if (node.computed) walk(node.key, hidden);
+        walk(node.value, hidden);
+        return;
+      case 'CatchClause':
+        walk(node.body, hidden || patternBinds(node.param, name));
+        return;
+      case 'BlockStatement':
+      case 'StaticBlock':
+        walk(node.body, hidden || blockBinds(node.body, name));
+        return;
+      case 'ForStatement':
+      case 'ForInStatement':
+      case 'ForOfStatement': {
+        const decl = node.type === 'ForStatement' ? node.init : node.left;
+        const binds = isNode(decl) && decl.type === 'VariableDeclaration' && decl.kind !== 'var';
+        const inner = hidden || (binds && patternBinds(decl, name));
+        for (const [key, value] of Object.entries(node)) if (key !== 'type') walk(value, inner);
+        return;
+      }
+    }
+    if (FUNCTION_TYPES.has(node.type) && node !== fn) {
+      const inner =
+        hidden ||
+        (node.type === 'FunctionExpression' && patternBinds(node.id, name)) ||
+        (node.params as unknown[]).some((p) => patternBinds(p, name)) ||
+        hoistsName(node.body, name);
+      walk(node.params, inner);
+      walk(node.body, inner);
+      return;
+    }
+    if (node === fn) {
+      walk(node.params, hidden);
+      walk(node.body, hidden);
+      return;
+    }
+    for (const [key, value] of Object.entries(node)) if (key !== 'type') walk(value, hidden);
+  };
+  walk(fn, false);
+  return refs;
 }
 
 /**
@@ -479,9 +593,9 @@ function shadowedSpans(body: string, name: string): Array<[number, number]> {
  * CLAUDE_/ANTHROPIC_ convention the accessor-map path also uses), so a caller that
  * passes `process.env` down cannot make this publish an OS or third-party var. A
  * `param.NAME =` WRITE is skipped — that is Claude Code SETTING an env var for a
- * child process, not reading one it is given. A read inside a nested function,
- * `catch` or arrow that binds the same name again is skipped (shadowedSpans):
- * minified code reuses short names, so `e` there is a different value.
+ * child process, not reading one it is given. A read whose `param` resolves to a
+ * nested binding of the same name is skipped (outerParamRefs): minified code
+ * reuses short names, so `e` there is a different value.
  */
 export function extractParamEnvVars(src: string): Map<string, string> {
   // Pass 1: callee name -> argument positions that receive process.env.
@@ -546,10 +660,11 @@ export function extractParamEnvVars(src: string): Map<string, string> {
         '(?<![\\w$])' + safeName + '\\.([A-Z][A-Z0-9_]{2,})\\b(?!\\s*=(?!=))',
         'g'
       );
-      const shadowed = shadowedSpans(body, bind.name);
+      let refs: Set<number> | undefined | null = null;
       for (const r of body.matchAll(re)) {
-        const at = r.index as number;
-        if (shadowed.some(([from, to]) => at >= from && at <= to)) continue;
+        // Offsets in the function text: `body` starts just inside its brace.
+        if (refs === null) refs = outerParamRefs(src.slice(m.index as number, bend + 1), bind.name);
+        if (refs && !refs.has(bi + 1 - (m.index as number) + (r.index as number))) continue;
         const name = r[1] as string;
         if (SYMBOL_DENYLIST.has(name)) continue;
         const category = categorize(name, 'env_var');

@@ -856,6 +856,54 @@ describe('extractParamEnvVars — env vars read through a param bound to process
     expect(names(caught)).toEqual([]);
   });
 
+  it('resolves each read to its binding, not to a text span', () => {
+    // An outer read after an expression-bodied arrow that rebinds the name.
+    const after =
+      'function f(e){[{}].map(e=>e.CLAUDE_CODE_ITEM);return e.CLAUDE_CODE_AFTER_ARROW}f(process.env);';
+    expect(names(after)).toEqual(['CLAUDE_CODE_AFTER_ARROW']);
+    // A property key in a destructured parameter binds `x`, not `e`.
+    const key =
+      'function g(e){return[{}].map(({e:x})=>{return e.CLAUDE_CODE_KEY_ONLY})}g(process.env);';
+    expect(names(key)).toEqual(['CLAUDE_CODE_KEY_ONLY']);
+    // A default value with a call still declares `e` in the arrow.
+    const call =
+      'function h(e){return[{}].map((e=mk())=>e.CLAUDE_CODE_DEFAULT_CALL)}h(process.env);';
+    expect(names(call)).toEqual([]);
+    // Text inside a string is not a read.
+    const str = 'function k(e){return"e.CLAUDE_CODE_IN_STRING"}k(process.env);';
+    expect(names(str)).toEqual([]);
+    // Text that does not parse keeps every candidate read, as before the check.
+    const bad = 'function b(e){return e.CLAUDE_CODE_UNPARSED @}b(process.env);';
+    expect(names(bad)).toEqual(['CLAUDE_CODE_UNPARSED']);
+  });
+
+  it.each([
+    // [body of f(e), is the read the outer e?]
+    ['return[].map((...e)=>e.CLAUDE_CODE_T)', false],
+    ['return[].map(([e])=>e.CLAUDE_CODE_T)', false],
+    ['return[].map(({...e})=>e.CLAUDE_CODE_T)', false],
+    ['return function(){var e=1;return e.CLAUDE_CODE_T}', false],
+    ['return function(){if(1){var e=1}return e.CLAUDE_CODE_T}', false],
+    ['return function(){function e(){}return e.CLAUDE_CODE_T}', false],
+    ['return function e(){return e.CLAUDE_CODE_T}', false],
+    ['{let e=1;e.CLAUDE_CODE_T}', false],
+    ['{const e=1;e.CLAUDE_CODE_T}', false],
+    ['{class e{}e.CLAUDE_CODE_T}', false],
+    ['for(let e of[])e.CLAUDE_CODE_T', false],
+    ['for(const e in{})e.CLAUDE_CODE_T', false],
+    ['for(let e=0;;)e.CLAUDE_CODE_T', false],
+    ['class C{static{let e=1;e.CLAUDE_CODE_T}}', false],
+    ['for(var e of[])e.CLAUDE_CODE_T', true],
+    ['for(;;)e.CLAUDE_CODE_T', true],
+    ['try{}catch{return e.CLAUDE_CODE_T}', true],
+    ['return function(){var x=1;return e.CLAUDE_CODE_T}', true],
+    ['return x[e.CLAUDE_CODE_T]', true],
+    ['return{[e.CLAUDE_CODE_T]:1}', true],
+    ['return{e:e.CLAUDE_CODE_T}', true],
+  ])('resolves %s to the outer parameter: %s', (body, outer) => {
+    expect(names(`function f(e){${body}}f(process.env);`)).toEqual(outer ? ['CLAUDE_CODE_T'] : []);
+  });
+
   it('keeps a read through a nested scope that binds other names', () => {
     // The real 2.1.306 proxy reader nests `E=(u,c)=>{…e[u]…}` and still reads e.
     const src =
