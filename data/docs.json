@@ -6245,6 +6245,335 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "agent.offer",
+      "type": "mod_event",
+      "description": "A subagent type is offered to Claude",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "agent.spawn",
+      "type": "mod_event",
+      "description": "A subagent or an agent team teammate is about to start. For a teammate, `e.isTeammate` is `true`.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "attribution.text",
+      "type": "mod_event",
+      "description": "Claude Code composes commit or pull request attribution text",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "command.describe",
+      "type": "mod_event",
+      "description": "Once for each command, for the command list",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "command.run",
+      "type": "mod_event",
+      "description": "A command is about to run",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "config.describe",
+      "type": "mod_event",
+      "description": "Once for each `/config` row",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "config.set",
+      "type": "mod_event",
+      "description": "A `/config` row is about to change",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "engine.create",
+      "type": "mod_event",
+      "description": "The mods API is being built for this mod",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "plugin.register",
+      "type": "mod_event",
+      "description": "A hooks module is about to load. `e.uses` lists its events, mods API calls, environment variables, and state, as `claude plugin validate` prints them. Each call is written without the `$.` prefix, such as `fs.read`.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "prompt.attachment",
+      "type": "mod_event",
+      "description": "Claude Code adds a message of its own for Claude, such as a reminder. `e.type` names the kind, and for the kinds the types declare, `e.detail` holds the facts the text was written from.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "prompt.autocomplete",
+      "type": "mod_event",
+      "description": "The user types in the prompt box and a word ends at the cursor. `e.token` is that word. Claude Code doesn't wait for the hook: its own autocomplete rows show first.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "prompt.compose",
+      "type": "mod_event",
+      "description": "Claude Code renders a system prompt",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "prompt.context",
+      "type": "mod_event",
+      "description": "Once for each conversation, for the context sent with the first message",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "prompt.edit",
+      "type": "mod_event",
+      "description": "The user edits the prompt box",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "prompt.fill",
+      "type": "mod_event",
+      "description": "Text is about to go into the prompt box as a draft, or as a dim suggestion",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "prompt.mention",
+      "type": "mod_event",
+      "description": "Claude Code is about to read a file that a prompt @-mentions. Requires Claude Code v2.1.290 or later.",
+      "doc_min_version": "2.1.290",
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "prompt.section",
+      "type": "mod_event",
+      "description": "Once for each named section of the system prompt. `e.name` is the section's `id` in `prompt.compose`.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "prompt.submit",
+      "type": "mod_event",
+      "description": "A prompt is submitted",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "prompt.suggest",
+      "type": "mod_event",
+      "description": "Text is about to go into the prompt box as a draft, or as a dim suggestion",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "session.append",
+      "type": "mod_event",
+      "description": "Once for each row the conversation keeps, such as a prompt, a response block, a tool result, or a notice, before it's stored",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "session.attach",
+      "type": "mod_event",
+      "description": "Another app connects to or disconnects from the session",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "session.compact",
+      "type": "mod_event",
+      "description": "The conversation is about to be compacted",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "session.detach",
+      "type": "mod_event",
+      "description": "Another app connects to or disconnects from the session",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "session.end",
+      "type": "mod_event",
+      "description": "The session ends, or `/clear`, `/resume`, or `/branch` runs. `e.reason` is `clear`, `resume`, `logout`, `prompt_input_exit`, or `other`. `/branch` reports `resume`.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "session.measure",
+      "type": "mod_event",
+      "description": "After each turn, and when a plan limit's percent used changes",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "session.receive",
+      "type": "mod_event",
+      "description": "A message arrives from, or is about to go to, another agent or session. See Send and receive messages between sessions.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "session.send",
+      "type": "mod_event",
+      "description": "A message arrives from, or is about to go to, another agent or session. See Send and receive messages between sessions.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "session.start",
+      "type": "mod_event",
+      "description": "Once for each loaded mod, before the first prompt, and again after a reload of that mod. Not after `/clear`, `/resume`, or `/branch`.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "skill.prompt",
+      "type": "mod_event",
+      "description": "A skill's text is expanded for Claude",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "telemetry.log",
+      "type": "mod_event",
+      "description": "A telemetry record is about to be logged, or one use of a feature is marked. In a mod you install, give a telemetry hook the filter `{ to: 'collector' }`, as in `on('telemetry.log', { to: 'collector' }, hook)`. Without the filter, the mod fails `claude plugin validate`. `*` doesn't match these events.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "telemetry.mark",
+      "type": "mod_event",
+      "description": "A telemetry record is about to be logged, or one use of a feature is marked. In a mod you install, give a telemetry hook the filter `{ to: 'collector' }`, as in `on('telemetry.log', { to: 'collector' }, hook)`. Without the filter, the mod fails `claude plugin validate`. `*` doesn't match these events.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "tool.call",
+      "type": "mod_event",
+      "description": "A tool is about to run",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "tool.check",
+      "type": "mod_event",
+      "description": "Claude Code decides whether a tool call may run, after the `tool.call` and `PreToolUse` hooks. `next(e)` resolves to the decision the rules, the permission mode, and those hooks reached.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "tool.describe",
+      "type": "mod_event",
+      "description": "Once for each tool, when its description is first sent to Claude. A second time for an MCP tool when Claude loads it through tool search, with `e.description` set to the text Claude reads for the loaded tool.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "turn.complete",
+      "type": "mod_event",
+      "description": "A turn ended",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "turn.start",
+      "type": "mod_event",
+      "description": "A turn begins",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "turn.step",
+      "type": "mod_event",
+      "description": "One request is about to go to the model",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ui.close",
+      "type": "mod_event",
+      "description": "A pane is about to close. `e.id` is the pane and `e.origin.kind` is `plugin`, `person`, or `unload`.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ui.fault",
+      "type": "mod_event",
+      "description": "A `Client` element your mod drew failed to load, draw, or run. `e.phase` is `load`, `render`, or `run`, and `e.reason` is the error message. Requires Claude Code v2.1.289 or later.",
+      "doc_min_version": "2.1.289",
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ui.focus",
+      "type": "mod_event",
+      "description": "The focused control or the scroll position of a pane or the band is about to change",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ui.input",
+      "type": "mod_event",
+      "description": "A `Button`, `Input`, or `Select` a mod drew is used",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ui.message",
+      "type": "mod_event",
+      "description": "A `Client` element posts data to its mod",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ui.press",
+      "type": "mod_event",
+      "description": "A `Button`, `Input`, or `Select` a mod drew is used",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ui.render",
+      "type": "mod_event",
+      "description": "A render site is about to be drawn",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ui.resolve",
+      "type": "mod_event",
+      "description": "Mods load, once for each app, render site, and mod. The result is the element table that `$.ui.resolve(e)` reads.",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ui.scroll",
+      "type": "mod_event",
+      "description": "The focused control or the scroll position of a pane or the band is about to change",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "ui.select",
+      "type": "mod_event",
+      "description": "A `Button`, `Input`, or `Select` a mod drew is used",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
       "symbol": "$.agent.list",
       "type": "mod_method",
       "description": "",
