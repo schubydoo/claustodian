@@ -6384,7 +6384,7 @@
     {
       "symbol": "ENABLE_PROMPT_CACHING_1H_BEDROCK",
       "type": "env_var",
-      "description": "Deprecated. Use `ENABLE_PROMPT_CACHING_1H` instead",
+      "description": "Deprecated. Use `ENABLE_PROMPT_CACHING_1H` instead. Has no effect on Claude apps gateway sessions, even when the gateway routes to Amazon Bedrock",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },

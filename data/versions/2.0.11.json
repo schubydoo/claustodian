@@ -3244,11 +3244,11 @@
       "first_seen": "0.2.76",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Authentication headers for OTLP",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
     },
     {
