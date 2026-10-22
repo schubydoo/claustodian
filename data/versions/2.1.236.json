@@ -5600,7 +5600,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. Claude Code syncs this choice to your account, and pushes arrive while Remote Control is connected. Appears in `/config` as **Push when Claude decides**.",
+      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**. When you change it there, Claude Code also saves the value to your account.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"

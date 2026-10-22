@@ -6614,7 +6614,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. Claude Code syncs this choice to your account, and pushes arrive while Remote Control is connected. Appears in `/config` as **Push when Claude decides**.",
+      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**. When you change it there, Claude Code also saves the value to your account.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9105,13 +9105,13 @@
       "type": "config_key",
       "first_seen": "2.1.305",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Linux/WSL only: Let sandboxed commands create user namespaces of their own, which the sandbox refuses by default. Needed by tools that sandbox themselves that way, such as Chromium's and Electron's sandbox, a nested bubblewrap, and `unshare`. **Removes code-execution isolation** — in any folder a hostile command may write, it can then bypass filesystem.denyWrite, filesystem.denyRead, credentials.files entries and the paths the sandbox always write-protects (such as .claude/settings.json, git hooks and git config), and so plant code that later runs outside the sandbox; while autoAllowBashIfSandboxed is on, the command that plants it needs no approval. Default: false. Only honored from user, managed/policy, or CLI (--settings) settings — true from project settings (.claude/settings.json and .claude/settings.local.json) is ignored (false there still applies).",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Let sandboxed commands on Linux and WSL2 create user namespaces, which Chromium's and Electron's own sandbox, a nested bubblewrap, and `unshare` need. If you set this key to `true`, you turn off a security boundary: code from a sandboxed command can end up running outside the sandbox. For rootless Podman or Buildah, use `excludedCommands` instead, because the sandbox stops them in other ways too. Requires Claude Code v2.1.305 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "sandbox.allowUnsandboxedCommands",
@@ -10112,7 +10112,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Lock the `agents` surface. Claude Code stops loading agents from `~/.claude/agents/`, `.claude/agents/`, and `--add-dir` directories. It keeps loading plugin agents, built-in agents, and agents in the managed policy directory.",
+      "description": "Lock the `agents` surface. Claude Code stops loading agents from `~/.claude/agents/`, `.claude/agents/`, and `--add-dir` directories. It keeps loading built-in agents, agents in the managed policy directory, and agents from plugins other than skills-directory plugins.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -10140,7 +10140,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Lock the `mcp` surface. Claude Code stops loading MCP servers from `~/.claude.json` and `.mcp.json`, and keeps loading plugin MCP servers, `managed-mcp.json` servers, and servers from `managedMcpServers`.",
+      "description": "Lock the `mcp` surface. Claude Code stops loading MCP servers from `~/.claude.json` and `.mcp.json`. It keeps loading `managed-mcp.json` servers, servers from `managedMcpServers`, and MCP servers from plugins other than skills-directory plugins.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -10154,7 +10154,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Lock the `skills` surface. Claude Code stops loading skills from `~/.claude/skills/` and `.claude/skills/`, custom commands from `~/.claude/commands/` and `.claude/commands/`, skills and commands under `--add-dir` directories, and skills synced from your claude.ai account. It keeps loading plugin skills, bundled skills, and skills in the managed policy directory.",
+      "description": "Lock the `skills` surface. Claude Code stops loading skills from `~/.claude/skills/` and `.claude/skills/`, custom commands from `~/.claude/commands/` and `.claude/commands/`, skills and commands under `--add-dir` directories, and skills synced from your claude.ai account. It keeps loading bundled skills, skills in the managed policy directory, and skills from plugins other than skills-directory plugins.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"

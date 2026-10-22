@@ -2312,7 +2312,7 @@
     {
       "symbol": "agentPushNotifEnabled",
       "type": "config_key",
-      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. Claude Code syncs this choice to your account, and pushes arrive while Remote Control is connected. Appears in `/config` as **Push when Claude decides**.",
+      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**. When you change it there, Claude Code also saves the value to your account.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3392,6 +3392,13 @@
       "doc_page": "settings-reference"
     },
     {
+      "symbol": "sandbox.allowNestedUserNamespaces",
+      "type": "config_key",
+      "description": "Let sandboxed commands on Linux and WSL2 create user namespaces, which Chromium's and Electron's own sandbox, a nested bubblewrap, and `unshare` need. If you set this key to `true`, you turn off a security boundary: code from a sandboxed command can end up running outside the sandbox. For rootless Podman or Buildah, use `excludedCommands` instead, because the sandbox stops them in other ways too. Requires Claude Code v2.1.305 or later.",
+      "doc_min_version": "2.1.305",
+      "doc_page": "settings-reference"
+    },
+    {
       "symbol": "sandbox.allowUnsandboxedCommands",
       "type": "config_key",
       "description": "Let Claude retry a command outside the sandbox with the `dangerouslyDisableSandbox` parameter after the sandbox blocks it. When it's `false`, Claude Code ignores that parameter. While the sandbox is running, commands Claude runs are then sandboxed unless they match an `excludedCommands` entry. The `/sandbox` **Overrides** tab shows that state as **Strict sandbox mode**. A `false` in managed settings turns on strict sandbox mode for the developers it covers.",
@@ -3772,7 +3779,7 @@
     {
       "symbol": "strictPluginOnlyCustomization.agents",
       "type": "config_key",
-      "description": "Lock the `agents` surface. Claude Code stops loading agents from `~/.claude/agents/`, `.claude/agents/`, and `--add-dir` directories. It keeps loading plugin agents, built-in agents, and agents in the managed policy directory.",
+      "description": "Lock the `agents` surface. Claude Code stops loading agents from `~/.claude/agents/`, `.claude/agents/`, and `--add-dir` directories. It keeps loading built-in agents, agents in the managed policy directory, and agents from plugins other than skills-directory plugins.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3786,14 +3793,14 @@
     {
       "symbol": "strictPluginOnlyCustomization.mcp",
       "type": "config_key",
-      "description": "Lock the `mcp` surface. Claude Code stops loading MCP servers from `~/.claude.json` and `.mcp.json`, and keeps loading plugin MCP servers, `managed-mcp.json` servers, and servers from `managedMcpServers`.",
+      "description": "Lock the `mcp` surface. Claude Code stops loading MCP servers from `~/.claude.json` and `.mcp.json`. It keeps loading `managed-mcp.json` servers, servers from `managedMcpServers`, and MCP servers from plugins other than skills-directory plugins.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
       "symbol": "strictPluginOnlyCustomization.skills",
       "type": "config_key",
-      "description": "Lock the `skills` surface. Claude Code stops loading skills from `~/.claude/skills/` and `.claude/skills/`, custom commands from `~/.claude/commands/` and `.claude/commands/`, skills and commands under `--add-dir` directories, and skills synced from your claude.ai account. It keeps loading plugin skills, bundled skills, and skills in the managed policy directory.",
+      "description": "Lock the `skills` surface. Claude Code stops loading skills from `~/.claude/skills/` and `.claude/skills/`, custom commands from `~/.claude/commands/` and `.claude/commands/`, skills and commands under `--add-dir` directories, and skills synced from your claude.ai account. It keeps loading bundled skills, skills in the managed policy directory, and skills from plugins other than skills-directory plugins.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
