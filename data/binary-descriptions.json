@@ -1495,6 +1495,12 @@
         "description": "Assert that you trust this plugin's code and eval suite, and skip the first-run trust prompt (for CI; like --dangerously-skip-permissions, only pass it for plugins you would run yourself). Does not imply --scaffold, --allow-tools or --mocks off"
       }
     ],
+    "cli_flag:--trust-workspace": [
+      {
+        "from": "2.1.309",
+        "description": "Trust the current folder for this run only, without asking (for scripts and CI). Takes no value: put a PR number or base branch before it. Use it only on folders you trust: the folder's git configuration and Claude Code project settings can run programs"
+      }
+    ],
     "cli_flag:--unix": [
       {
         "from": "2.1.64",

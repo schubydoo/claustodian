@@ -434,7 +434,7 @@
     {
       "symbol": "--drain-wait-sec",
       "type": "cli_flag",
-      "description": "Once the drain starts, which is on `SIGTERM` unless you set `--defer-shutdown-max-min`, wait up to N seconds for each session's in-flight turn and background tasks to finish before terminating the child. During this wait, the runner counts a background task that has just finished as still running until the follow-up turn that reads its result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window.",
+      "description": "Once the drain starts, which is on `SIGTERM` unless you set `--defer-shutdown-max-min`, wait up to N seconds for each session's in-flight turn and background tasks to finish before terminating the child. During this wait, the runner counts a background task that has just finished as still running until the follow-up turn that reads its result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window. Raise your stop timeout too.",
       "doc_min_version": null,
       "doc_page": "self-hosted-environments-reference",
       "doc_scopes": [
@@ -4445,21 +4445,21 @@
     {
       "symbol": "CLAUDE_AX_PREPARK_MS",
       "type": "env_var",
-      "description": "In screen reader mode, how many milliseconds Claude Code waits before it writes a new or changed line. Default `0`, so Claude Code doesn't wait. Before v2.1.287, the default was `50`. Claude Code caps the wait at `5000`. Requires Claude Code v2.1.233 or later",
+      "description": "In screen reader mode, how many milliseconds Claude Code waits before it writes a new or changed line. Default `0`, so Claude Code doesn't wait. Before v2.1.287, the default was `50`. Claude Code caps the wait at `5000`. Ignored in project and local settings. Requires Claude Code v2.1.233 or later",
       "doc_min_version": "2.1.233",
       "doc_page": "env-vars"
     },
     {
       "symbol": "CLAUDE_AX_SCREEN_READER",
       "type": "env_var",
-      "description": "Set to `1` to render screen-reader friendly output: flat text without decorative borders or animations. Set to `0` to force screen-reader mode off even when `axScreenReader` is `true`. The `--ax-screen-reader` flag takes precedence. Requires Claude Code v2.1.181 or later",
+      "description": "Set to `1` to render screen-reader friendly output: flat text without decorative borders or animations. Set to `0` to force screen-reader mode off even when `axScreenReader` is `true`. The `--ax-screen-reader` flag takes precedence. Ignored in project and local settings. Requires Claude Code v2.1.181 or later",
       "doc_min_version": "2.1.181",
       "doc_page": "env-vars"
     },
     {
       "symbol": "CLAUDE_AX_STARTUP_QUIET_MS",
       "type": "env_var",
-      "description": "In screen reader mode, how many milliseconds Claude Code holds the first interface render after the startup confirmation line, so your screen reader can speak the line in full before new output interrupts it. Default `3000`. Set `0` to render immediately. Claude Code caps the hold at `600000` (10 minutes). Your first keystroke ends the hold early. Requires Claude Code v2.1.217 or later",
+      "description": "In screen reader mode, how many milliseconds Claude Code holds the first interface render after the startup confirmation line. Your screen reader can then speak the line in full before new output interrupts it. Default `3000`. Set `0` to render immediately. Claude Code caps the hold at `600000` (10 minutes). Your first keystroke ends the hold early. Ignored in project and local settings. Requires Claude Code v2.1.217 or later",
       "doc_min_version": "2.1.217",
       "doc_page": "env-vars"
     },
@@ -5105,6 +5105,13 @@
       "type": "env_var",
       "description": "Set to `false` to turn off prompt suggestions, the grayed-out predictions that appear in your prompt input. Takes precedence over the `promptSuggestionEnabled` setting, which is what the **Prompt suggestions** toggle in `/config` writes. Claude Code also pauses suggestions while your account is close to or at its usage limit. Set to `true` to keep that pause from applying until you reach the limit. Requires Claude Code v2.1.238 or later. See Prompt suggestions",
       "doc_min_version": "2.1.238",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_ENABLE_SHARE_BUNDLE",
+      "type": "env_var",
+      "description": "Set to `1` to make `/share` save its report and the whole session transcript to a local archive under `~/.claude/feedback-bundles/` instead of sending the report to Anthropic. If your organization's policy turns off `/share`, you can't turn it back on with this variable. Requires Claude Code v2.1.299 or later",
+      "doc_min_version": "2.1.299",
       "doc_page": "env-vars"
     },
     {
@@ -6011,6 +6018,20 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_WARN_DISK_FREE_GIB",
+      "type": "env_var",
+      "description": "Set to a whole number of GiB, such as `10`, to have Claude Code warn Claude when free space on the working directory's filesystem falls below that amount. The warning is a system reminder saying how much is free. The reminder is off when the variable is unset, `0`, or not plain digits. Set it in the environment that launches Claude Code, since Claude Code ignores a copy delivered through a settings `env` block. Requires Claude Code v2.1.304 or later",
+      "doc_min_version": "2.1.304",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_WARN_MEMORY_FREE_GIB",
+      "type": "env_var",
+      "description": "On Linux and WSL, set to a whole number of GiB such as `4` to have Claude Code warn Claude when available memory falls below that amount. The warning is a system reminder saying how much is available. The reminder is off when the variable is unset, `0`, or not plain digits. Set it in the environment that launches Claude Code, since Claude Code ignores a copy delivered through a settings `env` block. Requires Claude Code v2.1.304 or later",
+      "doc_min_version": "2.1.304",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_WEB_SEARCH_REFILLS_PER_HOUR",
       "type": "env_var",
       "description": "Rate at which a session's WebSearch limit refills, in calls per hour. The default is `100` in an interactive terminal session. In a non-interactive session the default is `0`, which turns refill off. Takes plain digits only; any other spelling reads as unset. Requires Claude Code v2.1.290 or later",
@@ -6265,7 +6286,7 @@
     {
       "symbol": "DISABLE_GROWTHBOOK",
       "type": "env_var",
-      "description": "Set to `1` or `true` to disable GrowthBook feature-flag fetching and use code defaults for every flag. This makes Remote Control and the other features that need feature-flag fetching unavailable. Setting it to `0` or `false` leaves fetching on. Telemetry event logging stays on unless `DISABLE_TELEMETRY` is also set",
+      "description": "Set to `1` or `true` to disable feature-flag fetching and use code defaults for every flag. This makes Remote Control and the other features that need feature-flag fetching unavailable. Setting it to `0` or `false` leaves fetching on. Telemetry event logging stays on unless `DISABLE_TELEMETRY` is also set",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -6524,7 +6545,7 @@
     {
       "symbol": "MCP_PROTOCOL_NEGOTIATION",
       "type": "env_var",
-      "description": "On the v2 MCP client runtime only, whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `auto` to probe HTTP, claude.ai connector, and stdio servers, or `legacy` to probe none. With the variable unset, Claude Code probes the servers described under MCP client runtimes. Any other value is ignored with a warning in the debug log. Requires Claude Code v2.1.221 or later",
+      "description": "On the v2 MCP client runtime only, controls whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `legacy` to skip the probe, so that every server connects with the handshake from before that revision. Set `auto` to probe the server kinds that support the probe: HTTP and stdio servers, claude.ai connectors, and the connectors of cloud and Remote Control sessions. With the variable unset, Claude Code probes those same kinds by default; see MCP client runtimes. Any other value is ignored with a warning in the debug log. Requires Claude Code v2.1.221 or later",
       "doc_min_version": "2.1.221",
       "doc_page": "env-vars"
     },
@@ -6860,7 +6881,7 @@
     {
       "symbol": "SELF_HOSTED_RUNNER_DRAIN_WAIT_MS",
       "type": "env_var",
-      "description": "Once the drain starts, which is on `SIGTERM` unless you set `--defer-shutdown-max-min`, wait up to N seconds for each session's in-flight turn and background tasks to finish before terminating the child. During this wait, the runner counts a background task that has just finished as still running until the follow-up turn that reads its result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window.",
+      "description": "Once the drain starts, which is on `SIGTERM` unless you set `--defer-shutdown-max-min`, wait up to N seconds for each session's in-flight turn and background tasks to finish before terminating the child. During this wait, the runner counts a background task that has just finished as still running until the follow-up turn that reads its result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window. Raise your stop timeout too.",
       "doc_min_version": null,
       "doc_page": "self-hosted-environments-reference"
     },
