@@ -1398,11 +1398,15 @@
       "symbol": "--trust-workspace",
       "type": "cli_flag",
       "description": "Seed persisted trust for each session's repository paths so repo-committed `permissions.allow` and `additionalDirectories` are honored. Set `false` to drop repo-committed permission grants and configure allow rules in the host config's `settings.json` instead; repository-committed `sandbox.*` settings still apply either way, which is why the repo-settings guard scans them regardless of this flag.",
-      "doc_min_version": null,
+      "doc_min_version": "2.1.309",
       "doc_page": "self-hosted-environments-reference",
       "doc_scopes": [
         "self-hosted-runner"
-      ]
+      ],
+      "scope_descriptions": {
+        "self-hosted-runner": "Seed persisted trust for each session's repository paths so repo-committed `permissions.allow` and `additionalDirectories` are honored. Set `false` to drop repo-committed permission grants and configure allow rules in the host config's `settings.json` instead; repository-committed `sandbox.*` settings still apply either way, which is why the repo-settings guard scans them regardless of this flag.",
+        "ultrareview": "Trust the current folder for this run only, without asking, so a script or CI job can review a checkout you haven't trusted. Takes no value: put a PR number or base branch before it. Requires Claude Code v2.1.309 or later"
+      }
     },
     {
       "symbol": "--use-anthropic-git-proxy",
@@ -3756,6 +3760,13 @@
       "doc_page": "settings-reference"
     },
     {
+      "symbol": "sshHostCommands",
+      "type": "config_key",
+      "description": "Add SSH connections whose host comes from a command to the Desktop environment selector. When you create a connection or replace its host, Desktop runs the entry's command on your computer and connects to the host that the command prints. Requires Claude Desktop v3.6556.0 or later on macOS or Linux, signed in with a Claude account.",
+      "doc_min_version": null,
+      "doc_page": "settings-reference"
+    },
+    {
       "symbol": "statusLine",
       "type": "config_key",
       "description": "Run your own command to render a status line below the prompt with context such as the model, cost, or git branch. Optional fields adjust spacing, add periodic re-runs, and hide the built-in vim mode indicator when your script renders `vim.mode` itself.",
@@ -4746,7 +4757,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS",
       "type": "env_var",
-      "description": "Set to `1` to disable all background task functionality, including the `run_in_background` parameter on Bash and subagent tools, auto-backgrounding, and the Ctrl+B shortcut",
+      "description": "Set to `1` to remove the `run_in_background` parameter from the Bash, PowerShell, and subagent tools and to turn off the Ctrl+B shortcut and background runs of forked skills. Claude Code then also stops moving subagents, long MCP tool calls, and timed-out shell commands to the background automatically. MCP tasks and the Monitor tool still run in the background",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4877,6 +4888,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_MCP_TASK_BACKGROUND",
+      "type": "env_var",
+      "description": "Set to `1` so that Claude waits for the result of an MCP task in an interactive session. While automatic backgrounding is on, it still moves the call to the background after two minutes by default. Requires Claude Code v2.1.304 or later",
+      "doc_min_version": "2.1.304",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_MODEL_ACCESS_FALLBACK",
       "type": "env_var",
       "description": "Set to `1` to stop Claude Code on Amazon Bedrock and Google Cloud's Agent Platform from switching to an older model when your account loses access to a session's model mid-session; the refused request fails at once instead. A fallback model chain you configure still switches on that refusal, and the startup model checks still fall back at launch. Requires Claude Code v2.1.285 or later",
@@ -4993,6 +5011,13 @@
       "type": "env_var",
       "description": "Set to `1` to omit the `thinking` parameter from API requests entirely. This is a compatibility option for proxies and gateways that reject the parameter. On models that think by default, omitting the parameter means the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead. Neither variable turns thinking off on Opus 5.5, Sonnet 5.5, Haiku 5.5, or the Fable models, which can't have thinking turned off. On third-party providers, `MAX_THINKING_TOKENS=0` likewise omits the parameter, so the two variables behave the same there",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_ULTRAREVIEW_TRUST_CHECK",
+      "type": "env_var",
+      "description": "Set to `1` so that `claude ultrareview` doesn't exit with `Error: Workspace not trusted` in a folder you haven't trusted when it can't ask you to trust it, such as in CI. Set it in the environment that launches Claude Code, not a settings `env` block, and only where every such run starts in a folder you trust. Runs that can ask still ask. Requires Claude Code v2.1.309 or later",
+      "doc_min_version": "2.1.309",
       "doc_page": "env-vars"
     },
     {
@@ -5376,7 +5401,7 @@
     {
       "symbol": "CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS",
       "type": "env_var",
-      "description": "Elapsed time in milliseconds before a still-running MCP tool call moves to a background task (default: 120000, or 2 minutes). Set to `0` to turn automatic backgrounding off. Requires Claude Code v2.1.212 or later",
+      "description": "Elapsed time in milliseconds before a still-running MCP tool call moves to a background task (default: 120000, or 2 minutes). Set to `0` to turn automatic backgrounding off and, in an interactive session, to make Claude wait for MCP tasks. Requires Claude Code v2.1.212 or later",
       "doc_min_version": "2.1.212",
       "doc_page": "env-vars"
     },

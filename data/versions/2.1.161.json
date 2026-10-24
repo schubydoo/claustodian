@@ -9033,7 +9033,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable all background task functionality, including the `run_in_background` parameter on Bash and subagent tools, auto-backgrounding, and the Ctrl+B shortcut",
+      "description": "Set to `1` to remove the `run_in_background` parameter from the Bash, PowerShell, and subagent tools and to turn off the Ctrl+B shortcut and background runs of forked skills. Claude Code then also stops moving subagents, long MCP tool calls, and timed-out shell commands to the background automatically. MCP tasks and the Monitor tool still run in the background",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
