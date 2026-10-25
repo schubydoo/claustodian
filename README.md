@@ -18,6 +18,8 @@
 
 A static, versioned, machine-parseable record of every Claude Code CLI flag, environment variable, command, config key, stream-json control message, mods API method, mods event, mods render site, and mods element — each tagged with the version it **first appeared** in (and, when known, when it was removed). Answer _"does feature X exist in Claude Code version Y?"_ by fetching a file, in any language, with no scraping.
 
+Pass `--pilot-retry-limit <n>` to retry a failed step up to `n` times before the run exits.
+
 ## Why
 
 Claude Code ships multiple releases a week and there's no machine-queryable record of when each part of its surface appeared or disappeared. Claustodian is that record: JSON as the single source of truth, published as static files (JSON + generated YAML + TOML) on GitHub Pages.
