@@ -1,15 +1,15 @@
 # Claude review instructions
 
-Rules for the on-demand Claude reviewer (`.github/workflows/claude-review.yml`).
+Project rules for the on-demand Claude reviewer (`.github/workflows/claude-review.yml`,
+which calls the central job in `schubydoo/shared-workflows`).
 
 **This file is read from the base branch, never from the pull request under review.**
 A PR therefore cannot edit the rules that govern its own review. Keep it that way: do
 not make the workflow read these instructions from the PR head.
 
-Tune the reviewer by editing **this file** — a normal PR. Do not move these rules into
-the workflow YAML: `claude-code-action` refuses to run when the workflow file differs
-from the copy on the default branch, so instructions living in the YAML could only be
-changed by merging a new workflow every time.
+Tune what the reviewer looks for by editing **this file** in a normal pull request. How the
+review is posted is central: the shared workflow carries that recipe, and it wins on
+posting.
 
 Length has a cost. Rules that change review behaviour belong here; general project
 context belongs in `AGENTS.md` / `CLAUDE.md`, which the reviewer already reads.
@@ -165,7 +165,8 @@ At most **five Nits** per review. If there are more, post the five that matter a
 
 ## Re-reviews
 
-When the PR has been reviewed before, open with a `## Previous findings` section and
+When the PR has been reviewed before, add a `## Previous findings` section below the tally
+line, and
 resolve every prior Important finding as exactly one of:
 
 - **FIXED** — cite the line or commit that addressed it
@@ -179,23 +180,9 @@ cannot reach round seven on style.
 
 ## Output
 
-- Post every line-specific finding as an **inline comment**, and group them into
-  **exactly one submitted review**. Do not submit a separate review per finding: each
-  inline comment becomes a thread the maintainer replies to and resolves, and one grouped
-  review is the difference between one pass over the PR and several.
-- Put the **summary table** — every finding with its file and line — in the **body of the
-  submitted review**, and nowhere else. That table is what makes the review readable
-  without opening the diff, and what survives inline anchors going stale.
-- **Do not repeat the findings anywhere else.** Your final message becomes the progress
-  comment at the top of the PR; keep it to the checklist, a one-line verdict, and a
-  pointer to the review.
-- Submit as a **COMMENT** review. Never `REQUEST_CHANGES`, never `APPROVE` — this
-  reviewer is advisory and must not gate a merge.
-- Do not number findings `#1`, `#2`. GitHub turns a hash plus digits into a link to an
-  unrelated issue. Use "Finding 1" or a short description.
-- Link code with the **full** SHA and a line range with a line of context either side:
-  `https://github.com/schubydoo/claustodian/blob/<full-sha>/scripts/binary-lane.ts#L40-L46`
-- Lead the summary with a one-line tally, e.g. `2 important, 3 nits`, and say "No
-  important findings" plainly when that is the case.
-- Use a committable `suggestion` block only when committing it fixes the issue
-  **entirely**. If follow-up work is needed, describe the fix instead.
+The central workflow writes a posting recipe next to this file, and it governs how the review
+is posted: the grouped review, `review.json`, thread replies, the tally line and the allowed
+commands. Do not add posting rules here.
+
+Link code in this repo with the full SHA and a line range:
+`https://github.com/schubydoo/claustodian/blob/<full-sha>/scripts/binary-lane.ts#L40-L46`
