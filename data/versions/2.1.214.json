@@ -15709,7 +15709,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Git fetch depth for fresh clones. Set a positive integer, or `full` or `0` for a complete fetch. Repositories already present in the workspace keep their existing depth.",
+      "description": "Git fetch depth for fresh clones. Set a positive integer, or `full` or `0` for a complete fetch. For a clone that's already in the workspace, see Reuse a pre-warmed checkout.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "claude-code"

@@ -1657,7 +1657,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Maximum `spawn-runner` hooks running in parallel. Also caps how many spawn requests are claimed per poll.",
+      "description": "Maximum `spawn-runner` hooks running in parallel. Also caps how many spawn requests are claimed per poll. The orchestrator checks for new spawn requests only after every hook it started has finished, so one slow hook delays that orchestrator's next hooks.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "cli",
@@ -3633,7 +3633,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "How long to wait on a child process that hasn't initialized before releasing the session's slot. See Session startup timeout for where the count starts and which sessions it leaves running. `0` disables the timeout.",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
@@ -7948,7 +7949,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Idle compaction compacts a long conversation that you've stepped away from, shortly before its prompt cache expires. Your next message then sends a summary instead of the whole conversation. When you come back, the conversation shows a line that starts with `Compacted while idle, before the prompt cache expired`.",
+      "description": "Idle compaction compacts a long conversation that you've stepped away from. Your next message then sends a summary instead of the whole conversation. Once compacted, the conversation shows a notice:",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -17664,7 +17665,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to draw mod `Image` elements as pictures when your terminal draws kitty graphics protocol images with Unicode placeholders and you still see an `Image`'s dimmed `alt` text. See which terminals draw an `Image` and why this variable doesn't help inside tmux or screen",
+      "description": "Set to `1` to draw mod `Image` elements as pictures when your terminal draws kitty graphics protocol images with Unicode placeholders and you still see an `Image`'s dimmed `alt` text. See which terminals draw an `Image` and where not to set this variable",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -23423,7 +23424,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Git fetch depth for fresh clones. Set a positive integer, or `full` or `0` for a complete fetch. Repositories already present in the workspace keep their existing depth.",
+      "description": "Git fetch depth for fresh clones. Set a positive integer, or `full` or `0` for a complete fetch. For a clone that's already in the workspace, see Reuse a pre-warmed checkout.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "claude-code"
@@ -25567,7 +25568,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "",
+      "description": "How long to wait on a child process that hasn't initialized before releasing the session's slot. See Session startup timeout for where the count starts and which sessions it leaves running. `0` disables the timeout.",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "other"
     },
@@ -26605,6 +26607,19 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "Once for each loaded mod, before the first prompt, and again after a reload of that mod. Not after `/clear`, `/resume`, or `/branch`.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "settings.read",
+      "type": "mod_event",
+      "first_seen": "2.1.267",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "A mod calls `$.settings.read`, or Claude Code builds the session's merged settings",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
