@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.310",
+  "claudeCodeVersion": "2.1.311",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -1735,6 +1735,22 @@
       "category": "cli"
     },
     {
+      "symbol": "--hold-idle-file",
+      "type": "cli_flag",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `--hold-idle-file` and `--max-hold-min` to `self-hosted-runner`, to keep an idle session while your host reports processes it left running",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--hook-concurrency",
       "type": "cli_flag",
       "first_seen": "2.1.224",
@@ -2286,6 +2302,22 @@
       "category": "cli",
       "scopes": [
         "plugin eval"
+      ]
+    },
+    {
+      "symbol": "--max-hold-min",
+      "type": "cli_flag",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `--hold-idle-file` and `--max-hold-min` to `self-hosted-runner`, to keep an idle session while your host reports processes it left running",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
       ]
     },
     {
@@ -11002,7 +11034,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "@internal Requests one page of the stored transcript of a cloud session that the signed-in account owns. Refused where list_cloud_sessions is.",
+      "description": "@internal Requests one page of the stored transcript of a cloud session that the signed-in account owns. Not always the whole transcript: for a compacted session the service serves the rows its last compaction kept, then its compact_boundary entry and what followed, so the messages that compaction summarized can be on no page. Refused where list_cloud_sessions is.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -11482,7 +11514,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "@internal Request from the CLI subprocess to the SDK host for a fresh OAuth access token after a 401 with no local refresh token.",
+      "description": "@internal Request from the CLI subprocess to the SDK host for a fresh OAuth access token: after a 401 with no local refresh token, or, with kind, when the CLI first needs that bearer.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -12279,6 +12311,21 @@
       "provenance": "binary",
       "confidence": "high",
       "description": "@internal Agent-originated: `prompt.fill` reached its core in a headless session (a plugin's `$.prompt.fill`); the app places the text in its composer as the person's draft and answers `{filled}` (false while a dialog holds the keys or the composer is unavailable). Sent only to a client whose ui_attach named `ui_prompt_fill`; unanswered within 5 s, or unparsable, resolves `{isFilled: false}`; an error-shaped reply does not settle it. Over a remote session transport it is sent only while the session service states that the owner's account alone writes to the session, an answer is taken only as a client's own write, at the floor the session's policy enforces, in the owner's own session, and a client that gives no answer in 5 s hands the request to the next attached client that named it.",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": "cli_to_host"
+    },
+    {
+      "symbol": "ui_prompt_paint",
+      "type": "control_message",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "@internal Agent-originated: `prompt.paint` reached its core in a headless session (a plugin's `$.prompt.paint`), or a plugin that painted was unloaded (no `text`). The app sets one layer's runs over its composer and changes nothing else: not the draft, the caret or its undo history. A change of the draft drops every layer. Answers `{painted}`. Sent only to a client whose ui_attach named `ui_prompt_paint`; unanswered within 5 s, or unparsable, resolves `{isPainted: false}`; an error-shaped reply does not settle it. Over a remote session transport it is sent only while the session service states that the owner's account alone writes to the session, an answer is taken only as a client's own write, at the floor the session's policy enforces, in the owner's own session, and a client that gives no answer in 5 s hands the request to the next attached client that named it.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -15870,6 +15917,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_CHROME_LATE_MCP_SERVER",
+      "type": "env_var",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_CHROME_MCP_ORG_DENIED",
       "type": "env_var",
       "first_seen": "2.1.260",
@@ -16093,6 +16152,18 @@
       "symbol": "CLAUDE_CODE_COORDINATOR_WORKER_CHECKIN_SECONDS",
       "type": "env_var",
       "first_seen": "2.1.246",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_COUNT_GARBAGE_COLLECTIONS",
+      "type": "env_var",
+      "first_seen": "2.1.311",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -16651,7 +16722,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to stop a background session's in-flight work when the supervisor stops, restarts, or updates that session's process, instead of handing it to the session's next process. That work is the session's running background shell commands and dynamic workflows, plus background subagents as of v2.1.198. Affects only that handoff: backgrounding a session with `←` or `/background` still carries in-flight background work over. Requires Claude Code v2.1.196 or later",
+      "description": "Set to `1` to stop a background session's in-flight work when the supervisor stops, restarts, or updates that session's process, instead of handing it to the session's next process. That work is the session's running background shell commands, plus background subagents as of v2.1.198. Affects only that handoff: backgrounding a session with `←` or `/background` still carries in-flight background work over. Requires Claude Code v2.1.196 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -16765,7 +16836,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to turn off the time limit on critical-path removal prompts. In `auto` mode Claude Code then sends these removals to the classifier instead, and in `bypassPermissions` mode the prompt waits for your answer. Set it in the environment that launches Claude Code, since Claude Code ignores a copy delivered through a settings `env` block. Requires Claude Code v2.1.281 or later",
+      "description": "Set to `1` to turn off the `auto` and `bypassPermissions` time limit and denials on critical-path removals. These removals then go to the classifier in `auto` mode, and get an untimed prompt in `bypassPermissions` mode wherever Claude Code can show one. Set it in the environment that launches Claude Code, since Claude Code ignores a copy delivered through a settings `env` block. Requires Claude Code v2.1.281 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -16774,6 +16845,18 @@
       "symbol": "CLAUDE_CODE_DISABLE_DIR_SYNC",
       "type": "env_var",
       "first_seen": "2.1.229",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_EMPTY_CLASSIC_DISPATCH_SKIP",
+      "type": "env_var",
+      "first_seen": "2.1.311",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -16945,6 +17028,18 @@
       "description": "Set to `1` to prevent automatic remapping of Opus 4 and Opus 4.1 to the current Opus version on the Anthropic API. Use when you intentionally want to pin an older model. The remap does not run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_LONE_SEC_DEFAULT_SHORTCUT",
+      "type": "env_var",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -17174,6 +17269,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_OTEL_EVENT_SKIP",
+      "type": "env_var",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_PERMISSION_PROMPT_NOTIFY_HOOKS",
       "type": "env_var",
       "first_seen": "2.1.233",
@@ -17240,6 +17347,18 @@
       "symbol": "CLAUDE_CODE_DISABLE_PROACTIVITY",
       "type": "env_var",
       "first_seen": "2.1.290",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_QUIET_BACKGROUND_WAIT",
+      "type": "env_var",
+      "first_seen": "2.1.311",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -17452,6 +17571,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_WORKING_SYNC_WATCH",
+      "type": "env_var",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DONT_INHERIT_ENV",
       "type": "env_var",
       "first_seen": "0.2.119",
@@ -17553,6 +17684,18 @@
       "symbol": "CLAUDE_CODE_EMIT_TOOL_USE_SUMMARIES",
       "type": "env_var",
       "first_seen": "2.1.19",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_EMIT_USER_PROMPT_SUBMIT_HOOK_EVENTS",
+      "type": "env_var",
+      "first_seen": "2.1.311",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -17989,6 +18132,18 @@
       "symbol": "CLAUDE_CODE_EVAL_INTERVIEW_SESSION",
       "type": "env_var",
       "first_seen": "2.1.233",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_EVEN_MORE_DANGEROUSLY_SKIP_PERMISSIONS",
+      "type": "env_var",
+      "first_seen": "2.1.311",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -19174,6 +19329,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_INCREMENTAL_REQUEST_BODY",
+      "type": "env_var",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_INLINE_TOOLS",
       "type": "env_var",
       "first_seen": "2.1.280",
@@ -19618,6 +19785,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_MCP_HANDED_LISTINGS",
+      "type": "env_var",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_MCP_MEMORY_CGROUP",
       "type": "env_var",
       "first_seen": "2.1.239",
@@ -19645,6 +19824,18 @@
       "symbol": "CLAUDE_CODE_MCP_PREWAIT_SERVERS_MS",
       "type": "env_var",
       "first_seen": "2.1.286",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MCP_REGISTRY_FETCH_AT_STARTUP",
+      "type": "env_var",
+      "first_seen": "2.1.311",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -20391,6 +20582,18 @@
       "symbol": "CLAUDE_CODE_PEWTER_OWL_TOOL",
       "type": "env_var",
       "first_seen": "2.1.169",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_PLAIN_DELTA_FAST_PATH",
+      "type": "env_var",
+      "first_seen": "2.1.311",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -21643,6 +21846,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SDK_HAS_SESSIONS_OAUTH_REFRESH",
+      "type": "env_var",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SDK_READS_SESSION_STATE",
       "type": "env_var",
       "first_seen": "2.1.284",
@@ -21691,6 +21906,18 @@
       "description": "Override the time budget in milliseconds for SessionEnd hooks. The value is also the timeout for each hook that sets no `timeout` of its own. Applies to session exit, `/clear`, and switching sessions via interactive `/resume`. By default the budget is 1.5 seconds, automatically raised to the highest per-hook `timeout` configured in settings files, up to 60 seconds. Timeouts on plugin-provided hooks do not raise the budget",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SESSIONS_OAUTH_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -22099,6 +22326,18 @@
       "description": "Skip AWS authentication for Amazon Bedrock Mantle (for example, when using an LLM gateway)",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SKIP_MCP_DEBUG_LOG_FILES",
+      "type": "env_var",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -22672,11 +22911,11 @@
       "first_seen": "2.1.149",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` in non-interactive mode with the `-p` flag to make Claude Code download the skills enabled for your claude.ai account in that run and wait for the list of them, up to `CLAUDE_CODE_SYNC_SKILLS_WAIT_TIMEOUT_MS`, before it runs the first query. Requires claude.ai authentication. Terminal sessions where you sign in with your claude.ai account sync these skills without this variable, so set it only when a `-p` run needs your current skills on its first query",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -23208,6 +23447,18 @@
       "symbol": "CLAUDE_CODE_ULTRAREVIEW_QUOTA_FIXTURE",
       "type": "env_var",
       "first_seen": "2.1.224",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_UNWATCHED_REPLY_HOLD_MS",
+      "type": "env_var",
+      "first_seen": "2.1.311",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -24051,6 +24302,18 @@
       "symbol": "CLAUDE_INTERNAL_FC_OVERRIDES",
       "type": "env_var",
       "first_seen": "2.1.160",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_INTERNAL_SESSION_TASK_LIST_ID",
+      "type": "env_var",
+      "first_seen": "2.1.311",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -28429,6 +28692,18 @@
       "description": "Added `$.prompt.media` so a `prompt.submit` hook of a mod installed by managed settings can read the bytes of an image or document attached to the prompt",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "$.prompt.paint",
+      "type": "mod_method",
+      "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {

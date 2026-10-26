@@ -4778,7 +4778,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_BG_EXIT_HANDOFF",
       "type": "env_var",
-      "description": "Set to `1` to stop a background session's in-flight work when the supervisor stops, restarts, or updates that session's process, instead of handing it to the session's next process. That work is the session's running background shell commands and dynamic workflows, plus background subagents as of v2.1.198. Affects only that handoff: backgrounding a session with `←` or `/background` still carries in-flight background work over. Requires Claude Code v2.1.196 or later",
+      "description": "Set to `1` to stop a background session's in-flight work when the supervisor stops, restarts, or updates that session's process, instead of handing it to the session's next process. That work is the session's running background shell commands, plus background subagents as of v2.1.198. Affects only that handoff: backgrounding a session with `←` or `/background` still carries in-flight background work over. Requires Claude Code v2.1.196 or later",
       "doc_min_version": "2.1.196",
       "doc_page": "env-vars"
     },
@@ -4820,7 +4820,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_DANGEROUS_RM_TIMEOUT",
       "type": "env_var",
-      "description": "Set to `1` to turn off the time limit on critical-path removal prompts. In `auto` mode Claude Code then sends these removals to the classifier instead, and in `bypassPermissions` mode the prompt waits for your answer. Set it in the environment that launches Claude Code, since Claude Code ignores a copy delivered through a settings `env` block. Requires Claude Code v2.1.281 or later",
+      "description": "Set to `1` to turn off the `auto` and `bypassPermissions` time limit and denials on critical-path removals. These removals then go to the classifier in `auto` mode, and get an untimed prompt in `bypassPermissions` mode wherever Claude Code can show one. Set it in the environment that launches Claude Code, since Claude Code ignores a copy delivered through a settings `env` block. Requires Claude Code v2.1.281 or later",
       "doc_min_version": "2.1.281",
       "doc_page": "env-vars"
     },
