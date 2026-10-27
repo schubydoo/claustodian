@@ -2875,7 +2875,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Release a session slot after N minutes of inactivity once a turn finishes or the session waits for the user's action. A session that's still mid-turn, including one holding a never-finishing background task or an approval requested from inside a running tool call, doesn't count as idle; pair with `--kill-session-after-min` as the hard backstop. After a session's background task finishes, the runner considers the session busy until the follow-up turn that reads the result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window. Until the runner receives a shutdown signal or reaches its retire time, a release that leaves the runner with no active sessions starts the same exit path as a normal drain, governed by `--drain-grace-sec`. After a first signal you deferred with `--defer-shutdown-max-min`, the runner exits as soon as a release leaves it holding no sessions. `0` disables.",
+      "description": "Release a session slot after N minutes of inactivity once a turn finishes or the session waits for the user's action. Some sessions don't count as idle, so pair with `--kill-session-after-min`. A finished background task keeps the session busy for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "cli",
@@ -4095,7 +4095,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "List the artifacts you own or that are shared with you, then attach one to the session, open it in your browser, or copy its link. Available where artifacts are. Requires Claude Code v2.1.208 or later; attaching with `Enter` requires v2.1.216",
+      "description": "List the artifacts you own or that are shared with you, then attach one to the session, open it in your browser, or copy its link. Available where artifacts are",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4661,7 +4661,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Set the effort level: `low` to `xhigh`, `max`, or `auto`; `status` prints it. `ultracode` or `ultracode on` turns ultracode on for the session at the current level, and `ultracode off` turns it off; the `ultracode` key persists. `max` is session-only. The `on` and `off` arguments and keeping the current level require Claude Code v2.1.284 or later. Before v2.1.284, `/effort ultracode` set the session to `xhigh`, and `/effort ultracode off` failed with `Invalid argument`. Run it while Claude is responding and, once you confirm the cache warning, if Claude Code shows one, Claude Code applies the new level to the next request in that turn. Before v2.1.242, Claude Code decided from a feature flag it fetched from Anthropic whether to run the command mid-turn or queue it until the turn finished, and always queued it in a session that doesn't fetch feature flags, such as on a third-party provider. Works in `-p`",
+      "description": "Set the effort level: `low` to `xhigh`, `max`, or `auto`; `status` prints it. `ultracode` or `ultracode on` turns ultracode on for the session, and `ultracode off` turns it off; the `ultracode` key persists. `max` is session-only. The `on` and `off` arguments require Claude Code v2.1.284 or later. If you run `/effort` while Claude is working, see when the new level starts. Works in `-p` on v2.1.205 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -8941,7 +8941,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Skip filesystem isolation while keeping network isolation. Sandboxed commands get unrestricted read and write access to the host filesystem, and their network egress stays confined to `network.allowedDomains`. Use it when you sandbox to control where commands connect rather than what they write. Requires Claude Code v2.1.216 or later.",
+      "description": "Skip filesystem isolation while keeping network isolation. Sandboxed commands get unrestricted read and write access to the host filesystem, and their network egress stays confined to `network.allowedDomains`. Use it when you sandbox to control where commands connect rather than what they write.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9006,8 +9006,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List additional XPC and Mach service names the macOS sandbox may look up. Tools that communicate over XPC, such as the iOS Simulator or Playwright, need their services listed here.",
-      "description_source": "docs",
+      "description": "macOS only: Additional XPC/Mach service names to allow looking up. Supports trailing-wildcard prefix matching (e.g., \"com.apple.coresimulator.*\"). Needed for tools that communicate via XPC such as the iOS Simulator or Playwright. Merged across settings sources. When managed settings or a --settings file set allowUnsandboxedCommands: false, or managed settings set network.allowManagedDomainsOnly: true, values from project settings (.claude/settings.json and .claude/settings.local.json) are ignored.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -10141,7 +10141,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set the agent count Claude aims for in the dynamic workflows it writes. Claude Code sends the value to Claude as advice, not an enforced cap: `\"small\"` asks for fewer than 5 agents, `\"medium\"` fewer than 10, and `\"large\"` fewer than 50. Choose `\"small\"` when you want to bound what a workflow spends. Requires Claude Code v2.1.219 or later.",
+      "description": "Set the agent count Claude aims for in the dynamic workflows it writes. Claude Code sends the value to Claude as advice, not an enforced cap: `\"small\"` asks for fewer than 5 agents, `\"medium\"` fewer than 10, and `\"large\"` fewer than 50. Choose `\"small\"` when you want to bound what a workflow spends.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -16143,11 +16143,11 @@
       "first_seen": "2.1.161",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` to turn off the automatic model switch when a safety classifier flags a request, the behavior the `switchModelsOnFlag` setting controls",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -20127,11 +20127,11 @@
       "first_seen": "2.1.116",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Choose between Claude Code's full system prompt and a shorter one with abbreviated tool descriptions. When unset, Haiku 4.5, Sonnet 5, Opus 4.7, and earlier models in those families use the full prompt by default, and newer models use the shorter one. Set to `1` to use the shorter prompt on any model. Set to `0`, `false`, `no`, or `off` to use the full prompt on any model, even where an experiment or server configuration would otherwise select the shorter one. Either prompt keeps the full tool set, hooks, MCP servers, and CLAUDE.md discovery",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -24417,7 +24417,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Release a session slot after N minutes of inactivity once a turn finishes or the session waits for the user's action. A session that's still mid-turn, including one holding a never-finishing background task or an approval requested from inside a running tool call, doesn't count as idle; pair with `--kill-session-after-min` as the hard backstop. After a session's background task finishes, the runner considers the session busy until the follow-up turn that reads the result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window. Until the runner receives a shutdown signal or reaches its retire time, a release that leaves the runner with no active sessions starts the same exit path as a normal drain, governed by `--drain-grace-sec`. After a first signal you deferred with `--defer-shutdown-max-min`, the runner exits as soon as a release leaves it holding no sessions. `0` disables.",
+      "description": "Release a session slot after N minutes of inactivity once a turn finishes or the session waits for the user's action. Some sessions don't count as idle, so pair with `--kill-session-after-min`. A finished background task keeps the session busy for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "other"
@@ -25467,7 +25467,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "A mod calls `$.settings.read`, or Claude Code builds the session's merged settings",
+      "description": "A mod calls `$.settings.read`, or Claude Code builds the session's merged settings.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
