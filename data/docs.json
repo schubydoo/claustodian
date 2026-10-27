@@ -610,6 +610,16 @@
       ]
     },
     {
+      "symbol": "--hold-idle-file",
+      "type": "cli_flag",
+      "description": "File your host keeps changing to hold an idle session on the runner. See Keep an idle session while its processes run. Requires Claude Code v2.1.311 or later.",
+      "doc_min_version": "2.1.311",
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--hook-concurrency",
       "type": "cli_flag",
       "description": "Maximum `spawn-runner` hooks running in parallel. Also caps how many spawn requests are claimed per poll. The orchestrator checks for new spawn requests only after every hook it started has finished, so one slow hook delays that orchestrator's next hooks.",
@@ -821,6 +831,16 @@
       "description": "Stop before the next run once spend reaches this, exit 2, and report partial results",
       "doc_min_version": null,
       "doc_page": "plugins/cli-reference"
+    },
+    {
+      "symbol": "--max-hold-min",
+      "type": "cli_flag",
+      "description": "With `--hold-idle-file`, release a held session anyway N minutes after it went idle. A value at or below `--release-idle-session-min` holds nothing. `0` turns the hold off. Requires Claude Code v2.1.311 or later.",
+      "doc_min_version": "2.1.311",
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--max-turns",
@@ -1072,7 +1092,7 @@
     {
       "symbol": "--release-idle-session-min",
       "type": "cli_flag",
-      "description": "Release a session slot after N minutes of inactivity once a turn finishes or the session waits for the user's action. A session that's still mid-turn, including one holding a never-finishing background task or an approval requested from inside a running tool call, doesn't count as idle; pair with `--kill-session-after-min` as the hard backstop. After a session's background task finishes, the runner considers the session busy until the follow-up turn that reads the result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window. Until the runner receives a shutdown signal or reaches its retire time, a release that leaves the runner with no active sessions starts the same exit path as a normal drain, governed by `--drain-grace-sec`. After a first signal you deferred with `--defer-shutdown-max-min`, the runner exits as soon as a release leaves it holding no sessions. `0` disables.",
+      "description": "Release a session slot after N minutes of inactivity once a turn finishes or the session waits for the user's action. Some sessions don't count as idle, so pair with `--kill-session-after-min`. A finished background task keeps the session busy for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window. To delay a release, set `--hold-idle-file`. `0` disables.",
       "doc_min_version": null,
       "doc_page": "self-hosted-environments-reference",
       "doc_scopes": [
@@ -1504,8 +1524,8 @@
     {
       "symbol": "/artifacts",
       "type": "command",
-      "description": "List the artifacts you own or that are shared with you, then attach one to the session, open it in your browser, or copy its link. Available where artifacts are. Requires Claude Code v2.1.208 or later; attaching with `Enter` requires v2.1.216",
-      "doc_min_version": "2.1.208",
+      "description": "List the artifacts you own or that are shared with you, then attach one to the session, open it in your browser, or copy its link. Available where artifacts are",
+      "doc_min_version": null,
       "doc_page": "commands"
     },
     {
@@ -1714,7 +1734,7 @@
     {
       "symbol": "/effort",
       "type": "command",
-      "description": "Set the effort level: `low` to `xhigh`, `max`, or `auto`; `status` prints it. `ultracode` or `ultracode on` turns ultracode on for the session at the current level, and `ultracode off` turns it off; the `ultracode` key persists. `max` is session-only. The `on` and `off` arguments and keeping the current level require Claude Code v2.1.284 or later. Before v2.1.284, `/effort ultracode` set the session to `xhigh`, and `/effort ultracode off` failed with `Invalid argument`. Run it while Claude is responding and, once you confirm the cache warning, if Claude Code shows one, Claude Code applies the new level to the next request in that turn. Before v2.1.242, Claude Code decided from a feature flag it fetched from Anthropic whether to run the command mid-turn or queue it until the turn finished, and always queued it in a session that doesn't fetch feature flags, such as on a third-party provider. Works in `-p`",
+      "description": "Set the effort level: `low` to `xhigh`, `max`, or `auto`; `status` prints it. `ultracode` or `ultracode on` turns ultracode on for the session, and `ultracode off` turns it off; the `ultracode` key persists. `max` is session-only. The `on` and `off` arguments require Claude Code v2.1.284 or later. If you run `/effort` while Claude is working, see when the new level starts. Works in `-p` on v2.1.205 or later",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -3545,8 +3565,8 @@
     {
       "symbol": "sandbox.filesystem.disabled",
       "type": "config_key",
-      "description": "Skip filesystem isolation while keeping network isolation. Sandboxed commands get unrestricted read and write access to the host filesystem, and their network egress stays confined to `network.allowedDomains`. Use it when you sandbox to control where commands connect rather than what they write. Requires Claude Code v2.1.216 or later.",
-      "doc_min_version": "2.1.216",
+      "description": "Skip filesystem isolation while keeping network isolation. Sandboxed commands get unrestricted read and write access to the host filesystem, and their network egress stays confined to `network.allowedDomains`. Use it when you sandbox to control where commands connect rather than what they write.",
+      "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
@@ -3987,8 +4007,8 @@
     {
       "symbol": "workflowSizeGuideline",
       "type": "config_key",
-      "description": "Set the agent count Claude aims for in the dynamic workflows it writes. Claude Code sends the value to Claude as advice, not an enforced cap: `\"small\"` asks for fewer than 5 agents, `\"medium\"` fewer than 10, and `\"large\"` fewer than 50. Choose `\"small\"` when you want to bound what a workflow spends. Requires Claude Code v2.1.219 or later.",
-      "doc_min_version": "2.1.219",
+      "description": "Set the agent count Claude aims for in the dynamic workflows it writes. Claude Code sends the value to Claude as advice, not an enforced cap: `\"small\"` asks for fewer than 5 agents, `\"medium\"` fewer than 10, and `\"large\"` fewer than 50. Choose `\"small\"` when you want to bound what a workflow spends.",
+      "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
@@ -5168,6 +5188,13 @@
       "doc_page": "monitoring-usage"
     },
     {
+      "symbol": "CLAUDE_CODE_EVEN_MORE_DANGEROUSLY_SKIP_PERMISSIONS",
+      "type": "env_var",
+      "description": "Set to `1` to run dangerous `rm` commands with no prompt in `bypassPermissions` mode, which removes a safety prompt for destructive deletes. The linked section lists where it has no effect. Set it in the environment that launches Claude Code, because Claude Code ignores it in a settings `env` block. Requires Claude Code v2.1.311 or later",
+      "doc_min_version": "2.1.311",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_EXIT_AFTER_STOP_DELAY",
       "type": "env_var",
       "description": "Time in milliseconds to wait after the query loop becomes idle before automatically exiting. Useful for automated workflows and scripts using SDK mode",
@@ -5704,6 +5731,13 @@
       "type": "env_var",
       "description": "Override the continuation message Claude Code sends to Claude when `CLAUDE_CODE_RESUME_INTERRUPTED_TURN` continues an interrupted turn instead of resending its prompt, or when you resume a deferred tool call with `-p`. Defaults to `Continue from where you left off.`. An empty string uses the default",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_RESUME_SHOWS_CUT_OFF_CALLS",
+      "type": "env_var",
+      "description": "Set to `1` to keep interrupted tool calls, marked as cut off, in a turn that `CLAUDE_CODE_RESUME_INTERRUPTED_TURN` continues. When unset, those calls are dropped before the turn continues. Some calls stay dropped, such as calls to subagents, skills, workflows, and tools that wait on a person. For the VS Code chat panel, see Continue conversations after a reload. Requires Claude Code v2.1.309 or later",
+      "doc_min_version": "2.1.309",
       "doc_page": "env-vars"
     },
     {
@@ -6932,6 +6966,13 @@
       "doc_page": "self-hosted-environments-reference"
     },
     {
+      "symbol": "SELF_HOSTED_RUNNER_HOLD_IDLE_FILE",
+      "type": "env_var",
+      "description": "File your host keeps changing to hold an idle session on the runner. See Keep an idle session while its processes run. Requires Claude Code v2.1.311 or later.",
+      "doc_min_version": "2.1.311",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
       "symbol": "SELF_HOSTED_RUNNER_HOOKS_DIR",
       "type": "env_var",
       "description": "Directory of lifecycle hook scripts. See Lifecycle hooks.",
@@ -6971,6 +7012,13 @@
       "type": "env_var",
       "description": "Mirror runner logs to a file in addition to stdout and stderr, created with `0600` permissions. Required for `self-hosted-runner doctor` to tail logs locally.",
       "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_MAX_HOLD_MS",
+      "type": "env_var",
+      "description": "With `--hold-idle-file`, release a held session anyway N minutes after it went idle. A value at or below `--release-idle-session-min` holds nothing. `0` turns the hold off. Requires Claude Code v2.1.311 or later.",
+      "doc_min_version": "2.1.311",
       "doc_page": "self-hosted-environments-reference"
     },
     {
@@ -7046,7 +7094,7 @@
     {
       "symbol": "SELF_HOSTED_RUNNER_SESSION_IDLE_MS",
       "type": "env_var",
-      "description": "Release a session slot after N minutes of inactivity once a turn finishes or the session waits for the user's action. A session that's still mid-turn, including one holding a never-finishing background task or an approval requested from inside a running tool call, doesn't count as idle; pair with `--kill-session-after-min` as the hard backstop. After a session's background task finishes, the runner considers the session busy until the follow-up turn that reads the result starts, for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window. Until the runner receives a shutdown signal or reaches its retire time, a release that leaves the runner with no active sessions starts the same exit path as a normal drain, governed by `--drain-grace-sec`. After a first signal you deferred with `--defer-shutdown-max-min`, the runner exits as soon as a release leaves it holding no sessions. `0` disables.",
+      "description": "Release a session slot after N minutes of inactivity once a turn finishes or the session waits for the user's action. Some sessions don't count as idle, so pair with `--kill-session-after-min`. A finished background task keeps the session busy for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window. To delay a release, set `--hold-idle-file`. `0` disables.",
       "doc_min_version": null,
       "doc_page": "self-hosted-environments-reference"
     },
@@ -7522,8 +7570,8 @@
     {
       "symbol": "settings.read",
       "type": "mod_event",
-      "description": "A mod calls `$.settings.read`, or Claude Code builds the session's merged settings",
-      "doc_min_version": null,
+      "description": "A mod calls `$.settings.read`, or Claude Code builds the session's merged settings. Requires Claude Code v2.1.304 or later on Claude Code's own read and for `e.layers`",
+      "doc_min_version": "2.1.304",
       "doc_page": "plugins/mods/reference"
     },
     {
