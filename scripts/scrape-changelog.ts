@@ -1417,6 +1417,69 @@ function describeFromPromotion(
   });
 }
 
+/** The types SYMBOL_PATTERNS reads from changelog prose that the binary lane also extracts. */
+const CORROBORATED_TYPES: ReadonlySet<ExtractedSymbolType> = new Set([
+  'cli_flag',
+  'command',
+  'env_var',
+]);
+
+/**
+ * `type:symbol` keys the changelog alone may publish, although the binary lane never
+ * observed them. Each one is audited: a real Claude Code symbol that the extractor
+ * cannot see. Fix the extractor rather than add an entry when the miss is a pattern.
+ */
+export const CHANGELOG_ONLY_SYMBOLS: ReadonlySet<string> = new Set<string>([
+  // Command aliases. The 2.1.312 bundle registers each one in a command object's
+  // `aliases:[…]`, which extractCommands does not read (see SKILL_NAME for why the
+  // lane does not key on `aliases:`). `/bg` also has its own `name:"bg"` object,
+  // in a shape the registry pattern misses.
+  'command:/bg',
+  'command:/checkup',
+  'command:/continue',
+  'command:/name',
+  'command:/plugins',
+  'command:/proactive',
+  'command:/settings',
+  'command:/share',
+  'command:/undo',
+  // A bundled skill. The 2.1.111 bundle has `name:"less-permission-prompts"` with a
+  // plain `description:`, and the skill registry needs a `menuDescription:` or
+  // `whenToUse:` marker.
+  'command:/less-permission-prompts',
+  // Read through a lookup map (`{allow:"CCR_AUTO_MODE_ALLOW",…}`), not `env.X`.
+  'env_var:CCR_AUTO_MODE_ALLOW',
+  'env_var:CCR_AUTO_MODE_ENVIRONMENT',
+  'env_var:CCR_AUTO_MODE_SOFT_DENY',
+  // Set, not read: Claude Code passes them to an MCP server's headers helper
+  // (`env:{CLAUDE_CODE_MCP_SERVER_NAME:e,CLAUDE_CODE_MCP_SERVER_URL:r.url,…}`).
+  'env_var:CLAUDE_CODE_MCP_SERVER_NAME',
+  'env_var:CLAUDE_CODE_MCP_SERVER_URL',
+]);
+
+/**
+ * Returns a test for a changelog symbol that nothing but the changelog supports. A
+ * backticked token in a bullet proves only that the bullet names it, and the names are
+ * often another tool's (`GIT_SSH`, `SIGTERM`, `/proc`). So a cli_flag, command or
+ * env_var publishes from the changelog only when the docs index or the binary lane also
+ * has it, or when it is in CHANGELOG_ONLY_SYMBOLS. The binary test is structural: an
+ * observation of the same `type:symbol`, never the token appearing somewhere in the
+ * bundle, because nearly every token does. A withheld symbol is not lost: it publishes
+ * once a binary shows it. check-coverage applies the same test, so the two agree.
+ */
+export function uncorroboratedBy(
+  docs: DocsIndex,
+  binary: BinaryObservations
+): (type: string, symbol: string) => boolean {
+  const corroborated = new Set([
+    ...docs.symbols.map((entry) => `${entry.type}:${entry.symbol}`),
+    ...binary.symbols.map((obs) => `${obs.type}:${obs.symbol}`),
+    ...CHANGELOG_ONLY_SYMBOLS,
+  ]);
+  return (type, symbol) =>
+    CORROBORATED_TYPES.has(type as ExtractedSymbolType) && !corroborated.has(`${type}:${symbol}`);
+}
+
 /**
  * Overlays the binary lane onto the changelog+docs records. Three effects, all
  * grounded in positive extraction evidence (the symbol literally appeared in that
@@ -1663,9 +1726,13 @@ export function buildEnrichedSnapshots(
       (publishModRenderSites || record.type !== 'mod_render_site') &&
       (publishModElements || record.type !== 'mod_element')
   );
+  // The changelog-only gate needs the binary lane, so the changelog+docs contract
+  // without it publishes as before.
+  const uncorroborated = binary ? uncorroboratedBy(docs, binary) : () => false;
+  const corroborated = enriched.filter((record) => !uncorroborated(record.type, record.symbol));
   const withBinary = binary
     ? enrichWithBinary(
-        enriched,
+        corroborated,
         withTypedModObservations(
           withTypedModObservations(
             withModEventObservations(

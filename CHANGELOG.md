@@ -16,6 +16,16 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ---
 
+## 2026-10-29
+
+### Fixed
+
+- **A changelog mention alone no longer publishes a flag, command or env var.** The
+  docs or the binary must also show the symbol. From the next regeneration, records
+  that only the changelog named leave every snapshot. Most belong to other tools, for
+  example `GIT_SSH`, `SIGTERM`, `/proc`, `/healthz` and `--separate-git-dir`. If a
+  later release binary shows a withheld symbol, it publishes then.
+
 ## 2026-10-21
 
 ### Added

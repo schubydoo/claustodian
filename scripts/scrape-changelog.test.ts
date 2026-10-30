@@ -19,6 +19,7 @@ import {
   truncateToVersion,
   categorize,
   controlRecordsFor,
+  CHANGELOG_ONLY_SYMBOLS,
   CHANGELOG_SYMBOL_DENYLIST,
   collectChangelogSymbols,
   SYMBOL_DENYLIST,
@@ -33,6 +34,7 @@ import {
   subprocessFlagExamples,
   loadDocsIndex,
   parseChangelog,
+  uncorroboratedBy,
 } from './scrape-changelog.js';
 import type { DocsIndex } from './fetch-docs.js';
 import type { SymbolRecord } from './scrape-changelog.js';
@@ -3130,5 +3132,87 @@ describe('withDocScopeCoverage', () => {
       description: '',
       scope_descriptions: { 'self-hosted-runner': 'API base URL. Override only for testing.' },
     });
+  });
+});
+
+describe('the changelog-only gate', () => {
+  const binary = (symbols: Array<{ symbol: string; type: string }>): BinaryObservations => ({
+    $generated_by: 'scripts/backfill-binary.ts',
+    source: 'binary',
+    note: '',
+    observedVersions: [],
+    symbols: symbols.map((s) => ({
+      ...s,
+      type: s.type as BinaryObservation['type'],
+      first_seen: '2.1.0',
+      last_seen: '2.1.10',
+      removed_in: null,
+    })),
+  });
+  // Real bullets: 2.1.285 names git's `GIT_SSH`, 2.1.309 a Linux path, 2.1.300 a
+  // signal. Nothing but the changelog supports any of them.
+  const blocks = [
+    {
+      version: '2.1.10',
+      bullets: [
+        "- Fixed plugin and marketplace installs and updates over SSH ignoring the ssh program set in `GIT_SSH` or in your git config's `core.sshCommand`",
+        '- Fixed Read reporting "File does not exist" for PDF page ranges in Linux sandboxes that share the parent\'s `/proc`',
+        '- Added `--turbo` flag for faster runs.',
+        '- Added `CLAUDE_CODE_TURBO` environment variable to control it.',
+        '- Added `/turbo-docs` command.',
+      ],
+    },
+  ];
+  const docs = docsIndex([
+    {
+      symbol: '/turbo-docs',
+      type: 'command',
+      description: 'Documented.',
+      doc_min_version: null,
+      doc_page: 'commands',
+    },
+  ]);
+  const published = (snaps: ReturnType<typeof buildEnrichedSnapshots>) =>
+    snaps.find((s) => s.version === '2.1.10')?.symbols.map((r) => `${r.type}:${r.symbol}`) ?? [];
+
+  it('withholds a changelog symbol that neither the binary nor the docs supports', () => {
+    const keys = published(
+      buildEnrichedSnapshots(blocks, docs, binary([{ symbol: '--turbo', type: 'cli_flag' }]))
+    );
+    expect(keys).toContain('cli_flag:--turbo');
+    expect(keys).toContain('command:/turbo-docs');
+    expect(keys).not.toContain('env_var:GIT_SSH');
+    expect(keys).not.toContain('command:/proc');
+    expect(keys).not.toContain('env_var:CLAUDE_CODE_TURBO');
+  });
+
+  it('publishes the same symbol once a binary observes it', () => {
+    const keys = published(
+      buildEnrichedSnapshots(
+        blocks,
+        docs,
+        binary([{ symbol: 'CLAUDE_CODE_TURBO', type: 'env_var' }])
+      )
+    );
+    expect(keys).toContain('env_var:CLAUDE_CODE_TURBO');
+  });
+
+  it('leaves the changelog+docs contract alone when no binary lane is supplied', () => {
+    expect(published(buildEnrichedSnapshots(blocks, docs))).toContain('env_var:GIT_SSH');
+  });
+
+  it('lets an audited changelog-only symbol through', () => {
+    const uncorroborated = uncorroboratedBy(docsIndex([]), binary([]));
+    for (const key of CHANGELOG_ONLY_SYMBOLS) {
+      const [type, symbol] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)];
+      expect(uncorroborated(type, symbol), key).toBe(false);
+    }
+    expect(uncorroborated('command', '/proc')).toBe(true);
+  });
+
+  it('never gates a type the binary lane does not extract from prose names', () => {
+    const uncorroborated = uncorroboratedBy(docsIndex([]), binary([]));
+    expect(uncorroborated('mod_method', '$.ui.notify')).toBe(false);
+    expect(uncorroborated('config_key', 'model')).toBe(false);
   });
 });
