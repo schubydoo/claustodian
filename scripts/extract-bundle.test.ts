@@ -1194,6 +1194,16 @@ describe('command aliases', () => {
     expect(extractSkillCommands(src).get('/schedule')).toBe('Create scheduled agents');
   });
 
+  it('reads skill aliases from the entry object only', () => {
+    // A neighbour's list must stay out, and a list before `name:` still counts.
+    const src =
+      'ol({name:"doctor",menuDescription:"Health"}),{aliases:["control"],name:"ctrl"},' +
+      'ol({aliases:["routines"],name:"schedule",menuDescription:"Schedule agents"})';
+    const cmds = extractSkillCommands(src);
+    expect(cmds.has('/control')).toBe(false);
+    expect(cmds.has('/routines')).toBe(true);
+  });
+
   it('reads the aliases of a skill registry entry', () => {
     const src = 'ol({name:"doctor",aliases:["checkup"],menuDescription:"Health-check your setup"})';
     const cmds = extractSkillCommands(src);

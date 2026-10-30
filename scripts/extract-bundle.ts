@@ -249,6 +249,10 @@ const SKILL_NAME = /name:\s*["'`]([a-z][a-z0-9-]+)["'`]/g;
 const SKILL_MARKER = /(?:menuDescription|whenToUse):/;
 /** How far past a `name:` to look for the marker/description — one object's worth. */
 const SKILL_FWD = 400;
+/** Cap on how far past a skill's `name:` to look for its object's closing brace,
+ * when reading its aliases. A long `whenToUse:` string can push the brace past
+ * SKILL_FWD; the depth-aware scan stops at the brace well before this cap. */
+const SKILL_OBJECT_FWD = 4000;
 /** Description sources, in priority order: the slash-menu string, a plain
  * `description:` literal, then a `get description(){return"…"}` accessor. (`\b`
  * before `description` keeps the plain matcher from matching `menuDescription`.) */
@@ -1014,8 +1018,14 @@ export function extractSkillCommands(src: string): Map<string, string | undefine
       cleanDescription(mg?.[2], mg?.[1]);
     if (!out.has(key)) out.set(key, desc);
     else if (out.get(key) === undefined && desc) out.set(key, desc);
-    // Aliases come from the same marker-proved window as the name and description.
-    for (const alias of commandAliases(object)) aliases.add(`/${alias}`);
+    // Aliases come from the entry's own object, not from the marker window: that
+    // window ends at the next `name:`, so it can reach into a neighbour and it misses
+    // an `aliases:` written before `name:`. Brace-depth-aware, as in extractCommands.
+    const own = src.slice(
+      objectOpenFrom(src, start, start - COMMAND_BACK),
+      objectCloseFrom(src, start, start + SKILL_OBJECT_FWD)
+    );
+    for (const alias of commandAliases(own)) aliases.add(`/${alias}`);
   }
   for (const alias of aliases) if (!out.has(alias)) out.set(alias, undefined);
   return out;
