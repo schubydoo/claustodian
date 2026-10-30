@@ -201,6 +201,28 @@ describe('distillObservations', () => {
     expect(distillObservations(missed).symbols[0]?.removed_in).toBeNull();
   });
 
+  it('needs text proof before the ceiling when a child-env key was the last sighting', () => {
+    // Present in two releases, then missing from three, all before 2.1.160: the
+    // pre-ceiling rule alone would call that a removal.
+    const file = (version: string, evidence?: string, absent = false): BinaryCacheFile => ({
+      version,
+      symbols: evidence ? [{ symbol: 'CLAUDE_CHILD', type: 'env_var', evidence }] : [],
+      textAbsent: absent ? ['env_var:CLAUDE_CHILD'] : [],
+    });
+    const history = (evidence: string, absent: boolean) => [
+      file('2.0.1', evidence),
+      file('2.0.2', evidence),
+      file('2.0.3', undefined, absent),
+      file('2.0.4', undefined, absent),
+      file('2.0.5', undefined, absent),
+    ];
+    const removedIn = (files: BinaryCacheFile[]) =>
+      distillObservations(files).symbols[0]?.removed_in;
+    expect(removedIn(history('process-env', false))).toBe('2.0.3');
+    expect(removedIn(history('child-env', false))).toBeNull();
+    expect(removedIn(history('child-env', true))).toBe('2.0.3');
+  });
+
   it('marks a symbol switch_case_only when every version proved it that way', () => {
     const files = [
       evFile('2.1.223', '--health-port', 'argv-switch'),

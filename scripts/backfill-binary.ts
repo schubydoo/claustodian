@@ -195,6 +195,8 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       hiddenIn: Set<string>;
       /** Versions that registered the command under its own name, not as an alias. */
       namedIn: string[];
+      /** Versions whose only proof was a child-env key; see the removal below. */
+      childEnvIn: Set<string>;
     }
   >();
   for (const file of files) {
@@ -212,6 +214,7 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
         entry.strongEvidence ||= strong;
         if (hidden) entry.hiddenIn.add(file.version);
         if (named) entry.namedIn.push(file.version);
+        if (evidence === 'child-env') entry.childEnvIn.add(file.version);
       } else {
         entry = {
           symbol,
@@ -221,6 +224,7 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
           scopeFrom: new Map(),
           hiddenIn: new Set(hidden ? [file.version] : []),
           namedIn: named ? [file.version] : [],
+          childEnvIn: new Set(evidence === 'child-env' ? [file.version] : []),
         };
         seenIn.set(key, entry);
       }
@@ -242,6 +246,7 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
     scopeFrom,
     hiddenIn,
     namedIn,
+    childEnvIn,
   } of seenIn.values()) {
     const sorted = [...versions].sort(compareVersionsAsc);
     const namedFirst = [...namedIn].sort(compareVersionsAsc)[0] ?? null;
@@ -272,9 +277,13 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       first_seen: sorted[0] as string,
       last_seen: sorted[sorted.length - 1] as string,
       // The pre-ceiling rule first, as before. Text proof covers every era, the
-      // later releases the ceiling refuses included.
+      // later releases the ceiling refuses included. The pre-ceiling rule trusts an
+      // absence because the read-based rules were measured reliable there; the
+      // child-env rule was not, so a name last proved by it needs the text proof.
       removed_in:
-        computeBinaryRemoval(versions, observedVersions) ??
+        (childEnvIn.has(sorted[sorted.length - 1] as string)
+          ? null
+          : computeBinaryRemoval(versions, observedVersions)) ??
         computeTextRemoval(
           versions,
           provenAbsent.get(`${type}:${symbol}`) ?? new Set(),

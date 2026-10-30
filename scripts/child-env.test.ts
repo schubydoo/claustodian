@@ -40,6 +40,46 @@ describe('collectChildEnvNames', () => {
     expect(names(src)).toEqual(['CLAUDE_RUNNER_REPO_URL']);
   });
 
+  it('keeps two blocks that reuse a name apart', () => {
+    const src =
+      'function f(){if(a){let n={CLAUDE_ONE:1};spawn("x",[],{env:n})}' +
+      'if(b){let n={CLAUDE_TWO:1};spawn("x",[],{env:n})}}';
+    expect(names(src)).toEqual(['CLAUDE_ONE', 'CLAUDE_TWO']);
+  });
+
+  it('lets a parameter, a catch parameter or a bare declaration hide an outer name', () => {
+    const src =
+      'let n={OUTER_TABLE:1};function f(n){return{env:n}}' +
+      'function g(){try{}catch(n){x({env:n})}}function h(){let n;return{env:n}}' +
+      'function k(){let {n}=o;return{env:n}}';
+    expect(names(src)).toEqual([]);
+  });
+
+  it('lets every name of a destructuring pattern, and a class, hide an outer name', () => {
+    const outer = ['a', 'd', 'e', 'f', 'g', 'h', 'k'].map((n) => `${n}={OUT_${n}:1}`).join(',');
+    const src =
+      `let ${outer};` +
+      'function p(a,{b,c:d,...e},[f,,...g],h=1){return{env:{...a,...d,...e,...f,...g,...h}}}' +
+      '{class k{}x({env:k})}' +
+      'const arrow=()=>({env:{CLAUDE_ARROW:1}});';
+    expect(names(src)).toEqual(['CLAUDE_ARROW']);
+  });
+
+  it('binds a var to its function, and a function expression name inside it only', () => {
+    const src =
+      'function f(){if(a){var v={CLAUDE_HOISTED:1}}return{env:v}}' +
+      'let q={OUTER_Q:1};const r=function q(){return{env:q}};';
+    expect(names(src)).toEqual(['CLAUDE_HOISTED']);
+  });
+
+  it('resolves a name in an initialiser where that declaration is written', () => {
+    // At the site, `n` is the inner table; the outer `p` was declared with the outer `n`.
+    const src =
+      'function f(){let n={CLAUDE_OUTER_N:1},p=w(n);function g(){let n={INNER_N:1};' +
+      'return{env:p}}return g}';
+    expect(names(src)).toEqual(['CLAUDE_OUTER_N']);
+  });
+
   it('resolves a reused short name to the nearest declaration only', () => {
     // Minified code reuses `n`: the outer one is an unrelated constants table.
     const src =
