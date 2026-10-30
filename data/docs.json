@@ -19,7 +19,9 @@
     "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
     "https://code.claude.com/docs/en/monitoring-usage.md",
     "https://code.claude.com/docs/en/plugin-evals.md",
-    "https://code.claude.com/docs/en/ultrareview.md"
+    "https://code.claude.com/docs/en/ultrareview.md",
+    "https://code.claude.com/docs/en/self-hosted-environments-configuration.md",
+    "https://code.claude.com/docs/en/mcp.md"
   ],
   "symbols": [
     {
@@ -1541,7 +1543,7 @@
     {
       "symbol": "/auto-mode-setup",
       "type": "command",
-      "description": "Draft `autoMode.environment` entries from your project and recent sessions, then review the draft and save it to your user settings. On a Pro, Max, or Team plan, requires Claude Code v2.1.228 or later, or v2.1.233 or later on native Windows. On an Enterprise plan or with a Claude Console API key, requires v2.1.283 or later. If the command is missing, see `/auto-mode-setup` returns \"Unknown command\"",
+      "description": "Draft `autoMode.environment` entries from your project and recent sessions, then review the draft and save it to your user settings. On a Pro, Max, Ultra, or Team plan, requires Claude Code v2.1.228 or later, or v2.1.233 or later on native Windows. On an Enterprise plan or with a Claude Console API key, requires v2.1.283 or later. If the command is missing, see `/auto-mode-setup` returns \"Unknown command\"",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1989,7 +1991,7 @@
     {
       "symbol": "/privacy-settings",
       "type": "command",
-      "description": "View and update your privacy settings. Only available for Pro and Max plan subscribers",
+      "description": "View and update your privacy settings. Only available for Pro, Max, and Ultra plan subscribers",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2059,7 +2061,7 @@
     {
       "symbol": "/restart",
       "type": "command",
-      "description": "Restart Claude Code and resume this session, which applies an installed update. Run it when the footer offers it after an update installs. Requires a Pro or Max plan and a native install on macOS or Linux, not WSL. Requires Claude Code v2.1.288 or later. Alias: `/update`",
+      "description": "Restart Claude Code and resume this session, which applies an installed update. Run it when the footer offers it after an update installs. Requires a Pro, Max, or Ultra plan and a native install on macOS or Linux, not WSL. Requires Claude Code v2.1.288 or later. Alias: `/update`",
       "doc_min_version": "2.1.288",
       "doc_page": "commands"
     },
@@ -2262,7 +2264,7 @@
     {
       "symbol": "/ultrareview",
       "type": "command",
-      "description": "Run a deep, multi-agent code review in a cloud sandbox with ultrareview. Pass a PR reference to review that pull request, or a base branch or commit to change the comparison base. The preferred invocation is `/code-review ultra`, and `/ultrareview` is an alias. Includes 3 free runs on Pro and Max, then requires usage credits",
+      "description": "Run a deep, multi-agent code review in a cloud sandbox with ultrareview. Pass a PR reference to review that pull request, or a base branch or commit to change the comparison base. The preferred invocation is `/code-review ultra`, and `/ultrareview` is an alias. Includes 3 free runs on Pro, Max, and Ultra, then requires usage credits",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2283,7 +2285,7 @@
     {
       "symbol": "/usage",
       "type": "command",
-      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. `/cost` and `/stats` are aliases",
+      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Ultra, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. `/cost` and `/stats` are aliases",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -4080,7 +4082,7 @@
     {
       "symbol": "ANTHROPIC_API_KEY",
       "type": "env_var",
-      "description": "API key sent as `X-Api-Key` header. When set, this key is used instead of your Claude Pro, Max, Team, or Enterprise subscription even if you are logged in. In non-interactive mode (`-p`), the key is always used when present. In interactive mode, you are prompted to approve the key once before it overrides your subscription. To use your subscription instead, run `unset ANTHROPIC_API_KEY`",
+      "description": "API key sent as `X-Api-Key` header. When set, this key is used instead of your Claude Pro, Max, Ultra, Team, or Enterprise subscription even if you are logged in. In non-interactive mode (`-p`), the key is always used when present. In interactive mode, you are prompted to approve the key once before it overrides your subscription. To use your subscription instead, run `unset ANTHROPIC_API_KEY`",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4454,6 +4456,13 @@
       "description": "Set to `1` to force `claude --cloud` to bundle and upload your local repository instead of cloning from its remote",
       "doc_min_version": null,
       "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CCR_SESSION_ACCOUNT_EMAIL",
+      "type": "env_var",
+      "description": "The session creator's email, pre-extracted by the runner from the token's `act.email` claim without signature verification. Suitable for labelling, such as commit trailers. When the email gates credential issuance, verify the token and read the claim from it instead. See Provision credentials scoped to the session creator. Unset when the token carries no creator email, for example in sessions your organization's service identity creates. Treat as personally identifiable information.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
     },
     {
       "symbol": "CLAUDE_AGENT_SDK_DISABLE_BUILTIN_AGENTS",
@@ -5450,6 +5459,20 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_MCP_SERVER_NAME",
+      "type": "env_var",
+      "description": "the name of the MCP server",
+      "doc_min_version": null,
+      "doc_page": "mcp"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MCP_SERVER_URL",
+      "type": "env_var",
+      "description": "the URL of the MCP server",
+      "doc_min_version": null,
+      "doc_page": "mcp"
+    },
+    {
       "symbol": "CLAUDE_CODE_MCP_STARTUP_WAIT_MS",
       "type": "env_var",
       "description": "How long in milliseconds the first turn of a non-interactive session waits for MCP servers that are still connecting, in place of the default first-turn wait. In a self-hosted environment, it changes only how long the wait lasts. Some servers keep a wait of their own regardless of the value; Connection timing lists them. Set to `0` to skip the wait for every other server. Requires Claude Code v2.1.274 or later",
@@ -5716,11 +5739,46 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_REMOTE_MCP_CONFIG",
+      "type": "env_var",
+      "description": "Path to a file in `CLAUDE_CONFIG_DIR` holding the MCP server definitions that Anthropic's control plane delivered for this session. If your wrapper rebuilds the child's environment, carry this variable over. Without it, when the control plane updates the delivered servers, the child shuts down any stdio, HTTP, or SSE server your wrapper adds with `--mcp-config` that isn't in the update. Requires Claude Code v2.1.299 or later.",
+      "doc_min_version": "2.1.299",
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
       "symbol": "CLAUDE_CODE_REMOTE_SESSION_ID",
       "type": "env_var",
       "description": "Set automatically in cloud sessions to the current session's ID. Read this to construct a link back to the session transcript. See Link output back to the session",
       "doc_min_version": null,
       "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_REMOTE_SESSION_UUID",
+      "type": "env_var",
+      "description": "The same session ID in canonical UUID form, for systems that key on UUIDs.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_CODE_REMOTE_SLACK_CHANNEL_ID",
+      "type": "env_var",
+      "description": "For a Claude Tag session, the ID of the Slack channel or direct message that the session serves or that its thread is in, such as `C0123ABCDE`. A Slack timestamp identifies a message within one channel, so record this ID together with `CLAUDE_CODE_REMOTE_SLACK_THREAD_TS`. Unset for other sessions, and can be unset for a Claude Tag session too.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_CODE_REMOTE_SLACK_THREAD_TS",
+      "type": "env_var",
+      "description": "For a Claude Tag session that belongs to one Slack thread, that thread's Slack timestamp, such as `1700000000.000100`. Can be unset, and can be set when `CLAUDE_CODE_REMOTE_SLACK_THREAD_URL` isn't, so check each variable on its own.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_CODE_REMOTE_SLACK_THREAD_URL",
+      "type": "env_var",
+      "description": "For a Claude Tag session that belongs to one Slack thread, the link to that thread. Unset for other sessions, and can be unset for a thread session too.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
     },
     {
       "symbol": "CLAUDE_CODE_RESTRICTED",
@@ -5805,6 +5863,13 @@
       "description": "Set to `0` to turn off Claude-drafted feedback for a session. Set to `1` to turn it on where your account already has access; the variable can't grant access itself, and the other switches that turn feedback off, such as `DISABLE_FEEDBACK_COMMAND` and the `feedbackDrafts` setting's `off` value, still apply",
       "doc_min_version": null,
       "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SESSION_ACCESS_TOKEN",
+      "type": "env_var",
+      "description": "The session JWT, prefixed `sk-ant-cc-`. Its `act` claim identifies the session creator, with the creator's email when the creating surface recorded it. The value is the token at spawn time; refreshes arrive over the child's stdin, so a wrapper sees only the initial value. See Verify session identity.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
     },
     {
       "symbol": "CLAUDE_CODE_SESSION_ID",
@@ -6241,6 +6306,83 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_RUNNER_ACCOUNT_EMAIL",
+      "type": "env_var",
+      "description": "Email of the account that enqueued the session. Empty when unavailable. Treat the email as personally identifiable information and don't log it.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_ACCOUNT_ID",
+      "type": "env_var",
+      "description": "Tagged ID of the account that enqueued the session. Use it for per-account routing, quota, or chargeback, not as a dedup key. Empty when unavailable.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_ALIVE_EVERY_MS",
+      "type": "env_var",
+      "description": "The runner sets how often, in milliseconds, the child reports that it's alive when a turn starts before the child initializes. If your wrapper rebuilds the child's environment, carry this variable over, or the runner can release the session during that turn and log `no child output for <n> — releasing`. Requires v2.1.309 or later on the runner and child.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_API_BASE_URL",
+      "type": "env_var",
+      "description": "Anthropic API base URL for session-scoped calls",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_ATTEMPT",
+      "type": "env_var",
+      "description": "A per-session counter to use for logging. It isn't a retry count or a request count. `0` for pre-warming requests, though a request for a session can carry `0` too.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_CHECKOUT_PATH",
+      "type": "env_var",
+      "description": "Absolute path where the working tree must be left",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_CLAUDE_BIN",
+      "type": "env_var",
+      "description": "Absolute path to the runner's own Claude Code binary. End your wrapper with `exec \"$CLAUDE_RUNNER_CLAUDE_BIN\" \"$@\"` to pass control to the pinned binary without hardcoding an install path.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_CLIENT_PLATFORM",
+      "type": "env_var",
+      "description": "The client surface that created the session, such as `web_claude_ai`, `desktop_app`, `ios`, `claude_code_cli`, or `scheduled_trigger`. Anthropic records the value once at session creation, so the wrapper and every lifecycle hook see the same value. Use it for adoption analytics and labelling only, not as an authorization signal. Unset when the session has no recorded or recognized surface. Requires Claude Code v2.1.229 or later.",
+      "doc_min_version": "2.1.229",
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_CORRELATION_ID",
+      "type": "env_var",
+      "description": "The correlation ID supplied at session create, echoed back so the hook can map this work order to the request that created the session. Empty when the session has none.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_DEBUG_LOG_PATH",
+      "type": "env_var",
+      "description": "Path to the session's debug log, still on disk while the hook runs",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_EXIT_REASON",
+      "type": "env_var",
+      "description": "How the session ended; see the values below the table",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
       "symbol": "CLAUDE_RUNNER_FETCH_DEPTH",
       "type": "env_var",
       "description": "Git fetch depth for fresh clones. Set a positive integer, or `full` or `0` for a complete fetch. For a clone that's already in the workspace, see Reuse a pre-warmed checkout.",
@@ -6255,6 +6397,76 @@
       "doc_page": "self-hosted-environments-reference"
     },
     {
+      "symbol": "CLAUDE_RUNNER_ORDER_ID",
+      "type": "env_var",
+      "description": "Opaque idempotency key, unique per spawn request and safe for Kubernetes resource names. Use only the order ID as your provisioner's dedup key.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_ORDER_SERVER_TIME",
+      "type": "env_var",
+      "description": "Server time from the poll response's HTTP `Date` header. When the hook verifies the work-order JWT's `exp`, compare against this value instead of the local clock to tolerate skew. Empty when the gateway omitted the header.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_POOL_ID",
+      "type": "env_var",
+      "description": "The ID of the environment the new runner should join, in `ccpool_...` form",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_PRIMARY_REPO_REVISION",
+      "type": "env_var",
+      "description": "Revision of the session's first git source: branch, SHA, tag, or full reference name. Empty when unspecified.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_PRIMARY_REPO_URL",
+      "type": "env_var",
+      "description": "URL of the session's first git source, for routing to a runner with that repository pre-warmed. Empty when the session has no git sources.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_REPO_REF",
+      "type": "env_var",
+      "description": "Revision to check out, as the session requested it: a branch, tag, commit SHA, or full reference name such as `refs/heads/<branch>` or `refs/pull/<number>/head`. Empty means the repository's default branch.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_REPO_SOURCES",
+      "type": "env_var",
+      "description": "JSON array of `{url, revision}` for all the session's git sources, for hooks that route on a secondary repository. Empty when there are no sources.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_REPO_URL",
+      "type": "env_var",
+      "description": "Repository URL to clone, after any `--git-host-rewrite` and `--git-ssh-rewrite` have been applied",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_SESSION_ID",
+      "type": "env_var",
+      "description": "Session ID in the tagged `session_...` form, for logging and correlation",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_SESSION_UUID",
+      "type": "env_var",
+      "description": "The same session ID in canonical UUID form",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
       "symbol": "CLAUDE_RUNNER_SKIP_GIT_VERIFY",
       "type": "env_var",
       "description": "When `1`, skip the `.git` presence check after a `checkout` hook runs. Set this when your hook materializes a non-git source.",
@@ -6267,6 +6479,27 @@
       "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Supersedes the rewrite flags.",
       "doc_min_version": null,
       "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_WORK_ORDER_FILE",
+      "type": "env_var",
+      "description": "Path to a temp file containing the signed work-order JWT the new runner registers with. Deleted after the hook exits. Don't log the file's contents.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_WORKSPACE_PATHS",
+      "type": "env_var",
+      "description": "Colon-separated absolute paths of the session's working trees. Empty for zero-repo sessions.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
+      "symbol": "CLAUDE_SESSION_INGRESS_TOKEN_FILE",
+      "type": "env_var",
+      "description": "Absolute path to a per-session file holding the current session JWT, kept fresh across token refreshes. Shell subprocesses read it for their `Authorization` header when downloading attachments the user added to the session. `exec` preserves the variable automatically; a wrapper that rebuilds the child's environment must carry the variable over, or attachment downloads silently stop working.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-configuration"
     },
     {
       "symbol": "CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS",
