@@ -1274,6 +1274,40 @@ describe('extractParamEnvVars — function extents and shapes', () => {
       expect(read(`function f(e){${body}` + tail), body).toBe(true);
   });
 
+  it('keeps every read that the plain bracket scan finds', () => {
+    // Each misleads the token-aware scan, so only the plain scan reads it; see
+    // matchBracketLexed. They came from an adversarial probe against main.
+    for (const body of [
+      'if(b){}/[/]/.test(b)',
+      'while(0)/\\//.test(b)',
+      'var a=b./**/return/2',
+      'class K{#return=1;m(){return this.#return/2}}',
+      'var a=1./2',
+      'var a=1..in/2',
+    ])
+      expect(read(`function f(e){${body}` + tail), body).toBe(true);
+  });
+
+  it('reads strings, postfix operators and bracket mismatches on the fallback scan', () => {
+    // The `)` in `/[)]/` ends the plain scan, so each of these reaches the token-aware one.
+    expect(read('function f(e){let t=/[)]/,u="a\\"b",v=i++/2' + tail)).toBe(true);
+    expect(read('function f(e){let t=/[)]/;(]' + tail)).toBe(false);
+  });
+
+  it('opens a regex after a keyword that follows a spread', () => {
+    expect(
+      read(
+        'async function f(e){let t=[...await /[{]/.exec("{")];return e.CLAUDE_CODE_X}f(process.env);'
+      )
+    ).toBe(true);
+    expect(
+      read('function* f(e){let t=[...yield /[{]/];return e.CLAUDE_CODE_X}f(process.env);')
+    ).toBe(true);
+    expect(
+      read('function f(e){let t={...typeof /[{]/};return e.CLAUDE_CODE_X}f(process.env);')
+    ).toBe(true);
+  });
+
   it('divides after `of`, a non-ASCII name, and opens a regex after instanceof', () => {
     expect(read('function f(e){var of=4,a=of/2' + tail)).toBe(true);
     expect(read('function f(e){var é=1,a=é/2' + tail)).toBe(true);
