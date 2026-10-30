@@ -65,6 +65,13 @@ describe('collectChildEnvNames', () => {
     expect(names(src)).toEqual(['CLAUDE_ARROW']);
   });
 
+  it('keeps a var value through a repeated bare var, but not through a bare let', () => {
+    expect(names('function f(){var n={CLAUDE_CHILD:1};var n;return{env:n}}')).toEqual([
+      'CLAUDE_CHILD',
+    ]);
+    expect(names('function f(){let n={OUTER_N:1};{let n;x({env:n})}}')).toEqual([]);
+  });
+
   it('binds a var to its function, and a function expression name inside it only', () => {
     const src =
       'function f(){if(a){var v={CLAUDE_HOISTED:1}}return{env:v}}' +

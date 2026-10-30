@@ -41,7 +41,9 @@
  * that is visible where it is used: a block's `let` or `const`, a function's `var`,
  * parameter or function name, or a `catch` parameter. A binding with no object to
  * follow (a parameter, a destructured name, a declaration with no initialiser)
- * still hides an outer one of the same name, and yields nothing.
+ * still hides an outer one of the same name, and yields nothing. A later
+ * assignment (`n={…}` after `let n;`) is not followed either. That can only miss a
+ * name, never invent one, which is the safe direction for an additive rule.
  *
  * This rule is additive. Leaving an object it read does not prove a removal; the
  * text-confirmed removal check (computeTextRemoval) decides that.
@@ -202,6 +204,8 @@ function collectSites(program: Node): { value: unknown; scope: Scope }[] {
       for (const d of n.declarations as Node[]) {
         const id = d.id as Node;
         if (id.type === 'Identifier') {
+          // A repeated `var n;` declares nothing new: `n` keeps the value it has.
+          if (n.kind === 'var' && !d.init && target.bindings.has(id.name as string)) continue;
           target.bindings.set(id.name as string, { init: d.init ?? null, scope: here });
         } else bindAll(target, id);
       }
