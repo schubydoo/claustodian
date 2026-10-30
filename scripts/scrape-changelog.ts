@@ -48,7 +48,7 @@ import {
   binaryFlagCategory,
   type HiddenEra,
   isPublishableBinaryFlag,
-  mayRedateFromBinary,
+  binaryRedateVersion,
   loadBinaryDescriptions,
   controlRecordDating,
   eraValueAt,
@@ -1536,7 +1536,8 @@ export function enrichWithBinary(
             removed_in: obs.removed_in,
           })
         : promoted;
-    if (compareVersionsAsc(obs.first_seen, described.first_seen) >= 0) {
+    const redateTo = binaryRedateVersion(obs, described.first_seen_estimated === true);
+    if (redateTo === null || compareVersionsAsc(redateTo, described.first_seen) >= 0) {
       return described;
     }
     // A switch-case-only observation is subcommand-scoped, so it says nothing about
@@ -1547,13 +1548,11 @@ export function enrichWithBinary(
     // `self-hosted-runner` (2.1.224), and the runner's sighting is the wrong answer
     // to "when did --capacity appear?". An ESTIMATE is a different matter — the
     // sighting refutes the bound, so a complete-scope observation may correct it.
-    if (!mayRedateFromBinary(obs, described.first_seen_estimated === true)) {
-      return described;
-    }
+    // binaryRedateVersion applies that rule, and the matching one for aliases.
     // Binary saw the symbol earlier than any other lane — earliest evidence wins.
     return finalizeRecord({
       ...described,
-      first_seen: obs.first_seen,
+      first_seen: redateTo,
       first_seen_estimated: false,
       confidence: 'high',
     });

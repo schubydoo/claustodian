@@ -173,6 +173,8 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       scopeFrom: Map<string, string>;
       /** Versions that registered the flag as hidden, collapsed into eras below. */
       hiddenIn: Set<string>;
+      /** Versions that registered the command under its own name, not as an alias. */
+      namedIn: string[];
     }
   >();
   for (const file of files) {
@@ -183,11 +185,13 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       // ANY version proved it by something other than a switch-case label, so the
       // scope caveat is dropped the moment better evidence exists.
       const strong = evidence !== 'argv-switch';
+      const named = evidence !== 'command-alias';
       let entry = seenIn.get(key);
       if (entry) {
         entry.versions.push(file.version);
         entry.strongEvidence ||= strong;
         if (hidden) entry.hiddenIn.add(file.version);
+        if (named) entry.namedIn.push(file.version);
       } else {
         entry = {
           symbol,
@@ -196,6 +200,7 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
           strongEvidence: strong,
           scopeFrom: new Map(),
           hiddenIn: new Set(hidden ? [file.version] : []),
+          namedIn: named ? [file.version] : [],
         };
         seenIn.set(key, entry);
       }
@@ -209,8 +214,17 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
   }
 
   const symbols: BinaryObservation[] = [];
-  for (const { symbol, type, versions, strongEvidence, scopeFrom, hiddenIn } of seenIn.values()) {
+  for (const {
+    symbol,
+    type,
+    versions,
+    strongEvidence,
+    scopeFrom,
+    hiddenIn,
+    namedIn,
+  } of seenIn.values()) {
     const sorted = [...versions].sort(compareVersionsAsc);
+    const namedFirst = [...namedIn].sort(compareVersionsAsc)[0] ?? null;
     // A scope is evidence from the version that proved it, not from the flag's
     // first_seen, so a subcommand a later release adds is not back-dated onto older
     // snapshots by the union.
@@ -239,6 +253,8 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       last_seen: sorted[sorted.length - 1] as string,
       removed_in: computeBinaryRemoval(versions, observedVersions),
       ...(hiddenEras.length ? { hidden_eras: hiddenEras } : {}),
+      // Only a command first seen as an alias carries this; see named_first_seen.
+      ...(namedFirst !== sorted[0] ? { named_first_seen: namedFirst } : {}),
       // Scope rides with the caveat it lifts. A symbol with strong evidence
       // somewhere publishes top-level, and narrowing it by a subcommand parser
       // that accepts the same name would be a false claim, not a refinement.

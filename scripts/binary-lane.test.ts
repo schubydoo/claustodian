@@ -20,6 +20,7 @@ import {
   isPublishableBinaryEnv,
   isPublishableBinaryFlag,
   mayRedateFromBinary,
+  binaryRedateVersion,
   type BinaryObservation,
   loadBinaryDescriptions,
   loadBinaryObservations,
@@ -710,5 +711,31 @@ describe('loadModObservations', () => {
     await writeFile(path, JSON.stringify(envelope([torn])));
     await expect(loadModObservations(path)).rejects.toThrow(/"removed_in"/);
     await rm(path, { force: true });
+  });
+});
+
+describe('binaryRedateVersion', () => {
+  // `/restart` aliased the old `/update` from 2.1.212; docs date its own `/restart`
+  // 2.1.288, and it is registered under its own name from 2.1.288.
+  const restart = (named_first_seen: string | null | undefined): BinaryObservation => ({
+    symbol: '/restart',
+    type: 'command',
+    first_seen: '2.1.212',
+    last_seen: '2.1.314',
+    removed_in: null,
+    ...(named_first_seen === undefined ? {} : { named_first_seen }),
+  });
+
+  it('moves an anchored date only to the first version with its own name', () => {
+    expect(binaryRedateVersion(restart('2.1.288'), false)).toBe('2.1.288');
+    expect(binaryRedateVersion(restart(null), false)).toBeNull();
+  });
+
+  it('lets any earlier sighting, alias or not, refute an estimate', () => {
+    expect(binaryRedateVersion(restart(null), true)).toBe('2.1.212');
+  });
+
+  it('uses first_seen when the first sighting was already a name', () => {
+    expect(binaryRedateVersion(restart(undefined), false)).toBe('2.1.212');
   });
 });

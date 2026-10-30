@@ -48,6 +48,7 @@ export type Evidence =
   | 'env-registry'
   | 'command-registry'
   | 'skill-registry'
+  | 'command-alias'
   | 'settings-schema';
 
 export interface BundleSymbol {
@@ -922,7 +923,10 @@ function objectOpenFrom(src: string, to: number, floor: number): number {
   return limit;
 }
 
-export function extractCommands(src: string): Map<string, string | undefined> {
+export function extractCommands(
+  src: string,
+  aliasesOut?: Set<string>
+): Map<string, string | undefined> {
   const out = new Map<string, string | undefined>(); // "/name" -> description
   const aliases = new Set<string>();
   for (const anchor of src.matchAll(COMMAND_TYPE)) {
@@ -969,7 +973,11 @@ export function extractCommands(src: string): Map<string, string | undefined> {
     for (const alias of commandAliases(object)) aliases.add(`/${alias}`);
   }
   // A name another object registers wins over an alias of the same spelling.
-  for (const alias of aliases) if (!out.has(alias)) out.set(alias, undefined);
+  for (const alias of aliases) {
+    if (out.has(alias)) continue;
+    out.set(alias, undefined);
+    aliasesOut?.add(alias);
+  }
   return out;
 }
 
@@ -993,7 +1001,10 @@ function commandAliases(object: string): string[] {
  * source; we restore the `/`. First definition wins; a later one may fill in a
  * missing description.
  */
-export function extractSkillCommands(src: string): Map<string, string | undefined> {
+export function extractSkillCommands(
+  src: string,
+  aliasesOut?: Set<string>
+): Map<string, string | undefined> {
   const out = new Map<string, string | undefined>(); // "/name" -> description
   const aliases = new Set<string>();
   const anchors = [...src.matchAll(SKILL_NAME)];
@@ -1027,7 +1038,11 @@ export function extractSkillCommands(src: string): Map<string, string | undefine
     );
     for (const alias of commandAliases(own)) aliases.add(`/${alias}`);
   }
-  for (const alias of aliases) if (!out.has(alias)) out.set(alias, undefined);
+  for (const alias of aliases) {
+    if (out.has(alias)) continue;
+    out.set(alias, undefined);
+    aliasesOut?.add(alias);
+  }
   return out;
 }
 
@@ -1108,13 +1123,17 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
       ...(hiddenFlags.has(symbol) ? { hidden: true as const } : {}),
     });
   }
-  const commands = extractCommands(src);
+  // An alias is tagged apart from a registered name: the date of an alias is not
+  // the date of a command that later takes the same name (see named_first_seen).
+  const commandAliases = new Set<string>();
+  const skillAliases = new Set<string>();
+  const commands = extractCommands(src, commandAliases);
   for (const [symbol, description] of commands) {
     symbols.push({
       symbol,
       type: 'command',
       category: categorize(symbol, 'command'),
-      evidence: 'command-registry',
+      evidence: commandAliases.has(symbol) ? 'command-alias' : 'command-registry',
       ...(description ? { description } : {}),
     });
   }
@@ -1122,13 +1141,17 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
   // command-registry evidence — but if that entry had no description, let the
   // skill registry backfill one (its menuDescription may be the only one). Same
   // `/name` grammar, so these coalesce with the other lanes.
-  for (const [symbol, description] of extractSkillCommands(src)) {
+  for (const [symbol, description] of extractSkillCommands(src, skillAliases)) {
     if (commands.has(symbol)) {
+      // Every key of `commands` was pushed into `symbols` as a command by the
+      // loop just above, so the find always succeeds.
+      const existing = symbols.find((s) => s.type === 'command' && s.symbol === symbol)!;
       if (commands.get(symbol) === undefined && description) {
-        // Every key of `commands` was pushed into `symbols` as a command by the
-        // loop just above, so the find always succeeds.
-        const existing = symbols.find((s) => s.type === 'command' && s.symbol === symbol)!;
         existing.description = description;
+      }
+      // Only an alias there, but a registered skill name here: the name is the evidence.
+      if (existing.evidence === 'command-alias' && !skillAliases.has(symbol)) {
+        existing.evidence = 'skill-registry';
       }
       continue;
     }
@@ -1136,7 +1159,7 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
       symbol,
       type: 'command',
       category: categorize(symbol, 'command'),
-      evidence: 'skill-registry',
+      evidence: skillAliases.has(symbol) ? 'command-alias' : 'skill-registry',
       ...(description ? { description } : {}),
     });
   }
