@@ -95,6 +95,8 @@ function mockPageBody(url: string): string {
     'monitoring-usage': 'Common configuration variables',
     'plugin-evals': 'Command options',
     ultrareview: 'Run ultrareview non-interactively',
+    'self-hosted-environments-configuration': 'Wrapper scripts',
+    mcp: 'Use dynamic headers for custom authentication',
   }[page];
   return section ? `## ${section}\n\n${table}` : table;
 }
@@ -1572,5 +1574,37 @@ describe('parseDocPage — a table inside a tab', () => {
     // Had the quoted heading moved the section, the last row would lose that scope.
     const last = parseDocPage('remote-control', page).at(-1);
     expect(last).toMatchObject({ symbol: '--quoted-after-heading', scope: 'remote-control' });
+  });
+});
+
+describe('parseDocPage — the runner and MCP env-var pages', () => {
+  it('reads the runner tables and skips the git variables the runner sets', () => {
+    const page = [
+      '## Wrapper scripts',
+      '| Variable | Description |',
+      '| :- | :- |',
+      '| `CLAUDE_RUNNER_CLAUDE_BIN` | Path to the runner binary. |',
+      '### post-session',
+      '| `CLAUDE_RUNNER_EXIT_REASON` | How the session ended. |',
+      '| `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_n`, `GIT_CONFIG_VALUE_n` | Git settings. |',
+      '## Troubleshooting',
+      '| `CLAUDE_NOT_A_RUNNER_VAR` | An example outside the allowlisted sections. |',
+    ].join('\n');
+    const symbols = parseDocPage('self-hosted-environments-configuration', page).map(
+      (e) => e.symbol
+    );
+    expect(symbols).toEqual(['CLAUDE_RUNNER_CLAUDE_BIN', 'CLAUDE_RUNNER_EXIT_REASON']);
+  });
+
+  it('reads only the dynamic-headers table on the MCP page', () => {
+    const page = [
+      '## Configure scopes',
+      '| `CLAUDE_EXAMPLE_ONLY` | Not a definition. |',
+      '### Use dynamic headers for custom authentication',
+      '| Variable | Value |',
+      '| :- | :- |',
+      '| `CLAUDE_CODE_MCP_SERVER_NAME` | the name of the MCP server |',
+    ].join('\n');
+    expect(parseDocPage('mcp', page).map((e) => e.symbol)).toEqual(['CLAUDE_CODE_MCP_SERVER_NAME']);
   });
 });
