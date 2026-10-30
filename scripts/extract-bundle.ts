@@ -338,14 +338,37 @@ export function extractAccessorEnvVars(src: string): Map<string, string> {
 }
 
 /**
+ * Whether a `/` at `slash` can open a regex literal rather than divide. After a
+ * value (an identifier, a number, `)`, `]` or `}`) it divides, unless that word is
+ * a keyword such as `return` that a regex can follow. A regex after a block's `}`
+ * or after `if(…)` is read as division, the same misreading as before this test.
+ */
+function regexCanStart(src: string, slash: number): boolean {
+  let j = slash - 1;
+  while (j >= 0 && /\s/.test(src[j] as string)) j--;
+  /* v8 ignore next -- matchBracket calls this only past its opening bracket, which stops the scan; the guard keeps the function total */
+  if (j < 0) return true;
+  const prev = src[j] as string;
+  if (/[)\]}\w$]/.test(prev)) {
+    const word = /[A-Za-z_$][\w$]*$/.exec(src.slice(Math.max(0, j - 16), j + 1))?.[0];
+    return (
+      word !== undefined &&
+      /^(?:return|typeof|case|do|else|in|of|void|delete|throw|new|yield|await)$/.test(word)
+    );
+  }
+  return true;
+}
+
+/**
  * From an opening bracket at `open`, the index of its match — tracking (), [], {}
- * depth and skipping string literals. A backtick runs to the next unescaped
- * backtick; a nested template (`` `a${`b`}c` ``) is therefore mis-scanned. Regex
- * literals are NOT recognised either, so a bracket-bearing literal like `/[)}]/`
- * inside a scanned span can bail or over-run. Both are vanishingly rare in the
- * call- and parameter-lists this reads, and the worst either does is misalign one
- * call's argument indices — which the uniqueness guard and the first-party name
- * gate keep from asserting a spurious symbol. -1 if unmatched.
+ * depth and skipping string literals, comments and regex literals (regexCanStart).
+ * A quote or bracket inside `/["']/g` or `/* don't *\/` once ended the extent early,
+ * and the param env lane then lost every read in that function. A backtick runs to
+ * the next unescaped backtick, so a nested template (`` `a${`b`}c` ``) is still
+ * mis-scanned. The worst a wrong extent does is misalign one call's argument
+ * indices or leave text that does not parse, and the uniqueness guard, the parse
+ * check and the first-party name gate keep either from asserting a spurious
+ * symbol. -1 if unmatched.
  */
 function matchBracket(src: string, open: number): number {
   const close: Record<string, string> = { '(': ')', '[': ']', '{': '}' };
@@ -356,6 +379,28 @@ function matchBracket(src: string, open: number): number {
       for (i++; i < src.length; i++) {
         if (src[i] === '\\') i++;
         else if (src[i] === c) break;
+      }
+      continue;
+    }
+    if (c === '/' && src[i + 1] === '/') {
+      while (i < src.length && src[i] !== '\n') i++;
+      continue;
+    }
+    if (c === '/' && src[i + 1] === '*') {
+      const end = src.indexOf('*/', i + 2);
+      if (end < 0) return -1;
+      i = end + 1;
+      continue;
+    }
+    if (c === '/' && regexCanStart(src, i)) {
+      let inClass = false;
+      for (i++; i < src.length; i++) {
+        const r = src[i];
+        if (r === '\\') i++;
+        else if (r === '[') inClass = true;
+        else if (r === ']') inClass = false;
+        else if (r === '/' && !inClass) break;
+        else if (r === '\n') return -1;
       }
       continue;
     }
@@ -507,10 +552,9 @@ function blockBinds(statements: unknown, name: string): boolean {
  * expressions it replaces got property keys, default values and arrow bodies wrong.
  *
  * Returns undefined when the text does not parse, and the caller then takes no
- * read from it: text that cannot be resolved proves nothing. matchBracket finds
- * the extent and does not read comments, so in unminified bundled code an
- * apostrophe in a comment can end the text early (`getColorDepth` from
- * supports-color, 2.1.113). A 12-version subset re-extract loses no symbol to this.
+ * read from it: text that cannot be resolved proves nothing. Bun's own syntax
+ * still fails here: supports-color's `getColorDepth` carries `@undefined`. Its only
+ * read is `FORCE_COLOR`, which the first-party gate drops anyway.
  */
 function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
   const parse = (text: string) =>
@@ -666,7 +710,7 @@ export function extractParamEnvVars(src: string): Map<string, string> {
   // reused minified name and stay ambiguous. A definition whose extent cannot be
   // matched counts as distinct, so it can only make a name ambiguous.
   const defTexts = new Map<string, Set<string>>();
-  for (const m of src.matchAll(/\bfunction\s+([A-Za-z_$][\w$]*)\s*\(/g)) {
+  for (const m of src.matchAll(/\bfunction\s*\*?\s*([A-Za-z_$][\w$]*)\s*\(/g)) {
     const at = m.index as number;
     const text = functionText(src, at, at + m[0].length - 1) ?? `\0${at}`;
     const texts = defTexts.get(m[1] as string);
@@ -675,7 +719,7 @@ export function extractParamEnvVars(src: string): Map<string, string> {
   }
   // Pass 2: function definitions -> `param.NAME` reads where the param is env-bound.
   const out = new Map<string, string>();
-  for (const m of src.matchAll(/\bfunction\s*([A-Za-z_$][\w$]*)?\s*\(/g)) {
+  for (const m of src.matchAll(/\bfunction\s*\*?\s*([A-Za-z_$][\w$]*)?\s*\(/g)) {
     const fname = m[1];
     const popen = (m.index as number) + m[0].length - 1;
     const pend = matchBracket(src, popen);
@@ -685,7 +729,9 @@ export function extractParamEnvVars(src: string): Map<string, string> {
     if (src[bi] !== '{') continue;
     const bend = matchBracket(src, bi);
     if (bend < 0) continue;
-    const body = src.slice(bi + 1, bend);
+    // The whole function, not only its body: a later parameter's default can read
+    // an earlier one (`function f(n=process.env,t=n.CLAUDE_CODE_X){…}`).
+    const fnText = src.slice(m.index as number, bend + 1);
     splitTopLevel(src.slice(popen + 1, pend)).forEach((p, i) => {
       const bind = paramBinding(p);
       if (!bind || !/^[A-Za-z_$][\w$]*$/.test(bind.name)) return;
@@ -706,10 +752,9 @@ export function extractParamEnvVars(src: string): Map<string, string> {
         'g'
       );
       let refs: Set<number> | undefined | null = null;
-      for (const r of body.matchAll(re)) {
-        // Offsets in the function text: `body` starts just inside its brace.
-        if (refs === null) refs = outerParamRefs(src.slice(m.index as number, bend + 1), bind.name);
-        if (!refs || !refs.has(bi + 1 - (m.index as number) + (r.index as number))) continue;
+      for (const r of fnText.matchAll(re)) {
+        if (refs === null) refs = outerParamRefs(fnText, bind.name);
+        if (!refs || !refs.has(r.index as number)) continue;
         const name = r[1] as string;
         if (SYMBOL_DENYLIST.has(name)) continue;
         const category = categorize(name, 'env_var');

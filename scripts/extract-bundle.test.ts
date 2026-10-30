@@ -1234,3 +1234,47 @@ describe('command alias evidence', () => {
     expect(evidenceOf(src, '/checkup')).toBe('command-alias');
   });
 });
+
+describe('extractParamEnvVars — function extents and shapes', () => {
+  const read = (src: string) => extractParamEnvVars(src).has('CLAUDE_CODE_X');
+  const tail = ';return e.CLAUDE_CODE_X}f(process.env);';
+
+  it('reads past a regex literal that holds a quote or a bracket', () => {
+    expect(read('function f(e){let t=/"/g' + tail)).toBe(true);
+    expect(read('function f(e){let t=/[{]/' + tail)).toBe(true);
+    expect(read('function f(e){let t=/\\(/' + tail)).toBe(true);
+    expect(read(`function f(e){let t=x.replace(/^['"]|['"]$/g,"")` + tail)).toBe(true);
+  });
+
+  it('reads past a comment that holds a quote', () => {
+    expect(read("function f(e){/* don't */return e.CLAUDE_CODE_X}f(process.env);")).toBe(true);
+    expect(read("function f(e){// don't\nreturn e.CLAUDE_CODE_X}f(process.env);")).toBe(true);
+  });
+
+  it('finds no extent past an unclosed comment or a regex that runs into a newline', () => {
+    expect(read('function f(e){/* never closed return e.CLAUDE_CODE_X}f(process.env);')).toBe(
+      false
+    );
+    expect(read('function f(e){let t=x+ /a\nreturn e.CLAUDE_CODE_X}f(process.env);')).toBe(false);
+  });
+
+  it('still reads a division as a division', () => {
+    expect(read('function f(e){let t=a/b/c' + tail)).toBe(true);
+    expect(read('function f(e){let t=(a)/2/(b)' + tail)).toBe(true);
+  });
+
+  it('reads a generator function', () => {
+    expect(read('function*f(e){yield e.CLAUDE_CODE_X}f(process.env);')).toBe(true);
+    expect(read('function* f(e){yield e.CLAUDE_CODE_X}f(process.env);')).toBe(true);
+    expect(read('async function*f(e){yield e.CLAUDE_CODE_X}f(process.env);')).toBe(true);
+  });
+
+  it("reads a later parameter's default", () => {
+    expect(read('function f(e,t=e.CLAUDE_CODE_X){return t}f(process.env);')).toBe(true);
+    expect(read('function f(n=process.env,t=n.CLAUDE_CODE_X){return t}')).toBe(true);
+  });
+
+  it('skips a default whose read goes through a rebound name', () => {
+    expect(read('function f(e,t=(e)=>e.CLAUDE_CODE_X){return t}f(process.env);')).toBe(false);
+  });
+});
