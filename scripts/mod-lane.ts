@@ -65,6 +65,7 @@
  * COST. This lane does no parsing of its own in the cache writers: it reads each
  * chunk's AST through `extractControlMessages`'s `onProgram` callback.
  */
+import { collectChildEnvNames } from './child-env.js';
 import { compareVersionsAsc } from './lib.js';
 import { extractControlMessages, isNode, parse, walk, type Node } from './control-lane.js';
 
@@ -564,11 +565,15 @@ export function extractControlAndModMethods(
   modRenderSites: string[];
   modRenderSitesListed: boolean;
   modElements: string[];
+  /** Env var names Claude Code sets for a child process; see child-env.ts. */
+  childEnvVars: string[];
 } {
   const evidence: ModEvidence[] = [];
-  const controlMessages = extractControlMessages(source, version, (program) =>
-    evidence.push(collectModEvidence(program))
-  );
+  const childEnv = new Set<string>();
+  const controlMessages = extractControlMessages(source, version, (program) => {
+    evidence.push(collectModEvidence(program));
+    for (const name of collectChildEnvNames(program)) childEnv.add(name);
+  });
   const { methods, mentions } = modEvidenceFrom(evidence, version);
   const { sites, listed } = modRenderSitesFrom(evidence, version);
   return {
@@ -579,5 +584,6 @@ export function extractControlAndModMethods(
     modRenderSites: sites,
     modRenderSitesListed: listed,
     modElements: modElementsFrom(evidence, version),
+    childEnvVars: [...childEnv].sort(),
   };
 }

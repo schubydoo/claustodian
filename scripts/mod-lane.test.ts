@@ -193,6 +193,14 @@ describe('extractControlAndModMethods', () => {
     expect(modMethods).toEqual(METHODS);
   });
 
+  it('collects child env names from every chunk of the shared parse, sorted', () => {
+    const { childEnvVars } = extractControlAndModMethods(
+      ['x({env:{CLAUDE_ZETA:1}})', TABLE, 'y({env:{CLAUDE_ALPHA:1,CLAUDE_ZETA:2}})'],
+      '0.2.0'
+    );
+    expect(childEnvVars).toEqual(['CLAUDE_ALPHA', 'CLAUDE_ZETA']);
+  });
+
   it('applies the mod lane floor to the shared parse', () => {
     // CONTROL passes every control-lane floor at 2.1.242, so only the mod lane can
     // refuse here — a bare `var a=1;` would be refused by the control lane first.

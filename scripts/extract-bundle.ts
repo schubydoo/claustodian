@@ -50,7 +50,8 @@ export type Evidence =
   | 'command-registry'
   | 'skill-registry'
   | 'command-alias'
-  | 'settings-schema';
+  | 'settings-schema'
+  | 'child-env';
 
 export interface BundleSymbol {
   symbol: string;
@@ -1398,6 +1399,29 @@ export function textAbsent(
     if (!tokensOf(type as keyof typeof TEXT_TOKEN).has(symbol)) absent.push(`${type}:${symbol}`);
   }
   return absent.sort();
+}
+
+/**
+ * `symbols` plus an env_var symbol for each child-env name (see child-env.ts) that
+ * no read-based rule already proved. Additive only: a read is the stronger proof,
+ * so it keeps its own evidence tag.
+ */
+export function withChildEnvVars(
+  symbols: readonly BundleSymbol[],
+  names: readonly string[]
+): BundleSymbol[] {
+  const known = new Set(symbols.filter((s) => s.type === 'env_var').map((s) => s.symbol));
+  const added: BundleSymbol[] = [];
+  for (const symbol of names) {
+    if (known.has(symbol) || SYMBOL_DENYLIST.has(symbol)) continue;
+    added.push({
+      symbol,
+      type: 'env_var',
+      category: categorize(symbol, 'env_var'),
+      evidence: 'child-env',
+    });
+  }
+  return [...symbols, ...added];
 }
 
 /** A name the binary lane has seen, and the first release that had it. */

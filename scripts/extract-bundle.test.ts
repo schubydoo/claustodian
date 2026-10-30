@@ -16,6 +16,7 @@ import {
   textAbsent,
   textAbsentFor,
   extractSkillCommands,
+  withChildEnvVars,
 } from './extract-bundle.js';
 
 describe('extractFlagDescriptions', () => {
@@ -1418,5 +1419,31 @@ describe('textAbsentFor', () => {
     expect(
       textAbsentFor('nothing here', '2.1.200', [{ type: 'env_var', symbol: 'OLD_HERE' }], watch)
     ).toEqual(['env_var:OLD_GONE']);
+  });
+});
+
+describe('withChildEnvVars', () => {
+  const read = [
+    { symbol: 'CLAUDE_READ', type: 'env_var', category: 'claude-code', evidence: 'process-env' },
+    { symbol: '--CLAUDE_FLAG_ONLY', type: 'cli_flag', category: 'cli', evidence: 'argv' },
+  ] as const;
+
+  it('adds each new name as an env_var with child-env evidence, after the read symbols', () => {
+    const out = withChildEnvVars(read, ['CLAUDE_RUNNER_EXIT_REASON', 'GIT_TERMINAL_PROMPT']);
+    expect(out.slice(0, 2)).toEqual(read);
+    expect(out.slice(2)).toEqual([
+      {
+        symbol: 'CLAUDE_RUNNER_EXIT_REASON',
+        type: 'env_var',
+        category: 'claude-code',
+        evidence: 'child-env',
+      },
+      { symbol: 'GIT_TERMINAL_PROMPT', type: 'env_var', category: 'other', evidence: 'child-env' },
+    ]);
+  });
+
+  it('keeps a read-proved name as it is and skips denylisted names', () => {
+    const out = withChildEnvVars(read, ['CLAUDE_READ', 'EACCES']);
+    expect(out).toEqual(read);
   });
 });
