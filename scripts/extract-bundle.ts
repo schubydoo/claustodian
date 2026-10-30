@@ -535,13 +535,18 @@ function paramBinding(p: string): { name: string; envDefault: boolean } | null {
  * whose parameter list opens at `paramOpen`, or `undefined` when its extent
  * cannot be matched.
  */
-function functionText(src: string, start: number, paramOpen: number): string | undefined {
-  const paramEnd = matchBracket(src, paramOpen);
+function functionText(
+  src: string,
+  start: number,
+  paramOpen: number,
+  scan: (src: string, open: number) => number = matchBracket
+): string | undefined {
+  const paramEnd = scan(src, paramOpen);
   if (paramEnd < 0) return undefined;
   let bodyOpen = paramEnd + 1;
   while (bodyOpen < src.length && /\s/.test(src[bodyOpen] as string)) bodyOpen++;
   if (src[bodyOpen] !== '{') return undefined;
-  const bodyEnd = matchBracket(src, bodyOpen);
+  const bodyEnd = scan(src, bodyOpen);
   return bodyEnd < 0 ? undefined : src.slice(start, bodyEnd + 1);
 }
 
@@ -760,7 +765,9 @@ export function extractParamEnvVars(src: string): Map<string, string> {
   const envArg = new Map<string, Set<number>>();
   for (const m of src.matchAll(/\b([A-Za-z_$][\w$]*)\(/g)) {
     const open = (m.index as number) + m[0].length - 1;
-    const end = matchBracket(src, open);
+    // The lexed scan only where the plain one finds no end, so no call is lost.
+    let end = matchBracket(src, open);
+    if (end < 0) end = matchBracketLexed(src, open);
     // Skip pathologically wide call spans (a whole minified IIFE body); an
     // env-passing call's argument list is far shorter, so this only drops noise.
     if (end < 0 || end - open > 4000) continue;
@@ -781,7 +788,11 @@ export function extractParamEnvVars(src: string): Map<string, string> {
   const defTexts = new Map<string, Set<string>>();
   for (const m of src.matchAll(/\bfunction\s*\*?\s*([A-Za-z_$][\w$]*)\s*\(/g)) {
     const at = m.index as number;
-    const text = functionText(src, at, at + m[0].length - 1) ?? `\0${at}`;
+    // The lexed scan only where the plain one fails: two copies that both fail
+    // would otherwise count as two different definitions and lose the binding.
+    const popen = at + m[0].length - 1;
+    const text =
+      functionText(src, at, popen) ?? functionText(src, at, popen, matchBracketLexed) ?? `\0${at}`;
     const texts = defTexts.get(m[1] as string);
     if (texts) texts.add(text);
     else defTexts.set(m[1] as string, new Set([text]));
@@ -824,7 +835,9 @@ function paramReadsIn(
   if (pend < 0) return { reads, resolved: false };
   let bi = pend + 1;
   while (bi < src.length && /\s/.test(src[bi] as string)) bi++;
-  if (src[bi] !== '{') return { reads, resolved: true };
+  // Valid code always has a body here, so its absence means the scan ended the
+  // parameter list too early (`r=/\)/`). That is unresolved, not a function without reads.
+  if (src[bi] !== '{') return { reads, resolved: false };
   const bend = scan(src, bi);
   if (bend < 0) return { reads, resolved: false };
   // The whole function, not only its body: a later parameter's default can read

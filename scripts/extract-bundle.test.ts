@@ -1294,6 +1294,16 @@ describe('extractParamEnvVars — function extents and shapes', () => {
     expect(read('function f(e){let t=/[)]/;(]' + tail)).toBe(false);
   });
 
+  it('falls back when the plain scan ends the parameter list early', () => {
+    expect(read('function f(e=process.env,r=/\\)/){return e.CLAUDE_CODE_X}')).toBe(true);
+  });
+
+  it('falls back for the call site and for two identical copies of a function', () => {
+    const fn = 'function f(e){let r=/[)]/;return e.CLAUDE_CODE_X}';
+    expect(read(`${fn}${fn}f(process.env);`)).toBe(true);
+    expect(read('function f(e,t){return e.CLAUDE_CODE_X}f(process.env,/[)]/);')).toBe(true);
+  });
+
   it('opens a regex after a keyword that follows a spread', () => {
     expect(
       read(
