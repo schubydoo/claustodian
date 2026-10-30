@@ -168,6 +168,19 @@ describe('distillObservations', () => {
     expect(never?.named_first_seen).toBeNull();
     const named = distillObservations([cmd('2.1.212', 'command-registry')]).symbols[0];
     expect(named).not.toHaveProperty('named_first_seen');
+    // A name that later turns into an alias (`/update` by 2.1.306) dates from the name.
+    const demoted = distillObservations([
+      cmd('2.1.212', 'command-registry'),
+      cmd('2.1.306', 'command-alias'),
+    ]).symbols[0];
+    expect(demoted).not.toHaveProperty('named_first_seen');
+    // Two alias-only versions before the name: the name's version is the answer.
+    const twoAliases = distillObservations([
+      cmd('2.1.212', 'command-alias'),
+      cmd('2.1.250', 'command-alias'),
+      cmd('2.1.288', 'command-registry'),
+    ]).symbols[0];
+    expect(twoAliases?.named_first_seen).toBe('2.1.288');
   });
 
   it('marks a symbol switch_case_only when every version proved it that way', () => {
