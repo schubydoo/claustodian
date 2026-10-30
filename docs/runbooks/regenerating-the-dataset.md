@@ -119,6 +119,11 @@ npm run fetch-docs           # 3. docs pages   -> data/docs.json
 npm run scrape -- --all      # 4. everything   -> data/versions/, index, latest
 ```
 
+Step 1 extracts several versions at once, one per process. The default is one job per
+core less one, at most 8. Each job holds about 3 GB at the tip. If memory is short,
+pass a smaller number, for example `npm run reextract-binaries -- --jobs 4`. With
+`--jobs 1`, the run uses one process, as before. The output is the same either way.
+
 ⚠️ Step 2 writes `data/control-observations.json` only when that file already exists,
 or when you pass `--control`. The release bot runs step 2 on every dispatch, so
 without that gate it would publish the whole control surface through an
