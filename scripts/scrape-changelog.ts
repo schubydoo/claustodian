@@ -1434,14 +1434,6 @@ export const CHANGELOG_ONLY_SYMBOLS: ReadonlySet<string> = new Set<string>([
   // plain `description:`, and the skill registry needs a `menuDescription:` or
   // `whenToUse:` marker.
   'command:/less-permission-prompts',
-  // Read through a lookup map (`{allow:"CCR_AUTO_MODE_ALLOW",…}`), not `env.X`.
-  'env_var:CCR_AUTO_MODE_ALLOW',
-  'env_var:CCR_AUTO_MODE_ENVIRONMENT',
-  'env_var:CCR_AUTO_MODE_SOFT_DENY',
-  // Set, not read: Claude Code passes them to an MCP server's headers helper
-  // (`env:{CLAUDE_CODE_MCP_SERVER_NAME:e,CLAUDE_CODE_MCP_SERVER_URL:r.url,…}`).
-  'env_var:CLAUDE_CODE_MCP_SERVER_NAME',
-  'env_var:CLAUDE_CODE_MCP_SERVER_URL',
 ]);
 
 /**
