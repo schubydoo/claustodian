@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.312",
+  "claudeCodeVersion": "2.1.314",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -162,6 +162,18 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--agents-view-if-allowed",
+      "type": "cli_flag",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli-internal"
     },
     {
       "symbol": "--all",
@@ -3052,7 +3064,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "On a runner-initiated session end such as a drain or idle release, push tracked outcome branches to `origin` before deleting the workspace, so in-flight commits survive a restart. Best-effort; adds 30 seconds to the shutdown budget, and requires git 2.29 or newer to resume from the pushed branch. Restrict push access to `claude/*` refs before enabling; see Resumed sessions lose unpushed work. Repositories checked out via a `checkout` lifecycle hook aren't pushed; snapshot those from the `post-session` hook instead.",
+      "description": "On a runner-initiated session end such as a drain or idle release, the runner pushes primary session branches with new commits to `origin` before deleting the workspace. Best-effort; adds 30 seconds to the shutdown budget. Requires git 2.29 or later to resume from them. Restrict push access to `claude/*` refs; see Resumed sessions lose unpushed work. A `checkout` hook's repositories aren't pushed; snapshot those from the `post-session` hook.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "cli",
@@ -3728,8 +3740,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added `--shutdown-drain-sec` to `claude self-hosted-runner orchestrator`: on SIGTERM it stops polling and gives the poll in flight and running spawn hooks up to that many seconds to finish",
-      "description_source": "changelog",
+      "description": "On `SIGTERM`, stop polling for spawn requests and give running `spawn-runner` hooks and any unanswered poll up to this many seconds to finish before stopping what's left. At `0`, stop immediately. Maximum `3600`, which the orchestrator enforces at startup. To choose a value, see Size `--shutdown-drain-sec` and the orchestrator's stop timeout. Requires Claude Code v2.1.299 or later.",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
@@ -5482,7 +5494,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Switch the AI model and save it as your default for new sessions. For models that support it, use left/right arrows to adjust effort level. With no argument, opens a picker; press `s` on a row to switch for the current session only. See when Claude Code asks you to confirm the switch. Once you confirm the switch, if Claude Code asks, Claude Code applies the change without waiting for the current response to finish. Before v2.1.242, Claude Code decided from a feature flag it fetched from Anthropic whether to run the command mid-turn or queue it until the turn finished, and always queued it in a session that doesn't fetch feature flags, such as on a third-party provider. Also available in non-interactive mode (`-p`) with a model argument instead of the picker, where it applies to the current session only and isn't saved as your default; requires Claude Code v2.1.205 or later",
+      "description": "Switch the AI model and save it as your default for new sessions. For models that support it, use left/right arrows to adjust effort level. With no argument, opens a picker; press `s` on a row to switch for the current session only. See when the new model starts. Before v2.1.242, it could wait. With `-p`, pass a model argument, which isn't saved as your default; requires v2.1.205 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5909,11 +5921,12 @@
       "type": "command",
       "first_seen": "2.1.288",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Restart Claude Code and resume this session, which applies an installed update. Run it when the footer offers it after an update installs. Requires a Pro or Max plan and a native install on macOS or Linux, not WSL. Requires Claude Code v2.1.288 or later. Alias: `/update`",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
     },
     {
@@ -7705,7 +7718,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Stop Claude Code from registering the `claude-cli://` protocol handler with the operating system, which it otherwise does after you send the first prompt of an interactive session. Deep links let external tools open a Claude Code session with a pre-filled prompt. Set this in environments where protocol handler registration is restricted or managed separately.",
+      "description": "Stop Claude Code from registering the `claude-cli://` protocol handler with the operating system. Deep links let external tools open a Claude Code session with a pre-filled prompt. Set this in environments where protocol handler registration is restricted or managed separately.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8122,7 +8135,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Restrict which kind of account people can log in with. Set `\"claudeai\"` to allow only claude.ai accounts, `\"console\"` to allow only Claude Console accounts, or `\"gateway\"` to send people to a cloud gateway instead of a first-party login. Administrators set it in managed settings and pair it with `forceLoginOrgUUID` to keep developers' claude.ai logins inside one organization. If you set it to `\"claudeai\"` or `\"console\"` in any settings file, Claude Code also stops offering the keyless Console sign-in in the sessions that file applies to.",
+      "description": "Restrict which kind of account people can log in with. Set `\"claudeai\"` to allow only claude.ai accounts, `\"console\"` to allow only Claude Console accounts, or `\"gateway\"` to send people to a cloud gateway instead of a first-party login. Administrators set it in managed settings and pair it with `forceLoginOrgUUID` to keep developers' claude.ai logins inside one organization.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8622,6 +8635,19 @@
       "category": "settings"
     },
     {
+      "symbol": "permissions.blockWritesOutsideWorkingDirectories",
+      "type": "config_key",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Refuse file-tool writes (Write, Edit, NotebookEdit) outside the working directories in every permission mode; true in any settings source wins. No allow rule lifts it. Files that Claude Code keeps for the session are not refused: its plan files, scratchpad and background job folder, and the auto-memory of this project, unless the CLAUDE_COWORK_MEMORY_PATH_OVERRIDE environment variable or a repository settings file points it elsewhere. Nothing runs them unless the model asks. Also refuses file-tool writes to Claude Code settings files, inside the working directories too, and takes EnterWorktree and ExitWorktree, which move the working directory, out of the tools on offer. Does not limit shell commands, MCP tools, the programs that hooks run, or the memory tools. Cloud sessions (Claude Code on the web), whose file tools run in a container that is itself the boundary, may not apply it.",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
       "symbol": "permissions.defaultMode",
       "type": "config_key",
       "first_seen": "1.0.22",
@@ -9115,6 +9141,19 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
+    },
+    {
+      "symbol": "responseComparisonEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "@internal Set to false to stop Claude Code from showing two answers to one message and asking which is better. When absent or true, it may do so on some turns. Hidden from public SDK types until external launch.",
+      "source_url": null,
+      "category": "settings-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "sandbox",
@@ -15580,6 +15619,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_BRIDGE_CHILD_CLI_ENTRYPOINT",
+      "type": "env_var",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_BRIDGE_CHILD_MACHINE_SETTINGS",
       "type": "env_var",
       "first_seen": "2.1.273",
@@ -15849,6 +15900,18 @@
       "symbol": "CLAUDE_CODE_CCR_LAZY_SUBAGENT_HYDRATE",
       "type": "env_var",
       "first_seen": "2.1.247",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_CCR_LONG_POLL",
+      "type": "env_var",
+      "first_seen": "2.1.314",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -16698,7 +16761,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to remove the `run_in_background` parameter from the Bash, PowerShell, and subagent tools and to turn off the Ctrl+B shortcut and background runs of forked skills. Claude Code then also stops moving subagents, long MCP tool calls, and timed-out shell commands to the background automatically. MCP tasks and the Monitor tool still run in the background",
+      "description": "Set to `1` to remove the `run_in_background` parameter from the Bash, PowerShell, and subagent tools and to turn off the Ctrl+B shortcut and background runs of forked skills. Claude Code then also stops moving subagents, long MCP tool calls, and timed-out shell commands to the background automatically. MCP tasks and the Monitor tool still run in the background. To turn off background sessions too, set `CLAUDE_CODE_DISABLE_AGENT_VIEW` to `1`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -16786,11 +16849,11 @@
       "first_seen": "2.1.257",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` to keep the Claude in Chrome browser tools available while omitting the Chrome section of the system prompt and the `/claude-in-chrome` bundled skill. For hosts that embed Claude Code and supply their own browser guidance. Requires Claude Code v2.1.257 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -17334,6 +17397,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_POOLED_CONNECTION_IDLE_LIMIT",
+      "type": "env_var",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_POWERSHELL_CMD_RM_DENY",
       "type": "env_var",
       "first_seen": "2.1.283",
@@ -17399,6 +17474,18 @@
       "symbol": "CLAUDE_CODE_DISABLE_REFUSAL_RETRY",
       "type": "env_var",
       "first_seen": "2.1.282",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_RESPONSE_COMPARISON",
+      "type": "env_var",
+      "first_seen": "2.1.314",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -17653,7 +17740,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the effort level for supported models. Values: `low`, `medium`, `high`, `xhigh`, `max`, or `auto` to use the model default. Available levels depend on the model. Takes precedence over `--effort`, `/effort`, and the `modelSettings` and `effortLevel` settings. A `maxEffortLevel` cap still applies. See Adjust effort level",
+      "description": "Set the effort level for supported models. Values: `low`, `medium`, `high`, `xhigh`, or `max`. Available levels depend on the model. Takes precedence over `--effort`, `/effort`, and the `modelSettings` and `effortLevel` settings. A `maxEffortLevel` cap still applies. Set it to `auto` or `unset` to have Claude Code send no effort level, so that the API applies its own default for the model. See Adjust effort level",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -19994,6 +20081,18 @@
       "description": "Idle timeout in milliseconds for MCP tool calls. When a stdio, HTTP, SSE, WebSocket, or claude.ai connector MCP server sends no response and no progress notification for this long, the tool call aborts with an error instead of waiting for the overall `MCP_TOOL_TIMEOUT`. Overrides the per-transport defaults of 300000 (5 minutes) for network servers and 1800000 (30 minutes) for stdio servers. Set to `0` to disable the idle check. Values below 1000 are raised to one second, and the value is capped at the effective `MCP_TOOL_TIMEOUT`. A per-server `timeout` in `.mcp.json` of at least 1000 raises that server's idle window to at least the `timeout` value. Doesn't apply to IDE servers or SDK in-process servers. Requires Claude Code v2.1.187 or later. Before v2.1.203, stdio servers were exempt from the idle timeout",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MEMORY_CONTEXT_NO_WAIT",
+      "type": "env_var",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -22676,6 +22775,30 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_STREAM_EVENT_HOLD_MS",
+      "type": "env_var",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_STREAM_EVENT_MAX_LINE_BYTES",
+      "type": "env_var",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_STRICT_INLINE_SHELL_RM_PROMPT",
       "type": "env_var",
       "first_seen": "2.1.299",
@@ -23509,6 +23632,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_UPFRONT_TOOLS",
+      "type": "env_var",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_USER_DIALOG_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "2.1.169",
@@ -24196,7 +24331,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Set automatically in Bash tool subprocesses and hook commands to the effort level in effect when the subprocess starts: `low`, `medium`, `high`, `xhigh`, or `max`. Matches the `effort.level` field passed to hooks. Only set when the current model supports the effort parameter",
+      "description": "Set automatically in Bash tool subprocesses and hook commands to the effort level setting when the subprocess starts: `low`, `medium`, `high`, `xhigh`, or `max`. Matches the `effort.level` field passed to hooks. Only set when the current model supports the effort parameter",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -26892,7 +27027,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "On a runner-initiated session end such as a drain or idle release, push tracked outcome branches to `origin` before deleting the workspace, so in-flight commits survive a restart. Best-effort; adds 30 seconds to the shutdown budget, and requires git 2.29 or newer to resume from the pushed branch. Restrict push access to `claude/*` refs before enabling; see Resumed sessions lose unpushed work. Repositories checked out via a `checkout` lifecycle hook aren't pushed; snapshot those from the `post-session` hook instead.",
+      "description": "On a runner-initiated session end such as a drain or idle release, the runner pushes primary session branches with new commits to `origin` before deleting the workspace. Best-effort; adds 30 seconds to the shutdown budget. Requires git 2.29 or later to resume from them. Restrict push access to `claude/*` refs; see Resumed sessions lose unpushed work. A `checkout` hook's repositories aren't pushed; snapshot those from the `post-session` hook.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "other"
@@ -27141,6 +27276,19 @@
       "symbol": "TRACESTATE",
       "type": "env_var",
       "first_seen": "2.1.110",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "medium",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
+    },
+    {
+      "symbol": "UNABLE_TO_GET_ISSUER_CERT",
+      "type": "env_var",
+      "first_seen": "2.1.314",
       "first_seen_estimated": true,
       "removed_in": null,
       "status": "active",
@@ -29305,6 +29453,18 @@
       "category": "mods"
     },
     {
+      "symbol": "$.ui.place",
+      "type": "mod_method",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
       "symbol": "$.ui.resolve",
       "type": "mod_method",
       "first_seen": "2.1.242",
@@ -29448,6 +29608,18 @@
       "confidence": "high",
       "description": "",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "Placed",
+      "type": "mod_render_site",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {
