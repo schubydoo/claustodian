@@ -1430,18 +1430,6 @@ const CORROBORATED_TYPES: ReadonlySet<ExtractedSymbolType> = new Set([
  * cannot see. Fix the extractor rather than add an entry when the miss is a pattern.
  */
 export const CHANGELOG_ONLY_SYMBOLS: ReadonlySet<string> = new Set<string>([
-  // Command aliases. The 2.1.312 bundle registers each one in a command object's
-  // `aliases:[…]`. extractCommands reads those now, but these entries stay until a
-  // binary re-extract puts the aliases into data/binary-observations.json.
-  'command:/bg',
-  'command:/checkup',
-  'command:/continue',
-  'command:/name',
-  'command:/plugins',
-  'command:/proactive',
-  'command:/settings',
-  'command:/share',
-  'command:/undo',
   // A bundled skill. The 2.1.111 bundle has `name:"less-permission-prompts"` with a
   // plain `description:`, and the skill registry needs a `menuDescription:` or
   // `whenToUse:` marker.
