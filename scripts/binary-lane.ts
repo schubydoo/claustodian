@@ -178,6 +178,15 @@ export interface BinaryObservation {
    * snapshot. Absent when the flag was never hidden.
    */
   hidden_eras?: readonly HiddenEra[];
+  /**
+   * For a command first seen only as another command's alias: the first version
+   * that registered it under its own name, or null when none did. Absent when the
+   * first sighting was already a name. An alias can share its spelling with a
+   * later, different command (`/restart` aliased the old `/update` from 2.1.212,
+   * and docs date its own `/restart` 2.1.288), so binaryRedateVersion uses this
+   * date, not first_seen, against an anchored record.
+   */
+  named_first_seen?: string | null;
 }
 
 export interface BinaryObservations {
@@ -404,6 +413,23 @@ export function isPublishableBinaryFlag(observation: BinaryObservation): boolean
  * it would cover `--help`, whose scope set cannot be complete because the `/plugin`
  * parser switches on it too.
  */
+/**
+ * The version the binary may re-date a record to, or null when it may not. Applies
+ * mayRedateFromBinary, then the alias rule: an ESTIMATE is refuted by any earlier
+ * sighting, alias or not, but an ANCHORED date moves only to a version where the
+ * command had its own name.
+ */
+export function binaryRedateVersion(
+  observation: BinaryObservation,
+  recordFirstSeenEstimated = false
+): string | null {
+  if (!mayRedateFromBinary(observation, recordFirstSeenEstimated)) return null;
+  if (recordFirstSeenEstimated || observation.named_first_seen === undefined) {
+    return observation.first_seen;
+  }
+  return observation.named_first_seen;
+}
+
 export function mayRedateFromBinary(
   observation: BinaryObservation,
   recordFirstSeenEstimated = false

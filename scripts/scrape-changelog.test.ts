@@ -3216,3 +3216,44 @@ describe('the changelog-only gate', () => {
     expect(uncorroborated('config_key', 'model')).toBe(false);
   });
 });
+
+describe('enrichWithBinary — an alias sighting and an anchored date', () => {
+  const restart = (first_seen_estimated: boolean): SymbolRecord => ({
+    symbol: '/restart',
+    type: 'command',
+    first_seen: '2.1.288',
+    first_seen_estimated,
+    removed_in: null,
+    status: 'active',
+    provenance: 'docs',
+    confidence: first_seen_estimated ? 'medium' : 'high',
+    description: 'Restart Claude Code. Requires Claude Code v2.1.288 or later.',
+    source_url: 'https://code.claude.com/docs/en/commands.md',
+    category: 'command',
+  });
+  const aliasOnly: BinaryObservations = {
+    $generated_by: 'scripts/backfill-binary.ts',
+    source: 'binary',
+    note: '',
+    observedVersions: [],
+    symbols: [
+      {
+        symbol: '/restart',
+        type: 'command',
+        first_seen: '2.1.212',
+        last_seen: '2.1.314',
+        removed_in: null,
+        named_first_seen: null,
+      },
+    ],
+  };
+
+  it('keeps the docs min-version when the earlier sighting was only an alias', () => {
+    // 2.1.212 registered `restart` as an alias of the old, disabled `/update`.
+    expect(enrichWithBinary([restart(false)], aliasOnly)[0]?.first_seen).toBe('2.1.288');
+  });
+
+  it('still lets the alias sighting refute an estimate', () => {
+    expect(enrichWithBinary([restart(true)], aliasOnly)[0]?.first_seen).toBe('2.1.212');
+  });
+});

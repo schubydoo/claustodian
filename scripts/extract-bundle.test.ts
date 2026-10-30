@@ -1211,3 +1211,26 @@ describe('command aliases', () => {
     expect(cmds.get('/checkup')).toBeUndefined();
   });
 });
+
+describe('command alias evidence', () => {
+  const evidenceOf = (src: string, symbol: string) =>
+    extractBundleSymbols(src).find((s) => s.type === 'command' && s.symbol === symbol)?.evidence;
+
+  it('tags an alias apart from a registered name', () => {
+    const src = '{type:"local",name:"update",aliases:["restart"],description:"Update"}';
+    expect(evidenceOf(src, '/update')).toBe('command-registry');
+    expect(evidenceOf(src, '/restart')).toBe('command-alias');
+  });
+
+  it('takes a skill name as the evidence over a command-registry alias', () => {
+    const src =
+      '{type:"local",name:"exit",aliases:["quit"]},' +
+      'ol({name:"quit",menuDescription:"Quit the session"})';
+    expect(evidenceOf(src, '/quit')).toBe('skill-registry');
+  });
+
+  it('tags an alias found only in the skill registry', () => {
+    const src = 'ol({name:"doctor",aliases:["checkup"],menuDescription:"Health"})';
+    expect(evidenceOf(src, '/checkup')).toBe('command-alias');
+  });
+});

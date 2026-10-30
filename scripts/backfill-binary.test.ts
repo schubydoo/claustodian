@@ -154,6 +154,22 @@ describe('distillObservations', () => {
     symbols: [{ symbol, type: 'cli_flag', evidence }],
   });
 
+  it('records when a command first seen as an alias got its own name', () => {
+    const cmd = (version: string, evidence: string): BinaryCacheFile => ({
+      version,
+      symbols: [{ symbol: '/restart', type: 'command', evidence }],
+    });
+    const later = distillObservations([
+      cmd('2.1.212', 'command-alias'),
+      cmd('2.1.288', 'command-registry'),
+    ]).symbols[0];
+    expect(later).toMatchObject({ first_seen: '2.1.212', named_first_seen: '2.1.288' });
+    const never = distillObservations([cmd('2.1.212', 'command-alias')]).symbols[0];
+    expect(never?.named_first_seen).toBeNull();
+    const named = distillObservations([cmd('2.1.212', 'command-registry')]).symbols[0];
+    expect(named).not.toHaveProperty('named_first_seen');
+  });
+
   it('marks a symbol switch_case_only when every version proved it that way', () => {
     const files = [
       evFile('2.1.223', '--health-port', 'argv-switch'),
