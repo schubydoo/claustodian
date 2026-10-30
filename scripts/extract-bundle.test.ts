@@ -1298,10 +1298,21 @@ describe('extractParamEnvVars — function extents and shapes', () => {
     expect(read('function f(e=process.env,r=/\\)/){return e.CLAUDE_CODE_X}')).toBe(true);
   });
 
-  it('falls back for the call site and for two identical copies of a function', () => {
+  it('falls back for two identical copies of a function', () => {
     const fn = 'function f(e){let r=/[)]/;return e.CLAUDE_CODE_X}';
     expect(read(`${fn}${fn}f(process.env);`)).toBe(true);
-    expect(read('function f(e,t){return e.CLAUDE_CODE_X}f(process.env,/[)]/);')).toBe(true);
+  });
+
+  it('binds process.env only to the parameter at its position', () => {
+    // The fallback finds this parameter list, but splitTopLevel miscounts the
+    // regex's brackets and would number `t` as the second parameter. The same
+    // miscount makes `function f(r=/[)]/,e){…}f(1,process.env)` a miss, as on main.
+    expect(read('function f(r=/[)]/,s,t){return t.CLAUDE_CODE_X}f(1,process.env,2);')).toBe(false);
+  });
+
+  it('binds no argument of a call that only the lexed scan could bound', () => {
+    // splitTopLevel would count the regex's brackets and give process.env index 0.
+    expect(read('function f(r,e){return r.CLAUDE_CODE_X}f(/[)]/,process.env);')).toBe(false);
   });
 
   it('opens a regex after a keyword that follows a spread', () => {

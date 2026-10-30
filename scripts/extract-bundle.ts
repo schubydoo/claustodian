@@ -630,7 +630,7 @@ function blockBinds(statements: unknown, name: string): boolean {
  * still fails here: supports-color's `getColorDepth` carries `@undefined`. Its only
  * read is `FORCE_COLOR`, which the first-party gate drops anyway.
  */
-function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
+function outerParamRefs(fnText: string, name: string, index?: number): Set<number> | undefined {
   const parse = (text: string) =>
     parseSync('fn.js', `(${text})`) as unknown as {
       program: { body: AstNode[] };
@@ -651,8 +651,16 @@ function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
   const fn = isNode(wrapped) ? wrapped.expression : undefined;
   if (parsed.errors.length > 0 || !isNode(fn) || !FUNCTION_TYPES.has(fn.type)) return undefined;
   // The name must be one of this function's own parameters. A name taken from a
-  // default nested inside a parameter is some other binding.
-  if (!(fn.params as unknown[]).some((p) => patternBinds(p, name))) return undefined;
+  // default nested inside a parameter is some other binding. With `index`, it must
+  // be that parameter: a call binds process.env by position, and a split that
+  // miscounts (the brackets of `/[)]/`) would otherwise bind the wrong one.
+  const params = fn.params as unknown[];
+  if (
+    index === undefined
+      ? !params.some((p) => patternBinds(p, name))
+      : !patternBinds(params[index], name)
+  )
+    return undefined;
   const refs = new Set<number>();
   const walk = (node: unknown, hidden: boolean): void => {
     if (Array.isArray(node)) {
@@ -765,9 +773,10 @@ export function extractParamEnvVars(src: string): Map<string, string> {
   const envArg = new Map<string, Set<number>>();
   for (const m of src.matchAll(/\b([A-Za-z_$][\w$]*)\(/g)) {
     const open = (m.index as number) + m[0].length - 1;
-    // The lexed scan only where the plain one finds no end, so no call is lost.
-    let end = matchBracket(src, open);
-    if (end < 0) end = matchBracketLexed(src, open);
+    // The plain scan only. splitTopLevel below splits the arguments by the same
+    // rules, so a call that only the lexed scan could bound would be split wrong,
+    // and `f(/[)]/,process.env)` would bind process.env to the regex's position.
+    const end = matchBracket(src, open);
     // Skip pathologically wide call spans (a whole minified IIFE body); an
     // env-passing call's argument list is far shorter, so this only drops noise.
     if (end < 0 || end - open > 4000) continue;
@@ -854,7 +863,8 @@ function paramReadsIn(
     if (!bind.envDefault && !callBound) return;
     // Parsed for every env-bound param, even with no read in sight: an extent cut
     // short can hide the read, and only the parse failure shows that it was cut.
-    const refs = outerParamRefs(fnText, bind.name);
+    // A call binds by position, so the parser must agree on it. A default binds by name.
+    const refs = outerParamRefs(fnText, bind.name, bind.envDefault ? undefined : i);
     if (!refs) {
       resolved = false;
       return;
