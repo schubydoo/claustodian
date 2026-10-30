@@ -37,11 +37,13 @@ import {
   extractBundleSymbols,
   textAbsentFor,
   withChildEnvVars,
+  withVariableSkills,
   type WatchedName,
 } from './extract-bundle.js';
 import { compareVersionsAsc, runCli } from './lib.js';
 import type { ControlMessageObservation } from './control-lane.js';
 import { extractControlAndModMethods } from './mod-lane.js';
+import type { VariableSkill } from './skill-lane.js';
 
 const DEFAULT_ARCHIVE_DIR = 'scratch/binaries';
 const DEFAULT_OUT_DIR = 'binary-cache';
@@ -264,6 +266,7 @@ export function extractVersion(
   let modRenderSitesListed: boolean;
   let modElements: string[];
   let childEnvVars: string[];
+  let variableSkills: VariableSkill[];
   try {
     ({
       controlMessages,
@@ -274,11 +277,12 @@ export function extractVersion(
       modRenderSitesListed,
       modElements,
       childEnvVars,
+      variableSkills,
     } = extractControlAndModMethods(chunks, version));
   } catch (error) {
     return { kind: 'failed', reason: (error as Error).message };
   }
-  const symbols = withChildEnvVars(readSymbols, childEnvVars);
+  const symbols = withVariableSkills(withChildEnvVars(readSymbols, childEnvVars), variableSkills);
   writeFileSync(
     join(outDir, `${version}.json`),
     JSON.stringify({

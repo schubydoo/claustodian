@@ -288,7 +288,7 @@ function propertyName(p: unknown): string | undefined {
  * ES2022 arbitrary-module-name form). An import/export specifier name is always one or
  * the other, so the identifier test is exhaustive — the else is the string case.
  */
-function importOrExportName(n: unknown): string {
+export function importOrExportName(n: unknown): string {
   const node = n as Node;
   return node.type === 'Identifier' ? (node.name as string) : (node.value as string);
 }

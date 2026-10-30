@@ -38,6 +38,7 @@ import { extractRegistryEnvVars } from './env-registry.js';
 import { compareVersionsAsc } from './lib.js';
 import { categorize, SYMBOL_DENYLIST, type ExtractedSymbolType } from './scrape-changelog.js';
 import { extractSettingsKeys, settingsKeyCategory } from './settings-schema.js';
+import type { VariableSkill } from './skill-lane.js';
 
 /** How a candidate earned inclusion — recorded so the review queue can triage. */
 export type Evidence =
@@ -770,8 +771,119 @@ function outerParamRefs(fnText: string, name: string, index?: number): Set<numbe
  * nested binding of the same name is skipped (outerParamRefs): minified code
  * reuses short names, so `e` there is a different value.
  */
-export function extractParamEnvVars(src: string): Map<string, string> {
-  // Pass 1: callee name -> argument positions that receive process.env.
+export function extractParamEnvVars(src: string, chunks?: readonly string[]): Map<string, string> {
+  const out = paramEnvVarsIn(src);
+  // From 2.1.242 each chunk minifies its own names, so a short name like `jE` is
+  // often declared again in another chunk and fails the uniqueness rule across the
+  // whole bundle. Each chunk is read on its own as well, where the name can be
+  // unique. A call to an IMPORTED function is carried to the chunk that exports it:
+  // 2.1.314 defines `i9t` in one chunk and calls `i9t(process.env)` in another.
+  // Additive: the flat read above is kept as it was, so nothing it finds is lost.
+  if (chunks && chunks.length > 1) {
+    const local = chunks.map(envArgPositions);
+    const links = moduleLinks(chunks);
+    const merged = local.map((m) => new Map([...m].map(([k, v]) => [k, new Set(v)])));
+    chunks.forEach((_, i) => {
+      for (const [callee, positions] of local[i] as Map<string, Set<number>>) {
+        const target = links.resolve(i, callee);
+        if (!target || !onlyCalled(chunks[i] as string, callee)) continue;
+        const into = merged[target.chunk] as Map<string, Set<number>>;
+        const set = into.get(target.local) ?? new Set<number>();
+        for (const p of positions) set.add(p);
+        into.set(target.local, set);
+      }
+    });
+    chunks.forEach((chunk, i) => {
+      for (const [name, category] of paramEnvVarsIn(chunk, merged[i])) out.set(name, category);
+    });
+  }
+  return out;
+}
+
+/**
+ * True when every use of `name` in `chunk`, outside its import lists, is a call
+ * `name(…)`. A text scan cannot see scopes, so this is how a call is known to reach
+ * the import: a parameter, a declaration or any other use of the same spelling
+ * (`function run(g){g(process.env)}`) could be a different variable, and then
+ * nothing is transferred.
+ */
+function onlyCalled(chunk: string, name: string): boolean {
+  const lists = [...chunk.matchAll(IMPORT_LIST)].map((m) => [
+    m.index as number,
+    (m.index as number) + m[0].length,
+  ]);
+  const safe = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  for (const m of chunk.matchAll(new RegExp(`(?<![\\w$.])${safe}(?![\\w$])`, 'g'))) {
+    const at = m.index as number;
+    if (lists.some(([from, to]) => at >= (from as number) && at < (to as number))) continue;
+    if (chunk[at + name.length] !== '(') return false;
+    if (/\bfunction\s*\*?\s*$/.test(chunk.slice(Math.max(0, at - 12), at))) return false;
+  }
+  return true;
+}
+
+const IMPORT_LIST = /\bimport\s*\{([^}]*)\}\s*from\s*["']([^"']+)["']/g;
+const EXPORT_LIST = /\bexport\s*\{([^}]*)\}(?!\s*from\b)/g;
+const SPECIFIER = /^\s*([A-Za-z_$][\w$]*)(?:\s+as\s+([A-Za-z_$][\w$]*))?\s*$/;
+
+/**
+ * The code-split import graph, read from each chunk's `import{a as b}from"m"` and
+ * `export{a as b}` lists. A module path names no chunk, so it resolves only when
+ * exactly one chunk exports every name imported from it: the fingerprint the
+ * control lane uses. `resolve(i, local)` answers which chunk and local name an
+ * imported `local` of chunk `i` is, or undefined when it is not an import or its
+ * module cannot be identified.
+ */
+function moduleLinks(chunks: readonly string[]): {
+  resolve: (chunk: number, local: string) => { chunk: number; local: string } | undefined;
+} {
+  const imports = chunks.map((chunk) => {
+    const map = new Map<string, { source: string; name: string }>();
+    for (const m of chunk.matchAll(IMPORT_LIST)) {
+      for (const spec of (m[1] as string).split(',')) {
+        const s = spec.match(SPECIFIER);
+        if (s) map.set((s[2] ?? s[1]) as string, { source: m[2] as string, name: s[1] as string });
+      }
+    }
+    return map;
+  });
+  const exports = chunks.map((chunk) => {
+    const map = new Map<string, string>();
+    for (const m of chunk.matchAll(EXPORT_LIST)) {
+      for (const spec of (m[1] as string).split(',')) {
+        const s = spec.match(SPECIFIER);
+        if (s) map.set((s[2] ?? s[1]) as string, s[1] as string);
+      }
+    }
+    return map;
+  });
+  const wanted = new Map<string, Set<string>>();
+  for (const map of imports) {
+    for (const { source, name } of map.values()) {
+      const names = wanted.get(source) ?? new Set<string>();
+      names.add(name);
+      wanted.set(source, names);
+    }
+  }
+  const owner = new Map<string, number>();
+  for (const [source, names] of wanted) {
+    const matches = exports.flatMap((e, i) => ([...names].every((n) => e.has(n)) ? [i] : []));
+    if (matches.length === 1) owner.set(source, matches[0] as number);
+  }
+  return {
+    resolve: (chunk, local) => {
+      const binding = imports[chunk]?.get(local);
+      const at = binding && owner.get(binding.source);
+      if (binding === undefined || at === undefined) return undefined;
+      // The owner was chosen because it exports every name imported from its path.
+      return { chunk: at, local: (exports[at] as Map<string, string>).get(binding.name) as string };
+    },
+  };
+}
+
+/** extractParamEnvVars over one source text: a whole bundle, or one chunk. */
+/** Pass 1 of the param lane: callee name -> argument positions that receive process.env. */
+function envArgPositions(src: string): Map<string, Set<number>> {
   const envArg = new Map<string, Set<number>>();
   for (const m of src.matchAll(/\b([A-Za-z_$][\w$]*)\(/g)) {
     const open = (m.index as number) + m[0].length - 1;
@@ -790,6 +902,17 @@ export function extractParamEnvVars(src: string): Map<string, string> {
       }
     });
   }
+  return envArg;
+}
+
+/**
+ * The param lane's reads in one source text, a whole bundle or one chunk. `envArg`
+ * is pass 1's result, by default for this same text.
+ */
+function paramEnvVarsIn(
+  src: string,
+  envArg: Map<string, Set<number>> = envArgPositions(src)
+): Map<string, string> {
   // Definitions per name — the call form trusts only a uniquely-defined callee.
   // Uniqueness is by TEXT, not by count: a compiled binary can embed the whole
   // CLI bundle twice (2.1.113 does), so the same function appears twice with the
@@ -1265,7 +1388,7 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
   // inline `process.env.NAME` read (that is why they share the `process-env`
   // evidence tag), reached one call away. Additive: only names no earlier path
   // already proved.
-  const paramReads = extractParamEnvVars(src);
+  const paramReads = extractParamEnvVars(src, scopeChunks);
   for (const [symbol, category] of paramReads) {
     if (envReads.has(symbol) || registry.has(symbol) || accessor.has(symbol)) continue;
     symbols.push({ symbol, type: 'env_var', category, evidence: 'process-env' });
@@ -1419,6 +1542,30 @@ export function withChildEnvVars(
       type: 'env_var',
       category: categorize(symbol, 'env_var'),
       evidence: 'child-env',
+    });
+  }
+  return [...symbols, ...added];
+}
+
+/**
+ * `symbols` plus a command for each variable-named skill (see skill-lane.ts) that no
+ * other rule already registered. Additive only: a command found by the literal
+ * rules keeps its own evidence and description.
+ */
+export function withVariableSkills(
+  symbols: readonly BundleSymbol[],
+  skills: readonly VariableSkill[]
+): BundleSymbol[] {
+  const known = new Set(symbols.filter((s) => s.type === 'command').map((s) => s.symbol));
+  const added: BundleSymbol[] = [];
+  for (const { symbol, description, alias } of skills) {
+    if (known.has(symbol)) continue;
+    added.push({
+      symbol,
+      type: 'command',
+      category: categorize(symbol, 'command'),
+      evidence: alias ? 'command-alias' : 'skill-registry',
+      ...(description ? { description } : {}),
     });
   }
   return [...symbols, ...added];

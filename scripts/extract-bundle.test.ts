@@ -17,6 +17,7 @@ import {
   textAbsentFor,
   extractSkillCommands,
   withChildEnvVars,
+  withVariableSkills,
 } from './extract-bundle.js';
 
 describe('extractFlagDescriptions', () => {
@@ -1445,5 +1446,80 @@ describe('withChildEnvVars', () => {
   it('keeps a read-proved name as it is and skips denylisted names', () => {
     const out = withChildEnvVars(read, ['CLAUDE_READ', 'EACCES']);
     expect(out).toEqual(read);
+  });
+});
+
+describe('extractParamEnvVars — chunks of the code-split era', () => {
+  const names = (chunks: string[]) =>
+    [...extractParamEnvVars(chunks.join('\n'), chunks).keys()].sort();
+
+  it('reads a function whose short name another chunk declares again', () => {
+    // The flat bundle has two different `jE`s, so the name is ambiguous there.
+    const own = 'function jE(n,u){return n.CLAUDE_CODE_ALTGR_AS_TEXT}jE(process.env,1);';
+    const other = 'function jE(a){return a+1}jE(2);';
+    expect([...extractParamEnvVars(`${own}\n${other}`).keys()]).toEqual([]);
+    expect(names([own, other])).toEqual(['CLAUDE_CODE_ALTGR_AS_TEXT']);
+  });
+
+  it('carries a call to an imported function to the chunk that exports it', () => {
+    const owner =
+      'function i9t(e){return e.CLAUDE_CODE_HTTP_PROXY}function q(){}export{i9t,q as Q,};';
+    const caller = 'import{i9t as P,Q,}from"/$bunfs/root/chunk-aa.js";P(process.env);Q();';
+    const unrelated = 'function i9t(x){return x.CLAUDE_CODE_NOT_ENV}i9t(Xt);';
+    expect(names([owner, caller, unrelated])).toEqual(['CLAUDE_CODE_HTTP_PROXY']);
+  });
+
+  it('transfers no call whose name could be another binding than the import', () => {
+    // From review: `g` in `run` is a parameter, not the imported `f`.
+    const owner = 'function f(e){return e.CLAUDE_CODE_TEST_PROXY}export{f};';
+    const shadowed =
+      'import{f as g}from"/$bunfs/root/chunk-dd.js";function run(g){g(process.env)}run(o);';
+    expect(names([owner, shadowed])).toEqual([]);
+    const declared =
+      'import{f as g}from"/$bunfs/root/chunk-dd.js";function k(){function g(){}g(process.env)}';
+    expect(names([owner, declared])).toEqual([]);
+    const passed = 'import{f as g}from"/$bunfs/root/chunk-dd.js";g(process.env);h(g);';
+    expect(names([owner, passed])).toEqual([]);
+    const called = 'import{f as g}from"/$bunfs/root/chunk-dd.js";g(process.env);g(1);';
+    expect(names([owner, called])).toEqual(['CLAUDE_CODE_TEST_PROXY']);
+  });
+
+  it('follows no import whose module two chunks could be', () => {
+    const a = 'function f(e){return e.CLAUDE_CODE_FROM_A}export{f};';
+    const b = 'function f(e){return e.CLAUDE_CODE_FROM_B}export{f};';
+    const caller = 'import{f}from"/$bunfs/root/chunk-bb.js";f(process.env);';
+    expect(names([a, b, caller])).toEqual([]);
+  });
+
+  it('skips a re-export facade and a call to a name that is not imported', () => {
+    const owner = 'function f(e){return e.CLAUDE_CODE_FACADE}export{f};';
+    const facade = 'export{f}from"/$bunfs/root/chunk-cc.js";';
+    const caller = 'import{f as g}from"/$bunfs/root/chunk-cc.js";g(process.env);h(process.env);';
+    expect(names([owner, facade, caller])).toEqual(['CLAUDE_CODE_FACADE']);
+  });
+});
+
+describe('withVariableSkills', () => {
+  const read = [
+    { symbol: '/schedule', type: 'command', category: 'command', evidence: 'skill-registry' },
+  ] as const;
+
+  it('adds a new name and an alias, after the read symbols, and keeps a known command', () => {
+    const out = withVariableSkills(read, [
+      { symbol: '/loop', alias: false, description: 'Repeat a prompt' },
+      { symbol: '/proactive', alias: true },
+      { symbol: '/schedule', alias: false, description: 'ignored' },
+    ]);
+    expect(out).toEqual([
+      ...read,
+      {
+        symbol: '/loop',
+        type: 'command',
+        category: 'command',
+        evidence: 'skill-registry',
+        description: 'Repeat a prompt',
+      },
+      { symbol: '/proactive', type: 'command', category: 'command', evidence: 'command-alias' },
+    ]);
   });
 });

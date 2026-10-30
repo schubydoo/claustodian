@@ -201,6 +201,18 @@ describe('extractControlAndModMethods', () => {
     expect(childEnvVars).toEqual(['CLAUDE_ALPHA', 'CLAUDE_ZETA']);
   });
 
+  it('resolves variable-named skills across the chunks of the shared parse', () => {
+    const { variableSkills } = extractControlAndModMethods(
+      [
+        'var Moi="setup-claude";export{Moi};',
+        TABLE,
+        'import{Moi}from"/c.js";x({name:Moi,whenToUse:"w"})',
+      ],
+      '0.2.0'
+    );
+    expect(variableSkills).toEqual([{ symbol: '/setup-claude', alias: false }]);
+  });
+
   it('applies the mod lane floor to the shared parse', () => {
     // CONTROL passes every control-lane floor at 2.1.242, so only the mod lane can
     // refuse here — a bare `var a=1;` would be refused by the control lane first.

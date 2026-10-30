@@ -31,6 +31,15 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ### Added
 
+- **Skills named by a variable, and env reads across chunks.** The binary lane now
+  reads a skill whose `name:` is a variable, also when another chunk defines that
+  variable. From about 2.1.232 several skills register that way, so `/schedule`,
+  `/loop`, `/setup-claude` and their aliases had no binary record in later releases.
+  The env param lane now also reads a function inside its own chunk and follows a
+  call to an imported function. That restores `CLAUDE_CODE_ALTGR_AS_TEXT` and the
+  `CLAUDE_CODE_HTTP_PROXY` pair after the 2.1.242 chunk split. All of this takes
+  effect from the next binary re-extract.
+
 - **Env vars that Claude Code sets for a child process.** The binary lane now reads
   the keys of each object that Claude Code passes as a child's environment, for
   example the `CLAUDE_RUNNER_*` variables for the self-hosted runner's hooks. Before,
