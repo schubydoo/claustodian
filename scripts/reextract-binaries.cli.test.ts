@@ -3,20 +3,50 @@
 
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { EventEmitter } from 'node:events';
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
   CACHE_INCOMPLETE_MARKER,
+  DEFAULT_JOBS,
+  extractInWorkers,
   isDedicatedCache,
   main,
   parseArgs,
   readBundleSource,
+  runTask,
   selectVersions,
 } from './reextract-binaries.js';
+
+// `fork` goes to the real one unless a test installs a fake, so the pool's
+// handling of a job that dies or never starts can be tested without killing one.
+const forkHook = vi.hoisted(() => ({ impl: undefined as undefined | (() => unknown) }));
+vi.mock('node:child_process', async (importOriginal) => {
+  const real = await importOriginal<typeof import('node:child_process')>();
+  return {
+    ...real,
+    fork: (...args: Parameters<typeof real.fork>) =>
+      forkHook.impl ? forkHook.impl() : real.fork(...args),
+  };
+});
+
+/** A stand-in child process that records kills and plays back one event. */
+function fakeChild(onSend: (child: EventEmitter) => void) {
+  const child = Object.assign(new EventEmitter(), {
+    killed: 0,
+    send: () => queueMicrotask(() => onSend(child)),
+    kill: () => {
+      child.killed++;
+      return true;
+    },
+    disconnect: () => {},
+  });
+  return child;
+}
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
@@ -33,11 +63,26 @@ async function writeCompiled(archive: string, version: string, js: string): Prom
 
 describe('reextract-binaries parseArgs', () => {
   it('defaults to the maintainer-local archive and the committed cache dir', () => {
-    expect(parseArgs([])).toEqual({ archiveDir: 'scratch/binaries', outDir: 'binary-cache' });
+    expect(parseArgs([])).toEqual({
+      archiveDir: 'scratch/binaries',
+      outDir: 'binary-cache',
+      jobs: DEFAULT_JOBS,
+    });
+    expect(DEFAULT_JOBS).toBeGreaterThanOrEqual(1);
+    expect(DEFAULT_JOBS).toBeLessThanOrEqual(8);
   });
 
-  it('parses --archive and --out', () => {
-    expect(parseArgs(['--archive', 'a', '--out', 'b'])).toEqual({ archiveDir: 'a', outDir: 'b' });
+  it('parses --archive, --out and --jobs', () => {
+    expect(parseArgs(['--archive', 'a', '--out', 'b', '--jobs', '3'])).toEqual({
+      archiveDir: 'a',
+      outDir: 'b',
+      jobs: 3,
+    });
+  });
+
+  it('refuses a --jobs value that is not a positive integer', () => {
+    for (const bad of ['0', '-1', '2.5', 'many'])
+      expect(() => parseArgs(['--jobs', bad]), bad).toThrow(/--jobs must be a positive integer/);
   });
 
   it('throws when a flag is missing its value', () => {
@@ -197,7 +242,7 @@ describe('reextract-binaries main()', () => {
     );
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    const code = await main(['--archive', archive, '--out', out]);
+    const code = await main(['--archive', archive, '--out', out, '--jobs', '1']);
 
     expect(code).toBe(0);
     const c1 = JSON.parse(await readFile(join(out, '1.0.0.json'), 'utf-8')) as {
@@ -265,7 +310,7 @@ describe('reextract-binaries main()', () => {
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const code = await main(['--archive', archive, '--out', out]);
+    const code = await main(['--archive', archive, '--out', out, '--jobs', '1']);
 
     expect(code).toBe(1);
     expect(existsSync(join(out, '2.0.0.json'))).toBe(false);
@@ -291,7 +336,7 @@ describe('reextract-binaries main()', () => {
     await mkdir(join(out, '0.9.0.json'), { recursive: true });
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    await expect(main(['--archive', archive, '--out', out])).rejects.toThrow();
+    await expect(main(['--archive', archive, '--out', out, '--jobs', '1'])).rejects.toThrow();
 
     expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(true);
   });
@@ -313,7 +358,7 @@ describe('reextract-binaries main()', () => {
     await mkdir(out, { recursive: true });
     await writeFile(join(out, CACHE_INCOMPLETE_MARKER), JSON.stringify({ status: 'refused' }));
 
-    const code = await main(['--archive', archive, '--out', out]);
+    const code = await main(['--archive', archive, '--out', out, '--jobs', '1']);
 
     expect(code).toBe(0);
     expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(false); // clean run lowers it
@@ -329,7 +374,7 @@ describe('reextract-binaries main()', () => {
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(await main(['--archive', archive, '--out', out])).toBe(1);
+    expect(await main(['--archive', archive, '--out', out, '--jobs', '1'])).toBe(1);
 
     const marker = JSON.parse(await readFile(join(out, CACHE_INCOMPLETE_MARKER), 'utf-8')) as {
       status: string;
@@ -350,7 +395,7 @@ describe('reextract-binaries main()', () => {
     await writeFile(join(out, '_verify-report.json'), '{"ok":1}'); // sidecar, keep
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    await main(['--archive', archive, '--out', out]);
+    await main(['--archive', archive, '--out', out, '--jobs', '1']);
 
     expect(existsSync(join(out, '9.9.9.json'))).toBe(false);
     expect(existsSync(join(out, '_verify-report.json'))).toBe(true);
@@ -364,7 +409,7 @@ describe('reextract-binaries main()', () => {
     await writeCompiled(archive, '1.0.0', 'process.env.X;');
     await mkdir(out, { recursive: true });
     await writeFile(join(out, 'latest.json'), '{"important":1}'); // e.g. a mistyped --out data
-    await expect(main(['--archive', archive, '--out', out])).rejects.toThrow(
+    await expect(main(['--archive', archive, '--out', out, '--jobs', '1'])).rejects.toThrow(
       /Refusing to regenerate/
     );
     expect(existsSync(join(out, 'latest.json'))).toBe(true); // untouched
@@ -409,7 +454,7 @@ describe('reextract-binaries main()', () => {
     await writeFile(join(archive, '1.0.0', 'SHA256SUMS'), `${hash}  bundle.tgz\n`);
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    await main(['--archive', archive, '--out', out]);
+    await main(['--archive', archive, '--out', out, '--jobs', '1']);
 
     const c = JSON.parse(await readFile(join(out, '1.0.0.json'), 'utf-8')) as {
       symbols: { symbol: string }[];
@@ -424,5 +469,133 @@ describe('reextract-binaries main()', () => {
     await expect(main(['--archive', archive, '--out', join(root, 'out')])).rejects.toThrow(
       /No archived versions/
     );
+  });
+});
+
+describe('reextract-binaries parallel jobs', () => {
+  let root: string | undefined;
+  let logSpy: ReturnType<typeof vi.spyOn>;
+  afterEach(async () => {
+    logSpy?.mockRestore();
+    if (root) await rm(root, { recursive: true, force: true });
+    root = undefined;
+  });
+
+  it('writes the same cache with one job as with several', async () => {
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-jobs-'));
+    const archive = join(root, 'archive');
+    for (const [v, js] of [
+      ['1.0.0', 'if(process.env.CLAUDE_CODE_A)x();'],
+      ['1.0.1', 'if(process.env.CLAUDE_CODE_B)x();'],
+      ['1.0.2', 'program.option("--bar <v>","desc");'],
+    ] as const)
+      await writeCompiled(archive, v, js);
+    await mkdir(join(archive, '1.0.3'), { recursive: true }); // missing
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const one = join(root, 'one');
+    const many = join(root, 'many');
+    expect(await main(['--archive', archive, '--out', one, '--jobs', '1'])).toBe(0);
+    expect(await main(['--archive', archive, '--out', many, '--jobs', '3'])).toBe(0);
+
+    const files = (await readdir(one)).sort();
+    expect(await readdir(many).then((f) => f.sort())).toEqual(files);
+    for (const f of files)
+      expect(await readFile(join(many, f), 'utf-8'), f).toBe(await readFile(join(one, f), 'utf-8'));
+    // The report names the same counts and the same missing version either way.
+    expect(
+      logSpy.mock.calls.map((c: unknown[]) => String(c[0]).replace(/into [^;]+;/, 'into X;'))
+    ).toEqual([
+      'Re-extracted 3/4 version(s) into X; 1 without a readable binary: 1.0.3',
+      'Re-extracted 3/4 version(s) into X; 1 without a readable binary: 1.0.3',
+    ]);
+  });
+
+  it("reports a task's outcome, or its unexpected error, by index", async () => {
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-task-'));
+    const archive = join(root, 'archive');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    const out = join(root, 'out');
+    await mkdir(out);
+    expect(runTask({ archiveDir: archive, outDir: out, version: '1.0.0', index: 4 })).toEqual({
+      index: 4,
+      outcome: { kind: 'written' },
+    });
+    expect(
+      runTask({
+        archiveDir: archive,
+        outDir: join(root, 'no-such-dir'),
+        version: '1.0.0',
+        index: 2,
+      })
+    ).toMatchObject({ index: 2, error: expect.stringMatching(/ENOENT/) });
+  });
+
+  it('reports a bundle the slicer refuses as a failed outcome', async () => {
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-slice-'));
+    const archive = join(root, 'archive');
+    // An executable header and no embedded bundle: there is nothing to slice.
+    const bin = Buffer.concat([Buffer.from([0x7f, 0x45, 0x4c, 0x46]), Buffer.alloc(64)]);
+    await mkdir(join(archive, '1.0.0', 'linux-x64'), { recursive: true });
+    await writeFile(join(archive, '1.0.0', 'linux-x64', 'claude'), bin);
+    await writeFile(
+      join(archive, '1.0.0', 'SHA256SUMS'),
+      `${createHash('sha256').update(bin).digest('hex')}  linux-x64/claude\n`
+    );
+    const out = join(root, 'out');
+    await mkdir(out);
+    expect(runTask({ archiveDir: archive, outDir: out, version: '1.0.0', index: 0 })).toMatchObject(
+      {
+        outcome: { kind: 'failed', reason: expect.stringMatching(/slice-bundle/) },
+      }
+    );
+  });
+
+  it('stops the run when a job hits an unexpected error', async () => {
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-jobs-err-'));
+    const archive = join(root, 'archive');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    // An output folder that does not exist makes the job's write throw, an error
+    // outside the lanes' refusals, which the pool must surface as a failed run.
+    await expect(
+      // Two jobs that both fail: the run rejects once, with the first error.
+      extractInWorkers(archive, join(root, 'no-such-dir'), ['1.0.0', '1.0.0'], 2)
+    ).rejects.toThrow(/re-extracting 1\.0\.0: ENOENT/);
+  });
+
+  describe('a job that fails outside its task', () => {
+    afterEach(() => {
+      forkHook.impl = undefined;
+    });
+
+    it('rejects and stops every job when one exits before replying', async () => {
+      const children: ReturnType<typeof fakeChild>[] = [];
+      forkHook.impl = () => {
+        // The first job dies with exit code 1; the other never answers.
+        const child = fakeChild(children.length === 0 ? (c) => c.emit('exit', 1) : () => {});
+        children.push(child);
+        return child;
+      };
+      await expect(extractInWorkers('a', 'o', ['1.0.0', '1.0.1'], 2)).rejects.toThrow(
+        /a re-extract job exited with code 1/
+      );
+      expect(children.map((c) => c.killed)).toEqual([1, 1]);
+    });
+
+    it('rejects when a job fails to start', async () => {
+      forkHook.impl = () => fakeChild((c) => c.emit('error', new Error('spawn ENOENT')));
+      await expect(extractInWorkers('a', 'o', ['1.0.0'], 2)).rejects.toThrow(/spawn ENOENT/);
+    });
+
+    it('ignores a clean exit once every version is done', async () => {
+      forkHook.impl = () =>
+        fakeChild((c) => {
+          c.emit('message', { index: 0, outcome: { kind: 'missing' } });
+          c.emit('exit', 0);
+        });
+      await expect(extractInWorkers('a', 'o', ['1.0.0'], 1)).resolves.toEqual([
+        { kind: 'missing' },
+      ]);
+    });
   });
 });

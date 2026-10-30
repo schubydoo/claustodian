@@ -26,10 +26,12 @@
  * output can never mix, and a mistyped `--out` cannot delete unrelated files.
  * The ~139 GB archive is a maintainer-local artifact; see scratch/backfill-notes.md.
  */
-import { execFileSync } from 'node:child_process';
+import { execFileSync, fork } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { sliceEmbeddedChunks } from './slice-bundle.js';
 import { extractBundleSymbols } from './extract-bundle.js';
 import { compareVersionsAsc, runCli } from './lib.js';
@@ -140,20 +142,38 @@ export function readBundleSource(archiveDir: string, version: string): BundleRes
 interface CliOptions {
   archiveDir: string;
   outDir: string;
+  /** Versions extracted at once, each in its own process. 1 runs in this process. */
+  jobs: number;
 }
 
+/**
+ * The default number of jobs: one per core, leaving one for the system, at most 8.
+ * Each job holds one bundle and its parse, about 3 GB at the tip, so the cap keeps
+ * a full run inside an ordinary maintainer machine's memory.
+ */
+export const DEFAULT_JOBS = Math.max(1, Math.min(8, availableParallelism() - 1));
+
 export function parseArgs(argv: string[]): CliOptions {
-  const options: CliOptions = { archiveDir: DEFAULT_ARCHIVE_DIR, outDir: DEFAULT_OUT_DIR };
+  const options: CliOptions = {
+    archiveDir: DEFAULT_ARCHIVE_DIR,
+    outDir: DEFAULT_OUT_DIR,
+    jobs: DEFAULT_JOBS,
+  };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
-    if (arg === '--archive' || arg === '--out') {
+    if (arg === '--archive' || arg === '--out' || arg === '--jobs') {
       const value = argv[i + 1];
       if (value === undefined) throw new Error(`${arg} requires a value (e.g. "${arg} <value>").`);
       if (arg === '--archive') options.archiveDir = value;
-      else options.outDir = value;
+      else if (arg === '--out') options.outDir = value;
+      else {
+        if (!/^[1-9]\d*$/.test(value))
+          throw new Error(`--jobs must be a positive integer, got "${value}".`);
+        options.jobs = Number(value);
+      }
       i++;
     } else {
-      throw new Error(`Unknown argument "${arg}". Expected --archive or --out.`);
+      throw new Error(`Unknown argument "${arg}". Expected --archive, --out or --jobs.`);
     }
   }
   return options;
@@ -187,6 +207,164 @@ function clearCache(outDir: string): void {
   }
 }
 
+/** What happened to one archived version. */
+export type VersionOutcome =
+  | { kind: 'written' }
+  | { kind: 'missing' }
+  | { kind: 'unverified' }
+  | { kind: 'failed'; reason: string };
+
+/**
+ * Extracts one archived version into `<outDir>/<version>.json`. A control- or
+ * mod-lane refusal is an outcome, not a throw, so one bad bundle never stops the
+ * run; anything else that throws ends it, and the cache stays marked incomplete.
+ */
+export function extractVersion(
+  archiveDir: string,
+  outDir: string,
+  version: string
+): VersionOutcome {
+  const result = readBundleSource(archiveDir, version);
+  if (result.kind === 'missing' || result.kind === 'unverified') return { kind: result.kind };
+  // The compiled era hands us an executable, which no parser can read. Slice the
+  // embedded bundle into its chunks for the AST lane AND the switch-case scope
+  // lane, both of which need the code-split's per-parser chunks from 2.1.242 on;
+  // the npm era is already source (one chunk), and the flat `src` is what the
+  // other regex lanes keep seeing either way. A slice refusal is fatal to the
+  // control lane exactly as before, so it is a `failed` outcome.
+  let chunks: readonly string[];
+  try {
+    chunks = result.bytes ? sliceEmbeddedChunks(result.bytes, version) : [result.src];
+  } catch (error) {
+    return { kind: 'failed', reason: (error as Error).message };
+  }
+  const symbols = extractBundleSymbols(result.src, chunks);
+  // Deliberately uninitialised: the catch returns, so an initial value would
+  // never be read, and a default of `[]` here is exactly the silent-zero this lane
+  // exists to refuse.
+  let controlMessages: ControlMessageObservation[];
+  let modMethods: string[];
+  let modMentions: string[];
+  let modEvents: string[];
+  let modRenderSites: string[];
+  let modRenderSitesListed: boolean;
+  let modElements: string[];
+  try {
+    ({
+      controlMessages,
+      modMethods,
+      modMentions,
+      modEvents,
+      modRenderSites,
+      modRenderSitesListed,
+      modElements,
+    } = extractControlAndModMethods(chunks, version));
+  } catch (error) {
+    return { kind: 'failed', reason: (error as Error).message };
+  }
+  writeFileSync(
+    join(outDir, `${version}.json`),
+    JSON.stringify({
+      version,
+      source: 'binary',
+      count: symbols.length,
+      symbols,
+      controlCount: controlMessages.length,
+      controlMessages,
+      modMethodCount: modMethods.length,
+      modMethods,
+      modMentions,
+      modEventCount: modEvents.length,
+      modEvents,
+      modRenderSites,
+      modRenderSitesListed,
+      modElements,
+    })
+  );
+  return { kind: 'written' };
+}
+
+/** One version for a job to extract, and what the job reports back. */
+export interface WorkerTask {
+  archiveDir: string;
+  outDir: string;
+  version: string;
+  index: number;
+}
+export type WorkerReply =
+  { index: number; outcome: VersionOutcome } | { index: number; error: string };
+
+/** A job's whole work for one task (see scripts/reextract-worker.ts). */
+export function runTask(task: WorkerTask): WorkerReply {
+  try {
+    return {
+      index: task.index,
+      outcome: extractVersion(task.archiveDir, task.outDir, task.version),
+    };
+  } catch (error) {
+    return { index: task.index, error: (error as Error).message };
+  }
+}
+
+/**
+ * Runs extractVersion for every version in a pool of `jobs` child processes, each
+ * taking the next version when it finishes one. Resolves with the outcomes in
+ * `versions` order. Rejects when a child dies or reports an unexpected error,
+ * like the in-process loop when extractVersion throws.
+ */
+export function extractInWorkers(
+  archiveDir: string,
+  outDir: string,
+  versions: readonly string[],
+  jobs: number
+): Promise<VersionOutcome[]> {
+  const worker = fileURLToPath(new URL('./reextract-worker.ts', import.meta.url));
+  const outcomes: VersionOutcome[] = new Array(versions.length);
+  let next = 0;
+  let done = 0;
+  return new Promise((resolve, reject) => {
+    const children = Array.from({ length: Math.min(jobs, versions.length) }, () =>
+      fork(worker, [], { execArgv: ['--import', 'tsx'], stdio: 'inherit' })
+    );
+    // A promise settles once, and killing a finished child does nothing, so a
+    // second failure needs no guard.
+    const fail = (error: Error) => {
+      for (const child of children) child.kill();
+      reject(error);
+    };
+    const feed = (child: (typeof children)[number]) => {
+      if (next >= versions.length) {
+        child.disconnect();
+        return;
+      }
+      const index = next++;
+      child.send({
+        archiveDir,
+        outDir,
+        version: versions[index] as string,
+        index,
+      } satisfies WorkerTask);
+    };
+    for (const child of children) {
+      child.on('message', (message: WorkerReply) => {
+        if ('error' in message) {
+          fail(new Error(`re-extracting ${versions[message.index]}: ${message.error}`));
+          return;
+        }
+        outcomes[message.index] = message.outcome;
+        if (++done === versions.length) resolve(outcomes);
+        feed(child);
+      });
+      child.on('exit', (code) => {
+        if (done < versions.length && code !== 0)
+          fail(new Error(`a re-extract job exited with code ${code}`));
+      });
+      child.on('error', fail);
+      feed(child);
+    }
+  });
+}
+
 export async function main(argv: string[]): Promise<number> {
   const options = parseArgs(argv);
   mkdirSync(options.outDir, { recursive: true });
@@ -214,81 +392,24 @@ export async function main(argv: string[]): Promise<number> {
 
   clearCache(options.outDir);
 
+  const outcomes =
+    options.jobs > 1 && versions.length > 1
+      ? await extractInWorkers(options.archiveDir, options.outDir, versions, options.jobs)
+      : versions.map((version) => extractVersion(options.archiveDir, options.outDir, version));
+  // Collected rather than thrown: one bad bundle must not abort a 470-version loop,
+  // and the run reports every failure at the end instead of only the first. The
+  // outcomes are in version order, whichever job finished first.
   let extracted = 0;
   const missing: string[] = [];
   const unverified: string[] = [];
-  // Collected rather than thrown: one bad bundle must not abort a 470-version loop,
-  // and the run reports every failure at the end instead of only the first.
   const controlFailures: Array<{ version: string; reason: string }> = [];
-  for (const version of versions) {
-    const result = readBundleSource(options.archiveDir, version);
-    if (result.kind === 'missing') {
-      missing.push(version);
-      continue;
-    }
-    if (result.kind === 'unverified') {
-      unverified.push(version);
-      continue;
-    }
-    // The compiled era hands us an executable, which no parser can read. Slice the
-    // embedded bundle into its chunks for the AST lane AND the switch-case scope
-    // lane, both of which need the code-split's per-parser chunks from 2.1.242 on;
-    // the npm era is already source (one chunk), and the flat `src` is what the
-    // other regex lanes keep seeing either way. A slice refusal is fatal to the
-    // control lane exactly as before, so it lands in `controlFailures`.
-    let chunks: readonly string[];
-    try {
-      chunks = result.bytes ? sliceEmbeddedChunks(result.bytes, version) : [result.src];
-    } catch (error) {
-      controlFailures.push({ version, reason: (error as Error).message });
-      continue;
-    }
-    const symbols = extractBundleSymbols(result.src, chunks);
-    // Deliberately uninitialised: the catch `continue`s, so an initial value would
-    // never be read, and a default of `[]` here is exactly the silent-zero this lane
-    // exists to refuse.
-    let controlMessages: ControlMessageObservation[];
-    let modMethods: string[];
-    let modMentions: string[];
-    let modEvents: string[];
-    let modRenderSites: string[];
-    let modRenderSitesListed: boolean;
-    let modElements: string[];
-    try {
-      ({
-        controlMessages,
-        modMethods,
-        modMentions,
-        modEvents,
-        modRenderSites,
-        modRenderSitesListed,
-        modElements,
-      } = extractControlAndModMethods(chunks, version));
-    } catch (error) {
-      controlFailures.push({ version, reason: (error as Error).message });
-      continue;
-    }
-    writeFileSync(
-      join(options.outDir, `${version}.json`),
-      JSON.stringify({
-        version,
-        source: 'binary',
-        count: symbols.length,
-        symbols,
-        controlCount: controlMessages.length,
-        controlMessages,
-        modMethodCount: modMethods.length,
-        modMethods,
-        modMentions,
-        modEventCount: modEvents.length,
-        modEvents,
-        modRenderSites,
-        modRenderSitesListed,
-        modElements,
-      })
-    );
-    extracted++;
-  }
+  outcomes.forEach((outcome, i) => {
+    const version = versions[i] as string;
+    if (outcome.kind === 'written') extracted++;
+    else if (outcome.kind === 'missing') missing.push(version);
+    else if (outcome.kind === 'unverified') unverified.push(version);
+    else controlFailures.push({ version, reason: outcome.reason });
+  });
 
   const notes: string[] = [];
   if (missing.length)
