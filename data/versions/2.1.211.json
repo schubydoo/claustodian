@@ -9400,7 +9400,7 @@
     {
       "symbol": "CLAUDECODE",
       "type": "env_var",
-      "first_seen": "2.1.40",
+      "first_seen": "0.2.47",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -11933,6 +11933,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_FORCE_SANDBOX",
+      "type": "env_var",
+      "first_seen": "2.1.51",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_FORCE_SESSION_PERSISTENCE",
       "type": "env_var",
       "first_seen": "2.1.169",
@@ -13172,7 +13184,31 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_PROXY_AUTHENTICATE",
+      "type": "env_var",
+      "first_seen": "2.1.111",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS",
+      "type": "env_var",
+      "first_seen": "2.1.111",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_PROXY_HOST",
       "type": "env_var",
       "first_seen": "2.1.111",
       "removed_in": null,
@@ -13195,6 +13231,18 @@
       "description": "Set to `1` to allow the proxy to perform DNS resolution instead of the caller. Opt-in for environments where the proxy should handle hostname resolution",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_PROXY_URL",
+      "type": "env_var",
+      "first_seen": "2.1.111",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -14647,6 +14695,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_VERSION",
+      "type": "env_var",
+      "first_seen": "2.1.136",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_VOICE_FORWARD_INTERIMS_TYPED",
       "type": "env_var",
       "first_seen": "2.1.141",
@@ -14878,12 +14938,11 @@
     {
       "symbol": "CLAUDE_EFFORT",
       "type": "env_var",
-      "first_seen": "2.1.205",
-      "first_seen_estimated": true,
+      "first_seen": "2.1.133",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Set automatically in Bash tool subprocesses and hook commands to the effort level setting when the subprocess starts: `low`, `medium`, `high`, `xhigh`, or `max`. Matches the `effort.level` field passed to hooks. Only set when the current model supports the effort parameter",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
@@ -14991,7 +15050,7 @@
     {
       "symbol": "CLAUDE_INTERNAL_ASSISTANT_TEAM_NAME",
       "type": "env_var",
-      "first_seen": "2.1.160",
+      "first_seen": "2.1.108",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -15138,12 +15197,11 @@
     {
       "symbol": "CLAUDE_PLUGIN_ROOT",
       "type": "env_var",
-      "first_seen": "2.1.94",
-      "first_seen_estimated": true,
+      "first_seen": "1.0.85",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Absolute path of the plugin's installed version",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
@@ -15164,12 +15222,11 @@
     {
       "symbol": "CLAUDE_PROJECT_DIR",
       "type": "env_var",
-      "first_seen": "2.1.139",
-      "first_seen_estimated": true,
+      "first_seen": "1.0.58",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "The project root",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
