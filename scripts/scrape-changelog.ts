@@ -1431,9 +1431,8 @@ const CORROBORATED_TYPES: ReadonlySet<ExtractedSymbolType> = new Set([
  */
 export const CHANGELOG_ONLY_SYMBOLS: ReadonlySet<string> = new Set<string>([
   // Command aliases. The 2.1.312 bundle registers each one in a command object's
-  // `aliases:[…]`, which extractCommands does not read (see SKILL_NAME for why the
-  // lane does not key on `aliases:`). `/bg` also has its own `name:"bg"` object,
-  // in a shape the registry pattern misses.
+  // `aliases:[…]`. extractCommands reads those now, but these entries stay until a
+  // binary re-extract puts the aliases into data/binary-observations.json.
   'command:/bg',
   'command:/checkup',
   'command:/continue',

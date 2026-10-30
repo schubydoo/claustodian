@@ -1171,6 +1171,13 @@ describe('command aliases', () => {
     expect(extractSkillCommands(src).size).toBe(0);
   });
 
+  it('stops at the command object, so the aliases of a neighbour stay out', () => {
+    // A command with no aliases of its own, then the keybinding table.
+    const cmds = extractCommands('{type:"local",name:"exit"},{name:"cmd",aliases:["command"]}');
+    expect(cmds.has('/exit')).toBe(true);
+    expect(cmds.has('/command')).toBe(false);
+  });
+
   it('keeps a registered command over an alias of the same name', () => {
     // 2.1.306: `/update` is a command's own name and also another's alias.
     const cmds = extractCommands(

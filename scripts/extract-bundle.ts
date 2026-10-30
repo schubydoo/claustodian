@@ -243,7 +243,7 @@ const COMMAND_DESC = /description:\s*(["'`])((?:(?!\1)[^\\]|\\.)*)\1/;
  * /claude-in-chrome, /dream). We deliberately do NOT key on `aliases:` — that also
  * matches bundled highlight.js language grammars
  * (`{name:"crmsh",aliases:["crm","pcmk"],keywords:…}`), which are not commands.
- * An `aliases:` list is read only inside an object the marker already proved.
+ * An `aliases:` list is read only from the window an accepted entry already uses.
  */
 const SKILL_NAME = /name:\s*["'`]([a-z][a-z0-9-]+)["'`]/g;
 const SKILL_MARKER = /(?:menuDescription|whenToUse):/;
@@ -1013,7 +1013,7 @@ export function extractSkillCommands(src: string): Map<string, string | undefine
       cleanDescription(mg?.[2], mg?.[1]);
     if (!out.has(key)) out.set(key, desc);
     else if (out.get(key) === undefined && desc) out.set(key, desc);
-    // Same rule as extractCommands: aliases only from an object the marker proved.
+    // Aliases come from the same marker-proved window as the name and description.
     for (const alias of commandAliases(object)) aliases.add(`/${alias}`);
   }
   for (const alias of aliases) if (!out.has(alias)) out.set(alias, undefined);
