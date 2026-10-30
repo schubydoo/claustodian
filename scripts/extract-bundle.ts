@@ -812,7 +812,7 @@ function onlyCalled(chunk: string, name: string): boolean {
     m.index as number,
     (m.index as number) + m[0].length,
   ]);
-  const safe = name.replace(/[$]/g, '\\$&');
+  const safe = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   for (const m of chunk.matchAll(new RegExp(`(?<![\\w$.])${safe}(?![\\w$])`, 'g'))) {
     const at = m.index as number;
     if (lists.some(([from, to]) => at >= (from as number) && at < (to as number))) continue;
