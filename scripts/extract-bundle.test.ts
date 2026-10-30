@@ -1187,6 +1187,13 @@ describe('command aliases', () => {
     expect(cmds.get('/update')).toBe('Switch to the latest version');
   });
 
+  it('keeps a skill name over a skill alias of the same name', () => {
+    const src =
+      'ol({name:"loop",aliases:["schedule"],menuDescription:"Repeat"}),' +
+      'ol({name:"schedule",menuDescription:"Create scheduled agents"})';
+    expect(extractSkillCommands(src).get('/schedule')).toBe('Create scheduled agents');
+  });
+
   it('reads the aliases of a skill registry entry', () => {
     const src = 'ol({name:"doctor",aliases:["checkup"],menuDescription:"Health-check your setup"})';
     const cmds = extractSkillCommands(src);

@@ -977,6 +977,7 @@ const ALIAS_ENTRY = /["'`]([a-z][a-z0-9-]+)["'`]/g;
 function commandAliases(object: string): string[] {
   const list = object.match(COMMAND_ALIASES)?.[1];
   if (list === undefined) return [];
+  /* v8 ignore next -- ALIAS_ENTRY group 1 is non-optional and cannot match an empty string; the guard only narrows the TS type */
   return [...list.matchAll(ALIAS_ENTRY)].flatMap((m) => (m[1] ? [m[1]] : []));
 }
 
