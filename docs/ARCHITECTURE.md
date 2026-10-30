@@ -132,6 +132,15 @@ lane that works is anchored on something the bundle states about itself:
 **When a construct is unrecognised, throw.** A silent skip reads downstream as a
 removal, and removals are the most expensive thing to get wrong.
 
+**A binary removal needs a second witness.** The extractor still misses some symbols
+that are present, sometimes for dozens of releases, so its absence alone never
+removes a symbol after `RELIABLE_EXTRACTION_CEILING`. Each cache file records
+`textAbsent`: the earlier-seen names that the release neither extracts nor holds
+anywhere in its raw text as a whole token. `computeTextRemoval` removes a symbol only
+when at least three releases follow its last sighting and every one of them carries
+that proof. A name that lingers as inert text, for example in a scrub list, therefore
+stays current. That is the safe direction for this dataset.
+
 ## Why a green test suite is not enough
 
 Unit tests have caught none of the extractor defects in this project. Two examples,

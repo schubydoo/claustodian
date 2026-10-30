@@ -143,8 +143,9 @@ export interface BinaryObservation {
   last_seen: string;
   /**
    * Version where the symbol cleanly disappeared from the binaries, if the
-   * evidence is trustworthy (see computeBinaryRemoval); null otherwise. Absence
-   * in the recall-unreliable era (>= RELIABLE_EXTRACTION_CEILING) never sets this.
+   * evidence is trustworthy; null otherwise. In the recall-unreliable era
+   * (>= RELIABLE_EXTRACTION_CEILING) extraction absence alone never sets this; the
+   * raw text must prove the name gone too (see computeTextRemoval).
    */
   removed_in: string | null;
   /**
@@ -1308,6 +1309,9 @@ export function promotionFor(type: string, symbol: string): BinaryPromotion | un
  * never be marked `removed_in`, so it keeps publishing as `active` — which errs toward
  * never claiming a removal, the safe direction here. Recalibrate before relying on
  * control removals; do not assume this bound was measured for them.
+ *
+ * For a flag, command or env var, computeTextRemoval covers the era after this
+ * ceiling: it needs the raw text of every later release to prove the name gone too.
  */
 export const RELIABLE_EXTRACTION_CEILING = '2.1.160';
 
@@ -1358,6 +1362,37 @@ export function computeBinaryRemoval(
   // The find always matches: reliableAfter was proven non-empty above and is a
   // subset of the versions this scans.
   return asc.find((v) => compareVersionsAsc(v, lastSeen) > 0)!;
+}
+
+/** How many releases after the last sighting must prove the absence (textAbsent). */
+export const TEXT_REMOVAL_MARGIN = 3;
+
+/**
+ * Infers `removed_in` for a binary-only symbol from text proof, in any era. The
+ * extractor still misses some symbols that are present (a symbol can drop out for
+ * dozens of releases and come back), so its absence alone is not enough after
+ * RELIABLE_EXTRACTION_CEILING. Each cache file records which earlier-seen names
+ * are missing from that release's raw text as well (`textAbsent`). Returns the
+ * first release after the last sighting only when at least TEXT_REMOVAL_MARGIN
+ * releases follow it and EVERY one of them carries that proof for the symbol, else
+ * null. A later release without the proof (an older cache file, or a name its
+ * check did not watch) leaves the question open, which never claims a removal.
+ */
+export function computeTextRemoval(
+  presentVersions: readonly string[],
+  provenAbsentIn: ReadonlySet<string>,
+  observedVersions: readonly string[]
+): string | null {
+  if (presentVersions.length === 0) return null;
+  const lastSeen = [...presentVersions].sort(compareVersionsAsc)[
+    presentVersions.length - 1
+  ] as string;
+  const after = observedVersions
+    .filter((v) => compareVersionsAsc(v, lastSeen) > 0)
+    .sort(compareVersionsAsc);
+  if (after.length < TEXT_REMOVAL_MARGIN) return null;
+  if (!after.every((v) => provenAbsentIn.has(v))) return null;
+  return after[0] as string;
 }
 
 /** The committed control-observations envelope, as `backfill-binary` writes it. */

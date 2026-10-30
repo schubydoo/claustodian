@@ -1479,7 +1479,8 @@ export function uncorroboratedBy(
  *  - binary-only additions — a symbol no other lane knows is appended as
  *    provenance:"binary" / status:"needs_review" (null source_url, empty
  *    description, confidence "medium"), carrying the observation's conservative
- *    `removed_in` (null unless it cleanly disappeared pre-cliff). A mod_method
+ *    `removed_in` (null unless it cleanly disappeared pre-cliff, or the raw text of
+ *    every later release proves it gone; see computeTextRemoval). A mod_method
  *    lands status:"active" instead: its dispatch-table key is read by AST. Env vars are
  *    gated to first-party ones (isPublishableBinaryEnv); flags proved only by a
  *    subcommand's argv switch publish with their `scopes` when containment

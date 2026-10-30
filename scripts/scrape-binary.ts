@@ -31,7 +31,8 @@ import { join } from 'node:path';
 import type { ControlMessageObservation } from './control-lane.js';
 import { extractControlAndModMethods } from './mod-lane.js';
 import { sliceEmbeddedChunks } from './slice-bundle.js';
-import { extractBundleSymbols } from './extract-bundle.js';
+import { extractBundleSymbols, textAbsentFor, type WatchedName } from './extract-bundle.js';
+import { DEFAULT_OBSERVATIONS, loadWatchList } from './reextract-binaries.js';
 import { compareVersionsAsc, runCli } from './lib.js';
 
 /** The platform whose embedded bundle the extractor reads (matches reextract). */
@@ -138,7 +139,11 @@ async function fetchRetry(url: string, tries = 3): Promise<Response> {
  * A control-lane refusal propagates — one version is being scraped, so failing is the
  * point. `reextract-binaries` collects instead, to avoid a half-written cache.
  */
-export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryCacheRecord {
+export function buildCacheRecord(
+  version: string,
+  artifact: Uint8Array,
+  watch: readonly WatchedName[] = []
+): BinaryCacheRecord {
   // Two different inputs on purpose. The regex lanes read the artifact decoded and
   // unsliced, exactly as they always have — changing that would change published
   // data. The AST lane cannot read an executable at all, so it gets the embedded
@@ -174,6 +179,7 @@ export function buildCacheRecord(version: string, artifact: Uint8Array): BinaryC
     modRenderSites,
     modRenderSitesListed,
     modElements,
+    textAbsent: textAbsentFor(bundle, version, symbols, watch),
   };
 }
 
@@ -197,6 +203,8 @@ export interface BinaryCacheRecord {
   modRenderSitesListed: boolean;
   /** The element types this release lists; see modElementsFrom. */
   modElements: string[];
+  /** Earlier-seen names this release neither extracts nor holds as text; see textAbsent. */
+  textAbsent: string[];
 }
 
 /** Write `record` to `<outDir>/<version>.json` atomically (tmp + rename). */
@@ -264,7 +272,7 @@ export async function scrapeBinary(
     );
   }
 
-  const record = buildCacheRecord(version, buf);
+  const record = buildCacheRecord(version, buf, loadWatchList(DEFAULT_OBSERVATIONS));
   const path = writeCacheFile(options.outDir, record);
   console.log(`${version}: extracted ${record.count} symbol(s) → ${path} (checksum verified).`);
   return { path, count: record.count };

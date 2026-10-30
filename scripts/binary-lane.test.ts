@@ -12,6 +12,8 @@ import {
   hiddenAt,
   type BinaryObservations,
   computeBinaryRemoval,
+  computeTextRemoval,
+  TEXT_REMOVAL_MARGIN,
   assertBinaryDescriptions,
   type BinaryDescriptions,
   descriptionAt,
@@ -737,5 +739,32 @@ describe('binaryRedateVersion', () => {
 
   it('uses first_seen when the first sighting was already a name', () => {
     expect(binaryRedateVersion(restart(undefined), false)).toBe('2.1.212');
+  });
+});
+
+describe('computeTextRemoval', () => {
+  const OBSERVED = ['2.1.200', '2.1.201', '2.1.202', '2.1.203', '2.1.204'];
+  const proof = (...v: string[]) => new Set(v);
+
+  it('removes at the first later release when every later release proves the absence', () => {
+    expect(TEXT_REMOVAL_MARGIN).toBe(3);
+    expect(
+      computeTextRemoval(['2.1.200', '2.1.201'], proof('2.1.202', '2.1.203', '2.1.204'), OBSERVED)
+    ).toBe('2.1.202');
+  });
+
+  it('keeps the symbol when one later release lacks the proof', () => {
+    // 2.1.203 still holds the name as text, so the extractor only missed it there.
+    expect(
+      computeTextRemoval(['2.1.200', '2.1.201'], proof('2.1.202', '2.1.204'), OBSERVED)
+    ).toBeNull();
+  });
+
+  it('waits for TEXT_REMOVAL_MARGIN later releases', () => {
+    expect(computeTextRemoval(['2.1.202'], proof('2.1.203', '2.1.204'), OBSERVED)).toBeNull();
+  });
+
+  it('removes nothing for a symbol never seen', () => {
+    expect(computeTextRemoval([], proof(...OBSERVED), OBSERVED)).toBeNull();
   });
 });

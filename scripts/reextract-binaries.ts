@@ -33,13 +33,15 @@ import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sliceEmbeddedChunks } from './slice-bundle.js';
-import { extractBundleSymbols } from './extract-bundle.js';
+import { extractBundleSymbols, textAbsentFor, type WatchedName } from './extract-bundle.js';
 import { compareVersionsAsc, runCli } from './lib.js';
 import type { ControlMessageObservation } from './control-lane.js';
 import { extractControlAndModMethods } from './mod-lane.js';
 
 const DEFAULT_ARCHIVE_DIR = 'scratch/binaries';
 const DEFAULT_OUT_DIR = 'binary-cache';
+/** The committed observations: the names whose absence each release's text is checked for. */
+export const DEFAULT_OBSERVATIONS = 'data/binary-observations.json';
 /** cli.js can be large; allow up to 1 GiB when streaming it out of the tarball. */
 const TAR_MAX_BUFFER = 1 << 30;
 /** A strict `major.minor.patch` — rejects junk version input early. */
@@ -144,6 +146,8 @@ interface CliOptions {
   outDir: string;
   /** Versions extracted at once, each in its own process. 1 runs in this process. */
   jobs: number;
+  /** The observations whose names each release's text is checked for (textAbsent). */
+  observationsPath: string;
 }
 
 /**
@@ -158,14 +162,16 @@ export function parseArgs(argv: string[]): CliOptions {
     archiveDir: DEFAULT_ARCHIVE_DIR,
     outDir: DEFAULT_OUT_DIR,
     jobs: DEFAULT_JOBS,
+    observationsPath: DEFAULT_OBSERVATIONS,
   };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
-    if (arg === '--archive' || arg === '--out' || arg === '--jobs') {
+    if (arg === '--archive' || arg === '--out' || arg === '--jobs' || arg === '--observations') {
       const value = argv[i + 1];
       if (value === undefined) throw new Error(`${arg} requires a value (e.g. "${arg} <value>").`);
       if (arg === '--archive') options.archiveDir = value;
       else if (arg === '--out') options.outDir = value;
+      else if (arg === '--observations') options.observationsPath = value;
       else {
         if (!/^[1-9]\d*$/.test(value))
           throw new Error(`--jobs must be a positive integer, got "${value}".`);
@@ -173,7 +179,9 @@ export function parseArgs(argv: string[]): CliOptions {
       }
       i++;
     } else {
-      throw new Error(`Unknown argument "${arg}". Expected --archive, --out or --jobs.`);
+      throw new Error(
+        `Unknown argument "${arg}". Expected --archive, --out, --jobs or --observations.`
+      );
     }
   }
   return options;
@@ -222,7 +230,8 @@ export type VersionOutcome =
 export function extractVersion(
   archiveDir: string,
   outDir: string,
-  version: string
+  version: string,
+  watch: readonly WatchedName[] = []
 ): VersionOutcome {
   const result = readBundleSource(archiveDir, version);
   if (result.kind === 'missing' || result.kind === 'unverified') return { kind: result.kind };
@@ -279,9 +288,34 @@ export function extractVersion(
       modRenderSites,
       modRenderSitesListed,
       modElements,
+      textAbsent: textAbsentFor(result.src, version, symbols, watch),
     })
   );
   return { kind: 'written' };
+}
+
+const watchLists = new Map<string, readonly WatchedName[]>();
+
+/**
+ * The watched names in the observations at `path`, read once per process. A missing
+ * file throws: an empty watch list would write `textAbsent: []` everywhere, and the
+ * next backfill would drop every text-proven removal while the run looked fine.
+ */
+export function loadWatchList(path: string): readonly WatchedName[] {
+  let list = watchLists.get(path);
+  if (!list) {
+    if (!existsSync(path)) {
+      throw new Error(
+        `No observations at ${path}: the text check needs them to know which names to look ` +
+          `for. Run from the repo root, or pass --observations <path>.`
+      );
+    }
+    list = (JSON.parse(readFileSync(path, 'utf-8')) as { symbols: WatchedName[] }).symbols.map(
+      ({ type, symbol, first_seen }) => ({ type, symbol, first_seen })
+    );
+    watchLists.set(path, list);
+  }
+  return list;
 }
 
 /** One version for a job to extract, and what the job reports back. */
@@ -289,6 +323,7 @@ export interface WorkerTask {
   archiveDir: string;
   outDir: string;
   version: string;
+  observationsPath: string;
   index: number;
 }
 export type WorkerReply =
@@ -299,7 +334,12 @@ export function runTask(task: WorkerTask): WorkerReply {
   try {
     return {
       index: task.index,
-      outcome: extractVersion(task.archiveDir, task.outDir, task.version),
+      outcome: extractVersion(
+        task.archiveDir,
+        task.outDir,
+        task.version,
+        loadWatchList(task.observationsPath)
+      ),
     };
   } catch (error) {
     return { index: task.index, error: (error as Error).message };
@@ -316,7 +356,8 @@ export function extractInWorkers(
   archiveDir: string,
   outDir: string,
   versions: readonly string[],
-  jobs: number
+  jobs: number,
+  observationsPath = DEFAULT_OBSERVATIONS
 ): Promise<VersionOutcome[]> {
   const worker = fileURLToPath(new URL('./reextract-worker.ts', import.meta.url));
   const outcomes: VersionOutcome[] = new Array(versions.length);
@@ -342,6 +383,7 @@ export function extractInWorkers(
         archiveDir,
         outDir,
         version: versions[index] as string,
+        observationsPath,
         index,
       } satisfies WorkerTask);
     };
@@ -394,8 +436,21 @@ export async function main(argv: string[]): Promise<number> {
 
   const outcomes =
     options.jobs > 1 && versions.length > 1
-      ? await extractInWorkers(options.archiveDir, options.outDir, versions, options.jobs)
-      : versions.map((version) => extractVersion(options.archiveDir, options.outDir, version));
+      ? await extractInWorkers(
+          options.archiveDir,
+          options.outDir,
+          versions,
+          options.jobs,
+          options.observationsPath
+        )
+      : versions.map((version) =>
+          extractVersion(
+            options.archiveDir,
+            options.outDir,
+            version,
+            loadWatchList(options.observationsPath)
+          )
+        );
   // Collected rather than thrown: one bad bundle must not abort a 470-version loop,
   // and the run reports every failure at the end instead of only the first. The
   // outcomes are in version order, whichever job finished first.

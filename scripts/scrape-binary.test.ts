@@ -318,6 +318,7 @@ describe('buildCacheRecord', () => {
       'modRenderSites',
       'modRenderSitesListed',
       'modElements',
+      'textAbsent',
     ]);
     // 2.1.214 predates the mods API, so the mod half is an honest empty list.
     expect(record.modMethodCount).toBe(0);
@@ -595,5 +596,42 @@ describe('main', () => {
     const written = JSON.parse(await readFile(join(dir, '2.1.214.json'), 'utf-8'));
     expect(written.version).toBe('2.1.214');
     await rm(dir, { recursive: true, force: true });
+  });
+});
+
+describe('textAbsent in both cache writers', () => {
+  it('writes the same proofs from scrape-binary as from reextract-binaries', async () => {
+    const { extractVersion } = await import('./reextract-binaries.js');
+    const { mkdtemp, mkdir, writeFile, readFile, rm } = await import('node:fs/promises');
+    const { createHash } = await import('node:crypto');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-textabsent-'));
+    try {
+      const js = 'if(process.env.CLAUDE_CODE_KEPT)x();let note="CLAUDE_CODE_TEXT_ONLY";';
+      const archive = join(root, 'archive');
+      await mkdir(join(archive, '1.0.0', 'linux-x64'), { recursive: true });
+      await writeFile(join(archive, '1.0.0', 'linux-x64', 'claude'), js);
+      await writeFile(
+        join(archive, '1.0.0', 'SHA256SUMS'),
+        `${createHash('sha256').update(js).digest('hex')}  linux-x64/claude\n`
+      );
+      const watch = [
+        { type: 'env_var', symbol: 'CLAUDE_CODE_KEPT', first_seen: '0.2.9' }, // extracted
+        { type: 'env_var', symbol: 'CLAUDE_CODE_TEXT_ONLY', first_seen: '0.2.9' }, // text only
+        { type: 'env_var', symbol: 'CLAUDE_CODE_GONE', first_seen: '0.2.9' }, // neither
+      ];
+      const out = join(root, 'out');
+      await mkdir(out);
+      expect(extractVersion(archive, out, '1.0.0', watch)).toEqual({ kind: 'written' });
+      const fromReextract = JSON.parse(await readFile(join(out, '1.0.0.json'), 'utf-8')) as {
+        textAbsent: string[];
+      };
+      const fromScrape = buildCacheRecord('1.0.0', new TextEncoder().encode(js), watch);
+      expect(fromScrape.textAbsent).toEqual(['env_var:CLAUDE_CODE_GONE']);
+      expect(fromReextract.textAbsent).toEqual(fromScrape.textAbsent);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });

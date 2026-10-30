@@ -18,6 +18,17 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ## 2026-10-30
 
+### Fixed
+
+- **Binary-only symbols that left after 2.1.160 now get a `removed_in`.** Before, the
+  binary lane inferred a removal only for a symbol last seen before 2.1.160, so a
+  symbol that left later stayed current forever. Now a removal needs proof: the name
+  is gone from the raw text of every release after its last sighting, for at least
+  three releases. From the next binary re-extract, 95 records leave the snapshots
+  after their removal version, for example `CLAUDE_CODE_HERON_TALLOW` after 2.1.228.
+  A name that still appears as text stays current, because the text alone cannot
+  show whether the extractor only missed it.
+
 ### Added
 
 - **Command aliases from the binary.** The binary lane now reads each registered
