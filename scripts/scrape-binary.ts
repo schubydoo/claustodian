@@ -35,6 +35,7 @@ import {
   extractBundleSymbols,
   textAbsentFor,
   withChildEnvVars,
+  withVariableSkills,
   type WatchedName,
 } from './extract-bundle.js';
 import { DEFAULT_OBSERVATIONS, loadWatchList } from './reextract-binaries.js';
@@ -174,8 +175,9 @@ export function buildCacheRecord(
     modRenderSitesListed,
     modElements,
     childEnvVars,
+    variableSkills,
   } = extractControlAndModMethods(chunks, version);
-  const symbols = withChildEnvVars(readSymbols, childEnvVars);
+  const symbols = withVariableSkills(withChildEnvVars(readSymbols, childEnvVars), variableSkills);
   return {
     version,
     source: 'binary',

@@ -66,6 +66,12 @@
  * chunk's AST through `extractControlMessages`'s `onProgram` callback.
  */
 import { collectChildEnvNames } from './child-env.js';
+import {
+  collectSkillEvidence,
+  resolveVariableSkills,
+  type SkillEvidence,
+  type VariableSkill,
+} from './skill-lane.js';
 import { compareVersionsAsc } from './lib.js';
 import { extractControlMessages, isNode, parse, walk, type Node } from './control-lane.js';
 
@@ -567,12 +573,16 @@ export function extractControlAndModMethods(
   modElements: string[];
   /** Env var names Claude Code sets for a child process; see child-env.ts. */
   childEnvVars: string[];
+  /** Skills registered under a variable name; see skill-lane.ts. */
+  variableSkills: VariableSkill[];
 } {
   const evidence: ModEvidence[] = [];
   const childEnv = new Set<string>();
+  const skills: SkillEvidence[] = [];
   const controlMessages = extractControlMessages(source, version, (program) => {
     evidence.push(collectModEvidence(program));
     for (const name of collectChildEnvNames(program)) childEnv.add(name);
+    skills.push(collectSkillEvidence(program));
   });
   const { methods, mentions } = modEvidenceFrom(evidence, version);
   const { sites, listed } = modRenderSitesFrom(evidence, version);
@@ -585,5 +595,6 @@ export function extractControlAndModMethods(
     modRenderSitesListed: listed,
     modElements: modElementsFrom(evidence, version),
     childEnvVars: [...childEnv].sort(),
+    variableSkills: resolveVariableSkills(skills),
   };
 }
