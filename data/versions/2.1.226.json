@@ -579,19 +579,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--comment",
-      "type": "cli_flag",
-      "first_seen": "2.1.147",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--config",
       "type": "cli_flag",
       "first_seen": "2.1.147",
@@ -1212,19 +1199,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--files-from",
-      "type": "cli_flag",
-      "first_seen": "2.1.214",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--force",
       "type": "cli_flag",
       "first_seen": "1.0.31",
@@ -1754,19 +1728,6 @@
         "self-hosted-runner",
         "self-hosted-runner orchestrator"
       ]
-    },
-    {
-      "symbol": "--magic-file",
-      "type": "cli_flag",
-      "first_seen": "2.1.214",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
     },
     {
       "symbol": "--maintenance",
@@ -3751,19 +3712,6 @@
       "category": "command"
     },
     {
-      "symbol": "/command",
-      "type": "command",
-      "first_seen": "2.1.154",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
       "symbol": "/commit",
       "type": "command",
       "first_seen": "2.1.51",
@@ -4024,19 +3972,6 @@
       "confidence": "medium",
       "description": "Set effort level for model usage",
       "description_source": "binary",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
-      "symbol": "/env",
-      "type": "command",
-      "first_seen": "2.1.89",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -4590,19 +4525,6 @@
       "symbol": "/plugins",
       "type": "command",
       "first_seen": "2.1.2",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
-      "symbol": "/poll",
-      "type": "command",
-      "first_seen": "2.1.70",
       "first_seen_estimated": true,
       "removed_in": null,
       "status": "active",
@@ -18405,19 +18327,6 @@
       "provenance": "changelog",
       "confidence": "medium",
       "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
-      "symbol": "NO_FLICKER",
-      "type": "env_var",
-      "first_seen": "2.1.97",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Added focus view toggle (`Ctrl+O`) in `NO_FLICKER` mode showing prompt, one-line tool summary with edit diffstats, and final response",
-      "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },

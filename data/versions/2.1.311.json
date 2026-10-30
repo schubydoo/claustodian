@@ -731,19 +731,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--comment",
-      "type": "cli_flag",
-      "first_seen": "2.1.147",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--concurrency",
       "type": "cli_flag",
       "first_seen": "2.1.269",
@@ -1509,32 +1496,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--files-from",
-      "type": "cli_flag",
-      "first_seen": "2.1.214",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
-      "symbol": "--filter",
-      "type": "cli_flag",
-      "first_seen": "2.1.285",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--force",
       "type": "cli_flag",
       "first_seen": "1.0.31",
@@ -2221,19 +2182,6 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
-      "category": "cli"
-    },
-    {
-      "symbol": "--magic-file",
-      "type": "cli_flag",
-      "first_seen": "2.1.214",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -3574,19 +3522,6 @@
       "category": "cli-internal"
     },
     {
-      "symbol": "--separate-git-dir",
-      "type": "cli_flag",
-      "first_seen": "2.1.285",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--seq-floor",
       "type": "cli_flag",
       "first_seen": "2.1.246",
@@ -4717,19 +4652,6 @@
       "category": "command"
     },
     {
-      "symbol": "/command",
-      "type": "command",
-      "first_seen": "2.1.154",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
       "symbol": "/commit",
       "type": "command",
       "first_seen": "2.1.51",
@@ -5007,19 +4929,6 @@
       "category": "command"
     },
     {
-      "symbol": "/env",
-      "type": "command",
-      "first_seen": "2.1.89",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
       "symbol": "/exit",
       "type": "command",
       "first_seen": "0.2.25",
@@ -5147,19 +5056,6 @@
       "confidence": "high",
       "description": "Set a goal: Claude keeps working across turns until the condition is met or the goal clears for another reason. With no argument, shows the current or most recently achieved goal. `clear`, `stop`, `off`, `reset`, `none`, or `cancel` removes an active goal early",
       "description_source": "docs",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
-      "symbol": "/healthz",
-      "type": "command",
-      "first_seen": "2.1.300",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -5411,19 +5307,6 @@
       "category": "command"
     },
     {
-      "symbol": "/media",
-      "type": "command",
-      "first_seen": "2.1.304",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
       "symbol": "/memory",
       "type": "command",
       "first_seen": "0.2.54",
@@ -5504,19 +5387,6 @@
       "symbol": "/name",
       "type": "command",
       "first_seen": "2.1.292",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
-      "symbol": "/net",
-      "type": "command",
-      "first_seen": "2.1.261",
       "first_seen_estimated": true,
       "removed_in": null,
       "status": "active",
@@ -5658,19 +5528,6 @@
       "category": "command"
     },
     {
-      "symbol": "/poll",
-      "type": "command",
-      "first_seen": "2.1.70",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
       "symbol": "/powerup",
       "type": "command",
       "first_seen": "2.1.90",
@@ -5736,32 +5593,6 @@
       "category": "command"
     },
     {
-      "symbol": "/proc",
-      "type": "command",
-      "first_seen": "2.1.309",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
-      "symbol": "/protocol",
-      "type": "command",
-      "first_seen": "2.1.286",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
       "symbol": "/prototype",
       "type": "command",
       "first_seen": "2.1.221",
@@ -5797,19 +5628,6 @@
       "confidence": "high",
       "description": "Show ways to keep working when a claude.ai usage limit blocks a request: wait and continue automatically when the limit resets, add usage credits, or upgrade your plan. Claude Code can also open this menu on its own when you hit a limit at your own terminal. See Turn automatic continue off. Requires a claude.ai subscription. The wait-and-continue rows require Claude Code v2.1.234 or later",
       "description_source": "docs",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
-      "symbol": "/readyz",
-      "type": "command",
-      "first_seen": "2.1.282",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Added `store.readiness_grace_seconds` to the Claude apps gateway so `/readyz` can stay ready through a short Postgres outage such as a database failover",
-      "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -13303,19 +13121,6 @@
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cloud"
-    },
-    {
-      "symbol": "BASH_ARGV0",
-      "type": "env_var",
-      "first_seen": "2.1.296",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
     },
     {
       "symbol": "BASH_DEFAULT_TIMEOUT_MS",
@@ -25623,19 +25428,6 @@
       "category": "other"
     },
     {
-      "symbol": "GIT_SSH",
-      "type": "env_var",
-      "first_seen": "2.1.285",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
       "symbol": "GOOGLE_APPLICATION_CREDENTIALS",
       "type": "env_var",
       "first_seen": "0.2.9",
@@ -26005,19 +25797,6 @@
       "category": "other"
     },
     {
-      "symbol": "NO_FLICKER",
-      "type": "env_var",
-      "first_seen": "2.1.97",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Added focus view toggle (`Ctrl+O`) in `NO_FLICKER` mode showing prompt, one-line tool summary with edit diffstats, and final response",
-      "description_source": "changelog",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
       "symbol": "NO_PROXY",
       "type": "env_var",
       "first_seen": "0.2.9",
@@ -26210,19 +25989,6 @@
       "description": "Protocol for traces, overrides `OTEL_EXPORTER_OTLP_PROTOCOL`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
-      "category": "telemetry"
-    },
-    {
-      "symbol": "OTEL_LOGRECORD_ATTRIBUTE_COUNT_LIMIT",
-      "type": "env_var",
-      "first_seen": "2.1.302",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
     },
     {
@@ -26973,19 +26739,6 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
-      "category": "other"
-    },
-    {
-      "symbol": "SIGTERM",
-      "type": "env_var",
-      "first_seen": "2.1.300",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
