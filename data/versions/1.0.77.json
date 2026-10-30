@@ -1432,7 +1432,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "API key sent as `X-Api-Key` header. When set, this key is used instead of your Claude Pro, Max, Team, or Enterprise subscription even if you are logged in. In non-interactive mode (`-p`), the key is always used when present. In interactive mode, you are prompted to approve the key once before it overrides your subscription. To use your subscription instead, run `unset ANTHROPIC_API_KEY`",
+      "description": "API key sent as `X-Api-Key` header. When set, this key is used instead of your Claude Pro, Max, Ultra, Team, or Enterprise subscription even if you are logged in. In non-interactive mode (`-p`), the key is always used when present. In interactive mode, you are prompted to approve the key once before it overrides your subscription. To use your subscription instead, run `unset ANTHROPIC_API_KEY`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -1940,11 +1940,12 @@
       "type": "env_var",
       "first_seen": "1.0.77",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "The session JWT, prefixed `sk-ant-cc-`. Its `act` claim identifies the session creator, with the creator's email when the creating surface recorded it. The value is the token at spawn time; refreshes arrive over the child's stdin, so a wrapper sees only the initial value. See Verify session identity.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-configuration.md",
       "category": "claude-code"
     },
     {

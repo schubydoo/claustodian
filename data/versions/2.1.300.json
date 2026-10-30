@@ -4176,7 +4176,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Draft `autoMode.environment` entries from your project and recent sessions, then review the draft and save it to your user settings. On a Pro, Max, or Team plan, requires Claude Code v2.1.228 or later, or v2.1.233 or later on native Windows. On an Enterprise plan or with a Claude Console API key, requires v2.1.283 or later. If the command is missing, see `/auto-mode-setup` returns \"Unknown command\"",
+      "description": "Draft `autoMode.environment` entries from your project and recent sessions, then review the draft and save it to your user settings. On a Pro, Max, Ultra, or Team plan, requires Claude Code v2.1.228 or later, or v2.1.233 or later on native Windows. On an Enterprise plan or with a Claude Console API key, requires v2.1.283 or later. If the command is missing, see `/auto-mode-setup` returns \"Unknown command\"",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5419,7 +5419,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "View and update your privacy settings. Only available for Pro and Max plan subscribers",
+      "description": "View and update your privacy settings. Only available for Pro, Max, and Ultra plan subscribers",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5636,7 +5636,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Restart Claude Code and resume this session, which applies an installed update. Run it when the footer offers it after an update installs. Requires a Pro or Max plan and a native install on macOS or Linux, not WSL. Requires Claude Code v2.1.288 or later. Alias: `/update`",
+      "description": "Restart Claude Code and resume this session, which applies an installed update. Run it when the footer offers it after an update installs. Requires a Pro, Max, or Ultra plan and a native install on macOS or Linux, not WSL. Requires Claude Code v2.1.288 or later. Alias: `/update`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
@@ -6128,7 +6128,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Run a deep, multi-agent code review in a cloud sandbox with ultrareview. Pass a PR reference to review that pull request, or a base branch or commit to change the comparison base. The preferred invocation is `/code-review ultra`, and `/ultrareview` is an alias. Includes 3 free runs on Pro and Max, then requires usage credits",
+      "description": "Run a deep, multi-agent code review in a cloud sandbox with ultrareview. Pass a PR reference to review that pull request, or a base branch or commit to change the comparison base. The preferred invocation is `/code-review ultra`, and `/ultrareview` is an alias. Includes 3 free runs on Pro, Max, and Ultra, then requires usage credits",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6193,7 +6193,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. `/cost` and `/stats` are aliases",
+      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Ultra, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. `/cost` and `/stats` are aliases",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -12119,7 +12119,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "API key sent as `X-Api-Key` header. When set, this key is used instead of your Claude Pro, Max, Team, or Enterprise subscription even if you are logged in. In non-interactive mode (`-p`), the key is always used when present. In interactive mode, you are prompted to approve the key once before it overrides your subscription. To use your subscription instead, run `unset ANTHROPIC_API_KEY`",
+      "description": "API key sent as `X-Api-Key` header. When set, this key is used instead of your Claude Pro, Max, Ultra, Team, or Enterprise subscription even if you are logged in. In non-interactive mode (`-p`), the key is always used when present. In interactive mode, you are prompted to approve the key once before it overrides your subscription. To use your subscription instead, run `unset ANTHROPIC_API_KEY`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -18557,8 +18557,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added `CLAUDE_CODE_MCP_SERVER_NAME` and `CLAUDE_CODE_MCP_SERVER_URL` environment variables to MCP `headersHelper` scripts, allowing one helper to serve multiple servers",
-      "description_source": "changelog",
+      "description": "the name of the MCP server",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -18570,8 +18570,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added `CLAUDE_CODE_MCP_SERVER_NAME` and `CLAUDE_CODE_MCP_SERVER_URL` environment variables to MCP `headersHelper` scripts, allowing one helper to serve multiple servers",
-      "description_source": "changelog",
+      "description": "the URL of the MCP server",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -19787,11 +19787,12 @@
       "type": "env_var",
       "first_seen": "2.1.299",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Path to a file in `CLAUDE_CONFIG_DIR` holding the MCP server definitions that Anthropic's control plane delivered for this session. If your wrapper rebuilds the child's environment, carry this variable over. Without it, when the control plane updates the delivered servers, the child shuts down any stdio, HTTP, or SSE server your wrapper adds with `--mcp-config` that isn't in the update. Requires Claude Code v2.1.299 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-configuration.md",
       "category": "claude-code"
     },
     {
@@ -20340,11 +20341,12 @@
       "type": "env_var",
       "first_seen": "1.0.77",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "The session JWT, prefixed `sk-ant-cc-`. Its `act` claim identifies the session creator, with the creator's email when the creating surface recorded it. The value is the token at spawn time; refreshes arrive over the child's stdin, so a wrapper sees only the initial value. See Verify session identity.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-configuration.md",
       "category": "claude-code"
     },
     {
@@ -22721,6 +22723,19 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_RUNNER_CLIENT_PLATFORM",
+      "type": "env_var",
+      "first_seen": "2.1.229",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "The client surface that created the session, such as `web_claude_ai`, `desktop_app`, `ios`, `claude_code_cli`, or `scheduled_trigger`. Anthropic records the value once at session creation, so the wrapper and every lifecycle hook see the same value. Use it for adoption analytics and labelling only, not as an authorization signal. Unset when the session has no recorded or recognized surface. Requires Claude Code v2.1.229 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-configuration.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_RUNNER_DISABLE_AWAITING_ACTION_OVERRIDE",
       "type": "env_var",
       "first_seen": "2.1.200",
@@ -22813,11 +22828,12 @@
       "type": "env_var",
       "first_seen": "2.1.83",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Absolute path to a per-session file holding the current session JWT, kept fresh across token refreshes. Shell subprocesses read it for their `Authorization` header when downloading attachments the user added to the session. `exec` preserves the variable automatically; a wrapper that rebuilds the child's environment must carry the variable over, or attachment downloads silently stop working.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-configuration.md",
       "category": "claude-code"
     },
     {
