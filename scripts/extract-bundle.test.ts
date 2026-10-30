@@ -1251,6 +1251,42 @@ describe('extractParamEnvVars — function extents and shapes', () => {
     expect(read("function f(e){// don't\nreturn e.CLAUDE_CODE_X}f(process.env);")).toBe(true);
   });
 
+  it('ignores what a comment ends with when it reads the token before a slash', () => {
+    // Each comment ends with a value-like character; the slash after it opens a regex.
+    expect(read('function f(e){let t=// "\n/[{]/;return e.CLAUDE_CODE_X}f(process.env);')).toBe(
+      true
+    );
+    expect(read('function f(e){let t=// i++\n/[{]/;return e.CLAUDE_CODE_X}f(process.env);')).toBe(
+      true
+    );
+    expect(read('function f(e){let t=/* x) */ /[{]/;return e.CLAUDE_CODE_X}f(process.env);')).toBe(
+      true
+    );
+  });
+
+  it('reads a keyword after a dot as a property name, so the slash divides', () => {
+    for (const body of [
+      'var a=b.return/2',
+      'var a=b?.in/2',
+      'var a=b. typeof/2',
+      'var a=b\n.case/2',
+    ])
+      expect(read(`function f(e){${body}` + tail), body).toBe(true);
+  });
+
+  it('divides after `of`, a non-ASCII name, and opens a regex after instanceof', () => {
+    expect(read('function f(e){var of=4,a=of/2' + tail)).toBe(true);
+    expect(read('function f(e){var é=1,a=é/2' + tail)).toBe(true);
+    expect(read('function f(e){var a=b instanceof/[)}]/' + tail)).toBe(true);
+  });
+
+  it('opens a regex after a keyword and divides after a regex', () => {
+    expect(
+      read('function f(e){if(x)return/[{]/.test(y);return e.CLAUDE_CODE_X}f(process.env);')
+    ).toBe(true);
+    expect(read('function f(e){let t=/a/g/2' + tail)).toBe(true);
+  });
+
   it('finds no extent past an unclosed comment or a regex that runs into a newline', () => {
     expect(read('function f(e){/* never closed return e.CLAUDE_CODE_X}f(process.env);')).toBe(
       false

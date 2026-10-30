@@ -338,52 +338,62 @@ export function extractAccessorEnvVars(src: string): Map<string, string> {
 }
 
 /**
- * Whether a `/` at `slash` can open a regex literal rather than divide. After a
- * value (an identifier, a number, a string, `)`, `]`, `}` or a postfix `++`/`--`)
- * it divides, unless that word is
- * a keyword such as `return` that a regex can follow. A regex after a block's `}`
- * or after `if(…)` is read as division, the same misreading as before this test.
+ * Words after which a `/` starts a regex literal, although they look like values.
+ * `of` is left out: minified code uses it as a variable name (2.1.312 has
+ * `${of/1000}`), and a regex after `for(x of` is far rarer.
  */
-function regexCanStart(src: string, slash: number): boolean {
-  let j = slash - 1;
-  while (j >= 0 && /\s/.test(src[j] as string)) j--;
-  /* v8 ignore next -- matchBracket calls this only past its opening bracket, which stops the scan; the guard keeps the function total */
-  if (j < 0) return true;
-  const prev = src[j] as string;
-  // A string's closing quote and a postfix `++`/`--` end a value too (`"6"/2`, `i++/2`).
-  if (/["'`]/.test(prev)) return false;
-  if ((prev === '+' || prev === '-') && src[j - 1] === prev) return false;
-  if (/[)\]}\w$]/.test(prev)) {
-    const word = /[A-Za-z_$][\w$]*$/.exec(src.slice(Math.max(0, j - 16), j + 1))?.[0];
-    return (
-      word !== undefined &&
-      /^(?:return|typeof|case|do|else|in|of|void|delete|throw|new|yield|await)$/.test(word)
-    );
-  }
-  return true;
-}
+const REGEX_AFTER_WORD: ReadonlySet<string> = new Set([
+  'return',
+  'typeof',
+  'case',
+  'do',
+  'else',
+  'in',
+  'void',
+  'delete',
+  'instanceof',
+  'throw',
+  'new',
+  'yield',
+  'await',
+]);
 
 /**
  * From an opening bracket at `open`, the index of its match — tracking (), [], {}
- * depth and skipping string literals, comments and regex literals (regexCanStart).
- * A quote or bracket inside `/["']/g` or `/* don't *\/` once ended the extent early,
- * and the param env lane then lost every read in that function. A backtick runs to
- * the next unescaped backtick, so a nested template (`` `a${`b`}c` ``) is still
- * mis-scanned. The worst a wrong extent does is misalign one call's argument
- * indices or leave text that does not parse, and the uniqueness guard, the parse
- * check and the first-party name gate keep either from asserting a spurious
- * symbol. -1 if unmatched.
+ * depth and skipping string literals, comments and regex literals. A quote or
+ * bracket inside `/["']/g` or `/* don't *\/` once ended the extent early, and the
+ * param env lane then lost every read in that function.
+ *
+ * A `/` opens a regex unless the previous TOKEN ends a value: an identifier that
+ * is not a keyword such as `return`, a property name after `.` (`b.return/2`), a
+ * number, a string, a regex, `)`, `]`, `}` or a postfix `++`/`--`. The scan tracks
+ * that token as it moves forward, so text in a comment never counts. A regex after a block's `}` or after `if(…)` still reads as
+ * division. A backtick runs to the next unescaped backtick, so a nested template
+ * (`` `a${`b`}c` ``) is still mis-scanned. The worst a wrong extent does is
+ * misalign one call's argument indices or leave text that does not parse, and the
+ * uniqueness guard, the parse check and the first-party name gate keep either from
+ * asserting a spurious symbol. -1 if unmatched.
  */
+/** A character of an identifier or a number, non-ASCII letters included. */
+const WORD_CHAR = /[\p{ID_Continue}$]/u;
+
 function matchBracket(src: string, open: number): number {
   const close: Record<string, string> = { '(': ')', '[': ']', '{': '}' };
   const stack: string[] = [close[src[open] as string] as string];
+  let afterValue = false;
+  // A word after `.` is a property name, so even `return` there is a value.
+  let afterDot = false;
   for (let i = open + 1; i < src.length; i++) {
     const c = src[i] as string;
+    if (/\s/.test(c)) continue;
+    const dot = afterDot;
+    afterDot = false;
     if (c === '"' || c === "'" || c === '`') {
       for (i++; i < src.length; i++) {
         if (src[i] === '\\') i++;
         else if (src[i] === c) break;
       }
+      afterValue = true;
       continue;
     }
     if (c === '/' && src[i + 1] === '/') {
@@ -396,7 +406,7 @@ function matchBracket(src: string, open: number): number {
       i = end + 1;
       continue;
     }
-    if (c === '/' && regexCanStart(src, i)) {
+    if (c === '/' && !afterValue) {
       let inClass = false;
       for (i++; i < src.length; i++) {
         const r = src[i];
@@ -406,13 +416,32 @@ function matchBracket(src: string, open: number): number {
         else if (r === '/' && !inClass) break;
         else if (r === '\n') return -1;
       }
+      afterValue = true;
       continue;
     }
-    if (c === '(' || c === '[' || c === '{') stack.push(close[c] as string);
-    else if (c === ')' || c === ']' || c === '}') {
+    if (WORD_CHAR.test(c)) {
+      let j = i;
+      while (j < src.length && WORD_CHAR.test(src[j] as string)) j++;
+      afterValue = dot || !REGEX_AFTER_WORD.has(src.slice(i, j));
+      i = j - 1;
+      continue;
+    }
+    // A postfix `++`/`--` leaves a value, and a prefix one is followed by its operand.
+    if ((c === '+' || c === '-') && src[i + 1] === c) {
+      i++;
+      continue;
+    }
+    if (c === '(' || c === '[' || c === '{') {
+      stack.push(close[c] as string);
+      afterValue = false;
+    } else if (c === ')' || c === ']' || c === '}') {
       if (stack[stack.length - 1] !== c) return -1;
       stack.pop();
       if (stack.length === 0) return i;
+      afterValue = true;
+    } else {
+      afterValue = false;
+      afterDot = c === '.';
     }
   }
   return -1;
