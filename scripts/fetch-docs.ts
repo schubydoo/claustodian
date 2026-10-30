@@ -1040,7 +1040,12 @@ export function parseDocPage(
   let descIndex = 1;
   let envIndex = -1;
   let header: string[] = [];
-  for (const line of markdown.split('\n')) {
+  for (const raw of markdown.split('\n')) {
+    // A table inside a tab or a callout is quoted (`> | --flag | … |`). Unquote it
+    // only when what follows is a table row, so a quoted heading still counts as
+    // text and cannot move the section.
+    const unquoted = raw.replace(/^(?:\s*>)+\s?/, '');
+    const line = /^\s*\|/.test(unquoted) ? unquoted : raw;
     if (!/^\s*\|/.test(line)) inTable = false;
     const heading = /^#{2,4}\s+(.*)$/.exec(line);
     if (heading) {
