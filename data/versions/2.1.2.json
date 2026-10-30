@@ -3166,6 +3166,19 @@
       "category": "other"
     },
     {
+      "symbol": "CLAUDECODE",
+      "type": "env_var",
+      "first_seen": "0.2.47",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Set to `1` in subprocesses Claude Code spawns (Bash and PowerShell tools, tmux sessions, hook commands, status line commands, stdio MCP server subprocesses). IDE extensions also set this in their integrated terminals. Use to detect when a script is running inside a subprocess spawned by Claude Code.",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_AGENT_SDK_VERSION",
       "type": "env_var",
       "first_seen": "1.0.128",
@@ -4283,6 +4296,32 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_PLUGIN_ROOT",
+      "type": "env_var",
+      "first_seen": "1.0.85",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Absolute path of the plugin's installed version",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_PROJECT_DIR",
+      "type": "env_var",
+      "first_seen": "1.0.58",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "The project root",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {

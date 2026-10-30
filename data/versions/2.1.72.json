@@ -4778,7 +4778,7 @@
     {
       "symbol": "CLAUDECODE",
       "type": "env_var",
-      "first_seen": "2.1.40",
+      "first_seen": "0.2.47",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -5811,6 +5811,18 @@
       "type": "env_var",
       "first_seen": "2.1.23",
       "removed_in": "2.1.89",
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_FORCE_SANDBOX",
+      "type": "env_var",
+      "first_seen": "2.1.51",
+      "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -6892,6 +6904,32 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_PLUGIN_ROOT",
+      "type": "env_var",
+      "first_seen": "1.0.85",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Absolute path of the plugin's installed version",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_PROJECT_DIR",
+      "type": "env_var",
+      "first_seen": "1.0.58",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "The project root",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {

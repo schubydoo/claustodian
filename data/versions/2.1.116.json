@@ -6604,7 +6604,7 @@
     {
       "symbol": "CLAUDECODE",
       "type": "env_var",
-      "first_seen": "2.1.40",
+      "first_seen": "0.2.47",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -7956,6 +7956,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_FORCE_SANDBOX",
+      "type": "env_var",
+      "first_seen": "2.1.51",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_FRAME_TIMING_LOG",
       "type": "env_var",
       "first_seen": "2.1.74",
@@ -8573,7 +8585,31 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_PROXY_AUTHENTICATE",
+      "type": "env_var",
+      "first_seen": "2.1.111",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_PROXY_AUTH_HELPER_TTL_MS",
+      "type": "env_var",
+      "first_seen": "2.1.111",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_PROXY_HOST",
       "type": "env_var",
       "first_seen": "2.1.111",
       "removed_in": null,
@@ -8596,6 +8632,18 @@
       "description": "Set to `1` to allow the proxy to perform DNS resolution instead of the caller. Opt-in for environments where the proxy should handle hostname resolution",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_PROXY_URL",
+      "type": "env_var",
+      "first_seen": "2.1.111",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -9548,6 +9596,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_INTERNAL_ASSISTANT_TEAM_NAME",
+      "type": "env_var",
+      "first_seen": "2.1.108",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_LOCAL_OAUTH_API_BASE",
       "type": "env_var",
       "first_seen": "2.1.85",
@@ -9586,13 +9646,25 @@
     {
       "symbol": "CLAUDE_PLUGIN_ROOT",
       "type": "env_var",
-      "first_seen": "2.1.94",
-      "first_seen_estimated": true,
+      "first_seen": "1.0.85",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Absolute path of the plugin's installed version",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_PROJECT_DIR",
+      "type": "env_var",
+      "first_seen": "1.0.58",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "The project root",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
