@@ -369,6 +369,120 @@ function matchBracket(src: string, open: number): number {
   return -1;
 }
 
+/**
+ * Words after which a `/` starts a regex literal, although they look like values.
+ * `of` is left out: minified code uses it as a variable name (2.1.312 has
+ * `${of/1000}`), and a regex after `for(x of` is far rarer.
+ */
+const REGEX_AFTER_WORD: ReadonlySet<string> = new Set([
+  'return',
+  'typeof',
+  'case',
+  'do',
+  'else',
+  'in',
+  'void',
+  'delete',
+  'instanceof',
+  'throw',
+  'new',
+  'yield',
+  'await',
+]);
+
+/**
+ * matchBracket that also skips comments and regex literals. A quote or bracket
+ * inside `/["']/g` or `/* don't *\/` ends matchBracket's extent early, and the
+ * param env lane then loses every read in that function. This is a heuristic
+ * tokenizer, and some code that matchBracket reads right it reads wrong (a regex
+ * holding `/` right after a block's `}`), so extractParamEnvVars uses it only as a
+ * fallback, for a function that matchBracket could not resolve.
+ *
+ * A `/` opens a regex unless the previous TOKEN ends a value: an identifier that
+ * is not a keyword such as `return`, a property name after `.` (`b.return/2`), a
+ * number, a string, a regex, `)`, `]`, `}` or a postfix `++`/`--`. The scan tracks
+ * that token as it moves forward, so text in a comment never counts. A regex after a block's `}` or after `if(…)` still reads as
+ * division. A backtick runs to the next unescaped backtick, so a nested template
+ * (`` `a${`b`}c` ``) is still mis-scanned. The worst a wrong extent does is
+ * misalign one call's argument indices or leave text that does not parse, and the
+ * uniqueness guard, the parse check and the first-party name gate keep either from
+ * asserting a spurious symbol. -1 if unmatched.
+ */
+/** A character of an identifier or a number, non-ASCII letters included. */
+const WORD_CHAR = /[\p{ID_Continue}$]/u;
+
+function matchBracketLexed(src: string, open: number): number {
+  const close: Record<string, string> = { '(': ')', '[': ']', '{': '}' };
+  const stack: string[] = [close[src[open] as string] as string];
+  let afterValue = false;
+  // A word after `.` is a property name, so even `return` there is a value.
+  let afterDot = false;
+  for (let i = open + 1; i < src.length; i++) {
+    const c = src[i] as string;
+    if (/\s/.test(c)) continue;
+    const dot = afterDot;
+    afterDot = false;
+    if (c === '"' || c === "'" || c === '`') {
+      for (i++; i < src.length; i++) {
+        if (src[i] === '\\') i++;
+        else if (src[i] === c) break;
+      }
+      afterValue = true;
+      continue;
+    }
+    if (c === '/' && src[i + 1] === '/') {
+      while (i < src.length && src[i] !== '\n') i++;
+      continue;
+    }
+    if (c === '/' && src[i + 1] === '*') {
+      const end = src.indexOf('*/', i + 2);
+      if (end < 0) return -1;
+      i = end + 1;
+      continue;
+    }
+    if (c === '/' && !afterValue) {
+      let inClass = false;
+      for (i++; i < src.length; i++) {
+        const r = src[i];
+        if (r === '\\') i++;
+        else if (r === '[') inClass = true;
+        else if (r === ']') inClass = false;
+        else if (r === '/' && !inClass) break;
+        else if (r === '\n') return -1;
+      }
+      afterValue = true;
+      continue;
+    }
+    if (WORD_CHAR.test(c)) {
+      let j = i;
+      while (j < src.length && WORD_CHAR.test(src[j] as string)) j++;
+      afterValue = dot || !REGEX_AFTER_WORD.has(src.slice(i, j));
+      i = j - 1;
+      continue;
+    }
+    // A postfix `++`/`--` leaves a value, and a prefix one is followed by its operand.
+    if ((c === '+' || c === '-') && src[i + 1] === c) {
+      i++;
+      continue;
+    }
+    if (c === '(' || c === '[' || c === '{') {
+      stack.push(close[c] as string);
+      afterValue = false;
+    } else if (c === ')' || c === ']' || c === '}') {
+      if (stack[stack.length - 1] !== c) return -1;
+      stack.pop();
+      if (stack.length === 0) return i;
+      afterValue = true;
+    } else {
+      afterValue = false;
+      // Only a single dot is property access: a word after the `...` of a spread is
+      // an operand (`[...await /re/.exec(s)]`), and `?.` ends with a single dot.
+      afterDot = c === '.' && src[i - 1] !== '.' && src[i + 1] !== '.';
+    }
+  }
+  return -1;
+}
+
 /** Split a bracket interior on TOP-LEVEL commas (same nesting/string rules). */
 function splitTopLevel(s: string): string[] {
   const out: string[] = [];
@@ -421,13 +535,18 @@ function paramBinding(p: string): { name: string; envDefault: boolean } | null {
  * whose parameter list opens at `paramOpen`, or `undefined` when its extent
  * cannot be matched.
  */
-function functionText(src: string, start: number, paramOpen: number): string | undefined {
-  const paramEnd = matchBracket(src, paramOpen);
+function functionText(
+  src: string,
+  start: number,
+  paramOpen: number,
+  scan: (src: string, open: number) => number = matchBracket
+): string | undefined {
+  const paramEnd = scan(src, paramOpen);
   if (paramEnd < 0) return undefined;
   let bodyOpen = paramEnd + 1;
   while (bodyOpen < src.length && /\s/.test(src[bodyOpen] as string)) bodyOpen++;
   if (src[bodyOpen] !== '{') return undefined;
-  const bodyEnd = matchBracket(src, bodyOpen);
+  const bodyEnd = scan(src, bodyOpen);
   return bodyEnd < 0 ? undefined : src.slice(start, bodyEnd + 1);
 }
 
@@ -507,12 +626,11 @@ function blockBinds(statements: unknown, name: string): boolean {
  * expressions it replaces got property keys, default values and arrow bodies wrong.
  *
  * Returns undefined when the text does not parse, and the caller then takes no
- * read from it: text that cannot be resolved proves nothing. matchBracket finds
- * the extent and does not read comments, so in unminified bundled code an
- * apostrophe in a comment can end the text early (`getColorDepth` from
- * supports-color, 2.1.113). A 12-version subset re-extract loses no symbol to this.
+ * read from it: text that cannot be resolved proves nothing. Bun's own syntax
+ * still fails here: supports-color's `getColorDepth` carries `@undefined`. Its only
+ * read is `FORCE_COLOR`, which the first-party gate drops anyway.
  */
-function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
+function outerParamRefs(fnText: string, name: string, index?: number): Set<number> | undefined {
   const parse = (text: string) =>
     parseSync('fn.js', `(${text})`) as unknown as {
       program: { body: AstNode[] };
@@ -533,8 +651,16 @@ function outerParamRefs(fnText: string, name: string): Set<number> | undefined {
   const fn = isNode(wrapped) ? wrapped.expression : undefined;
   if (parsed.errors.length > 0 || !isNode(fn) || !FUNCTION_TYPES.has(fn.type)) return undefined;
   // The name must be one of this function's own parameters. A name taken from a
-  // default nested inside a parameter is some other binding.
-  if (!(fn.params as unknown[]).some((p) => patternBinds(p, name))) return undefined;
+  // default nested inside a parameter is some other binding. With `index`, it must
+  // be that parameter: a call binds process.env by position, and a split that
+  // miscounts (the brackets of `/[)]/`) would otherwise bind the wrong one.
+  const params = fn.params as unknown[];
+  if (
+    index === undefined
+      ? !params.some((p) => patternBinds(p, name))
+      : !patternBinds(params[index], name)
+  )
+    return undefined;
   const refs = new Set<number>();
   const walk = (node: unknown, hidden: boolean): void => {
     if (Array.isArray(node)) {
@@ -647,6 +773,9 @@ export function extractParamEnvVars(src: string): Map<string, string> {
   const envArg = new Map<string, Set<number>>();
   for (const m of src.matchAll(/\b([A-Za-z_$][\w$]*)\(/g)) {
     const open = (m.index as number) + m[0].length - 1;
+    // The plain scan only. splitTopLevel below splits the arguments by the same
+    // rules, so a call that only the lexed scan could bound would be split wrong,
+    // and `f(/[)]/,process.env)` would bind process.env to the regex's position.
     const end = matchBracket(src, open);
     // Skip pathologically wide call spans (a whole minified IIFE body); an
     // env-passing call's argument list is far shorter, so this only drops noise.
@@ -666,59 +795,101 @@ export function extractParamEnvVars(src: string): Map<string, string> {
   // reused minified name and stay ambiguous. A definition whose extent cannot be
   // matched counts as distinct, so it can only make a name ambiguous.
   const defTexts = new Map<string, Set<string>>();
-  for (const m of src.matchAll(/\bfunction\s+([A-Za-z_$][\w$]*)\s*\(/g)) {
+  for (const m of src.matchAll(/\bfunction\s*\*?\s*([A-Za-z_$][\w$]*)\s*\(/g)) {
     const at = m.index as number;
-    const text = functionText(src, at, at + m[0].length - 1) ?? `\0${at}`;
+    // The lexed scan only where the plain one fails: two copies that both fail
+    // would otherwise count as two different definitions and lose the binding.
+    const popen = at + m[0].length - 1;
+    const text =
+      functionText(src, at, popen) ?? functionText(src, at, popen, matchBracketLexed) ?? `\0${at}`;
     const texts = defTexts.get(m[1] as string);
     if (texts) texts.add(text);
     else defTexts.set(m[1] as string, new Set([text]));
   }
   // Pass 2: function definitions -> `param.NAME` reads where the param is env-bound.
+  // Each function is read with matchBracket first. Only when that leaves an
+  // env-bound function unresolved (no extent, or text that does not parse) is it
+  // read again with matchBracketLexed, and the reads are combined. So this never
+  // loses a read that matchBracket alone finds.
   const out = new Map<string, string>();
-  for (const m of src.matchAll(/\bfunction\s*([A-Za-z_$][\w$]*)?\s*\(/g)) {
-    const fname = m[1];
-    const popen = (m.index as number) + m[0].length - 1;
-    const pend = matchBracket(src, popen);
-    if (pend < 0) continue;
-    let bi = pend + 1;
-    while (bi < src.length && /\s/.test(src[bi] as string)) bi++;
-    if (src[bi] !== '{') continue;
-    const bend = matchBracket(src, bi);
-    if (bend < 0) continue;
-    const body = src.slice(bi + 1, bend);
-    splitTopLevel(src.slice(popen + 1, pend)).forEach((p, i) => {
-      const bind = paramBinding(p);
-      if (!bind || !/^[A-Za-z_$][\w$]*$/.test(bind.name)) return;
-      const callBound =
-        fname !== undefined &&
-        defTexts.get(fname)?.size === 1 &&
-        (envArg.get(fname)?.has(i) ?? false);
-      if (!bind.envDefault && !callBound) return;
-      // `param.NAME` reads only — a following `=` (not `==`/`===`) is a WRITE.
-      // A `(?<![\w$])` lookbehind (not `\b`) anchors the whole param name: `\b`
-      // fails before a `$`-only identifier (a common minifier name), which would
-      // silently drop every read through it. `paramBinding` only ever yields
-      // `[A-Za-z_$][\w$]*`, so `$` is the sole metachar it can contain, but escape
-      // the full regex metaclass anyway — complete rather than input-dependent.
-      const safeName = bind.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re = new RegExp(
-        '(?<![\\w$])' + safeName + '\\.([A-Z][A-Z0-9_]{2,})\\b(?!\\s*=(?!=))',
-        'g'
-      );
-      let refs: Set<number> | undefined | null = null;
-      for (const r of body.matchAll(re)) {
-        // Offsets in the function text: `body` starts just inside its brace.
-        if (refs === null) refs = outerParamRefs(src.slice(m.index as number, bend + 1), bind.name);
-        if (!refs || !refs.has(bi + 1 - (m.index as number) + (r.index as number))) continue;
-        const name = r[1] as string;
-        if (SYMBOL_DENYLIST.has(name)) continue;
-        const category = categorize(name, 'env_var');
-        if (!isAccessorEvidenceEnv(name, category)) continue;
-        out.set(name, category);
-      }
-    });
+  for (const m of src.matchAll(/\bfunction\s*\*?\s*([A-Za-z_$][\w$]*)?\s*\(/g)) {
+    const first = paramReadsIn(src, m, matchBracket, defTexts, envArg);
+    const reads = first.resolved
+      ? first.reads
+      : new Map([
+          ...first.reads,
+          ...paramReadsIn(src, m, matchBracketLexed, defTexts, envArg).reads,
+        ]);
+    for (const [name, category] of reads) out.set(name, category);
   }
   return out;
+}
+
+/**
+ * The env reads of one function definition `m` through its env-bound params, its
+ * extent found with `scan`. `resolved` is false when an env-bound function could
+ * not be read: `scan` found no extent, or its text did not parse.
+ */
+function paramReadsIn(
+  src: string,
+  m: RegExpMatchArray,
+  scan: (src: string, open: number) => number,
+  defTexts: ReadonlyMap<string, Set<string>>,
+  envArg: ReadonlyMap<string, Set<number>>
+): { reads: Map<string, string>; resolved: boolean } {
+  const reads = new Map<string, string>();
+  const fname = m[1];
+  const popen = (m.index as number) + m[0].length - 1;
+  const pend = scan(src, popen);
+  if (pend < 0) return { reads, resolved: false };
+  let bi = pend + 1;
+  while (bi < src.length && /\s/.test(src[bi] as string)) bi++;
+  // Valid code always has a body here, so its absence means the scan ended the
+  // parameter list too early (`r=/\)/`). That is unresolved, not a function without reads.
+  if (src[bi] !== '{') return { reads, resolved: false };
+  const bend = scan(src, bi);
+  if (bend < 0) return { reads, resolved: false };
+  // The whole function, not only its body: a later parameter's default can read
+  // an earlier one (`function f(n=process.env,t=n.CLAUDE_CODE_X){…}`).
+  const fnText = src.slice(m.index as number, bend + 1);
+  let resolved = true;
+  splitTopLevel(src.slice(popen + 1, pend)).forEach((p, i) => {
+    const bind = paramBinding(p);
+    if (!bind || !/^[A-Za-z_$][\w$]*$/.test(bind.name)) return;
+    const callBound =
+      fname !== undefined &&
+      defTexts.get(fname)?.size === 1 &&
+      (envArg.get(fname)?.has(i) ?? false);
+    if (!bind.envDefault && !callBound) return;
+    // Parsed for every env-bound param, even with no read in sight: an extent cut
+    // short can hide the read, and only the parse failure shows that it was cut.
+    // A call binds by position, so the parser must agree on it. A default binds by name.
+    const refs = outerParamRefs(fnText, bind.name, bind.envDefault ? undefined : i);
+    if (!refs) {
+      resolved = false;
+      return;
+    }
+    // `param.NAME` reads only — a following `=` (not `==`/`===`) is a WRITE.
+    // A `(?<![\w$])` lookbehind (not `\b`) anchors the whole param name: `\b`
+    // fails before a `$`-only identifier (a common minifier name), which would
+    // silently drop every read through it. `paramBinding` only ever yields
+    // `[A-Za-z_$][\w$]*`, so `$` is the sole metachar it can contain, but escape
+    // the full regex metaclass anyway — complete rather than input-dependent.
+    const safeName = bind.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(
+      '(?<![\\w$])' + safeName + '\\.([A-Z][A-Z0-9_]{2,})\\b(?!\\s*=(?!=))',
+      'g'
+    );
+    for (const r of fnText.matchAll(re)) {
+      if (!refs.has(r.index as number)) continue;
+      const name = r[1] as string;
+      if (SYMBOL_DENYLIST.has(name)) continue;
+      const category = categorize(name, 'env_var');
+      if (!isAccessorEvidenceEnv(name, category)) continue;
+      reads.set(name, category);
+    }
+  });
+  return { reads, resolved };
 }
 
 /**

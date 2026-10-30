@@ -1234,3 +1234,143 @@ describe('command alias evidence', () => {
     expect(evidenceOf(src, '/checkup')).toBe('command-alias');
   });
 });
+
+describe('extractParamEnvVars — function extents and shapes', () => {
+  const read = (src: string) => extractParamEnvVars(src).has('CLAUDE_CODE_X');
+  const tail = ';return e.CLAUDE_CODE_X}f(process.env);';
+
+  it('reads past a regex literal that holds a quote or a bracket', () => {
+    expect(read('function f(e){let t=/"/g' + tail)).toBe(true);
+    expect(read('function f(e){let t=/[{]/' + tail)).toBe(true);
+    expect(read('function f(e){let t=/\\(/' + tail)).toBe(true);
+    expect(read(`function f(e){let t=x.replace(/^['"]|['"]$/g,"")` + tail)).toBe(true);
+  });
+
+  it('reads past a comment that holds a quote', () => {
+    expect(read("function f(e){/* don't */return e.CLAUDE_CODE_X}f(process.env);")).toBe(true);
+    expect(read("function f(e){// don't\nreturn e.CLAUDE_CODE_X}f(process.env);")).toBe(true);
+  });
+
+  it('ignores what a comment ends with when it reads the token before a slash', () => {
+    // Each comment ends with a value-like character; the slash after it opens a regex.
+    expect(read('function f(e){let t=// "\n/[{]/;return e.CLAUDE_CODE_X}f(process.env);')).toBe(
+      true
+    );
+    expect(read('function f(e){let t=// i++\n/[{]/;return e.CLAUDE_CODE_X}f(process.env);')).toBe(
+      true
+    );
+    expect(read('function f(e){let t=/* x) */ /[{]/;return e.CLAUDE_CODE_X}f(process.env);')).toBe(
+      true
+    );
+  });
+
+  it('reads a keyword after a dot as a property name, so the slash divides', () => {
+    for (const body of [
+      'var a=b.return/2',
+      'var a=b?.in/2',
+      'var a=b. typeof/2',
+      'var a=b\n.case/2',
+    ])
+      expect(read(`function f(e){${body}` + tail), body).toBe(true);
+  });
+
+  it('keeps every read that the plain bracket scan finds', () => {
+    // Each misleads the token-aware scan, so only the plain scan reads it; see
+    // matchBracketLexed. They came from an adversarial probe against main.
+    for (const body of [
+      'if(b){}/[/]/.test(b)',
+      'while(0)/\\//.test(b)',
+      'var a=b./**/return/2',
+      'class K{#return=1;m(){return this.#return/2}}',
+      'var a=1./2',
+      'var a=1..in/2',
+    ])
+      expect(read(`function f(e){${body}` + tail), body).toBe(true);
+  });
+
+  it('reads strings, postfix operators and bracket mismatches on the fallback scan', () => {
+    // The `)` in `/[)]/` ends the plain scan, so each of these reaches the token-aware one.
+    expect(read('function f(e){let t=/[)]/,u="a\\"b",v=i++/2' + tail)).toBe(true);
+    expect(read('function f(e){let t=/[)]/;(]' + tail)).toBe(false);
+  });
+
+  it('falls back when the plain scan ends the parameter list early', () => {
+    expect(read('function f(e=process.env,r=/\\)/){return e.CLAUDE_CODE_X}')).toBe(true);
+  });
+
+  it('falls back for two identical copies of a function', () => {
+    const fn = 'function f(e){let r=/[)]/;return e.CLAUDE_CODE_X}';
+    expect(read(`${fn}${fn}f(process.env);`)).toBe(true);
+  });
+
+  it('binds process.env only to the parameter at its position', () => {
+    // The fallback finds this parameter list, but splitTopLevel miscounts the
+    // regex's brackets and would number `t` as the second parameter. The same
+    // miscount makes `function f(r=/[)]/,e){…}f(1,process.env)` a miss, as on main.
+    expect(read('function f(r=/[)]/,s,t){return t.CLAUDE_CODE_X}f(1,process.env,2);')).toBe(false);
+  });
+
+  it('binds no argument of a call that only the lexed scan could bound', () => {
+    // splitTopLevel would count the regex's brackets and give process.env index 0.
+    expect(read('function f(r,e){return r.CLAUDE_CODE_X}f(/[)]/,process.env);')).toBe(false);
+  });
+
+  it('opens a regex after a keyword that follows a spread', () => {
+    expect(
+      read(
+        'async function f(e){let t=[...await /[{]/.exec("{")];return e.CLAUDE_CODE_X}f(process.env);'
+      )
+    ).toBe(true);
+    expect(
+      read('function* f(e){let t=[...yield /[{]/];return e.CLAUDE_CODE_X}f(process.env);')
+    ).toBe(true);
+    expect(
+      read('function f(e){let t={...typeof /[{]/};return e.CLAUDE_CODE_X}f(process.env);')
+    ).toBe(true);
+  });
+
+  it('divides after `of`, a non-ASCII name, and opens a regex after instanceof', () => {
+    expect(read('function f(e){var of=4,a=of/2' + tail)).toBe(true);
+    expect(read('function f(e){var é=1,a=é/2' + tail)).toBe(true);
+    expect(read('function f(e){var a=b instanceof/[)}]/' + tail)).toBe(true);
+  });
+
+  it('opens a regex after a keyword and divides after a regex', () => {
+    expect(
+      read('function f(e){if(x)return/[{]/.test(y);return e.CLAUDE_CODE_X}f(process.env);')
+    ).toBe(true);
+    expect(read('function f(e){let t=/a/g/2' + tail)).toBe(true);
+  });
+
+  it('finds no extent past an unclosed comment or a regex that runs into a newline', () => {
+    expect(read('function f(e){/* never closed return e.CLAUDE_CODE_X}f(process.env);')).toBe(
+      false
+    );
+    expect(read('function f(e){let t=x+ /a\nreturn e.CLAUDE_CODE_X}f(process.env);')).toBe(false);
+  });
+
+  it('still reads a division as a division', () => {
+    expect(read('function f(e){let t=a/b/c' + tail)).toBe(true);
+    expect(read('function f(e){let t=(a)/2/(b)' + tail)).toBe(true);
+    expect(read('function f(e){let t="6"/2' + tail)).toBe(true);
+    expect(read("function f(e){let t='6'/2" + tail)).toBe(true);
+    expect(read('function f(e){let t=`6`/2' + tail)).toBe(true);
+    expect(read('function f(e){let t=i++/2' + tail)).toBe(true);
+    expect(read('function f(e){let t=i--/2' + tail)).toBe(true);
+  });
+
+  it('reads a generator function', () => {
+    expect(read('function*f(e){yield e.CLAUDE_CODE_X}f(process.env);')).toBe(true);
+    expect(read('function* f(e){yield e.CLAUDE_CODE_X}f(process.env);')).toBe(true);
+    expect(read('async function*f(e){yield e.CLAUDE_CODE_X}f(process.env);')).toBe(true);
+  });
+
+  it("reads a later parameter's default", () => {
+    expect(read('function f(e,t=e.CLAUDE_CODE_X){return t}f(process.env);')).toBe(true);
+    expect(read('function f(n=process.env,t=n.CLAUDE_CODE_X){return t}')).toBe(true);
+  });
+
+  it('skips a default whose read goes through a rebound name', () => {
+    expect(read('function f(e,t=(e)=>e.CLAUDE_CODE_X){return t}f(process.env);')).toBe(false);
+  });
+});
