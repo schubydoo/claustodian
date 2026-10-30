@@ -16,6 +16,17 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ---
 
+## 2026-10-30
+
+### Added
+
+- **Command aliases from the binary.** The binary lane now reads each registered
+  command's `aliases` list, for example `/quit` for `/exit` and `/settings` for
+  `/config`. From the next binary re-extract, aliases that no other lane named appear
+  as `command` records with `provenance: binary`. An alias that the changelog or docs
+  already named can get an earlier `first_seen`. An alias has no description of its
+  own.
+
 ## 2026-10-29
 
 ### Fixed

@@ -243,6 +243,7 @@ const COMMAND_DESC = /description:\s*(["'`])((?:(?!\1)[^\\]|\\.)*)\1/;
  * /claude-in-chrome, /dream). We deliberately do NOT key on `aliases:` — that also
  * matches bundled highlight.js language grammars
  * (`{name:"crmsh",aliases:["crm","pcmk"],keywords:…}`), which are not commands.
+ * An `aliases:` list is read only inside an object the marker already proved.
  */
 const SKILL_NAME = /name:\s*["'`]([a-z][a-z0-9-]+)["'`]/g;
 const SKILL_MARKER = /(?:menuDescription|whenToUse):/;
@@ -919,6 +920,7 @@ function objectOpenFrom(src: string, to: number, floor: number): number {
 
 export function extractCommands(src: string): Map<string, string | undefined> {
   const out = new Map<string, string | undefined>(); // "/name" -> description
+  const aliases = new Set<string>();
   for (const anchor of src.matchAll(COMMAND_TYPE)) {
     const t = anchor.index;
     /* v8 ignore next -- a matchAll match always carries a defined .index; the guard only narrows the TS type */
@@ -951,8 +953,31 @@ export function extractCommands(src: string): Map<string, string | undefined> {
     // first definition wins, but let a later one fill in a missing description
     if (!out.has(key)) out.set(key, desc);
     else if (out.get(key) === undefined && desc) out.set(key, desc);
+
+    // The same object's `aliases:[…]` are commands too (`/settings` opens
+    // `/config`). Read only inside an object that already proved itself a command,
+    // so the keybinding table's `{name:"cmd",aliases:["command",…]}` stays out. An
+    // alias takes no description: the text describes the command it points at.
+    const object = src.slice(
+      objectOpenFrom(src, t, t - COMMAND_BACK),
+      objectCloseFrom(src, t, t + COMMAND_FWD)
+    );
+    for (const alias of commandAliases(object)) aliases.add(`/${alias}`);
   }
+  // A name another object registers wins over an alias of the same spelling.
+  for (const alias of aliases) if (!out.has(alias)) out.set(alias, undefined);
   return out;
+}
+
+/** A command object's `aliases:["a","b"]` list, entries in the COMMAND_NAME grammar. */
+const COMMAND_ALIASES = /aliases:\s*\[([^\]]*)\]/;
+const ALIAS_ENTRY = /["'`]([a-z][a-z0-9-]+)["'`]/g;
+
+/** The alias names in one command object's text, or none when it lists no aliases. */
+function commandAliases(object: string): string[] {
+  const list = object.match(COMMAND_ALIASES)?.[1];
+  if (list === undefined) return [];
+  return [...list.matchAll(ALIAS_ENTRY)].flatMap((m) => (m[1] ? [m[1]] : []));
 }
 
 /**
@@ -965,6 +990,7 @@ export function extractCommands(src: string): Map<string, string | undefined> {
  */
 export function extractSkillCommands(src: string): Map<string, string | undefined> {
   const out = new Map<string, string | undefined>(); // "/name" -> description
+  const aliases = new Set<string>();
   const anchors = [...src.matchAll(SKILL_NAME)];
   for (let i = 0; i < anchors.length; i++) {
     const anchor = anchors[i];
@@ -987,7 +1013,10 @@ export function extractSkillCommands(src: string): Map<string, string | undefine
       cleanDescription(mg?.[2], mg?.[1]);
     if (!out.has(key)) out.set(key, desc);
     else if (out.get(key) === undefined && desc) out.set(key, desc);
+    // Same rule as extractCommands: aliases only from an object the marker proved.
+    for (const alias of commandAliases(object)) aliases.add(`/${alias}`);
   }
+  for (const alias of aliases) if (!out.has(alias)) out.set(alias, undefined);
   return out;
 }
 
