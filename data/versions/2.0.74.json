@@ -885,6 +885,44 @@
       "category": "command"
     },
     {
+      "symbol": "/allowed-tools",
+      "type": "command",
+      "first_seen": "0.2.40",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "List all currently allowed tools",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "/android",
+      "type": "command",
+      "first_seen": "2.0.72",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
+      "symbol": "/bashes",
+      "type": "command",
+      "first_seen": "1.0.18",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "List and manage background tasks",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
       "symbol": "/bug",
       "type": "command",
       "first_seen": "0.2.9",
@@ -895,6 +933,18 @@
       "description": "Submit feedback about Claude Code",
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/checkpoint",
+      "type": "command",
+      "first_seen": "2.0.2",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -1158,6 +1208,18 @@
       "category": "command"
     },
     {
+      "symbol": "/ios",
+      "type": "command",
+      "first_seen": "2.0.72",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
       "symbol": "/login",
       "type": "command",
       "first_seen": "0.2.9",
@@ -1181,6 +1243,18 @@
       "description": "Sign out from your Anthropic account",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/marketplace",
+      "type": "command",
+      "first_seen": "2.0.37",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -1233,6 +1307,18 @@
       "description": "Set the AI model for Claude Code",
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/new",
+      "type": "command",
+      "first_seen": "1.0.108",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -1302,6 +1388,18 @@
       "category": "command"
     },
     {
+      "symbol": "/plugins",
+      "type": "command",
+      "first_seen": "2.0.12",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
       "symbol": "/pr-comments",
       "type": "command",
       "first_seen": "0.2.9",
@@ -1325,6 +1423,18 @@
       "description": "View and update your privacy settings. Only available for Pro and Max plan subscribers",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/quit",
+      "type": "command",
+      "first_seen": "0.2.25",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -1377,6 +1487,18 @@
       "description": "Rename the current conversation",
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/reset",
+      "type": "command",
+      "first_seen": "1.0.60",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {

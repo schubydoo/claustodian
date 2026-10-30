@@ -2652,6 +2652,43 @@
       "category": "command"
     },
     {
+      "symbol": "/allowed-tools",
+      "type": "command",
+      "first_seen": "0.2.40",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "List all currently allowed tools",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "/android",
+      "type": "command",
+      "first_seen": "2.0.72",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
+      "symbol": "/app",
+      "type": "command",
+      "first_seen": "2.1.42",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
       "symbol": "/artifact-diagramming",
       "type": "command",
       "first_seen": "2.1.221",
@@ -2730,6 +2767,19 @@
       "category": "command"
     },
     {
+      "symbol": "/bashes",
+      "type": "command",
+      "first_seen": "1.0.18",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "List and manage background tasks",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
       "symbol": "/batch",
       "type": "command",
       "first_seen": "2.1.63",
@@ -2745,12 +2795,11 @@
     {
       "symbol": "/bg",
       "type": "command",
-      "first_seen": "2.1.141",
-      "first_seen_estimated": true,
+      "first_seen": "2.1.119",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -2767,6 +2816,30 @@
       "description": "Create a branch of the current conversation at this point, so you can try a different direction without losing the conversation as it stands. Switches you into the branch and preserves the original, which you can return to with `/resume`. To run a copy as a separate background session instead of switching into it, use `/fork`; to hand a side task to a subagent that reports back into this conversation, use `/subtask`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/break-reminder",
+      "type": "command",
+      "first_seen": "2.1.149",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
+      "symbol": "/breaks",
+      "type": "command",
+      "first_seen": "2.1.149",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -2846,6 +2919,18 @@
       "description": "Move this session to a new working directory, keeping the conversation. Type a partial path to see matching directory suggestions; press `Tab` to accept one. For what Claude Code applies from the new directory as soon as you move, and how `/cd` differs from `/add-dir`, see Move the session to another directory",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/checkpoint",
+      "type": "command",
+      "first_seen": "2.0.2",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -3003,6 +3088,18 @@
       "confidence": "high",
       "description": "Visualize current context usage as a colored grid. Shows optimization suggestions for context-heavy tools, memory bloat, and capacity warnings. When the conversation exceeds the context window, the output includes a warning showing how far over the limit you are and which command frees space. In fullscreen mode, `/context` collapses the per-item breakdown to keep the grid visible. Pass `all` to expand it",
       "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/continue",
+      "type": "command",
+      "first_seen": "2.1.32",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3188,6 +3285,18 @@
       "description": "Health-check your setup and fix issues: installation, unused extensions, duplicated or bloated memory files, slow hooks, updates, permissions",
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/downtime",
+      "type": "command",
+      "first_seen": "2.1.149",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -3478,6 +3587,18 @@
       "category": "command"
     },
     {
+      "symbol": "/ios",
+      "type": "command",
+      "first_seen": "2.0.72",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
       "symbol": "/keybindings",
       "type": "command",
       "first_seen": "2.1.6",
@@ -3556,6 +3677,18 @@
       "description_source": "binary"
     },
     {
+      "symbol": "/marketplace",
+      "type": "command",
+      "first_seen": "2.0.37",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
       "symbol": "/mcp",
       "type": "command",
       "first_seen": "0.2.41",
@@ -3579,6 +3712,18 @@
       "description": "Open a memory file in your editor",
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/memory-pause",
+      "type": "command",
+      "first_seen": "2.1.187",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -3644,6 +3789,30 @@
       "source_url": null,
       "category": "command",
       "description_source": "binary"
+    },
+    {
+      "symbol": "/name",
+      "type": "command",
+      "first_seen": "2.1.116",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/new",
+      "type": "command",
+      "first_seen": "1.0.108",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
     },
     {
       "symbol": "/output-style",
@@ -3740,12 +3909,11 @@
     {
       "symbol": "/plugins",
       "type": "command",
-      "first_seen": "2.1.2",
-      "first_seen_estimated": true,
+      "first_seen": "2.0.12",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -3829,6 +3997,18 @@
       "description_source": "binary"
     },
     {
+      "symbol": "/quit",
+      "type": "command",
+      "first_seen": "0.2.25",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
       "symbol": "/radio",
       "type": "command",
       "first_seen": "2.1.132",
@@ -3852,6 +4032,18 @@
       "description": "Show options when rate limit is reached",
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/rc",
+      "type": "command",
+      "first_seen": "2.1.51",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -3907,6 +4099,18 @@
       "category": "command"
     },
     {
+      "symbol": "/remote",
+      "type": "command",
+      "first_seen": "2.1.15",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
       "symbol": "/remote-control",
       "type": "command",
       "first_seen": "2.1.51",
@@ -3946,6 +4150,18 @@
       "category": "command"
     },
     {
+      "symbol": "/reset",
+      "type": "command",
+      "first_seen": "1.0.60",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
       "symbol": "/resume",
       "type": "command",
       "first_seen": "1.0.26",
@@ -3982,6 +4198,18 @@
       "description": "Rewind the conversation and/or code to a previous point, or summarize from a selected message. See checkpointing. Aliases: `/checkpoint`, `/undo`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/routines",
+      "type": "command",
+      "first_seen": "2.1.111",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -4130,12 +4358,11 @@
     {
       "symbol": "/share",
       "type": "command",
-      "first_seen": "2.1.187",
-      "first_seen_estimated": true,
+      "first_seen": "2.1.144",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -4348,6 +4575,18 @@
       "source_url": null,
       "category": "command",
       "description_source": "binary"
+    },
+    {
+      "symbol": "/tp",
+      "type": "command",
+      "first_seen": "2.1.92",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
     },
     {
       "symbol": "/tui",

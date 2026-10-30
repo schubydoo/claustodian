@@ -662,10 +662,23 @@
       "category": "command"
     },
     {
+      "symbol": "/allowed-tools",
+      "type": "command",
+      "first_seen": "0.2.40",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "List all currently allowed tools",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
       "symbol": "/bashes",
       "type": "command",
       "first_seen": "1.0.18",
-      "removed_in": "2.0.45",
+      "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -685,6 +698,18 @@
       "description": "Submit feedback about Claude Code",
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/checkpoint",
+      "type": "command",
+      "first_seen": "2.0.2",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -974,6 +999,18 @@
       "category": "command"
     },
     {
+      "symbol": "/new",
+      "type": "command",
+      "first_seen": "1.0.108",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
       "symbol": "/output-style",
       "type": "command",
       "first_seen": "1.0.78",
@@ -1027,6 +1064,18 @@
       "category": "command"
     },
     {
+      "symbol": "/quit",
+      "type": "command",
+      "first_seen": "0.2.25",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
       "symbol": "/release-notes",
       "type": "command",
       "first_seen": "0.2.9",
@@ -1037,6 +1086,18 @@
       "description": "View the changelog in an interactive version picker. Select a specific version to see its release notes, or choose to show all versions. The notes appear in your transcript without entering the conversation Claude sees",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/reset",
+      "type": "command",
+      "first_seen": "1.0.60",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
