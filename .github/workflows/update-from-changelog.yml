@@ -174,7 +174,8 @@ jobs:
       - name: Validate regenerated data
         run: npm run validate
       # Blocking here: the dataset was just regenerated from the live changelog in
-      # this run, so it must cover every changelog symbol. This is the drift gate
+      # this run, so it must cover every changelog symbol that the docs or the binary
+      # lane supports (the scrape withholds the rest). This is the drift gate
       # (moved off per-PR validate, where it wrongly failed unrelated PRs on any
       # upstream release).
       - name: Verify regenerated dataset covers the changelog
@@ -199,7 +200,12 @@ jobs:
         id: withheld
         run: |
           since=$(node -p "require('$RUNNER_TEMP/base-latest.json').claudeCodeVersion" | tr -d '\n')
-          echo "names=$(npm run --silent coverage -- --withheld-since "$since")" >> "$GITHUB_OUTPUT"
+          # Advisory, like the guard: a failed sweep must not fail the run, and it must
+          # not read as "nothing withheld" either.
+          if names=$(npm run --silent coverage -- --withheld-since "$since"); then :; else
+            names="UNAVAILABLE (check-coverage exited $?)"
+          fi
+          echo "names=$names" >> "$GITHUB_OUTPUT"
       # Surface the Claude Code version this run targets (latest.json is the
       # freshly regenerated snapshot) so it lands in the PR title / commit / squash.
       # `tr -d '\n'` strips the newline `node -p` prints, keeping GITHUB_OUTPUT's

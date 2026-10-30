@@ -38,9 +38,10 @@ function makeSymbol(overrides: Partial<SymbolRecord> = {}): SymbolRecord {
 }
 
 /**
- * Writes a docs index and binary observations that corroborate `symbols`, and returns
- * the arguments that point main() at them. Without it main() reads the real data/ files,
- * which corroborate no fixture symbol, so the gate would withhold every one.
+ * Writes a docs index and binary observations that corroborate `symbols` and nothing
+ * else, and returns the arguments that point main() at them. Without it main() reads the
+ * real data/ files, so which fixture symbols count as withheld would depend on live data.
+ * Each file carries one unrelated entry, because main() refuses an empty one.
  */
 async function evidenceArgs(
   dir: string,
@@ -48,8 +49,17 @@ async function evidenceArgs(
 ): Promise<string[]> {
   const docsPath = join(dir, 'docs.json');
   const binaryPath = join(dir, 'binary-observations.json');
-  await writeFile(docsPath, JSON.stringify({ symbols: [] }), 'utf-8');
-  await writeFile(binaryPath, JSON.stringify({ symbols }), 'utf-8');
+  const filler = { symbol: '--claustodian-unrelated', type: 'cli_flag' };
+  await writeFile(docsPath, JSON.stringify({ symbols: [filler] }), 'utf-8');
+  await writeFile(
+    binaryPath,
+    JSON.stringify({
+      $generated_by: 'scripts/backfill-binary.ts',
+      source: 'binary',
+      symbols: [...symbols, filler],
+    }),
+    'utf-8'
+  );
   return ['--docs', docsPath, '--binary', binaryPath];
 }
 
@@ -102,7 +112,16 @@ describe('check-coverage main()', () => {
     );
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    const exitCode = await withArgv(['--changelog', changelogPath, '--dataset', datasetPath], main);
+    const exitCode = await withArgv(
+      [
+        '--changelog',
+        changelogPath,
+        '--dataset',
+        datasetPath,
+        ...(await evidenceArgs(tmpDir, FIXTURE_SYMBOLS)),
+      ],
+      main
+    );
 
     expect(exitCode).toBe(0);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('0 changelog symbol'));
@@ -358,6 +377,40 @@ describe('check-coverage main()', () => {
 
     expect(exitCode).toBe(0);
     expect(logSpy).toHaveBeenCalledWith('--turbo CLAUDE_CODE_TURBO');
+  });
+
+  it('refuses an empty binary observations file', async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    const datasetPath = join(tmpDir, 'dataset.json');
+    await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
+    await writeFile(datasetPath, JSON.stringify({ symbols: [] }), 'utf-8');
+    const evidence = await evidenceArgs(tmpDir, []);
+    await writeFile(
+      join(tmpDir, 'binary-observations.json'),
+      JSON.stringify({
+        $generated_by: 'scripts/backfill-binary.ts',
+        source: 'binary',
+        symbols: [],
+      }),
+      'utf-8'
+    );
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const exitCode = await withArgv(
+      ['--changelog', changelogPath, '--dataset', datasetPath, ...evidence],
+      main
+    );
+
+    expect(exitCode).toBe(1);
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('has 0 symbols'));
+  });
+
+  it('names a version, not a path, when --withheld-since has no value', async () => {
+    await expect(withArgv(['--withheld-since'], main)).rejects.toThrow(
+      '--withheld-since requires a version argument'
+    );
   });
 
   it('throws when a trailing --binary has no value', async () => {

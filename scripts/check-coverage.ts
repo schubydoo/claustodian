@@ -34,10 +34,11 @@
  */
 import { readFile } from 'node:fs/promises';
 
-import { loadBinaryObservations } from './binary-lane.js';
+import { assertBinaryObservations, loadBinaryObservations } from './binary-lane.js';
 import { compareVersionsAsc, runCli, loadChangelog } from './lib.js';
 import { CONFIRMED_REMOVALS } from './removals.js';
 import {
+  assertNonEmptyDocs,
   collectChangelogSymbols,
   loadDocsIndex,
   parseChangelog,
@@ -136,9 +137,9 @@ function parseArgs(argv: string[]): CliOptions {
     docsPath: 'data/docs.json',
     binaryPath: 'data/binary-observations.json',
   };
-  const valueOf = (flag: string, value: string | undefined): string => {
+  const valueOf = (flag: string, value: string | undefined, kind = 'path'): string => {
     if (!value || value.startsWith('--')) {
-      throw new Error(`${flag} requires a path argument`);
+      throw new Error(`${flag} requires a ${kind} argument`);
     }
     return value;
   };
@@ -164,7 +165,7 @@ function parseArgs(argv: string[]): CliOptions {
     } else if (arg === '--binary') {
       options.binaryPath = valueOf(arg, argv[++i]);
     } else if (arg === '--withheld-since') {
-      options.withheldSince = valueOf(arg, argv[++i]);
+      options.withheldSince = valueOf(arg, argv[++i], 'version');
     }
   }
 
@@ -193,10 +194,13 @@ export async function main(): Promise<number> {
   try {
     md = await loadChangelog(options.changelogPath);
     datasetSymbols = await loadDataset(options.datasetPath);
-    uncorroborated = uncorroboratedBy(
-      await loadDocsIndex(options.docsPath),
-      await loadBinaryObservations(options.binaryPath)
-    );
+    // The scrape's own integrity checks: with an empty file every flag, command and
+    // env var would count as withheld, and the gate would pass with nothing checked.
+    const docs = await loadDocsIndex(options.docsPath);
+    assertNonEmptyDocs(docs, options.docsPath);
+    const binary = await loadBinaryObservations(options.binaryPath);
+    assertBinaryObservations(binary, options.binaryPath);
+    uncorroborated = uncorroboratedBy(docs, binary);
   } catch (err) {
     console.error(
       `Failed to load changelog/dataset: ${err instanceof Error ? err.message : String(err)}`
