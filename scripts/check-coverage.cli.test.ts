@@ -70,16 +70,6 @@ const FIXTURE_SYMBOLS = [
   { symbol: '--claustodian-test-fixture', type: 'cli_flag' },
 ];
 
-async function withArgv<T>(args: string[], fn: () => Promise<T>): Promise<T> {
-  const originalArgv = process.argv;
-  process.argv = ['node', 'check-coverage.ts', ...args];
-  try {
-    return await fn();
-  } finally {
-    process.argv = originalArgv;
-  }
-}
-
 describe('check-coverage main()', () => {
   let tmpDir: string | undefined;
   let logSpy: ReturnType<typeof vi.spyOn>;
@@ -112,16 +102,13 @@ describe('check-coverage main()', () => {
     );
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    const exitCode = await withArgv(
-      [
-        '--changelog',
-        changelogPath,
-        '--dataset',
-        datasetPath,
-        ...(await evidenceArgs(tmpDir, FIXTURE_SYMBOLS)),
-      ],
-      main
-    );
+    const exitCode = await main([
+      '--changelog',
+      changelogPath,
+      '--dataset',
+      datasetPath,
+      ...(await evidenceArgs(tmpDir, FIXTURE_SYMBOLS)),
+    ]);
 
     expect(exitCode).toBe(0);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('0 changelog symbol'));
@@ -141,16 +128,13 @@ describe('check-coverage main()', () => {
     );
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    const exitCode = await withArgv(
-      [
-        '--changelog',
-        changelogPath,
-        '--dataset',
-        datasetPath,
-        ...(await evidenceArgs(tmpDir, FIXTURE_SYMBOLS)),
-      ],
-      main
-    );
+    const exitCode = await main([
+      '--changelog',
+      changelogPath,
+      '--dataset',
+      datasetPath,
+      ...(await evidenceArgs(tmpDir, FIXTURE_SYMBOLS)),
+    ]);
 
     expect(exitCode).toBe(1);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('First missing symbol'));
@@ -163,10 +147,12 @@ describe('check-coverage main()', () => {
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const exitCode = await withArgv(
-      ['--changelog', changelogPath, '--dataset', join(tmpDir, 'does-not-exist.json')],
-      main
-    );
+    const exitCode = await main([
+      '--changelog',
+      changelogPath,
+      '--dataset',
+      join(tmpDir, 'does-not-exist.json'),
+    ]);
 
     expect(exitCode).toBe(1);
     expect(errorSpy).toHaveBeenCalledWith(
@@ -190,41 +176,34 @@ describe('check-coverage main()', () => {
 
     // 'stray' matches no flag and is a positional, not a valueless option, so it
     // is skipped rather than throwing.
-    const exitCode = await withArgv(
-      [
-        'stray',
-        '--changelog',
-        changelogPath,
-        '--dataset',
-        datasetPath,
-        ...(await evidenceArgs(tmpDir, FIXTURE_SYMBOLS)),
-      ],
-      main
-    );
+    const exitCode = await main([
+      'stray',
+      '--changelog',
+      changelogPath,
+      '--dataset',
+      datasetPath,
+      ...(await evidenceArgs(tmpDir, FIXTURE_SYMBOLS)),
+    ]);
 
     expect(exitCode).toBe(1);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('First missing symbol'));
   });
 
   it('throws when a trailing --dataset has no value', async () => {
-    await expect(withArgv(['--dataset'], main)).rejects.toThrow(
-      '--dataset requires a path argument'
-    );
+    await expect(main(['--dataset'])).rejects.toThrow('--dataset requires a path argument');
   });
 
   it('throws when a trailing --changelog has no value', async () => {
     // The valueless flag fails loudly rather than falling through to fetching the
     // changelog from the network — matching generate-exports, which throws
     // '--data requires a directory argument' for the same mistake.
-    await expect(withArgv(['--changelog'], main)).rejects.toThrow(
-      '--changelog requires a path argument'
-    );
+    await expect(main(['--changelog'])).rejects.toThrow('--changelog requires a path argument');
   });
 
   it('throws when a flag value is itself another flag', async () => {
     // `--changelog --dataset x` must not swallow --dataset as the changelog path;
     // a flag-shaped value is rejected the same as a missing one.
-    await expect(withArgv(['--changelog', '--dataset', 'x.json'], main)).rejects.toThrow(
+    await expect(main(['--changelog', '--dataset', 'x.json'])).rejects.toThrow(
       '--changelog requires a path argument'
     );
   });
@@ -242,10 +221,11 @@ describe('check-coverage main()', () => {
     );
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    const exitCode = await withArgv(
-      ['--changelog', changelogPath, ...(await evidenceArgs(tmpDir, FIXTURE_SYMBOLS))],
-      main
-    );
+    const exitCode = await main([
+      '--changelog',
+      changelogPath,
+      ...(await evidenceArgs(tmpDir, FIXTURE_SYMBOLS)),
+    ]);
 
     expect(exitCode).toBe(1);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('data/latest.json'));
@@ -267,10 +247,11 @@ describe('check-coverage main()', () => {
     ) as unknown as typeof fetch;
     globalThis.fetch = fetchSpy;
     try {
-      const exitCode = await withArgv(
-        ['--dataset', datasetPath, ...(await evidenceArgs(tmpDir, FIXTURE_SYMBOLS))],
-        main
-      );
+      const exitCode = await main([
+        '--dataset',
+        datasetPath,
+        ...(await evidenceArgs(tmpDir, FIXTURE_SYMBOLS)),
+      ]);
       expect(exitCode).toBe(1);
       expect(fetchSpy).toHaveBeenCalled();
     } finally {
@@ -300,10 +281,7 @@ describe('check-coverage main()', () => {
       return realParse(text, reviver);
     });
     try {
-      const exitCode = await withArgv(
-        ['--changelog', changelogPath, '--dataset', datasetPath],
-        main
-      );
+      const exitCode = await main(['--changelog', changelogPath, '--dataset', datasetPath]);
       expect(exitCode).toBe(1);
       expect(errorSpy).toHaveBeenCalledWith(
         expect.stringContaining('dataset parse blew up as a plain string')
@@ -322,7 +300,7 @@ describe('check-coverage main()', () => {
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const exitCode = await withArgv(['--changelog', changelogPath, '--dataset', datasetPath], main);
+    const exitCode = await main(['--changelog', changelogPath, '--dataset', datasetPath]);
 
     expect(exitCode).toBe(1);
   });
@@ -342,10 +320,13 @@ describe('check-coverage main()', () => {
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const evidence = await evidenceArgs(tmpDir, [{ symbol: '--safe-mode', type: 'cli_flag' }]);
 
-    const exitCode = await withArgv(
-      ['--changelog', changelogPath, '--dataset', datasetPath, ...evidence],
-      main
-    );
+    const exitCode = await main([
+      '--changelog',
+      changelogPath,
+      '--dataset',
+      datasetPath,
+      ...evidence,
+    ]);
 
     expect(exitCode).toBe(0);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('0 changelog symbol'));
@@ -362,18 +343,15 @@ describe('check-coverage main()', () => {
     // two that 2.1.10 introduces are newer than 2.0.5.
     const evidence = await evidenceArgs(tmpDir, []);
 
-    const exitCode = await withArgv(
-      [
-        '--changelog',
-        changelogPath,
-        '--dataset',
-        datasetPath,
-        ...evidence,
-        '--withheld-since',
-        '2.0.5',
-      ],
-      main
-    );
+    const exitCode = await main([
+      '--changelog',
+      changelogPath,
+      '--dataset',
+      datasetPath,
+      ...evidence,
+      '--withheld-since',
+      '2.0.5',
+    ]);
 
     expect(exitCode).toBe(0);
     expect(logSpy).toHaveBeenCalledWith('--turbo CLAUDE_CODE_TURBO');
@@ -398,22 +376,53 @@ describe('check-coverage main()', () => {
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const exitCode = await withArgv(
-      ['--changelog', changelogPath, '--dataset', datasetPath, ...evidence],
-      main
-    );
+    const exitCode = await main([
+      '--changelog',
+      changelogPath,
+      '--dataset',
+      datasetPath,
+      ...evidence,
+    ]);
 
     expect(exitCode).toBe(1);
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('has 0 symbols'));
   });
 
   it('names a version, not a path, when --withheld-since has no value', async () => {
-    await expect(withArgv(['--withheld-since'], main)).rejects.toThrow(
+    await expect(main(['--withheld-since'])).rejects.toThrow(
       '--withheld-since requires a version argument'
     );
   });
 
   it('throws when a trailing --binary has no value', async () => {
-    await expect(withArgv(['--binary'], main)).rejects.toThrow('--binary requires a path argument');
+    await expect(main(['--binary'])).rejects.toThrow('--binary requires a path argument');
+  });
+
+  it('leaves out a withheld name from a release newer than the dataset', async () => {
+    // check-coverage fetches the changelog again. A release published after the scrape
+    // is not in the dataset, so its names are not this run's to report.
+    tmpDir = await mkdtemp(join(tmpdir(), 'claustodian-checkcov-'));
+    const changelogPath = join(tmpDir, 'CHANGELOG.md');
+    const datasetPath = join(tmpDir, 'dataset.json');
+    await writeFile(changelogPath, FIXTURE_CHANGELOG, 'utf-8');
+    await writeFile(
+      datasetPath,
+      JSON.stringify({ claudeCodeVersion: '2.0.5', symbols: [] }),
+      'utf-8'
+    );
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const exitCode = await main([
+      '--changelog',
+      changelogPath,
+      '--dataset',
+      datasetPath,
+      ...(await evidenceArgs(tmpDir, [])),
+      '--withheld-since',
+      '2.0.4',
+    ]);
+
+    expect(exitCode).toBe(0);
+    expect(logSpy).toHaveBeenCalledWith('--safe-mode');
   });
 });

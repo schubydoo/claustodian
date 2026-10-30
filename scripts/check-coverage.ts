@@ -104,13 +104,16 @@ export function findMissingCoverage(
 }
 
 /**
- * The changelog symbols the scrape withholds, first named after `since`, in changelog
- * order. The bot PR lists them, so a real symbol the extractor misses is visible.
+ * The changelog symbols the scrape withholds, first named after `since` and no later
+ * than `through`, in changelog order. The bot PR lists them, so a real symbol the
+ * extractor misses is visible. `through` is the dataset's own version: this command
+ * fetches the changelog again, and a release published since the scrape is not in it.
  */
 export function findWithheld(
   changelogMd: string,
   uncorroborated: (type: string, symbol: string) => boolean,
-  since: string
+  since: string,
+  through?: string
 ): string[] {
   const blocks = parseChangelog(changelogMd);
   return [...collectChangelogSymbols(blocks).values()]
@@ -118,6 +121,7 @@ export function findWithheld(
     .filter(
       (record) =>
         compareVersionsAsc(record.first_seen, since) > 0 &&
+        (through === undefined || compareVersionsAsc(record.first_seen, through) <= 0) &&
         uncorroborated(record.type, record.symbol)
     )
     .map((record) => record.symbol);
@@ -174,26 +178,27 @@ function parseArgs(argv: string[]): CliOptions {
 
 interface DatasetFile {
   symbols: SymbolRecord[];
+  claudeCodeVersion?: string;
 }
 
-async function loadDataset(datasetPath: string): Promise<SymbolRecord[]> {
+async function loadDataset(datasetPath: string): Promise<DatasetFile> {
   const raw = await readFile(datasetPath, 'utf-8');
   const data = JSON.parse(raw) as DatasetFile;
   if (!Array.isArray(data.symbols)) {
     throw new Error(`${datasetPath} does not look like a snapshot file (missing "symbols" array)`);
   }
-  return data.symbols;
+  return data;
 }
 
-export async function main(): Promise<number> {
-  const options = parseArgs(process.argv.slice(2));
+export async function main(argv: string[]): Promise<number> {
+  const options = parseArgs(argv);
 
   let md: string;
-  let datasetSymbols: SymbolRecord[];
+  let dataset: DatasetFile;
   let uncorroborated: (type: string, symbol: string) => boolean;
   try {
     md = await loadChangelog(options.changelogPath);
-    datasetSymbols = await loadDataset(options.datasetPath);
+    dataset = await loadDataset(options.datasetPath);
     // The scrape's own integrity checks: with an empty file every flag, command and
     // env var would count as withheld, and the gate would pass with nothing checked.
     const docs = await loadDocsIndex(options.docsPath);
@@ -209,11 +214,13 @@ export async function main(): Promise<number> {
   }
 
   if (options.withheldSince !== undefined) {
-    console.log(findWithheld(md, uncorroborated, options.withheldSince).join(' '));
+    console.log(
+      findWithheld(md, uncorroborated, options.withheldSince, dataset.claudeCodeVersion).join(' ')
+    );
     return 0;
   }
 
-  const missing = findMissingCoverage(md, datasetSymbols, uncorroborated);
+  const missing = findMissingCoverage(md, dataset.symbols, uncorroborated);
 
   console.log(`${missing.length} changelog symbol(s) missing from ${options.datasetPath}`);
   if (missing.length > 0) {
