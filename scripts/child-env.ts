@@ -50,18 +50,13 @@
  */
 
 import { isNode, type Node } from './control-lane.js';
+import { lookup, walkScopes, type Binding, type Scope } from './js-scope.js';
 
 /** How many declarations the walk follows from an env site to an object literal. */
 export const ENV_FLOW_HOPS = 3;
 
 const ENV_NAME = /^[A-Z][A-Z0-9_]{2,}$/;
 const ENV_SITE = /^(?:env|[a-z][A-Za-z0-9]*Env)$/;
-const FUNCTION_TYPES = new Set([
-  'FunctionDeclaration',
-  'FunctionExpression',
-  'ArrowFunctionExpression',
-]);
-
 /** A property's key as written, or undefined for a computed key or a spread. */
 function keyName(p: Node): string | undefined {
   if (p.type !== 'Property' || p.computed) return undefined;
@@ -113,114 +108,14 @@ function envParts(x: unknown, ids: Set<string>, objects: Node[]): void {
   }
 }
 
-/** A name's binding: the expression it starts with (or null), and the scope that expression is written in. */
-interface Binding {
-  init: unknown;
-  scope: Scope;
-}
-
-interface Scope {
-  bindings: Map<string, Binding>;
-  parent: Scope | null;
-  /** True for a function or the program, where `var` and function names bind. */
-  hoists: boolean;
-}
-
-const newScope = (parent: Scope | null, hoists: boolean): Scope => ({
-  bindings: new Map(),
-  parent,
-  hoists,
-});
-
-/** The nearest binding of `name` visible from `scope`, or undefined for a global. */
-function lookup(name: string, scope: Scope): Binding | undefined {
-  for (let s: Scope | null = scope; s; s = s.parent) {
-    const b = s.bindings.get(name);
-    if (b) return b;
-  }
-  return undefined;
-}
-
-/** Every name a binding pattern declares: `a`, `{a,b:c}`, `[a,...d]`, `a=1`. */
-function patternNames(p: unknown, out: string[]): string[] {
-  if (!isNode(p)) return out;
-  if (p.type === 'Identifier') out.push(p.name as string);
-  else if (p.type === 'ObjectPattern') {
-    for (const prop of p.properties as Node[]) {
-      patternNames(prop.type === 'RestElement' ? prop.argument : prop.value, out);
-    }
-  } else if (p.type === 'ArrayPattern')
-    for (const e of p.elements as unknown[]) patternNames(e, out);
-  else if (p.type === 'AssignmentPattern') patternNames(p.left, out);
-  // RestElement, the only other binding pattern a declaration can hold.
-  else patternNames(p.argument, out);
-  return out;
-}
-
-const bindAll = (scope: Scope, pattern: unknown): void => {
-  for (const name of patternNames(pattern, [])) scope.bindings.set(name, { init: null, scope });
-};
-
-const hoistTarget = (scope: Scope): Scope => {
-  let s = scope;
-  while (!s.hoists && s.parent) s = s.parent;
-  return s;
-};
-
 /** Every env site in `program`, each with the scope its value is read in. */
 function collectSites(program: Node): { value: unknown; scope: Scope }[] {
   const sites: { value: unknown; scope: Scope }[] = [];
-  const visit = (n: unknown, scope: Scope): void => {
-    if (Array.isArray(n)) {
-      for (const c of n) visit(c, scope);
-      return;
-    }
-    if (!isNode(n)) return;
-    if (FUNCTION_TYPES.has(n.type)) {
-      if (n.type === 'FunctionDeclaration' && n.id) bindAll(hoistTarget(scope), n.id);
-      const inner = newScope(scope, true);
-      // A function expression's own name is visible only inside it.
-      if (n.type === 'FunctionExpression' && n.id) bindAll(inner, n.id);
-      for (const param of n.params as unknown[]) bindAll(inner, param);
-      visit(n.params, inner);
-      const body = n.body as Node;
-      visit(body.type === 'BlockStatement' ? body.body : body, inner);
-      return;
-    }
-    let here = scope;
-    if (
-      n.type === 'BlockStatement' ||
-      n.type === 'ForStatement' ||
-      n.type === 'ForInStatement' ||
-      n.type === 'ForOfStatement' ||
-      n.type === 'SwitchStatement' ||
-      n.type === 'CatchClause'
-    ) {
-      here = newScope(scope, false);
-      if (n.type === 'CatchClause') bindAll(here, n.param);
-    }
-    if (n.type === 'VariableDeclaration') {
-      const target = n.kind === 'var' ? hoistTarget(here) : here;
-      for (const d of n.declarations as Node[]) {
-        const id = d.id as Node;
-        if (id.type === 'Identifier') {
-          // A repeated `var n;` declares nothing new: `n` keeps the value it has.
-          if (n.kind === 'var' && !d.init && target.bindings.has(id.name as string)) continue;
-          target.bindings.set(id.name as string, { init: d.init ?? null, scope: here });
-        } else bindAll(target, id);
-      }
-    }
-    if (n.type === 'ClassDeclaration' && n.id) bindAll(here, n.id);
-    if (n.type === 'Property') {
-      const name = keyName(n);
-      if (name !== undefined && ENV_SITE.test(name)) sites.push({ value: n.value, scope: here });
-    }
-    for (const key in n) {
-      const v = n[key];
-      if (typeof v === 'object' && v !== null) visit(v, here);
-    }
-  };
-  visit(program.body, newScope(null, true));
+  walkScopes(program, (n, scope) => {
+    if (n.type !== 'Property') return;
+    const name = keyName(n);
+    if (name !== undefined && ENV_SITE.test(name)) sites.push({ value: n.value, scope });
+  });
   return sites;
 }
 

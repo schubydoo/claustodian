@@ -87,12 +87,55 @@ describe('resolveVariableSkills', () => {
 
   it('reads a quoted key and skips computed keys, destructuring and member writes', () => {
     const marker = 'menuDescription:"m"';
-    expect(skills(`var a="quoted";x({"name":a,${marker},[k]:1,2:3})`)).toEqual([
+    expect(skills(`var a="quoted";x({[k]:1,2:3,"name":a,${marker}})`)).toEqual([
       { symbol: '/quoted', alias: false, description: 'm' },
     ]);
     expect(
       skills(`var {a}=o,b="kept";o.b="x";x({name:b,${marker}});x({[name]:a,${marker}})`)
     ).toEqual([{ symbol: '/kept', alias: false, description: 'm' }]);
+  });
+
+  it('resolves by scope: a parameter or a destructured name hides an outer literal', () => {
+    // From review: the outer `n` is not the name this function registers.
+    const marker = 'menuDescription:"m"';
+    expect(
+      skills(`var n="unrelated";function register(n){x({name:n,${marker}})}register("actual");`)
+    ).toEqual([]);
+    expect(skills(`var n="outer";function f({n}){x({name:n,${marker}})}`)).toEqual([]);
+    expect(skills(`var n="outer";function f(){let n="inner";x({name:n,${marker}})}`)).toEqual([
+      { symbol: '/inner', alias: false, description: 'm' },
+    ]);
+    // A write to an inner `n` leaves the outer binding as it was.
+    expect(skills(`var n="outer";function f(n){n="x"}o.n++;x({name:n,${marker}})`)).toEqual([
+      { symbol: '/outer', alias: false, description: 'm' },
+    ]);
+    expect(skills(`var n="counted";n++;x({name:n,${marker}})`)).toEqual([]);
+    expect(skills(`var n="dd";({n}=o);x({name:n,${marker}})`)).toEqual([]);
+    expect(skills(`var n="dd";[n]=a;x({name:n,${marker}})`)).toEqual([]);
+    expect(skills(`var n="dd";for(n of xs);x({name:n,${marker}})`)).toEqual([]);
+    expect(skills(`var n="dd";for(let n of xs);x({name:n,${marker}})`)).toEqual([
+      { symbol: '/dd', alias: false, description: 'm' },
+    ]);
+  });
+
+  it('rejects an entry whose name a later key can replace', () => {
+    const marker = 'menuDescription:"m"';
+    expect(skills(`var n="old";x({name:n,...{name:"actual"},${marker}})`)).toEqual([]);
+    expect(skills(`var n="old";x({name:n,[k]:1,${marker}})`)).toEqual([]);
+    expect(skills(`var n="old";x({name:n,name:"actual",${marker}})`)).toEqual([]);
+    expect(skills(`var n="old";x({name:"actual",name:n,${marker}})`)).toEqual([]);
+    // A spread BEFORE the name cannot replace it.
+    expect(skills(`var n="kept";x({...base,name:n,${marker}})`)).toEqual([
+      { symbol: '/kept', alias: false, description: 'm' },
+    ]);
+  });
+
+  it('does not follow an exported import into a third chunk', () => {
+    const marker = 'menuDescription:"m"';
+    const origin = 'var n="deep";export{n};';
+    const relay = 'import{n}from"/origin.js";export{n as m};';
+    const user = `import{m}from"/relay.js";x({name:m,${marker}});`;
+    expect(skills(origin, relay, user)).toEqual([]);
   });
 
   it('does not list an alias that is also a registered name', () => {

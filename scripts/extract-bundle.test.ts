@@ -1469,6 +1469,21 @@ describe('extractParamEnvVars — chunks of the code-split era', () => {
     expect(names([owner, caller, unrelated])).toEqual(['CLAUDE_CODE_HTTP_PROXY']);
   });
 
+  it('transfers no call whose name could be another binding than the import', () => {
+    // From review: `g` in `run` is a parameter, not the imported `f`.
+    const owner = 'function f(e){return e.CLAUDE_CODE_TEST_PROXY}export{f};';
+    const shadowed =
+      'import{f as g}from"/$bunfs/root/chunk-dd.js";function run(g){g(process.env)}run(o);';
+    expect(names([owner, shadowed])).toEqual([]);
+    const declared =
+      'import{f as g}from"/$bunfs/root/chunk-dd.js";function k(){function g(){}g(process.env)}';
+    expect(names([owner, declared])).toEqual([]);
+    const passed = 'import{f as g}from"/$bunfs/root/chunk-dd.js";g(process.env);h(g);';
+    expect(names([owner, passed])).toEqual([]);
+    const called = 'import{f as g}from"/$bunfs/root/chunk-dd.js";g(process.env);g(1);';
+    expect(names([owner, called])).toEqual(['CLAUDE_CODE_TEST_PROXY']);
+  });
+
   it('follows no import whose module two chunks could be', () => {
     const a = 'function f(e){return e.CLAUDE_CODE_FROM_A}export{f};';
     const b = 'function f(e){return e.CLAUDE_CODE_FROM_B}export{f};';

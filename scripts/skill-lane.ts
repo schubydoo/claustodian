@@ -19,26 +19,32 @@
  * property whose value is an identifier, and a `menuDescription` or `whenToUse`
  * property: the same marker the literal rule needs. Only the name moves.
  *
- * RESOLVING THE NAME. The identifier must resolve to one string literal:
- *   - in its own chunk, a declaration `X="literal"` that no other declaration or
- *     assignment in that chunk contradicts;
+ * RESOLVING THE NAME. The identifier resolves by lexical scope (js-scope.ts), to
+ * the binding that is visible at the object, and that binding must hold one string
+ * literal:
+ *   - a declaration `X="literal"`, with no assignment or update to that same binding
+ *     that could change it;
  *   - or an import, followed to the one chunk that exports every name imported from
  *     that path (the fingerprint the control lane uses, since a chunk carries no name
- *     of its own), then to that chunk's local binding, under the same rule.
- * Anything else resolves to nothing: a name the lane cannot prove is a miss, never a
- * guess. The name must also fit the skill grammar (`[a-z][a-z0-9-]+`).
+ *     of its own), then to that chunk's top-level binding, under the same rule.
+ * A parameter or a destructured name resolves to nothing, and so does a global.
+ * The object must also not be able to replace its `name`: a second `name` key, or
+ * a spread or computed key after it, rejects the entry. Anything else is a miss,
+ * never a guess. The name must also fit the skill grammar (`[a-z][a-z0-9-]+`).
  *
  * This lane is additive. A name the literal rule finds keeps its evidence and its
  * description; see withVariableSkills.
  */
 
-import { importOrExportName, isNode, walk, type Node } from './control-lane.js';
+import { importOrExportName, isNode, type Node } from './control-lane.js';
+import { lookup, patternNames, walkScopes, type Binding, type Scope } from './js-scope.js';
 
 const SKILL_NAME = /^[a-z][a-z0-9-]+$/;
 
 /** One variable-named skill entry, before its name is resolved. */
 interface Entry {
   ref: string;
+  scope: Scope;
   description: string | undefined;
   aliases: string[];
 }
@@ -46,10 +52,12 @@ interface Entry {
 /** What one chunk contributes; see collectSkillEvidence. */
 export interface SkillEvidence {
   entries: Entry[];
-  /** Local name → its string literal, or null when the chunk binds it to anything else. */
-  strings: Map<string, string | null>;
-  /** Local name → the module path and export it was imported as. */
-  imports: Map<string, { source: string; name: string }>;
+  /** The chunk's top-level scope, which its imports and exports bind in. */
+  root: Scope;
+  /** Bindings an assignment or update may change, so they hold no single literal. */
+  written: Set<Binding>;
+  /** Module path → the export names this chunk imports from it. */
+  importNames: Map<string, Set<string>>;
   /** Export name → the local it publishes. */
   exports: Map<string, string>;
 }
@@ -98,22 +106,27 @@ function entryDescription(props: Node[]): string | undefined {
   return staticString(ret?.argument);
 }
 
-/** Every variable-named skill entry, string binding, import and export in one chunk. */
+/** True when no later key of the object can replace the `name` at `index`. */
+function nameIsFinal(props: Node[], index: number): boolean {
+  return props.every((p, i) => {
+    if (i === index) return true;
+    if (keyName(p) === 'name') return false;
+    return i < index || (p.type !== 'SpreadElement' && !p.computed);
+  });
+}
+
+/** Every variable-named skill entry, write, import and export in one chunk. */
 export function collectSkillEvidence(program: Node): SkillEvidence {
   const entries: Entry[] = [];
-  const strings = new Map<string, string | null>();
-  const imports = new Map<string, { source: string; name: string }>();
+  const writes: { name: string; scope: Scope; value: string | undefined }[] = [];
+  const importNames = new Map<string, Set<string>>();
   const exports = new Map<string, string>();
-  const bind = (name: string, value: string | null): void => {
-    const known = strings.get(name);
-    strings.set(name, known === undefined || known === value ? value : null);
-  };
-  walk(program, (node) => {
+  const root = walkScopes(program, (node, scope) => {
     if (node.type === 'ObjectExpression') {
-      const props = (node.properties as Node[]).filter((p) => p.type === 'Property');
-      const name = props.find((p) => keyName(p) === 'name' && p.kind === 'init');
-      const value = name?.value as Node | undefined;
-      if (value?.type !== 'Identifier') return;
+      const props = node.properties as Node[];
+      const index = props.findIndex((p) => keyName(p) === 'name' && p.kind === 'init');
+      const value = props[index]?.value as Node | undefined;
+      if (value?.type !== 'Identifier' || !nameIsFinal(props, index)) return;
       const marked = props.some((p) => {
         const k = keyName(p);
         return k === 'menuDescription' || k === 'whenToUse';
@@ -126,31 +139,46 @@ export function collectSkillEvidence(program: Node): SkillEvidence {
               .map(staticString)
               .filter((a): a is string => a !== undefined && SKILL_NAME.test(a))
           : [];
-      entries.push({ ref: value.name as string, description: entryDescription(props), aliases });
-      return;
-    }
-    if (node.type === 'VariableDeclarator') {
-      const id = node.id as Node;
-      if (id.type !== 'Identifier') return;
-      const name = id.name as string;
-      if (node.init == null) return;
-      bind(name, staticString(node.init) ?? null);
+      entries.push({
+        ref: value.name as string,
+        scope,
+        description: entryDescription(props),
+        aliases,
+      });
       return;
     }
     if (node.type === 'AssignmentExpression') {
       const left = node.left as Node;
-      if (left.type !== 'Identifier') return;
-      bind(left.name as string, node.operator === '=' ? (staticString(node.right) ?? null) : null);
+      if (left.type === 'Identifier') {
+        const value = node.operator === '=' ? staticString(node.right) : undefined;
+        writes.push({ name: left.name as string, scope, value });
+      } else {
+        // `({n}=o)` or `[n]=a` writes every name of the pattern.
+        for (const name of patternNames(left, [])) writes.push({ name, scope, value: undefined });
+      }
+      return;
+    }
+    // `for(n of xs)` and `for(n in o)` write to a variable declared elsewhere.
+    if (node.type === 'ForOfStatement' || node.type === 'ForInStatement') {
+      const left = node.left as Node;
+      if (left.type !== 'VariableDeclaration') {
+        for (const name of patternNames(left, [])) writes.push({ name, scope, value: undefined });
+      }
+    }
+    if (node.type === 'UpdateExpression') {
+      const target = node.argument as Node;
+      if (target.type === 'Identifier') {
+        writes.push({ name: target.name as string, scope, value: undefined });
+      }
       return;
     }
     if (node.type === 'ImportDeclaration') {
       const source = importOrExportName(node.source);
       for (const spec of node.specifiers as Node[]) {
         if (spec.type !== 'ImportSpecifier') continue;
-        imports.set(importOrExportName(spec.local), {
-          source,
-          name: importOrExportName(spec.imported),
-        });
+        const names = importNames.get(source) ?? new Set<string>();
+        names.add(importOrExportName(spec.imported));
+        importNames.set(source, names);
       }
       return;
     }
@@ -162,7 +190,15 @@ export function collectSkillEvidence(program: Node): SkillEvidence {
       }
     }
   });
-  return { entries, strings, imports, exports };
+  // A write leaves a binding with one literal only when it writes that same literal.
+  const written = new Set<Binding>();
+  for (const { name, scope, value } of writes) {
+    const binding = lookup(name, scope);
+    if (binding && (value === undefined || staticString(binding.init) !== value)) {
+      written.add(binding);
+    }
+  }
+  return { entries, root, written, importNames, exports };
 }
 
 /**
@@ -174,10 +210,10 @@ export function resolveVariableSkills(chunks: readonly SkillEvidence[]): Variabl
   // from it, as in the control lane.
   const namesBySource = new Map<string, Set<string>>();
   for (const chunk of chunks) {
-    for (const { source, name } of chunk.imports.values()) {
-      const names = namesBySource.get(source) ?? new Set<string>();
-      names.add(name);
-      namesBySource.set(source, names);
+    for (const [source, names] of chunk.importNames) {
+      const all = namesBySource.get(source) ?? new Set<string>();
+      for (const n of names) all.add(n);
+      namesBySource.set(source, all);
     }
   }
   const chunkBySource = new Map<string, SkillEvidence>();
@@ -185,22 +221,26 @@ export function resolveVariableSkills(chunks: readonly SkillEvidence[]): Variabl
     const matches = chunks.filter((c) => [...names].every((n) => c.exports.has(n)));
     if (matches.length === 1) chunkBySource.set(source, matches[0] as SkillEvidence);
   }
-  const literal = (value: string | null | undefined): string | undefined =>
-    value != null && SKILL_NAME.test(value) ? value : undefined;
-  const resolve = (chunk: SkillEvidence, ref: string): string | undefined => {
-    if (chunk.strings.has(ref)) return literal(chunk.strings.get(ref));
-    const imported = chunk.imports.get(ref);
-    if (!imported) return undefined;
-    const owner = chunkBySource.get(imported.source);
-    const local = owner?.exports.get(imported.name);
-    return owner && local !== undefined ? literal(owner.strings.get(local)) : undefined;
+  const literal = (chunk: SkillEvidence, binding: Binding | undefined): string | undefined => {
+    if (!binding || chunk.written.has(binding)) return undefined;
+    const value = staticString(binding.init);
+    return value !== undefined && SKILL_NAME.test(value) ? value : undefined;
+  };
+  const resolve = (chunk: SkillEvidence, entry: Entry): string | undefined => {
+    const binding = lookup(entry.ref, entry.scope);
+    if (!binding?.imported) return literal(chunk, binding);
+    const owner = chunkBySource.get(binding.imported.source);
+    const local = owner?.exports.get(binding.imported.name);
+    // An export of an import (`import{a}…;export{a}`) is not followed further.
+    const target = owner && local !== undefined ? lookup(local, owner.root) : undefined;
+    return target?.imported ? undefined : literal(owner as SkillEvidence, target);
   };
 
   const names = new Map<string, string | undefined>();
   const aliases = new Set<string>();
   for (const chunk of chunks) {
     for (const entry of chunk.entries) {
-      const name = resolve(chunk, entry.ref);
+      const name = resolve(chunk, entry);
       if (name === undefined) continue;
       const key = `/${name}`;
       if (!names.has(key) || (names.get(key) === undefined && entry.description)) {

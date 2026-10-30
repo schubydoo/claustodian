@@ -786,7 +786,7 @@ export function extractParamEnvVars(src: string, chunks?: readonly string[]): Ma
     chunks.forEach((_, i) => {
       for (const [callee, positions] of local[i] as Map<string, Set<number>>) {
         const target = links.resolve(i, callee);
-        if (!target) continue;
+        if (!target || !onlyCalled(chunks[i] as string, callee)) continue;
         const into = merged[target.chunk] as Map<string, Set<number>>;
         const set = into.get(target.local) ?? new Set<number>();
         for (const p of positions) set.add(p);
@@ -798,6 +798,28 @@ export function extractParamEnvVars(src: string, chunks?: readonly string[]): Ma
     });
   }
   return out;
+}
+
+/**
+ * True when every use of `name` in `chunk`, outside its import lists, is a call
+ * `name(…)`. A text scan cannot see scopes, so this is how a call is known to reach
+ * the import: a parameter, a declaration or any other use of the same spelling
+ * (`function run(g){g(process.env)}`) could be a different variable, and then
+ * nothing is transferred.
+ */
+function onlyCalled(chunk: string, name: string): boolean {
+  const lists = [...chunk.matchAll(IMPORT_LIST)].map((m) => [
+    m.index as number,
+    (m.index as number) + m[0].length,
+  ]);
+  const safe = name.replace(/[$]/g, '\\$&');
+  for (const m of chunk.matchAll(new RegExp(`(?<![\\w$.])${safe}(?![\\w$])`, 'g'))) {
+    const at = m.index as number;
+    if (lists.some(([from, to]) => at >= (from as number) && at < (to as number))) continue;
+    if (chunk[at + name.length] !== '(') return false;
+    if (/\bfunction\s*\*?\s*$/.test(chunk.slice(Math.max(0, at - 12), at))) return false;
+  }
+  return true;
 }
 
 const IMPORT_LIST = /\bimport\s*\{([^}]*)\}\s*from\s*["']([^"']+)["']/g;
