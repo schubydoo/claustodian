@@ -375,6 +375,31 @@ describe('scrapeBinary', () => {
     await rm(dir, { recursive: true, force: true });
   });
 
+  it('loads the observations and writes their textAbsent proof', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
+    const observations = join(dir, 'observations.json');
+    await writeFile(
+      observations,
+      JSON.stringify({
+        symbols: [
+          { type: 'env_var', symbol: 'CLAUDE_CODE_NOT_IN_FAKE_BUNDLE', first_seen: '0.2.9' },
+        ],
+      })
+    );
+    stubCdn('2.1.214', FAKE_BUNDLE, sha256(FAKE_BUNDLE));
+
+    await scrapeBinary({
+      version: '2.1.214',
+      outDir: join(dir, 'out'),
+      force: false,
+      observationsPath: observations,
+    });
+    const written = JSON.parse(await readFile(join(dir, 'out', '2.1.214.json'), 'utf-8'));
+    expect(written.textAbsent).toEqual(['env_var:CLAUDE_CODE_NOT_IN_FAKE_BUNDLE']);
+    expect(parseArgs(['--observations', observations]).observationsPath).toBe(observations);
+    await rm(dir, { recursive: true, force: true });
+  });
+
   it('refuses a binary whose checksum does not match the manifest', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'scrape-bin-'));
     stubCdn('2.1.214', FAKE_BUNDLE, sha256('a different artifact')); // wrong checksum

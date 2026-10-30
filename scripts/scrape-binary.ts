@@ -74,22 +74,27 @@ interface CliOptions {
   version?: string;
   outDir: string;
   force: boolean;
+  /** The observations the text check watches; data/binary-observations.json by default. */
+  observationsPath?: string;
 }
 
 export function parseArgs(argv: string[]): CliOptions {
   const options: CliOptions = { outDir: DEFAULT_OUT_DIR, force: false };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
-    if (arg === '--version' || arg === '--out') {
+    if (arg === '--version' || arg === '--out' || arg === '--observations') {
       const value = argv[i + 1];
       if (value === undefined) throw new Error(`${arg} requires a value (e.g. "${arg} <value>").`);
       if (arg === '--version') options.version = value;
-      else options.outDir = value;
+      else if (arg === '--out') options.outDir = value;
+      else options.observationsPath = value;
       i++;
     } else if (arg === '--force') {
       options.force = true;
     } else {
-      throw new Error(`Unknown argument "${arg}". Expected --version, --out, or --force.`);
+      throw new Error(
+        `Unknown argument "${arg}". Expected --version, --out, --observations, or --force.`
+      );
     }
   }
   return options;
@@ -272,7 +277,11 @@ export async function scrapeBinary(
     );
   }
 
-  const record = buildCacheRecord(version, buf, loadWatchList(DEFAULT_OBSERVATIONS));
+  const record = buildCacheRecord(
+    version,
+    buf,
+    loadWatchList(options.observationsPath ?? DEFAULT_OBSERVATIONS)
+  );
   const path = writeCacheFile(options.outDir, record);
   console.log(`${version}: extracted ${record.count} symbol(s) → ${path} (checksum verified).`);
   return { path, count: record.count };

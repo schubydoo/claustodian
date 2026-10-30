@@ -703,4 +703,43 @@ describe('reextract-binaries parallel jobs', () => {
       /No observations at .*--observations/
     );
   });
+
+  it('loads the observations and writes their textAbsent proof, with one job or several', async () => {
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-watch-'));
+    const archive = join(root, 'archive');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await writeCompiled(archive, '1.0.1', 'if(process.env.CLAUDE_CODE_A)x();');
+    const observations = join(root, 'observations.json');
+    await writeFile(
+      observations,
+      JSON.stringify({
+        symbols: [
+          { type: 'env_var', symbol: 'CLAUDE_CODE_A', first_seen: '0.2.9' },
+          { type: 'env_var', symbol: 'CLAUDE_CODE_GONE', first_seen: '0.2.9' },
+        ],
+      })
+    );
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    for (const jobs of ['1', '2']) {
+      const out = join(root, `out-${jobs}`);
+      expect(
+        await main([
+          '--archive',
+          archive,
+          '--out',
+          out,
+          '--jobs',
+          jobs,
+          '--observations',
+          observations,
+        ])
+      ).toBe(0);
+      for (const v of ['1.0.0', '1.0.1']) {
+        const written = JSON.parse(await readFile(join(out, `${v}.json`), 'utf-8')) as {
+          textAbsent: string[];
+        };
+        expect(written.textAbsent, `${jobs} job(s), ${v}`).toEqual(['env_var:CLAUDE_CODE_GONE']);
+      }
+    }
+  });
 });
