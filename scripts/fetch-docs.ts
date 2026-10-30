@@ -45,6 +45,8 @@ export const DOC_PAGES = [
   'monitoring-usage',
   'plugin-evals',
   'ultrareview',
+  'self-hosted-environments-configuration',
+  'mcp',
 ] as const;
 
 export type DocSymbolType =
@@ -103,6 +105,8 @@ export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number
   'monitoring-usage': 10,
   'plugin-evals': 2,
   ultrareview: 1,
+  'self-hosted-environments-configuration': 15,
+  mcp: 1,
 };
 
 /**
@@ -131,6 +135,9 @@ const ENV_DENYLIST = new Set([
   'TMPDIR',
   'EDITOR',
   'VISUAL',
+  // Git's own: the self-hosted configuration page lists the GIT_CONFIG_COUNT,
+  // GIT_CONFIG_KEY_n and GIT_CONFIG_VALUE_n trio the runner sets for the git it calls.
+  'GIT_CONFIG_COUNT',
   // Not an OS var: a docs-prose concept label the env matcher grabbed from a
   // plugins-reference skill-type table (`| SKILL | A plain skill named foo |`).
   // A stopgap until conceptual pages are curated out (see roadmap).
@@ -673,6 +680,15 @@ const PAGE_SYMBOL_SECTIONS: Partial<Record<string, ReadonlySet<string>>> = {
   ]),
   'plugin-evals': new Set(['Command options']),
   ultrareview: new Set(['Run ultrareview non-interactively']),
+  // The env-var tables the runner sets for wrapper scripts and hooks.
+  'self-hosted-environments-configuration': new Set([
+    'Wrapper scripts',
+    'checkout',
+    'post-session',
+    'The spawn-runner hook',
+  ]),
+  // The one env-var table; the page's other tables are examples and scopes.
+  mcp: new Set(['Use dynamic headers for custom authentication']),
 };
 
 /**

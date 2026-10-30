@@ -31,6 +31,12 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ### Added
 
+- **Two more docs pages.** The docs lane now reads the env-var tables of the
+  self-hosted environments configuration page and the MCP page. From the next docs
+  refresh, more env vars get a docs description. Examples are `CLAUDE_CODE_MCP_SERVER_NAME`
+  and the `CLAUDE_RUNNER_*` variables that the runner sets for wrapper scripts and
+  hooks. A description from an earlier page in the list still wins.
+
 - **Command aliases from the binary.** The binary lane now reads each registered
   command's `aliases` list, for example `/quit` for `/exit` and `/settings` for
   `/config`. From the next binary re-extract, aliases that no other lane named appear
