@@ -15,7 +15,9 @@
  * `collectChangelogSymbols` (rather than the broader raw `extractSymbols`) keeps
  * this gate in agreement with what the scraper legitimately excludes — a
  * subprocess tool's own example flags (git's, etc.) and phantom flags — so it
- * doesn't demand symbols that aren't Claude Code's.
+ * doesn't demand symbols that aren't Claude Code's. A symbol that only the changelog
+ * supports is withheld by the scrape (see `uncorroboratedBy`), so it is not a gap here
+ * either.
  *
  * Usage:
  *   tsx scripts/check-coverage.ts [--changelog <path>] [--dataset <path>]
@@ -24,12 +26,24 @@
  *                       fetching https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md
  *   --dataset <path>    Snapshot file to check coverage against
  *                       (default: "data/latest.json")
+ *   --docs <path>       Docs index (default: "data/docs.json")
+ *   --binary <path>     Binary observations (default: "data/binary-observations.json")
+ *   --withheld-since <version>
+ *                       Instead of checking, print the withheld symbols that the
+ *                       changelog first names after <version>, space-separated
  */
 import { readFile } from 'node:fs/promises';
 
-import { runCli, loadChangelog } from './lib.js';
+import { assertBinaryObservations, loadBinaryObservations } from './binary-lane.js';
+import { compareVersionsAsc, runCli, loadChangelog } from './lib.js';
 import { CONFIRMED_REMOVALS } from './removals.js';
-import { collectChangelogSymbols, parseChangelog } from './scrape-changelog.js';
+import {
+  assertNonEmptyDocs,
+  collectChangelogSymbols,
+  loadDocsIndex,
+  parseChangelog,
+  uncorroboratedBy,
+} from './scrape-changelog.js';
 import type { SymbolRecord } from './scrape-changelog.js';
 
 export interface MissingSymbol {
@@ -55,7 +69,8 @@ function compareKeys(a: string, b: string): number {
  */
 export function findMissingCoverage(
   changelogMd: string,
-  datasetSymbols: SymbolRecord[]
+  datasetSymbols: SymbolRecord[],
+  uncorroborated: (type: string, symbol: string) => boolean = () => false
 ): MissingSymbol[] {
   const known = new Set(datasetSymbols.map((record) => keyFor(record.symbol, record.type)));
   // A confirmed removal is mentioned in the changelog (in its own "Removed `X`"
@@ -77,6 +92,7 @@ export function findMissingCoverage(
   // the scraper's exclusions, so we just diff its symbol set against the dataset.
   for (const { record } of collectChangelogSymbols(blocks).values()) {
     if (record.type === 'mod_method' && !publishesMods) continue;
+    if (uncorroborated(record.type, record.symbol)) continue;
     const key = keyFor(record.symbol, record.type);
     if (!known.has(key) && !removed.has(key)) {
       missing.push({ symbol: record.symbol, type: record.type });
@@ -87,13 +103,50 @@ export function findMissingCoverage(
   return missing;
 }
 
+/**
+ * The changelog symbols the scrape withholds, first named after `since` and no later
+ * than `through`, in changelog order. The bot PR lists them, so a real symbol the
+ * extractor misses is visible. `through` is the dataset's own version: this command
+ * fetches the changelog again, and a release published since the scrape is not in it.
+ */
+export function findWithheld(
+  changelogMd: string,
+  uncorroborated: (type: string, symbol: string) => boolean,
+  since: string,
+  through?: string
+): string[] {
+  const blocks = parseChangelog(changelogMd);
+  return [...collectChangelogSymbols(blocks).values()]
+    .map(({ record }) => record)
+    .filter(
+      (record) =>
+        compareVersionsAsc(record.first_seen, since) > 0 &&
+        (through === undefined || compareVersionsAsc(record.first_seen, through) <= 0) &&
+        uncorroborated(record.type, record.symbol)
+    )
+    .map((record) => record.symbol);
+}
+
 interface CliOptions {
   changelogPath?: string;
   datasetPath: string;
+  docsPath: string;
+  binaryPath: string;
+  withheldSince?: string;
 }
 
 function parseArgs(argv: string[]): CliOptions {
-  const options: CliOptions = { datasetPath: 'data/latest.json' };
+  const options: CliOptions = {
+    datasetPath: 'data/latest.json',
+    docsPath: 'data/docs.json',
+    binaryPath: 'data/binary-observations.json',
+  };
+  const valueOf = (flag: string, value: string | undefined, kind = 'path'): string => {
+    if (!value || value.startsWith('--')) {
+      throw new Error(`${flag} requires a ${kind} argument`);
+    }
+    return value;
+  };
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -111,6 +164,12 @@ function parseArgs(argv: string[]): CliOptions {
       }
       options.datasetPath = value;
       i++;
+    } else if (arg === '--docs') {
+      options.docsPath = valueOf(arg, argv[++i]);
+    } else if (arg === '--binary') {
+      options.binaryPath = valueOf(arg, argv[++i]);
+    } else if (arg === '--withheld-since') {
+      options.withheldSince = valueOf(arg, argv[++i], 'version');
     }
   }
 
@@ -119,25 +178,34 @@ function parseArgs(argv: string[]): CliOptions {
 
 interface DatasetFile {
   symbols: SymbolRecord[];
+  claudeCodeVersion?: string;
 }
 
-async function loadDataset(datasetPath: string): Promise<SymbolRecord[]> {
+async function loadDataset(datasetPath: string): Promise<DatasetFile> {
   const raw = await readFile(datasetPath, 'utf-8');
   const data = JSON.parse(raw) as DatasetFile;
   if (!Array.isArray(data.symbols)) {
     throw new Error(`${datasetPath} does not look like a snapshot file (missing "symbols" array)`);
   }
-  return data.symbols;
+  return data;
 }
 
-export async function main(): Promise<number> {
-  const options = parseArgs(process.argv.slice(2));
+export async function main(argv: string[]): Promise<number> {
+  const options = parseArgs(argv);
 
   let md: string;
-  let datasetSymbols: SymbolRecord[];
+  let dataset: DatasetFile;
+  let uncorroborated: (type: string, symbol: string) => boolean;
   try {
     md = await loadChangelog(options.changelogPath);
-    datasetSymbols = await loadDataset(options.datasetPath);
+    dataset = await loadDataset(options.datasetPath);
+    // The scrape's own integrity checks: with an empty file every flag, command and
+    // env var would count as withheld, and the gate would pass with nothing checked.
+    const docs = await loadDocsIndex(options.docsPath);
+    assertNonEmptyDocs(docs, options.docsPath);
+    const binary = await loadBinaryObservations(options.binaryPath);
+    assertBinaryObservations(binary, options.binaryPath);
+    uncorroborated = uncorroboratedBy(docs, binary);
   } catch (err) {
     console.error(
       `Failed to load changelog/dataset: ${err instanceof Error ? err.message : String(err)}`
@@ -145,7 +213,14 @@ export async function main(): Promise<number> {
     return 1;
   }
 
-  const missing = findMissingCoverage(md, datasetSymbols);
+  if (options.withheldSince !== undefined) {
+    console.log(
+      findWithheld(md, uncorroborated, options.withheldSince, dataset.claudeCodeVersion).join(' ')
+    );
+    return 0;
+  }
+
+  const missing = findMissingCoverage(md, dataset.symbols, uncorroborated);
 
   console.log(`${missing.length} changelog symbol(s) missing from ${options.datasetPath}`);
   if (missing.length > 0) {

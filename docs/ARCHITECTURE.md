@@ -24,6 +24,15 @@ Binary flag, env-var, command and settings-key finds land as `status: needs_revi
 until a first-party description confirms them. That is a curation state, not a doubt about existence — the binary proved the
 symbol is there.
 
+The changelog alone does not establish a flag, command or env var. A backticked token
+in a bullet proves only that the bullet names it. Many bullets name another tool's
+primitives, such as `GIT_SSH`, `SIGTERM` or `/proc`. So `uncorroboratedBy` withholds a
+changelog symbol of those types unless the docs index or the binary lane also has it.
+The binary test is a structural observation of the same `type:symbol`. A plain string
+match proves nothing, because nearly every token is somewhere in the bundle. A real
+symbol that the extractor misses goes in `CHANGELOG_ONLY_SYMBOLS` with its evidence.
+`check-coverage.ts` applies the same test, and the bot PR lists each new withheld name.
+
 ## Script map
 
 Pipeline scripts live in `scripts/`. Each is a module with a `main` guard, so they are
