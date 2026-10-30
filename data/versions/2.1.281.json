@@ -2743,7 +2743,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "On a runner-initiated session end such as a drain or idle release, push tracked outcome branches to `origin` before deleting the workspace, so in-flight commits survive a restart. Best-effort; adds 30 seconds to the shutdown budget, and requires git 2.29 or newer to resume from the pushed branch. Restrict push access to `claude/*` refs before enabling; see Resumed sessions lose unpushed work. Repositories checked out via a `checkout` lifecycle hook aren't pushed; snapshot those from the `post-session` hook instead.",
+      "description": "On a runner-initiated session end such as a drain or idle release, the runner pushes primary session branches with new commits to `origin` before deleting the workspace. Best-effort; adds 30 seconds to the shutdown budget. Requires git 2.29 or later to resume from them. Restrict push access to `claude/*` refs; see Resumed sessions lose unpushed work. A `checkout` hook's repositories aren't pushed; snapshot those from the `post-session` hook.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "cli",
@@ -4998,7 +4998,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Switch the AI model and save it as your default for new sessions. For models that support it, use left/right arrows to adjust effort level. With no argument, opens a picker; press `s` on a row to switch for the current session only. See when Claude Code asks you to confirm the switch. Once you confirm the switch, if Claude Code asks, Claude Code applies the change without waiting for the current response to finish. Before v2.1.242, Claude Code decided from a feature flag it fetched from Anthropic whether to run the command mid-turn or queue it until the turn finished, and always queued it in a session that doesn't fetch feature flags, such as on a third-party provider. Also available in non-interactive mode (`-p`) with a model argument instead of the picker, where it applies to the current session only and isn't saved as your default; requires Claude Code v2.1.205 or later",
+      "description": "Switch the AI model and save it as your default for new sessions. For models that support it, use left/right arrows to adjust effort level. With no argument, opens a picker; press `s` on a row to switch for the current session only. See when the new model starts. Before v2.1.242, it could wait. With `-p`, pass a model argument, which isn't saved as your default; requires v2.1.205 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -7011,7 +7011,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Stop Claude Code from registering the `claude-cli://` protocol handler with the operating system, which it otherwise does after you send the first prompt of an interactive session. Deep links let external tools open a Claude Code session with a pre-filled prompt. Set this in environments where protocol handler registration is restricted or managed separately.",
+      "description": "Stop Claude Code from registering the `claude-cli://` protocol handler with the operating system. Deep links let external tools open a Claude Code session with a pre-filled prompt. Set this in environments where protocol handler registration is restricted or managed separately.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7428,7 +7428,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Restrict which kind of account people can log in with. Set `\"claudeai\"` to allow only claude.ai accounts, `\"console\"` to allow only Claude Console accounts, or `\"gateway\"` to send people to a cloud gateway instead of a first-party login. Administrators set it in managed settings and pair it with `forceLoginOrgUUID` to keep developers' claude.ai logins inside one organization. If you set it to `\"claudeai\"` or `\"console\"` in any settings file, Claude Code also stops offering the keyless Console sign-in in the sessions that file applies to.",
+      "description": "Restrict which kind of account people can log in with. Set `\"claudeai\"` to allow only claude.ai accounts, `\"console\"` to allow only Claude Console accounts, or `\"gateway\"` to send people to a cloud gateway instead of a first-party login. Administrators set it in managed settings and pair it with `forceLoginOrgUUID` to keep developers' claude.ai logins inside one organization.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7882,8 +7882,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Make Claude's file tools refuse reads outside your working directories in every permission mode, including `bypassPermissions`. Claude Code denies `Read`, `Grep`, `Glob`, and `LSP` calls on those paths and tells Claude to ask you to add the directory with `/add-dir`. Files Claude Code itself needs stay readable, such as your skills, plugins, rules, agents, commands, and the `CLAUDE.md` memory file under `~/.claude/`. Requires Claude Code v2.1.257 or later.",
-      "description_source": "docs",
+      "description": "Refuse file-tool reads (Read, Grep, Glob, LSP) outside the working directories in every permission mode; true in any settings source wins. Also set when the user picks \"block\" on the one-time auto-mode prompt for a read outside the working directories.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -14786,7 +14786,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to remove the `run_in_background` parameter from the Bash, PowerShell, and subagent tools and to turn off the Ctrl+B shortcut and background runs of forked skills. Claude Code then also stops moving subagents, long MCP tool calls, and timed-out shell commands to the background automatically. MCP tasks and the Monitor tool still run in the background",
+      "description": "Set to `1` to remove the `run_in_background` parameter from the Bash, PowerShell, and subagent tools and to turn off the Ctrl+B shortcut and background runs of forked skills. Claude Code then also stops moving subagents, long MCP tool calls, and timed-out shell commands to the background automatically. MCP tasks and the Monitor tool still run in the background. To turn off background sessions too, set `CLAUDE_CODE_DISABLE_AGENT_VIEW` to `1`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -14862,11 +14862,11 @@
       "first_seen": "2.1.257",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` to keep the Claude in Chrome browser tools available while omitting the Chrome section of the system prompt and the `/claude-in-chrome` bundled skill. For hosts that embed Claude Code and supply their own browser guidance. Requires Claude Code v2.1.257 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -15529,7 +15529,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the effort level for supported models. Values: `low`, `medium`, `high`, `xhigh`, `max`, or `auto` to use the model default. Available levels depend on the model. Takes precedence over `--effort`, `/effort`, and the `modelSettings` and `effortLevel` settings. A `maxEffortLevel` cap still applies. See Adjust effort level",
+      "description": "Set the effort level for supported models. Values: `low`, `medium`, `high`, `xhigh`, or `max`. Available levels depend on the model. Takes precedence over `--effort`, `/effort`, and the `modelSettings` and `effortLevel` settings. A `maxEffortLevel` cap still applies. Set it to `auto` or `unset` to have Claude Code send no effort level, so that the API applies its own default for the model. See Adjust effort level",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -20758,7 +20758,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Set automatically in Bash tool subprocesses and hook commands to the effort level in effect when the subprocess starts: `low`, `medium`, `high`, `xhigh`, or `max`. Matches the `effort.level` field passed to hooks. Only set when the current model supports the effort parameter",
+      "description": "Set automatically in Bash tool subprocesses and hook commands to the effort level setting when the subprocess starts: `low`, `medium`, `high`, `xhigh`, or `max`. Matches the `effort.level` field passed to hooks. Only set when the current model supports the effort parameter",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -23269,7 +23269,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "On a runner-initiated session end such as a drain or idle release, push tracked outcome branches to `origin` before deleting the workspace, so in-flight commits survive a restart. Best-effort; adds 30 seconds to the shutdown budget, and requires git 2.29 or newer to resume from the pushed branch. Restrict push access to `claude/*` refs before enabling; see Resumed sessions lose unpushed work. Repositories checked out via a `checkout` lifecycle hook aren't pushed; snapshot those from the `post-session` hook instead.",
+      "description": "On a runner-initiated session end such as a drain or idle release, the runner pushes primary session branches with new commits to `origin` before deleting the workspace. Best-effort; adds 30 seconds to the shutdown budget. Requires git 2.29 or later to resume from them. Restrict push access to `claude/*` refs; see Resumed sessions lose unpushed work. A `checkout` hook's repositories aren't pushed; snapshot those from the `post-session` hook.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "other"
