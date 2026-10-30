@@ -1261,6 +1261,11 @@ describe('extractParamEnvVars — function extents and shapes', () => {
   it('still reads a division as a division', () => {
     expect(read('function f(e){let t=a/b/c' + tail)).toBe(true);
     expect(read('function f(e){let t=(a)/2/(b)' + tail)).toBe(true);
+    expect(read('function f(e){let t="6"/2' + tail)).toBe(true);
+    expect(read("function f(e){let t='6'/2" + tail)).toBe(true);
+    expect(read('function f(e){let t=`6`/2' + tail)).toBe(true);
+    expect(read('function f(e){let t=i++/2' + tail)).toBe(true);
+    expect(read('function f(e){let t=i--/2' + tail)).toBe(true);
   });
 
   it('reads a generator function', () => {

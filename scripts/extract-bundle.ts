@@ -339,7 +339,8 @@ export function extractAccessorEnvVars(src: string): Map<string, string> {
 
 /**
  * Whether a `/` at `slash` can open a regex literal rather than divide. After a
- * value (an identifier, a number, `)`, `]` or `}`) it divides, unless that word is
+ * value (an identifier, a number, a string, `)`, `]`, `}` or a postfix `++`/`--`)
+ * it divides, unless that word is
  * a keyword such as `return` that a regex can follow. A regex after a block's `}`
  * or after `if(…)` is read as division, the same misreading as before this test.
  */
@@ -349,6 +350,9 @@ function regexCanStart(src: string, slash: number): boolean {
   /* v8 ignore next -- matchBracket calls this only past its opening bracket, which stops the scan; the guard keeps the function total */
   if (j < 0) return true;
   const prev = src[j] as string;
+  // A string's closing quote and a postfix `++`/`--` end a value too (`"6"/2`, `i++/2`).
+  if (/["'`]/.test(prev)) return false;
+  if ((prev === '+' || prev === '-') && src[j - 1] === prev) return false;
   if (/[)\]}\w$]/.test(prev)) {
     const word = /[A-Za-z_$][\w$]*$/.exec(src.slice(Math.max(0, j - 16), j + 1))?.[0];
     return (
