@@ -1143,3 +1143,71 @@ describe('extractNameReaderEnvVars — env vars read by name through a helper', 
     expect(found).toHaveLength(1);
   });
 });
+
+describe('command aliases', () => {
+  it('reads the aliases of a registry object, before or after its type marker', () => {
+    // 2.1.312 shapes: `/config` lists `aliases` before `type`, `/resume` after it.
+    const cmds = extractCommands(
+      '{aliases:["settings"],type:"local-jsx",name:"config",description:"Open settings"},' +
+        '{type:"local-jsx",name:"resume",get description(){return"Resume"},aliases:["continue"]}'
+    );
+    expect(cmds.has('/settings')).toBe(true);
+    expect(cmds.has('/continue')).toBe(true);
+    expect(cmds.get('/config')).toBe('Open settings');
+  });
+
+  it('gives an alias no description, since the text belongs to the command', () => {
+    const cmds = extractCommands('{type:"local",name:"exit",description:"Exit",aliases:["quit"]}');
+    expect(cmds.has('/quit')).toBe(true);
+    expect(cmds.get('/quit')).toBeUndefined();
+  });
+
+  it('ignores an aliases list outside a command object', () => {
+    // The 2.1.312 keybinding table and a bundled highlight.js grammar.
+    const src =
+      'en=[{name:"ctrl",aliases:["control"]},{name:"cmd",aliases:["command","super","win"]}];' +
+      '{name:"crmsh",aliases:["crm","pcmk"],keywords:{}}';
+    expect(extractCommands(src).size).toBe(0);
+    expect(extractSkillCommands(src).size).toBe(0);
+  });
+
+  it('stops at the command object, so the aliases of a neighbour stay out', () => {
+    // A command with no aliases of its own, then the keybinding table.
+    const cmds = extractCommands('{type:"local",name:"exit"},{name:"cmd",aliases:["command"]}');
+    expect(cmds.has('/exit')).toBe(true);
+    expect(cmds.has('/command')).toBe(false);
+  });
+
+  it('keeps a registered command over an alias of the same name', () => {
+    // 2.1.306: `/update` is a command's own name and also another's alias.
+    const cmds = extractCommands(
+      '{type:"local",name:"restart",aliases:["update"]},' +
+        '{type:"local",name:"update",description:"Switch to the latest version"}'
+    );
+    expect(cmds.get('/update')).toBe('Switch to the latest version');
+  });
+
+  it('keeps a skill name over a skill alias of the same name', () => {
+    const src =
+      'ol({name:"loop",aliases:["schedule"],menuDescription:"Repeat"}),' +
+      'ol({name:"schedule",menuDescription:"Create scheduled agents"})';
+    expect(extractSkillCommands(src).get('/schedule')).toBe('Create scheduled agents');
+  });
+
+  it('reads skill aliases from the entry object only', () => {
+    // A neighbour's list must stay out, and a list before `name:` still counts.
+    const src =
+      'ol({name:"doctor",menuDescription:"Health"}),{aliases:["control"],name:"ctrl"},' +
+      'ol({aliases:["routines"],name:"schedule",menuDescription:"Schedule agents"})';
+    const cmds = extractSkillCommands(src);
+    expect(cmds.has('/control')).toBe(false);
+    expect(cmds.has('/routines')).toBe(true);
+  });
+
+  it('reads the aliases of a skill registry entry', () => {
+    const src = 'ol({name:"doctor",aliases:["checkup"],menuDescription:"Health-check your setup"})';
+    const cmds = extractSkillCommands(src);
+    expect(cmds.has('/checkup')).toBe(true);
+    expect(cmds.get('/checkup')).toBeUndefined();
+  });
+});
