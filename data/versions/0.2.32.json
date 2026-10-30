@@ -345,6 +345,18 @@
       "category": "command"
     },
     {
+      "symbol": "/quit",
+      "type": "command",
+      "first_seen": "0.2.25",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "command"
+    },
+    {
       "symbol": "/release-notes",
       "type": "command",
       "first_seen": "0.2.9",

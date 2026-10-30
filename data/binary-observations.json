@@ -3491,8 +3491,24 @@
       "symbol": "/allowed-tools",
       "type": "command",
       "first_seen": "0.2.40",
-      "last_seen": "1.0.6",
-      "removed_in": "1.0.7"
+      "last_seen": "2.1.314",
+      "removed_in": null
+    },
+    {
+      "symbol": "/android",
+      "type": "command",
+      "first_seen": "2.0.72",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
+      "symbol": "/app",
+      "type": "command",
+      "first_seen": "2.1.42",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
     },
     {
       "symbol": "/approved-tools",
@@ -3547,8 +3563,8 @@
       "symbol": "/bashes",
       "type": "command",
       "first_seen": "1.0.18",
-      "last_seen": "2.0.44",
-      "removed_in": "2.0.45"
+      "last_seen": "2.1.314",
+      "removed_in": null
     },
     {
       "symbol": "/batch",
@@ -3558,11 +3574,35 @@
       "removed_in": null
     },
     {
+      "symbol": "/bg",
+      "type": "command",
+      "first_seen": "2.1.119",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/branch",
       "type": "command",
       "first_seen": "2.1.77",
       "last_seen": "2.1.314",
       "removed_in": null
+    },
+    {
+      "symbol": "/break-reminder",
+      "type": "command",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
+      "symbol": "/breaks",
+      "type": "command",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
     },
     {
       "symbol": "/bridge-kick",
@@ -3605,6 +3645,22 @@
       "first_seen": "2.1.169",
       "last_seen": "2.1.314",
       "removed_in": null
+    },
+    {
+      "symbol": "/checkpoint",
+      "type": "command",
+      "first_seen": "2.0.2",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
+      "symbol": "/checkup",
+      "type": "command",
+      "first_seen": "2.1.205",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
     },
     {
       "symbol": "/chrome",
@@ -3684,6 +3740,14 @@
       "removed_in": null
     },
     {
+      "symbol": "/continue",
+      "type": "command",
+      "first_seen": "2.1.32",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/copy",
       "type": "command",
       "first_seen": "2.1.20",
@@ -3694,8 +3758,8 @@
       "symbol": "/cost",
       "type": "command",
       "first_seen": "0.2.9",
-      "last_seen": "2.1.117",
-      "removed_in": "2.1.118"
+      "last_seen": "2.1.314",
+      "removed_in": null
     },
     {
       "symbol": "/daemon",
@@ -3773,6 +3837,14 @@
       "first_seen": "0.2.9",
       "last_seen": "2.1.314",
       "removed_in": null
+    },
+    {
+      "symbol": "/downtime",
+      "type": "command",
+      "first_seen": "2.1.149",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
     },
     {
       "symbol": "/dream",
@@ -3943,11 +4015,27 @@
       "removed_in": null
     },
     {
+      "symbol": "/ios",
+      "type": "command",
+      "first_seen": "2.0.72",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/keybindings",
       "type": "command",
       "first_seen": "2.1.6",
       "last_seen": "2.1.314",
       "removed_in": null
+    },
+    {
+      "symbol": "/learn",
+      "type": "command",
+      "first_seen": "2.1.97",
+      "last_seen": "2.1.145",
+      "removed_in": "2.1.146",
+      "named_first_seen": null
     },
     {
       "symbol": "/list-agents",
@@ -3985,6 +4073,14 @@
       "removed_in": null
     },
     {
+      "symbol": "/marketplace",
+      "type": "command",
+      "first_seen": "2.0.37",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/mcp",
       "type": "command",
       "first_seen": "0.2.41",
@@ -4004,6 +4100,14 @@
       "first_seen": "0.2.54",
       "last_seen": "2.1.314",
       "removed_in": null
+    },
+    {
+      "symbol": "/memory-pause",
+      "type": "command",
+      "first_seen": "2.1.187",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
     },
     {
       "symbol": "/migrate",
@@ -4048,6 +4152,22 @@
       "removed_in": null
     },
     {
+      "symbol": "/name",
+      "type": "command",
+      "first_seen": "2.1.116",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
+      "symbol": "/new",
+      "type": "command",
+      "first_seen": "1.0.108",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/onboarding",
       "type": "command",
       "first_seen": "0.2.9",
@@ -4090,6 +4210,14 @@
       "removed_in": null
     },
     {
+      "symbol": "/peers",
+      "type": "command",
+      "first_seen": "2.1.224",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/permissions",
       "type": "command",
       "first_seen": "1.0.7",
@@ -4125,6 +4253,14 @@
       "removed_in": null
     },
     {
+      "symbol": "/plugins",
+      "type": "command",
+      "first_seen": "2.0.12",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/powerup",
       "type": "command",
       "first_seen": "2.1.90",
@@ -4153,11 +4289,27 @@
       "removed_in": null
     },
     {
+      "symbol": "/proactive",
+      "type": "command",
+      "first_seen": "2.1.105",
+      "last_seen": "2.1.231",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/prototype",
       "type": "command",
       "first_seen": "2.1.221",
       "last_seen": "2.1.222",
       "removed_in": null
+    },
+    {
+      "symbol": "/quit",
+      "type": "command",
+      "first_seen": "0.2.25",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
     },
     {
       "symbol": "/radio",
@@ -4172,6 +4324,14 @@
       "first_seen": "2.0.43",
       "last_seen": "2.1.314",
       "removed_in": null
+    },
+    {
+      "symbol": "/rc",
+      "type": "command",
+      "first_seen": "2.1.51",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
     },
     {
       "symbol": "/recap",
@@ -4202,6 +4362,14 @@
       "removed_in": null
     },
     {
+      "symbol": "/remote",
+      "type": "command",
+      "first_seen": "2.1.15",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/remote-control",
       "type": "command",
       "first_seen": "2.1.51",
@@ -4223,11 +4391,20 @@
       "removed_in": null
     },
     {
+      "symbol": "/reset",
+      "type": "command",
+      "first_seen": "1.0.60",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/restart",
       "type": "command",
-      "first_seen": "2.1.288",
+      "first_seen": "2.1.212",
       "last_seen": "2.1.314",
-      "removed_in": null
+      "removed_in": null,
+      "named_first_seen": "2.1.288"
     },
     {
       "symbol": "/resume",
@@ -4249,6 +4426,14 @@
       "first_seen": "1.0.128",
       "last_seen": "2.1.314",
       "removed_in": null
+    },
+    {
+      "symbol": "/routines",
+      "type": "command",
+      "first_seen": "2.1.111",
+      "last_seen": "2.1.231",
+      "removed_in": null,
+      "named_first_seen": null
     },
     {
       "symbol": "/run",
@@ -4300,6 +4485,14 @@
       "removed_in": null
     },
     {
+      "symbol": "/settings",
+      "type": "command",
+      "first_seen": "2.0.71",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/setup-bedrock",
       "type": "command",
       "first_seen": "2.1.92",
@@ -4317,7 +4510,7 @@
       "symbol": "/setup-cowork",
       "type": "command",
       "first_seen": "2.1.199",
-      "last_seen": "2.1.259",
+      "last_seen": "2.1.291",
       "removed_in": null
     },
     {
@@ -4326,6 +4519,14 @@
       "first_seen": "2.1.98",
       "last_seen": "2.1.314",
       "removed_in": null
+    },
+    {
+      "symbol": "/share",
+      "type": "command",
+      "first_seen": "2.1.144",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
     },
     {
       "symbol": "/simplify",
@@ -4352,8 +4553,8 @@
       "symbol": "/stats",
       "type": "command",
       "first_seen": "2.0.63",
-      "last_seen": "2.1.117",
-      "removed_in": "2.1.118"
+      "last_seen": "2.1.314",
+      "removed_in": null
     },
     {
       "symbol": "/status",
@@ -4464,8 +4665,16 @@
       "symbol": "/toggle-memory",
       "type": "command",
       "first_seen": "2.1.90",
-      "last_seen": "2.1.186",
+      "last_seen": "2.1.314",
       "removed_in": null
+    },
+    {
+      "symbol": "/tp",
+      "type": "command",
+      "first_seen": "2.1.92",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
     },
     {
       "symbol": "/tui",
@@ -4489,10 +4698,18 @@
       "removed_in": null
     },
     {
+      "symbol": "/undo",
+      "type": "command",
+      "first_seen": "2.1.108",
+      "last_seen": "2.1.314",
+      "removed_in": null,
+      "named_first_seen": null
+    },
+    {
       "symbol": "/update",
       "type": "command",
       "first_seen": "2.1.101",
-      "last_seen": "2.1.287",
+      "last_seen": "2.1.314",
       "removed_in": null
     },
     {
