@@ -249,19 +249,6 @@
       "category": "cli-internal"
     },
     {
-      "symbol": "--auth-token",
-      "type": "cli_flag",
-      "first_seen": "2.1.64",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Bearer token for auth",
-      "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
-    },
-    {
       "symbol": "--author",
       "type": "cli_flag",
       "first_seen": "2.1.157",
@@ -1111,19 +1098,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--idle-timeout",
-      "type": "cli_flag",
-      "first_seen": "2.1.64",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Idle timeout for detached sessions in ms (0 = never expire)",
-      "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
-    },
-    {
       "symbol": "--include-hook-events",
       "type": "cli_flag",
       "first_seen": "2.1.89",
@@ -1382,19 +1356,6 @@
       ]
     },
     {
-      "symbol": "--max-sessions",
-      "type": "cli_flag",
-      "first_seen": "2.1.64",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Maximum concurrent sessions (0 = unlimited)",
-      "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
-    },
-    {
       "symbol": "--max-thinking-tokens",
       "type": "cli_flag",
       "first_seen": "2.0.2",
@@ -1432,19 +1393,6 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
-    },
-    {
-      "symbol": "--mcp-debug",
-      "type": "cli_flag",
-      "first_seen": "0.2.31",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "[DEPRECATED. Use --debug instead] Enable MCP debug mode (shows MCP server errors)",
-      "source_url": null,
-      "category": "cli",
-      "description_source": "binary"
     },
     {
       "symbol": "--message",
@@ -1521,7 +1469,7 @@
       "symbol": "--no-render-check",
       "type": "cli_flag",
       "first_seen": "2.1.169",
-      "removed_in": null,
+      "removed_in": "2.1.246",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -1888,7 +1836,7 @@
       "symbol": "--render-sample",
       "type": "cli_flag",
       "first_seen": "2.1.160",
-      "removed_in": null,
+      "removed_in": "2.1.246",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -2169,7 +2117,7 @@
       "symbol": "--skip-dts",
       "type": "cli_flag",
       "first_seen": "2.1.174",
-      "removed_in": null,
+      "removed_in": "2.1.246",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -2843,19 +2791,6 @@
       "category": "command"
     },
     {
-      "symbol": "/bridge-kick",
-      "type": "command",
-      "first_seen": "2.1.76",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Inject Remote Control failures for recovery testing",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
-    },
-    {
       "symbol": "/brief",
       "type": "command",
       "first_seen": "2.1.72",
@@ -3522,19 +3457,6 @@
       "category": "command"
     },
     {
-      "symbol": "/init-verifiers",
-      "type": "command",
-      "first_seen": "2.1.51",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Create verifier skill(s) for automated verification of code changes",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
-    },
-    {
       "symbol": "/insights",
       "type": "command",
       "first_seen": "2.1.30",
@@ -3778,19 +3700,6 @@
       "category": "command"
     },
     {
-      "symbol": "/morning",
-      "type": "command",
-      "first_seen": "2.1.207",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Your morning brief — run it now, or set it up as a recurring weekday task",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
-    },
-    {
       "symbol": "/name",
       "type": "command",
       "first_seen": "2.1.116",
@@ -3884,7 +3793,7 @@
       "symbol": "/plan-artifact",
       "type": "command",
       "first_seen": "2.1.198",
-      "removed_in": null,
+      "removed_in": "2.1.265",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -9486,30 +9395,6 @@
       "category": "other"
     },
     {
-      "symbol": "API_MAX_INPUT_TOKENS",
-      "type": "env_var",
-      "first_seen": "2.0.36",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "API_TARGET_INPUT_TOKENS",
-      "type": "env_var",
-      "first_seen": "2.0.36",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "API_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "0.2.9",
@@ -10235,18 +10120,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_BRIDGE_USE_CCR_V2",
-      "type": "env_var",
-      "first_seen": "2.1.70",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_BYTE_STREAM_IDLE_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "2.1.157",
@@ -10420,18 +10293,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_AGENT_LIST_IN_MESSAGES",
-      "type": "env_var",
-      "first_seen": "2.1.84",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_AGENT_PROXY_GH_SHIM",
       "type": "env_var",
       "first_seen": "2.1.202",
@@ -10447,18 +10308,6 @@
       "symbol": "CLAUDE_CODE_AGENT_PROXY_GIT_CONFIG",
       "type": "env_var",
       "first_seen": "2.1.202",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_ALDER_WICKET",
-      "type": "env_var",
-      "first_seen": "2.1.217",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -10645,7 +10494,7 @@
       "symbol": "CLAUDE_CODE_ARTIFACT_DIRECT_UPLOAD",
       "type": "env_var",
       "first_seen": "2.1.172",
-      "removed_in": null,
+      "removed_in": "2.1.239",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -11053,7 +10902,7 @@
       "symbol": "CLAUDE_CODE_COMMIT_LOG",
       "type": "env_var",
       "first_seen": "2.1.85",
-      "removed_in": null,
+      "removed_in": "2.1.227",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -11970,18 +11819,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_ENABLE_DESIGN_MCP",
-      "type": "env_var",
-      "first_seen": "2.1.179",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_ENABLE_DESIGN_SYNC",
       "type": "env_var",
       "first_seen": "2.1.166",
@@ -12061,18 +11898,6 @@
       "symbol": "CLAUDE_CODE_ENABLE_MENU_KIND_LANES",
       "type": "env_var",
       "first_seen": "2.1.163",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_ENABLE_MORNING_BRIEF",
-      "type": "env_var",
-      "first_seen": "2.1.207",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -12333,7 +12158,7 @@
       "symbol": "CLAUDE_CODE_FABLE_BRIDGE_DIALOG_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "2.1.178",
-      "removed_in": null,
+      "removed_in": "2.1.236",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -12406,7 +12231,7 @@
       "symbol": "CLAUDE_CODE_FORCE_FULL_LOGO",
       "type": "env_var",
       "first_seen": "2.0.11",
-      "removed_in": null,
+      "removed_in": "2.1.246",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -12416,18 +12241,6 @@
     },
     {
       "symbol": "CLAUDE_CODE_FORCE_MEMORY_SURVEY",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_FORCE_MEMORY_WRITE_SURVEY",
       "type": "env_var",
       "first_seen": "2.1.160",
       "removed_in": null,
@@ -12528,18 +12341,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_FORK_SUBAGENT_DEFAULT_ON",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_FORWARD_SUBAGENT_TEXT",
       "type": "env_var",
       "first_seen": "2.1.211",
@@ -12550,54 +12351,6 @@
       "description": "Set to `1` to emit subagent text and thinking blocks in `claude -p --output-format stream-json` output, the same behavior as the `--forward-subagent-text` flag. Use the variable when a harness invokes `claude` and can't pass the flag itself. Unlike the flag, which exits with an error outside non-interactive mode with stream-json output, the variable is ignored there so that nested invocations keep working when it's set process-wide. Requires Claude Code v2.1.211 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_FRAME",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_FRAME_AUTO_OPEN",
-      "type": "env_var",
-      "first_seen": "2.1.166",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_FRAME_MCP",
-      "type": "env_var",
-      "first_seen": "2.1.169",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_FRAME_MODE",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -12628,7 +12381,7 @@
       "symbol": "CLAUDE_CODE_GAULT_KESTREL",
       "type": "env_var",
       "first_seen": "2.1.215",
-      "removed_in": null,
+      "removed_in": "2.1.271",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -12753,7 +12506,7 @@
       "symbol": "CLAUDE_CODE_HERON_TALLOW",
       "type": "env_var",
       "first_seen": "2.1.217",
-      "removed_in": null,
+      "removed_in": "2.1.229",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -12946,22 +12699,10 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_INTERNAL_METRICS",
-      "type": "env_var",
-      "first_seen": "1.0.36",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_INVESTIGATE_FIRST",
       "type": "env_var",
       "first_seen": "2.1.122",
-      "removed_in": null,
+      "removed_in": "2.1.223",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -12985,7 +12726,7 @@
       "symbol": "CLAUDE_CODE_JSONL_TRANSCRIPT",
       "type": "env_var",
       "first_seen": "2.1.160",
-      "removed_in": null,
+      "removed_in": "2.1.242",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -13042,18 +12783,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_LEAN_PROMPT",
-      "type": "env_var",
-      "first_seen": "2.1.120",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_LOOP_KEEPALIVE",
       "type": "env_var",
       "first_seen": "2.1.157",
@@ -13093,7 +12822,7 @@
       "symbol": "CLAUDE_CODE_MARL_CORMORANT",
       "type": "env_var",
       "first_seen": "2.1.215",
-      "removed_in": null,
+      "removed_in": "2.1.224",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -13295,30 +13024,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_MEMORY_WRITE_SURVEY_TIMEOUT_MS",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_MID_CONVERSATION_SYSTEM",
-      "type": "env_var",
-      "first_seen": "2.1.136",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_MOCK_REMOTE_SETTINGS",
       "type": "env_var",
       "first_seen": "2.1.160",
@@ -13334,18 +13039,6 @@
       "symbol": "CLAUDE_CODE_MOCK_TRIAL",
       "type": "env_var",
       "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_MORNING_BRIEF_PROMPT",
-      "type": "env_var",
-      "first_seen": "2.1.207",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -13597,18 +13290,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_OWNERSHIP_FRAME",
-      "type": "env_var",
-      "first_seen": "2.1.161",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE",
       "type": "env_var",
       "first_seen": "2.1.129",
@@ -13686,18 +13367,6 @@
       "symbol": "CLAUDE_CODE_PEWTER_OWL_TOOL",
       "type": "env_var",
       "first_seen": "2.1.169",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_PLAN_MODE_INTERVIEW_PHASE",
-      "type": "env_var",
-      "first_seen": "2.1.16",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -13824,30 +13493,6 @@
       "symbol": "CLAUDE_CODE_PLUGIN_USE_ZIP_CACHE",
       "type": "env_var",
       "first_seen": "2.1.59",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_POST_FOR_SESSION_INGRESS",
-      "type": "env_var",
-      "first_seen": "2.1.26",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_POST_FOR_SESSION_INGRESS_V2",
-      "type": "env_var",
-      "first_seen": "2.1.27",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -14503,18 +14148,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_SHOJI_ENGINE",
-      "type": "env_var",
-      "first_seen": "2.1.193",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_SIMPLE",
       "type": "env_var",
       "first_seen": "2.1.48",
@@ -14544,30 +14177,6 @@
       "symbol": "CLAUDE_CODE_SIMULATE_PROXY_USAGE",
       "type": "env_var",
       "first_seen": "2.1.92",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_SKILL_DESCRIPTION",
-      "type": "env_var",
-      "first_seen": "2.1.154",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_SKILL_DESC_REFRAME",
-      "type": "env_var",
-      "first_seen": "2.1.196",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -15113,30 +14722,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_TEAMMATE_ID",
-      "type": "env_var",
-      "first_seen": "2.0.59",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_TEAM_ONBOARDING",
-      "type": "env_var",
-      "first_seen": "2.1.94",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_TEAM_TEARDOWN_PARK_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "2.1.206",
@@ -15592,30 +15177,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_VELVET_FALCON",
-      "type": "env_var",
-      "first_seen": "2.1.163",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_VERIFY_PROMPT",
-      "type": "env_var",
-      "first_seen": "2.1.119",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_VOICE_FORWARD_INTERIMS_TYPED",
       "type": "env_var",
       "first_seen": "2.1.141",
@@ -15631,19 +15192,7 @@
       "symbol": "CLAUDE_CODE_WALNUT_SPIRE",
       "type": "env_var",
       "first_seen": "2.1.207",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_WEBFETCH_PROXY_PATH",
-      "type": "env_var",
-      "first_seen": "2.1.166",
-      "removed_in": null,
+      "removed_in": "2.1.269",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -15764,7 +15313,7 @@
       "symbol": "CLAUDE_CONTEXT_COLLAPSE",
       "type": "env_var",
       "first_seen": "2.1.160",
-      "removed_in": null,
+      "removed_in": "2.1.275",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -15776,7 +15325,7 @@
       "symbol": "CLAUDE_CONTEXT_COLLAPSE_MODEL",
       "type": "env_var",
       "first_seen": "2.1.160",
-      "removed_in": null,
+      "removed_in": "2.1.275",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -15824,18 +15373,6 @@
       "symbol": "CLAUDE_COWORK_MEMORY_PATH_OVERRIDE",
       "type": "env_var",
       "first_seen": "2.1.64",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_COWORK_MEMORY_SKIP_DEFAULT_ENTRYPOINT",
-      "type": "env_var",
-      "first_seen": "2.1.121",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -16007,18 +15544,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_INTERNAL_WARM_RESUME_QA",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_IN_CHROME_DOMAIN_RULE_TOOL",
       "type": "env_var",
       "first_seen": "2.1.176",
@@ -16160,7 +15685,7 @@
       "symbol": "CLAUDE_PREVIEW_CLASSIFIER_FLOOR",
       "type": "env_var",
       "first_seen": "2.1.196",
-      "removed_in": null,
+      "removed_in": "2.1.242",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -16180,18 +15705,6 @@
       "description": "The project root",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_PROJECT_TOOL",
-      "type": "env_var",
-      "first_seen": "2.1.174",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -16295,7 +15808,7 @@
       "symbol": "CLAUDE_REPL_VARIANT",
       "type": "env_var",
       "first_seen": "2.1.108",
-      "removed_in": null,
+      "removed_in": "2.1.275",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -16883,18 +16396,6 @@
     },
     {
       "symbol": "DS_CHROMIUM_PATH",
-      "type": "env_var",
-      "first_seen": "2.1.166",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "other"
-    },
-    {
-      "symbol": "DS_VALIDATE_CAP_SECONDS",
       "type": "env_var",
       "first_seen": "2.1.166",
       "removed_in": null,
@@ -17851,7 +17352,7 @@
       "symbol": "SCREENSHOT_DIR",
       "type": "env_var",
       "first_seen": "2.1.145",
-      "removed_in": null,
+      "removed_in": "2.1.251",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -17921,18 +17422,6 @@
       "category": "other"
     },
     {
-      "symbol": "SRT_WIN_PATH",
-      "type": "env_var",
-      "first_seen": "2.1.169",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "other"
-    },
-    {
       "symbol": "SSL_CERT_FILE",
       "type": "env_var",
       "first_seen": "2.1.89",
@@ -17954,18 +17443,6 @@
       "confidence": "high",
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
-      "symbol": "TEAM_MEMORY_SYNC_URL",
-      "type": "env_var",
-      "first_seen": "2.1.71",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "other"
     },
     {
@@ -18005,30 +17482,6 @@
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
-    },
-    {
-      "symbol": "USE_API_CLEAR_TOOL_RESULTS",
-      "type": "env_var",
-      "first_seen": "2.0.36",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "USE_API_CLEAR_TOOL_USES",
-      "type": "env_var",
-      "first_seen": "2.0.36",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
     },
     {
       "symbol": "USE_API_CONTEXT_MANAGEMENT",

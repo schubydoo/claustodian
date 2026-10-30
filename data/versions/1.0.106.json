@@ -297,7 +297,7 @@
       "symbol": "--mcp-debug",
       "type": "cli_flag",
       "first_seen": "0.2.31",
-      "removed_in": null,
+      "removed_in": "2.1.193",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -2065,18 +2065,6 @@
       "description": "Set to `1` to skip validation of IDE lockfile entries during connection. Use when auto-connect fails to find your IDE despite it running",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_INTERNAL_METRICS",
-      "type": "env_var",
-      "first_seen": "1.0.36",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "claude-code"
     },
     {

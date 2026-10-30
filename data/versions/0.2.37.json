@@ -77,7 +77,7 @@
       "symbol": "--mcp-debug",
       "type": "cli_flag",
       "first_seen": "0.2.31",
-      "removed_in": null,
+      "removed_in": "2.1.193",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
