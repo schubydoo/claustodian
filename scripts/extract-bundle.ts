@@ -35,6 +35,7 @@ import { parseSync } from 'oxc-parser';
 import { extractSwitchCaseScopes } from './argv-scopes.js';
 import { isAccessorEvidenceEnv } from './binary-lane.js';
 import { extractRegistryEnvVars } from './env-registry.js';
+import { compareVersionsAsc } from './lib.js';
 import { categorize, SYMBOL_DENYLIST, type ExtractedSymbolType } from './scrape-changelog.js';
 import { extractSettingsKeys, settingsKeyCategory } from './settings-schema.js';
 
@@ -1354,4 +1355,73 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
     if (a.symbol === b.symbol) return 0;
     return 1;
   });
+}
+
+/** The types whose removal the raw-text check can confirm, with each one's token shape. */
+const TEXT_TOKEN: Readonly<Record<'env_var' | 'cli_flag' | 'command', RegExp>> = {
+  env_var: /(?<![A-Za-z0-9_$])[A-Z][A-Z0-9_]+(?![A-Za-z0-9_$])/g,
+  cli_flag: /(?<![A-Za-z0-9_-])--[a-z0-9][a-z0-9-]*(?![A-Za-z0-9_-])/g,
+  // A command name appears quoted, as a `name:` or an alias, and publishes with a `/`.
+  command: /["'`]([a-z][a-z0-9-]*)["'`]/g,
+};
+
+/**
+ * The `type:symbol` keys of `candidates` that do not appear anywhere in `src` as a
+ * whole token: a variable name not part of a longer one, a flag not the start of a
+ * longer flag, a command name in quotes. A candidate is a name an earlier release
+ * had that this release's extraction did not find. Being absent from the text too
+ * is what tells a real removal from an extraction miss (see computeTextRemoval).
+ * A candidate of another type, or whose name the token shape cannot express, is
+ * never reported, so it never counts as absent.
+ */
+export function textAbsent(
+  src: string,
+  candidates: readonly { type: string; symbol: string }[]
+): string[] {
+  const tokens = new Map<string, Set<string>>();
+  const tokensOf = (type: keyof typeof TEXT_TOKEN): Set<string> => {
+    let set = tokens.get(type);
+    if (!set) {
+      set = new Set();
+      for (const m of src.matchAll(TEXT_TOKEN[type]))
+        set.add(type === 'command' ? `/${m[1] as string}` : m[0]);
+      tokens.set(type, set);
+    }
+    return set;
+  };
+  const absent: string[] = [];
+  for (const { type, symbol } of candidates) {
+    if (!(type in TEXT_TOKEN)) continue;
+    const shape = new RegExp(`^(?:${TEXT_TOKEN[type as keyof typeof TEXT_TOKEN].source})$`);
+    const bare = type === 'command' ? `"${symbol.slice(1)}"` : symbol;
+    if (!shape.test(bare)) continue;
+    if (!tokensOf(type as keyof typeof TEXT_TOKEN).has(symbol)) absent.push(`${type}:${symbol}`);
+  }
+  return absent.sort();
+}
+
+/** A name the binary lane has seen, and the first release that had it. */
+export interface WatchedName {
+  type: string;
+  symbol: string;
+  first_seen: string;
+}
+
+/**
+ * textAbsent for one release: the candidates are the watched names first seen in an
+ * earlier release that `symbols`, this release's extraction, does not contain.
+ */
+export function textAbsentFor(
+  src: string,
+  version: string,
+  symbols: readonly { type: string; symbol: string }[],
+  watch: readonly WatchedName[]
+): string[] {
+  const found = new Set(symbols.map((s) => `${s.type}:${s.symbol}`));
+  return textAbsent(
+    src,
+    watch.filter(
+      (w) => compareVersionsAsc(w.first_seen, version) < 0 && !found.has(`${w.type}:${w.symbol}`)
+    )
+  );
 }

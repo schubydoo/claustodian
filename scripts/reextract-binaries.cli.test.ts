@@ -4,7 +4,7 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { EventEmitter } from 'node:events';
-import { existsSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -15,6 +15,7 @@ import {
   DEFAULT_JOBS,
   extractInWorkers,
   isDedicatedCache,
+  loadWatchList,
   main,
   parseArgs,
   readBundleSource,
@@ -49,6 +50,9 @@ function fakeChild(onSend: (child: EventEmitter) => void) {
 }
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
+/** An observations file that watches no names, so live data stays out of the tests. */
+const NO_OBSERVATIONS = join(tmpdir(), 'claustodian-empty-observations.json');
+writeFileSync(NO_OBSERVATIONS, JSON.stringify({ symbols: [] }));
 
 /** Writes a compiled `<version>/linux-x64/claude` bundle + a realistic multi-platform
  * SHA256SUMS (so the checksum lookup must skip non-matching lines to find ours). */
@@ -67,17 +71,16 @@ describe('reextract-binaries parseArgs', () => {
       archiveDir: 'scratch/binaries',
       outDir: 'binary-cache',
       jobs: DEFAULT_JOBS,
+      observationsPath: 'data/binary-observations.json',
     });
     expect(DEFAULT_JOBS).toBeGreaterThanOrEqual(1);
     expect(DEFAULT_JOBS).toBeLessThanOrEqual(8);
   });
 
   it('parses --archive, --out and --jobs', () => {
-    expect(parseArgs(['--archive', 'a', '--out', 'b', '--jobs', '3'])).toEqual({
-      archiveDir: 'a',
-      outDir: 'b',
-      jobs: 3,
-    });
+    expect(
+      parseArgs(['--archive', 'a', '--out', 'b', '--jobs', '3', '--observations', 'o.json'])
+    ).toEqual({ archiveDir: 'a', outDir: 'b', jobs: 3, observationsPath: 'o.json' });
   });
 
   it('refuses a --jobs value that is not a positive integer', () => {
@@ -242,7 +245,16 @@ describe('reextract-binaries main()', () => {
     );
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    const code = await main(['--archive', archive, '--out', out, '--jobs', '1']);
+    const code = await main([
+      '--archive',
+      archive,
+      '--out',
+      out,
+      '--jobs',
+      '1',
+      '--observations',
+      NO_OBSERVATIONS,
+    ]);
 
     expect(code).toBe(0);
     const c1 = JSON.parse(await readFile(join(out, '1.0.0.json'), 'utf-8')) as {
@@ -283,6 +295,7 @@ describe('reextract-binaries main()', () => {
       'modRenderSites',
       'modRenderSitesListed',
       'modElements',
+      'textAbsent',
     ]);
     expect(existsSync(join(out, '3.0.0.json'))).toBe(false);
     expect(existsSync(join(out, '4.0.0.json'))).toBe(false); // refused, not extracted
@@ -310,7 +323,16 @@ describe('reextract-binaries main()', () => {
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    const code = await main(['--archive', archive, '--out', out, '--jobs', '1']);
+    const code = await main([
+      '--archive',
+      archive,
+      '--out',
+      out,
+      '--jobs',
+      '1',
+      '--observations',
+      NO_OBSERVATIONS,
+    ]);
 
     expect(code).toBe(1);
     expect(existsSync(join(out, '2.0.0.json'))).toBe(false);
@@ -336,7 +358,9 @@ describe('reextract-binaries main()', () => {
     await mkdir(join(out, '0.9.0.json'), { recursive: true });
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    await expect(main(['--archive', archive, '--out', out, '--jobs', '1'])).rejects.toThrow();
+    await expect(
+      main(['--archive', archive, '--out', out, '--jobs', '1', '--observations', NO_OBSERVATIONS])
+    ).rejects.toThrow();
 
     expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(true);
   });
@@ -358,7 +382,16 @@ describe('reextract-binaries main()', () => {
     await mkdir(out, { recursive: true });
     await writeFile(join(out, CACHE_INCOMPLETE_MARKER), JSON.stringify({ status: 'refused' }));
 
-    const code = await main(['--archive', archive, '--out', out, '--jobs', '1']);
+    const code = await main([
+      '--archive',
+      archive,
+      '--out',
+      out,
+      '--jobs',
+      '1',
+      '--observations',
+      NO_OBSERVATIONS,
+    ]);
 
     expect(code).toBe(0);
     expect(existsSync(join(out, CACHE_INCOMPLETE_MARKER))).toBe(false); // clean run lowers it
@@ -374,7 +407,18 @@ describe('reextract-binaries main()', () => {
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-    expect(await main(['--archive', archive, '--out', out, '--jobs', '1'])).toBe(1);
+    expect(
+      await main([
+        '--archive',
+        archive,
+        '--out',
+        out,
+        '--jobs',
+        '1',
+        '--observations',
+        NO_OBSERVATIONS,
+      ])
+    ).toBe(1);
 
     const marker = JSON.parse(await readFile(join(out, CACHE_INCOMPLETE_MARKER), 'utf-8')) as {
       status: string;
@@ -395,7 +439,16 @@ describe('reextract-binaries main()', () => {
     await writeFile(join(out, '_verify-report.json'), '{"ok":1}'); // sidecar, keep
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    await main(['--archive', archive, '--out', out, '--jobs', '1']);
+    await main([
+      '--archive',
+      archive,
+      '--out',
+      out,
+      '--jobs',
+      '1',
+      '--observations',
+      NO_OBSERVATIONS,
+    ]);
 
     expect(existsSync(join(out, '9.9.9.json'))).toBe(false);
     expect(existsSync(join(out, '_verify-report.json'))).toBe(true);
@@ -409,9 +462,9 @@ describe('reextract-binaries main()', () => {
     await writeCompiled(archive, '1.0.0', 'process.env.X;');
     await mkdir(out, { recursive: true });
     await writeFile(join(out, 'latest.json'), '{"important":1}'); // e.g. a mistyped --out data
-    await expect(main(['--archive', archive, '--out', out, '--jobs', '1'])).rejects.toThrow(
-      /Refusing to regenerate/
-    );
+    await expect(
+      main(['--archive', archive, '--out', out, '--jobs', '1', '--observations', NO_OBSERVATIONS])
+    ).rejects.toThrow(/Refusing to regenerate/);
     expect(existsSync(join(out, 'latest.json'))).toBe(true); // untouched
   });
 
@@ -454,7 +507,16 @@ describe('reextract-binaries main()', () => {
     await writeFile(join(archive, '1.0.0', 'SHA256SUMS'), `${hash}  bundle.tgz\n`);
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    await main(['--archive', archive, '--out', out, '--jobs', '1']);
+    await main([
+      '--archive',
+      archive,
+      '--out',
+      out,
+      '--jobs',
+      '1',
+      '--observations',
+      NO_OBSERVATIONS,
+    ]);
 
     const c = JSON.parse(await readFile(join(out, '1.0.0.json'), 'utf-8')) as {
       symbols: { symbol: string }[];
@@ -495,8 +557,30 @@ describe('reextract-binaries parallel jobs', () => {
 
     const one = join(root, 'one');
     const many = join(root, 'many');
-    expect(await main(['--archive', archive, '--out', one, '--jobs', '1'])).toBe(0);
-    expect(await main(['--archive', archive, '--out', many, '--jobs', '3'])).toBe(0);
+    expect(
+      await main([
+        '--archive',
+        archive,
+        '--out',
+        one,
+        '--jobs',
+        '1',
+        '--observations',
+        NO_OBSERVATIONS,
+      ])
+    ).toBe(0);
+    expect(
+      await main([
+        '--archive',
+        archive,
+        '--out',
+        many,
+        '--jobs',
+        '3',
+        '--observations',
+        NO_OBSERVATIONS,
+      ])
+    ).toBe(0);
 
     const files = (await readdir(one)).sort();
     expect(await readdir(many).then((f) => f.sort())).toEqual(files);
@@ -517,7 +601,15 @@ describe('reextract-binaries parallel jobs', () => {
     await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
     const out = join(root, 'out');
     await mkdir(out);
-    expect(runTask({ archiveDir: archive, outDir: out, version: '1.0.0', index: 4 })).toEqual({
+    expect(
+      runTask({
+        archiveDir: archive,
+        outDir: out,
+        version: '1.0.0',
+        observationsPath: NO_OBSERVATIONS,
+        index: 4,
+      })
+    ).toEqual({
       index: 4,
       outcome: { kind: 'written' },
     });
@@ -526,6 +618,7 @@ describe('reextract-binaries parallel jobs', () => {
         archiveDir: archive,
         outDir: join(root, 'no-such-dir'),
         version: '1.0.0',
+        observationsPath: NO_OBSERVATIONS,
         index: 2,
       })
     ).toMatchObject({ index: 2, error: expect.stringMatching(/ENOENT/) });
@@ -544,11 +637,17 @@ describe('reextract-binaries parallel jobs', () => {
     );
     const out = join(root, 'out');
     await mkdir(out);
-    expect(runTask({ archiveDir: archive, outDir: out, version: '1.0.0', index: 0 })).toMatchObject(
-      {
-        outcome: { kind: 'failed', reason: expect.stringMatching(/slice-bundle/) },
-      }
-    );
+    expect(
+      runTask({
+        archiveDir: archive,
+        outDir: out,
+        version: '1.0.0',
+        observationsPath: NO_OBSERVATIONS,
+        index: 0,
+      })
+    ).toMatchObject({
+      outcome: { kind: 'failed', reason: expect.stringMatching(/slice-bundle/) },
+    });
   });
 
   it('stops the run when a job hits an unexpected error', async () => {
@@ -597,5 +696,50 @@ describe('reextract-binaries parallel jobs', () => {
         { kind: 'missing' },
       ]);
     });
+  });
+
+  it('refuses a missing observations file instead of writing empty proofs', () => {
+    expect(() => loadWatchList(join(tmpdir(), 'claustodian-no-such-observations.json'))).toThrow(
+      /No observations at .*--observations/
+    );
+  });
+
+  it('loads the observations and writes their textAbsent proof, with one job or several', async () => {
+    root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-watch-'));
+    const archive = join(root, 'archive');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await writeCompiled(archive, '1.0.1', 'if(process.env.CLAUDE_CODE_A)x();');
+    const observations = join(root, 'observations.json');
+    await writeFile(
+      observations,
+      JSON.stringify({
+        symbols: [
+          { type: 'env_var', symbol: 'CLAUDE_CODE_A', first_seen: '0.2.9' },
+          { type: 'env_var', symbol: 'CLAUDE_CODE_GONE', first_seen: '0.2.9' },
+        ],
+      })
+    );
+    logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    for (const jobs of ['1', '2']) {
+      const out = join(root, `out-${jobs}`);
+      expect(
+        await main([
+          '--archive',
+          archive,
+          '--out',
+          out,
+          '--jobs',
+          jobs,
+          '--observations',
+          observations,
+        ])
+      ).toBe(0);
+      for (const v of ['1.0.0', '1.0.1']) {
+        const written = JSON.parse(await readFile(join(out, `${v}.json`), 'utf-8')) as {
+          textAbsent: string[];
+        };
+        expect(written.textAbsent, `${jobs} job(s), ${v}`).toEqual(['env_var:CLAUDE_CODE_GONE']);
+      }
+    }
   });
 });

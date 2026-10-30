@@ -183,6 +183,24 @@ describe('distillObservations', () => {
     expect(twoAliases?.named_first_seen).toBe('2.1.288');
   });
 
+  it('removes a symbol once the text of every later release proves it gone', () => {
+    const file = (version: string, present: boolean, absent: boolean): BinaryCacheFile => ({
+      version,
+      symbols: present ? [{ symbol: 'CLAUDE_CODE_GONE', type: 'env_var' }] : [],
+      textAbsent: absent ? ['env_var:CLAUDE_CODE_GONE'] : [],
+    });
+    const proven = [
+      file('2.1.300', true, false),
+      file('2.1.301', false, true),
+      file('2.1.302', false, true),
+      file('2.1.303', false, true),
+    ];
+    expect(distillObservations(proven).symbols[0]?.removed_in).toBe('2.1.301');
+    // One later release still holds the name as text: the extractor only missed it.
+    const missed = [...proven.slice(0, 2), file('2.1.302', false, false), proven[3]!];
+    expect(distillObservations(missed).symbols[0]?.removed_in).toBeNull();
+  });
+
   it('marks a symbol switch_case_only when every version proved it that way', () => {
     const files = [
       evFile('2.1.223', '--health-port', 'argv-switch'),
@@ -385,7 +403,8 @@ describe('distillObservations', () => {
     expect(out.$generated_by).toBe('scripts/backfill-binary.ts');
     expect(out.source).toBe('binary');
     expect(out.note).toMatch(/removed_in/);
-    expect(out.note).toMatch(/recall regressed/);
+    expect(out.note).toMatch(/raw text of every later release/);
+    expect(out.note).toMatch(/extraction absence alone is untrusted/);
   });
 
   it('ignores cache-only fields (category/evidence/description) — pure evidence out', () => {

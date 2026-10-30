@@ -13,6 +13,8 @@ import {
   extractFlags,
   extractNameReaderEnvVars,
   extractParamEnvVars,
+  textAbsent,
+  textAbsentFor,
   extractSkillCommands,
 } from './extract-bundle.js';
 
@@ -1372,5 +1374,49 @@ describe('extractParamEnvVars — function extents and shapes', () => {
 
   it('skips a default whose read goes through a rebound name', () => {
     expect(read('function f(e,t=(e)=>e.CLAUDE_CODE_X){return t}f(process.env);')).toBe(false);
+  });
+});
+
+describe('textAbsent', () => {
+  const src =
+    'x=process.env.CLAUDE_CODE_FRAME_MODE;y("--foo-bar");z={name:"plan"};w=process.env.KEEP';
+
+  it('reports a name only when no whole token in the text matches it', () => {
+    expect(
+      textAbsent(src, [
+        { type: 'env_var', symbol: 'CLAUDE_CODE_FRAME' }, // only inside a longer name
+        { type: 'env_var', symbol: 'CLAUDE_CODE_FRAME_MODE' },
+        { type: 'env_var', symbol: 'KEEP' },
+        { type: 'cli_flag', symbol: '--foo' }, // only the start of a longer flag
+        { type: 'cli_flag', symbol: '--foo-bar' },
+        { type: 'command', symbol: '/plan' },
+        { type: 'command', symbol: '/gone' },
+      ])
+    ).toEqual(['cli_flag:--foo', 'command:/gone', 'env_var:CLAUDE_CODE_FRAME']);
+  });
+
+  it('never reports a name it cannot judge', () => {
+    // A mixed-case variable and another type: no token shape covers them.
+    expect(
+      textAbsent(src, [
+        { type: 'env_var', symbol: 'SystemDrive' },
+        { type: 'config_key', symbol: 'model' },
+      ])
+    ).toEqual([]);
+  });
+});
+
+describe('textAbsentFor', () => {
+  it('checks only names first seen earlier that this release did not extract', () => {
+    const watch = [
+      { type: 'env_var', symbol: 'OLD_GONE', first_seen: '2.1.100' },
+      { type: 'env_var', symbol: 'OLD_HERE', first_seen: '2.1.100' },
+      { type: 'env_var', symbol: 'NEWER', first_seen: '2.1.300' },
+      { type: 'env_var', symbol: 'SAME_RELEASE', first_seen: '2.1.200' },
+    ];
+    // OLD_HERE is extracted, NEWER is first seen later, SAME_RELEASE is not earlier.
+    expect(
+      textAbsentFor('nothing here', '2.1.200', [{ type: 'env_var', symbol: 'OLD_HERE' }], watch)
+    ).toEqual(['env_var:OLD_GONE']);
   });
 });

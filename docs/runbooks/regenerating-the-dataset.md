@@ -124,6 +124,13 @@ core less one, at most 8. Each job holds about 3 GB at the tip. If memory is sho
 pass a smaller number, for example `npm run reextract-binaries -- --jobs 4`. With
 `--jobs 1`, the run uses one process, as before. The output is the same either way.
 
+Step 1 also writes `textAbsent` into each cache file: the names from
+`data/binary-observations.json` that the release no longer holds, even as raw text.
+Step 2 infers a removal from it. The check watches only names that are already in
+that file. So if an extractor change finds new symbols, their removals appear only
+after a second pass. In that case, run steps 1 and 2 again, and expect no other
+change from the second pass.
+
 ⚠️ Step 2 writes `data/control-observations.json` only when that file already exists,
 or when you pass `--control`. The release bot runs step 2 on every dispatch, so
 without that gate it would publish the whole control surface through an
