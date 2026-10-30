@@ -2096,19 +2096,6 @@
       "category": "command"
     },
     {
-      "symbol": "/env",
-      "type": "command",
-      "first_seen": "2.1.89",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
       "symbol": "/exit",
       "type": "command",
       "first_seen": "0.2.25",
@@ -2502,19 +2489,6 @@
       "symbol": "/plugins",
       "type": "command",
       "first_seen": "2.1.2",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
-      "symbol": "/poll",
-      "type": "command",
-      "first_seen": "2.1.70",
       "first_seen_estimated": true,
       "removed_in": null,
       "status": "active",
