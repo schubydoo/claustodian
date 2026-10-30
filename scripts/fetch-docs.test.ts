@@ -1544,3 +1544,33 @@ describe('parseDocPage — subcommand-scoped reference pages', () => {
     expect(winner?.doc_scopes).toBeUndefined();
   });
 });
+
+describe('parseDocPage — a table inside a tab', () => {
+  // The remote-control page moved its flag table into a `[tab]` block on 2026-10-30,
+  // which quotes every line, and the page then yielded none of its symbols.
+  const page = [
+    '## Start a Remote Control session',
+    '',
+    '> [tab] Server mode',
+    '>',
+    '> | Flag | Description |',
+    '> | - | - |',
+    '> | `--capacity <N>` | Maximum number of concurrent sessions. |',
+    '> | `--spawn <mode>` | How the server creates sessions. |',
+    '>',
+    '> ## Not a section heading',
+    '> | `--quoted-after-heading` | Still in the session section. |',
+  ].join('\n');
+
+  it('reads the quoted rows as table rows', () => {
+    const symbols = parseDocPage('remote-control', page).map((e) => e.symbol);
+    expect(symbols).toEqual(['--capacity', '--spawn', '--quoted-after-heading']);
+  });
+
+  it('does not treat a quoted heading as a section', () => {
+    // The section "Start a Remote Control session" gives the scope `remote-control`.
+    // Had the quoted heading moved the section, the last row would lose that scope.
+    const last = parseDocPage('remote-control', page).at(-1);
+    expect(last).toMatchObject({ symbol: '--quoted-after-heading', scope: 'remote-control' });
+  });
+});
