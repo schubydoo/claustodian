@@ -355,13 +355,11 @@ export function extractInWorkers(
         if (++done === versions.length) resolve(outcomes);
         feed(child);
       });
-      /* v8 ignore start -- a job that dies, or fails to start, cannot be induced from a test without killing a real process; both paths only reject, like a reported error */
       child.on('exit', (code) => {
         if (done < versions.length && code !== 0)
           fail(new Error(`a re-extract job exited with code ${code}`));
       });
       child.on('error', fail);
-      /* v8 ignore stop */
       feed(child);
     }
   });

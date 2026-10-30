@@ -3,6 +3,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
+import { EventEmitter } from 'node:events';
 import { existsSync } from 'node:fs';
 import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -20,6 +21,32 @@ import {
   runTask,
   selectVersions,
 } from './reextract-binaries.js';
+
+// `fork` goes to the real one unless a test installs a fake, so the pool's
+// handling of a job that dies or never starts can be tested without killing one.
+const forkHook = vi.hoisted(() => ({ impl: undefined as undefined | (() => unknown) }));
+vi.mock('node:child_process', async (importOriginal) => {
+  const real = await importOriginal<typeof import('node:child_process')>();
+  return {
+    ...real,
+    fork: (...args: Parameters<typeof real.fork>) =>
+      forkHook.impl ? forkHook.impl() : real.fork(...args),
+  };
+});
+
+/** A stand-in child process that records kills and plays back one event. */
+function fakeChild(onSend: (child: EventEmitter) => void) {
+  const child = Object.assign(new EventEmitter(), {
+    killed: 0,
+    send: () => queueMicrotask(() => onSend(child)),
+    kill: () => {
+      child.killed++;
+      return true;
+    },
+    disconnect: () => {},
+  });
+  return child;
+}
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
@@ -534,5 +561,41 @@ describe('reextract-binaries parallel jobs', () => {
       // Two jobs that both fail: the run rejects once, with the first error.
       extractInWorkers(archive, join(root, 'no-such-dir'), ['1.0.0', '1.0.0'], 2)
     ).rejects.toThrow(/re-extracting 1\.0\.0: ENOENT/);
+  });
+
+  describe('a job that fails outside its task', () => {
+    afterEach(() => {
+      forkHook.impl = undefined;
+    });
+
+    it('rejects and stops every job when one exits before replying', async () => {
+      const children: ReturnType<typeof fakeChild>[] = [];
+      forkHook.impl = () => {
+        // The first job dies with exit code 1; the other never answers.
+        const child = fakeChild(children.length === 0 ? (c) => c.emit('exit', 1) : () => {});
+        children.push(child);
+        return child;
+      };
+      await expect(extractInWorkers('a', 'o', ['1.0.0', '1.0.1'], 2)).rejects.toThrow(
+        /a re-extract job exited with code 1/
+      );
+      expect(children.map((c) => c.killed)).toEqual([1, 1]);
+    });
+
+    it('rejects when a job fails to start', async () => {
+      forkHook.impl = () => fakeChild((c) => c.emit('error', new Error('spawn ENOENT')));
+      await expect(extractInWorkers('a', 'o', ['1.0.0'], 2)).rejects.toThrow(/spawn ENOENT/);
+    });
+
+    it('ignores a clean exit once every version is done', async () => {
+      forkHook.impl = () =>
+        fakeChild((c) => {
+          c.emit('message', { index: 0, outcome: { kind: 'missing' } });
+          c.emit('exit', 0);
+        });
+      await expect(extractInWorkers('a', 'o', ['1.0.0'], 1)).resolves.toEqual([
+        { kind: 'missing' },
+      ]);
+    });
   });
 });
