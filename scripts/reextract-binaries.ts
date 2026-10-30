@@ -33,7 +33,12 @@ import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sliceEmbeddedChunks } from './slice-bundle.js';
-import { extractBundleSymbols, textAbsentFor, type WatchedName } from './extract-bundle.js';
+import {
+  extractBundleSymbols,
+  textAbsentFor,
+  withChildEnvVars,
+  type WatchedName,
+} from './extract-bundle.js';
 import { compareVersionsAsc, runCli } from './lib.js';
 import type { ControlMessageObservation } from './control-lane.js';
 import { extractControlAndModMethods } from './mod-lane.js';
@@ -247,7 +252,7 @@ export function extractVersion(
   } catch (error) {
     return { kind: 'failed', reason: (error as Error).message };
   }
-  const symbols = extractBundleSymbols(result.src, chunks);
+  const readSymbols = extractBundleSymbols(result.src, chunks);
   // Deliberately uninitialised: the catch returns, so an initial value would
   // never be read, and a default of `[]` here is exactly the silent-zero this lane
   // exists to refuse.
@@ -258,6 +263,7 @@ export function extractVersion(
   let modRenderSites: string[];
   let modRenderSitesListed: boolean;
   let modElements: string[];
+  let childEnvVars: string[];
   try {
     ({
       controlMessages,
@@ -267,10 +273,12 @@ export function extractVersion(
       modRenderSites,
       modRenderSitesListed,
       modElements,
+      childEnvVars,
     } = extractControlAndModMethods(chunks, version));
   } catch (error) {
     return { kind: 'failed', reason: (error as Error).message };
   }
+  const symbols = withChildEnvVars(readSymbols, childEnvVars);
   writeFileSync(
     join(outDir, `${version}.json`),
     JSON.stringify({

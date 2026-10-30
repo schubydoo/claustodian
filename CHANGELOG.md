@@ -31,6 +31,15 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ### Added
 
+- **Env vars that Claude Code sets for a child process.** The binary lane now reads
+  the keys of each object that Claude Code passes as a child's environment, for
+  example the `CLAUDE_RUNNER_*` variables for the self-hosted runner's hooks. Before,
+  only a read of a name counted as evidence. So a name that Claude Code only writes
+  got no binary record and no binary date. From the next binary re-extract, these
+  names carry `evidence: child-env` in the cache. A docs or changelog record of such a
+  name can then date from its first binary sighting. Names of other tools, such as
+  `GIT_TERMINAL_PROMPT`, stay unpublished under the usual ownership gate.
+
 - **Two more docs pages.** The docs lane now reads the env-var tables of the
   self-hosted environments configuration page and the MCP page. From the next docs
   refresh, more env vars get a docs description. Examples are `CLAUDE_CODE_MCP_SERVER_NAME`

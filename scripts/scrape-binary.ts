@@ -31,7 +31,12 @@ import { join } from 'node:path';
 import type { ControlMessageObservation } from './control-lane.js';
 import { extractControlAndModMethods } from './mod-lane.js';
 import { sliceEmbeddedChunks } from './slice-bundle.js';
-import { extractBundleSymbols, textAbsentFor, type WatchedName } from './extract-bundle.js';
+import {
+  extractBundleSymbols,
+  textAbsentFor,
+  withChildEnvVars,
+  type WatchedName,
+} from './extract-bundle.js';
 import { DEFAULT_OBSERVATIONS, loadWatchList } from './reextract-binaries.js';
 import { compareVersionsAsc, runCli } from './lib.js';
 
@@ -159,7 +164,7 @@ export function buildCacheRecord(
     'utf-8'
   );
   const chunks = sliceEmbeddedChunks(artifact, version);
-  const symbols = extractBundleSymbols(bundle, chunks);
+  const readSymbols = extractBundleSymbols(bundle, chunks);
   const {
     controlMessages,
     modMethods,
@@ -168,7 +173,9 @@ export function buildCacheRecord(
     modRenderSites,
     modRenderSitesListed,
     modElements,
+    childEnvVars,
   } = extractControlAndModMethods(chunks, version);
+  const symbols = withChildEnvVars(readSymbols, childEnvVars);
   return {
     version,
     source: 'binary',
