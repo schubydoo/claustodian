@@ -191,6 +191,10 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       strongEvidence: boolean;
       /** Each scope, unioned across versions, with the earliest version that proved it. */
       scopeFrom: Map<string, string>;
+      /** Each scope with the latest version that proved it; see the guard below. */
+      scopeUntil: Map<string, string>;
+      /** The latest version that proved any scope for the symbol. */
+      lastScoped: string | undefined;
       /** Versions that registered the flag as hidden, collapsed into eras below. */
       hiddenIn: Set<string>;
       /** Versions that registered the command under its own name, not as an alias. */
@@ -222,6 +226,8 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
           versions: [file.version],
           strongEvidence: strong,
           scopeFrom: new Map(),
+          scopeUntil: new Map(),
+          lastScoped: undefined,
           hiddenIn: new Set(hidden ? [file.version] : []),
           namedIn: named ? [file.version] : [],
           childEnvIn: new Set(evidence === 'child-env' ? [file.version] : []),
@@ -233,6 +239,17 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
         if (from === undefined || compareVersionsAsc(file.version, from) < 0) {
           entry.scopeFrom.set(s, file.version);
         }
+        const until = entry.scopeUntil.get(s);
+        if (until === undefined || compareVersionsAsc(file.version, until) > 0) {
+          entry.scopeUntil.set(s, file.version);
+        }
+      }
+      if (scopes?.length) {
+        if (
+          entry.lastScoped === undefined ||
+          compareVersionsAsc(file.version, entry.lastScoped) > 0
+        )
+          entry.lastScoped = file.version;
       }
     }
   }
@@ -244,11 +261,30 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
     versions,
     strongEvidence,
     scopeFrom,
+    scopeUntil,
+    lastScoped,
     hiddenIn,
     namedIn,
     childEnvIn,
   } of seenIn.values()) {
     const sorted = [...versions].sort(compareVersionsAsc);
+    // Scopes are a union across releases, so a subcommand that later stops accepting
+    // the flag would stay listed in every later snapshot (issue 503). No archived flag
+    // does that yet, so this refuses to guess and stops the run instead. A release
+    // that proves no scope at all is not a loss: only one that proves other scopes for
+    // the flag, without this one, is.
+    if (!strongEvidence && lastScoped !== undefined) {
+      for (const [scope, until] of scopeUntil) {
+        if (compareVersionsAsc(until, lastScoped) < 0) {
+          throw new Error(
+            `backfill-binary: ${type}:${symbol} has scope "${scope}" until ${until}, but ` +
+              `${lastScoped} still scopes it without that one. A scope union would keep ` +
+              `"${scope}" in every later snapshot. Check the releases and decide how to ` +
+              'record a scope that ends before regenerating (see issue 503).'
+          );
+        }
+      }
+    }
     const namedFirst = [...namedIn].sort(compareVersionsAsc)[0] ?? null;
     // A scope is evidence from the version that proved it, not from the flag's
     // first_seen, so a subcommand a later release adds is not back-dated onto older
