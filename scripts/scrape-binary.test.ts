@@ -21,6 +21,7 @@ import {
   resolveVersion,
   scrapeBinary,
 } from './scrape-binary.js';
+import { extractHookEvents } from './hook-lane.js';
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
@@ -247,7 +248,12 @@ describe('buildCacheRecord', () => {
     } catch (e) {
       refusals.push((e as Error).message);
     }
-    expect(refusals).toHaveLength(4);
+    try {
+      extractHookEvents('var x=1;', '2.1.242');
+    } catch (e) {
+      refusals.push((e as Error).message);
+    }
+    expect(refusals).toHaveLength(5);
     for (const message of refusals) expect(isDeterministicRefusal(message)).toBe(true);
     // And a transient failure must NOT be classified as deterministic.
     expect(isDeterministicRefusal('fetch failed')).toBe(false);

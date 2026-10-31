@@ -319,6 +319,7 @@ export const CONTROL_REFUSAL_EXIT = 2;
 const REFUSAL_PREFIXES = [
   'control lane:',
   'mod lane:',
+  'hook lane:',
   'slice-bundle:',
   'settings schema:',
   // A release before FIRST_COMPILED_CACHE: refused on every retry, so an
