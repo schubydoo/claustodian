@@ -19,6 +19,12 @@
  * property whose value is an identifier, and a `menuDescription` or `whenToUse`
  * property: the same marker the literal rule needs. Only the name moves.
  *
+ * A workflow is not a skill. Built-in workflows register as
+ * `VG(script,{name:te7,description:…,whenToUse:…,phases:[…]})`, which adds them to
+ * the list the Workflow tool loads beside the user's own `.js` workflows. They carry
+ * `whenToUse` too, so an object with a `phases` key is skipped: from 2.1.146 that is
+ * `/autopilot`, `/bughunt`, `/plan-hunter` and the other built-in workflows.
+ *
  * RESOLVING THE NAME. The identifier resolves by lexical scope (js-scope.ts), to
  * the binding that is visible at the object, and that binding must hold one string
  * literal:
@@ -131,7 +137,7 @@ export function collectSkillEvidence(program: Node): SkillEvidence {
         const k = keyName(p);
         return k === 'menuDescription' || k === 'whenToUse';
       });
-      if (!marked) return;
+      if (!marked || props.some((p) => keyName(p) === 'phases')) return;
       const list = props.find((p) => keyName(p) === 'aliases')?.value as Node | undefined;
       const aliases =
         list?.type === 'ArrayExpression'
