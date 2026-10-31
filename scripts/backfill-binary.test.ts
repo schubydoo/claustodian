@@ -223,6 +223,54 @@ describe('distillObservations', () => {
     expect(removedIn(history('child-env', true))).toBe('2.0.3');
   });
 
+  it('drops a flag no release proves by more than an args-array predicate', () => {
+    const file = (version: string, symbol: string, predicateOnly: boolean): BinaryCacheFile => ({
+      version,
+      symbols: [
+        {
+          symbol,
+          type: 'cli_flag',
+          evidence: 'argv',
+          ...(predicateOnly ? { predicateOnly: true } : {}),
+        },
+      ],
+    });
+    // `--watch` is only ever a shell-check predicate: no record at all.
+    expect(
+      distillObservations([file('2.1.27', '--watch', true), file('2.1.28', '--watch', true)])
+        .symbols
+    ).toEqual([]);
+    // `--bg` is a predicate first and registered later: kept, and dated from the predicate.
+    const bg = distillObservations([file('2.1.119', '--bg', true), file('2.1.187', '--bg', false)])
+      .symbols[0];
+    expect(bg).toMatchObject({ symbol: '--bg', first_seen: '2.1.119', last_seen: '2.1.187' });
+  });
+
+  it('does not let a predicate-only sighting erase a subcommand scope', () => {
+    const files: BinaryCacheFile[] = [
+      {
+        version: '2.1.245',
+        symbols: [{ symbol: '--px', type: 'cli_flag', evidence: 'argv', predicateOnly: true }],
+      },
+      {
+        version: '2.1.246',
+        symbols: [
+          {
+            symbol: '--px',
+            type: 'cli_flag',
+            evidence: 'argv-switch',
+            scopes: ['self-hosted-runner'],
+          },
+        ],
+      },
+    ];
+    expect(distillObservations(files).symbols[0]).toMatchObject({
+      first_seen: '2.1.245',
+      switch_case_only: true,
+      scopes: ['self-hosted-runner'],
+    });
+  });
+
   it('stops the run when a scope ends while the flag keeps other scopes', () => {
     const file = (
       version: string,

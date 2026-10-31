@@ -257,13 +257,39 @@ describe('extractFlags — positive evidence only', () => {
     expect(flags.get('--verbose')).toBe('argv');
   });
 
-  it('does not treat an args-array predicate as evidence', () => {
+  it('marks a flag only an args-array predicate proves as predicateOnly', () => {
     // The same shape checks a shell command's arguments, not Claude Code's own argv:
     // the `/plugin list` filter and the `rm` delete check from the bundle.
     const src =
       'let n=t.slice(1).find((o)=>o==="--enabled"||o==="--disabled");' +
       'let y=s.some((v)=>v==="--recursive"||/^-[a-zA-Z]*[rR]/.test(v));';
-    expect([...extractFlags(src).keys()]).toEqual([]);
+    const only = new Set<string>();
+    const flags = extractFlags(src, undefined, only);
+    expect(flags.get('--enabled')).toBe('argv');
+    expect([...only].sort()).toEqual(['--disabled', '--enabled', '--recursive']);
+  });
+
+  it('keeps the predicate label first, and any other proof clears the mark', () => {
+    // `--bg` is checked by a predicate first and registered with commander later;
+    // `--help` is checked by a predicate and dispatched by a switch. The first
+    // occurrence sets the label, as before, and neither flag is predicateOnly.
+    // Separate sources: the look-back window would otherwise reach across them.
+    const read = (src: string) => {
+      const only = new Set<string>();
+      return { flags: extractFlags(src, undefined, only), only };
+    };
+    const bg = read('let c=t.find((m)=>m==="--bg");.option("--bg","run in the background");');
+    expect(bg.flags.get('--bg')).toBe('argv');
+    expect([...bg.only]).toEqual([]);
+    const help = read('if(a.some((o)=>o==="--help"))h();switch(x){case"--help":break}');
+    expect(help.flags.get('--help')).toBe('argv');
+    expect([...help.only]).toEqual([]);
+  });
+
+  it('carries the predicateOnly mark into the cache record', () => {
+    const syms = extractBundleSymbols('let y=s.some((v)=>v==="--recursive");.option("--print")');
+    expect(syms.find((x) => x.symbol === '--recursive')).toMatchObject({ predicateOnly: true });
+    expect(syms.find((x) => x.symbol === '--print')).not.toHaveProperty('predicateOnly');
   });
 
   it('reads argv evidence only inside the JavaScript chunks', () => {
@@ -747,6 +773,28 @@ describe('extractBundleSymbols', () => {
       scopes: ['self-hosted-runner'],
     });
     expect(sym?.description).toBeUndefined();
+  });
+
+  it('lets a complete switch scope win over a predicate label', () => {
+    // The runner compares the flag in its own argv and dispatches it by `case`.
+    const runner =
+      'var A5h={};ut(A5h,{main:()=>x});' +
+      'console.log(`Usage: claude self-hosted-runner [options]`);' +
+      'if(a.some((o)=>o==="--proxy-x"))p();switch(n){case"--proxy-x":t.c=i;break;}';
+    expect(extractBundleSymbols(runner).find((s) => s.symbol === '--proxy-x')).toMatchObject({
+      evidence: 'argv-switch',
+      scopes: ['self-hosted-runner'],
+    });
+    // A top-level argv check later in the bundle is proof the scope cannot override.
+    const both = `${runner}if(process.argv.includes("--proxy-x"))q();`;
+    expect(extractBundleSymbols(both).find((s) => s.symbol === '--proxy-x')).toMatchObject({
+      evidence: 'argv',
+    });
+    // A scope left incomplete by a banner-less parser keeps the predicate's label.
+    const help = `${runner}var B={};ut(B,{z:()=>y});switch(m){case"--proxy-x":break}`;
+    const sym = extractBundleSymbols(help).find((s) => s.symbol === '--proxy-x');
+    expect(sym).toMatchObject({ evidence: 'argv' });
+    expect(sym).not.toHaveProperty('scopes');
   });
 
   it('adds a skill-registry command the built-in registry misses', () => {
