@@ -267,6 +267,7 @@ export function extractVersion(
   let modElements: string[];
   let childEnvVars: string[];
   let variableSkills: VariableSkill[];
+  let hookEvents: string[];
   try {
     ({
       controlMessages,
@@ -278,6 +279,7 @@ export function extractVersion(
       modElements,
       childEnvVars,
       variableSkills,
+      hookEvents,
     } = extractControlAndModMethods(chunks, version));
   } catch (error) {
     return { kind: 'failed', reason: (error as Error).message };
@@ -300,6 +302,7 @@ export function extractVersion(
       modRenderSites,
       modRenderSitesListed,
       modElements,
+      hookEvents,
       textAbsent: textAbsentFor(result.src, version, symbols, watch),
     })
   );

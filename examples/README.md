@@ -12,7 +12,7 @@ specific user's Claude Code version.
 Claustodian answers one question:
 
 > Does a Claude Code **symbol** — a CLI flag, environment variable, slash command,
-> settings key, stream-json control message, mods API method, mods event, mods render site, or mods element — exist in a specific
+> settings key, stream-json control message, mods API method, mods event, mods render site, mods element, or hook event — exist in a specific
 > **version**, and
 > what did it do at that version?
 

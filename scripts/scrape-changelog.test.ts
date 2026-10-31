@@ -35,6 +35,7 @@ import {
   loadDocsIndex,
   parseChangelog,
   uncorroboratedBy,
+  hookEventRegressionRefusal,
 } from './scrape-changelog.js';
 import type { DocsIndex } from './fetch-docs.js';
 import type { SymbolRecord } from './scrape-changelog.js';
@@ -2988,6 +2989,93 @@ describe('mod_element records', () => {
   it('publishes no mod_element from any lane until its observation file exists', () => {
     expect(at(run(docs([elDoc('Box')])), '2.1.300')).toEqual([]);
     expect(at(run(docs([elDoc('Box')]), []), '2.1.300')).toEqual([]);
+  });
+});
+
+describe('hook_event records', () => {
+  const docs = (symbols: DocsIndex['symbols']): DocsIndex => ({
+    $generated_by: 'scripts/fetch-docs.ts',
+    source_pages: [],
+    symbols,
+  });
+  const hookDoc = (symbol: string) => ({
+    symbol,
+    type: 'hook_event' as const,
+    description: 'Before a tool call executes',
+    doc_min_version: null,
+    doc_page: 'hooks',
+  });
+  const binary: BinaryObservations = {
+    $generated_by: 'scripts/backfill-binary.ts',
+    source: 'binary',
+    note: '',
+    observedVersions: ['1.0.23', '1.0.31', '2.1.300'],
+    symbols: [],
+  };
+  const blocks = parseChangelog(
+    '## 2.1.300\n\n- Fixed a crash\n\n## 1.0.31\n\n- Fixed a crash\n\n## 1.0.23\n\n- Fixed another crash\n'
+  );
+  const obs = (symbol: string, removed_in: string | null = null) => ({
+    symbol,
+    first_seen: '1.0.23',
+    last_seen: removed_in === null ? '2.1.300' : '1.0.23',
+    removed_in,
+  });
+  const run = (index: DocsIndex, events?: ReturnType<typeof obs>[]) =>
+    buildEnrichedSnapshots(
+      blocks,
+      index,
+      binary,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      events
+    );
+  const at = (snapshots: ReturnType<typeof run>, version: string) =>
+    (snapshots.find((s) => s.version === version)?.symbols ?? []).filter(
+      (r) => r.type === 'hook_event'
+    );
+
+  it('publishes events with binary dates and the docs text, in category hooks', () => {
+    const snapshots = run(docs([hookDoc('PreToolUse')]), [obs('PreToolUse'), obs('Stop')]);
+    expect(at(snapshots, '2.1.300').find((r) => r.symbol === 'PreToolUse')).toMatchObject({
+      first_seen: '1.0.23',
+      provenance: 'docs',
+      status: 'active',
+      category: 'hooks',
+      description: 'Before a tool call executes',
+    });
+    // An undocumented event the binary alone proves still lands active.
+    expect(at(snapshots, '2.1.300').find((r) => r.symbol === 'Stop')).toMatchObject({
+      provenance: 'binary',
+      status: 'active',
+      category: 'hooks',
+    });
+  });
+
+  it('removes an undocumented event where it leaves the list, but never a documented one', () => {
+    const snapshots = run(docs([hookDoc('Notification')]), [
+      obs('Notification', '1.0.31'),
+      obs('Gone', '1.0.31'),
+    ]);
+    expect(at(snapshots, '1.0.23').map((r) => r.symbol)).toEqual(['Gone', 'Notification']);
+    expect(at(snapshots, '1.0.31').map((r) => r.symbol)).toEqual(['Notification']);
+  });
+
+  it('publishes no hook_event from any lane until its observation file exists', () => {
+    expect(at(run(docs([hookDoc('PreToolUse')])), '2.1.300')).toEqual([]);
+    expect(at(run(docs([hookDoc('PreToolUse')]), []), '2.1.300')).toEqual([]);
+  });
+
+  it('refuses a scrape that would drop every published event', () => {
+    expect(hookEventRegressionRefusal({ present: false, observations: [] }, true)).toMatch(
+      /hook-event-observations\.json is missing.*--hook-events/
+    );
+    expect(hookEventRegressionRefusal({ present: false, observations: [] }, false)).toBeNull();
   });
 });
 

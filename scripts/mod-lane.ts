@@ -72,6 +72,7 @@ import {
   type SkillEvidence,
   type VariableSkill,
 } from './skill-lane.js';
+import { collectHookEvidence, hookEventsFrom, type HookEvidence } from './hook-lane.js';
 import { compareVersionsAsc } from './lib.js';
 import { extractControlMessages, isNode, parse, walk, type Node } from './control-lane.js';
 
@@ -559,7 +560,7 @@ export const extractModElements = (source: string | readonly string[], version: 
     version
   );
 
-/** Runs both AST lanes over one parse of each chunk. */
+/** Runs every AST lane over one parse of each chunk. */
 export function extractControlAndModMethods(
   source: string | readonly string[],
   version: string
@@ -575,14 +576,18 @@ export function extractControlAndModMethods(
   childEnvVars: string[];
   /** Skills registered under a variable name; see skill-lane.ts. */
   variableSkills: VariableSkill[];
+  /** The hook events the settings schema accepts; see hook-lane.ts. */
+  hookEvents: string[];
 } {
   const evidence: ModEvidence[] = [];
+  const hooks: HookEvidence[] = [];
   const childEnv = new Set<string>();
   const skills: SkillEvidence[] = [];
   const controlMessages = extractControlMessages(source, version, (program) => {
     evidence.push(collectModEvidence(program));
     for (const name of collectChildEnvNames(program)) childEnv.add(name);
     skills.push(collectSkillEvidence(program));
+    hooks.push(collectHookEvidence(program));
   });
   const { methods, mentions } = modEvidenceFrom(evidence, version);
   const { sites, listed } = modRenderSitesFrom(evidence, version);
@@ -596,5 +601,6 @@ export function extractControlAndModMethods(
     modElements: modElementsFrom(evidence, version),
     childEnvVars: [...childEnv].sort(),
     variableSkills: resolveVariableSkills(skills),
+    hookEvents: hookEventsFrom(hooks, version),
   };
 }

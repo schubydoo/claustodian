@@ -85,6 +85,9 @@ const SITE_ENUM = (sites: readonly string[]) =>
  * union, both directional sub-unions, a dispatcher), copied from the scrape-binary
  * fixture. It lets a test at MOD_METHOD_FLOOR reach the mod lane at all.
  */
+/** A hook event list, which the shared parse reads at every version from 1.0.23. */
+const HOOKS = 'var HK=["PreToolUse","PostToolUse"];';
+
 const CONTROL = [
   `var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;`,
   `var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes the session."));`,
@@ -225,7 +228,7 @@ describe('extractControlAndModMethods', () => {
       )
     ).toThrow(/^mod lane: .*no mods event list/);
     const both = extractControlAndModMethods(
-      [CONTROL, TABLE, EVENTS, SITE_CALLS(['Spinner']), ELEMENT_LISTS()],
+      [CONTROL, TABLE, EVENTS, SITE_CALLS(['Spinner']), ELEMENT_LISTS(), HOOKS],
       MOD_METHOD_FLOOR
     );
     expect(both.controlMessages).not.toEqual([]);
@@ -233,6 +236,7 @@ describe('extractControlAndModMethods', () => {
     expect(both.modEvents).toEqual(EVENTS_SORTED);
     expect(both).toMatchObject({ modRenderSites: ['Spinner'], modRenderSitesListed: false });
     expect(both.modElements).toEqual(['Box', 'Button', 'Svg', 'Text']);
+    expect(both.hookEvents).toEqual(['PostToolUse', 'PreToolUse']);
   });
 });
 

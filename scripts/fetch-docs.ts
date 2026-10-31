@@ -57,7 +57,8 @@ export type DocSymbolType =
   | 'mod_method'
   | 'mod_event'
   | 'mod_render_site'
-  | 'mod_element';
+  | 'mod_element'
+  | 'hook_event';
 
 /**
  * Per-page baseline `min-version` for pages that state a feature-level
@@ -120,6 +121,7 @@ export const TYPE_MIN_SYMBOLS: Partial<Record<DocSymbolType, number>> = {
   mod_event: 20,
   mod_render_site: 8,
   mod_element: 6,
+  hook_event: 16,
 };
 
 /** Generic OS/shell env vars a doc may reference but that aren't Claude Code symbols. */
@@ -1039,6 +1041,60 @@ function parseModsEventTables(page: string, markdown: string): DocEntry[] {
   return entries;
 }
 
+/**
+ * The event table of the hooks reference page: the one table in "## Hook lifecycle",
+ * headed "Event | When it fires". Each row names one event in backticks, and the second
+ * cell, when it fires, is the description. The rest of the page documents each event
+ * under its own heading, with tables of matchers and fields that are not events, so only
+ * this section is read. A second table in the section, another header, and a row that
+ * names anything but one event stop the run.
+ */
+function parseHookEventTable(page: string, markdown: string): DocEntry[] {
+  const entries: DocEntry[] = [];
+  const refuse = (what: string, line: string): never => {
+    throw new Error(
+      `Docs page "${page}": ${what}: ${line.trim()}. Read the page and fix parseHookEventTable.`
+    );
+  };
+  let inSection = false;
+  let inFence = false;
+  let inTable = false;
+  let tables = 0;
+  for (const line of markdown.split('\n')) {
+    if (/^\s*(```|~~~)/.test(line)) inFence = !inFence;
+    if (inFence) continue;
+    if (!/^\s*\|/.test(line)) {
+      inTable = false;
+      const heading = /^##\s+(.*)$/.exec(line);
+      if (heading) inSection = (heading[1] as string).trim() === 'Hook lifecycle';
+      continue;
+    }
+    if (!inSection || /^\s*\|\s*:?-{1,}/.test(line)) continue;
+    const [nameCell, firesCell] = splitTableRow(line)
+      .slice(1, -1)
+      .map((c) => c.trim());
+    if (!inTable) {
+      inTable = true;
+      if (++tables > 1) refuse('the Hook lifecycle section holds a second table', line);
+      if (nameCell !== 'Event' || firesCell !== 'When it fires')
+        refuse('the Hook lifecycle table has a header other than "Event | When it fires"', line);
+      continue;
+    }
+    const name = /^`([A-Z][A-Za-z]*)`$/.exec(nameCell ?? '')?.[1];
+    const description = cleanCell(firesCell ?? '');
+    if (name === undefined || description.length < 3)
+      refuse('a row of the Hook lifecycle table names no single event or has no description', line);
+    entries.push({
+      symbol: name as string,
+      type: 'hook_event',
+      description,
+      doc_min_version: minVersion(firesCell ?? ''),
+      doc_page: page,
+    });
+  }
+  return entries;
+}
+
 export function parseDocPage(
   page: string,
   markdown: string,
@@ -1123,7 +1179,8 @@ export function parseDocPage(
       });
     }
   }
-  return [...entries, ...inheritedEntries(page, markdown, entries)];
+  const hookEvents = page === 'hooks' ? parseHookEventTable(page, markdown) : [];
+  return [...entries, ...hookEvents, ...inheritedEntries(page, markdown, entries)];
 }
 
 /** The SCOPE_INHERITANCE copies for `page`: each named flag again, under the `to` scope. */

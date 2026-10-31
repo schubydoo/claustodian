@@ -35,6 +35,7 @@ describe('CONFIRMED_REMOVALS', () => {
         'mod_event',
         'mod_render_site',
         'mod_element',
+        'hook_event',
       ]).toContain(r.type);
       const key = `${r.type}:${r.symbol}`;
       expect(keys.has(key)).toBe(false);
@@ -95,6 +96,7 @@ describe('CONFIRMED_DEPRECATIONS', () => {
         'mod_event',
         'mod_render_site',
         'mod_element',
+        'hook_event',
       ]).toContain(d.type);
       const key = `${d.type}:${d.symbol}`;
       expect(keys.has(key)).toBe(false);

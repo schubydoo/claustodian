@@ -10,6 +10,8 @@ import {
   distillControlObservations,
   distillDescriptions,
   distillModElementObservations,
+  distillHookEventObservations,
+  MAX_HOOK_EVENT_DROP,
   distillModEventObservations,
   distillModRenderSiteObservations,
   distillModObservations,
@@ -1227,6 +1229,72 @@ describe('distillModElementObservations', () => {
     await rm(join(cache, '2.1.250.json'));
     expect(await main(['--cache', cache, '--out', out, '--mod-elements'])).toBe(0);
     expect(existsSync(join(root, 'mod-element-observations.json'))).toBe(true);
+    logSpy.mockRestore();
+    await rm(root, { recursive: true, force: true });
+  });
+});
+
+describe('distillHookEventObservations', () => {
+  const hk = (version: string, hookEvents?: string[]): BinaryCacheFile => ({
+    version,
+    symbols: [],
+    hookEvents,
+  });
+
+  it('dates each event, and keeps one that leaves and comes back', () => {
+    // InstructionsLoaded is in the list at 2.1.64, out at 2.1.66, back at 2.1.69.
+    expect(
+      distillHookEventObservations([
+        hk('2.1.69', ['InstructionsLoaded', 'PreToolUse']),
+        hk('2.1.64', ['InstructionsLoaded', 'PreToolUse']),
+        hk('2.1.66', ['PreToolUse']),
+      ])
+    ).toEqual([
+      { symbol: 'InstructionsLoaded', first_seen: '2.1.64', last_seen: '2.1.69', removed_in: null },
+      { symbol: 'PreToolUse', first_seen: '2.1.64', last_seen: '2.1.69', removed_in: null },
+    ]);
+  });
+
+  it('removes an event at the first release after it leaves the list for good', () => {
+    expect(
+      distillHookEventObservations([
+        hk('1.0.23', ['Notification', 'PreToolUse']),
+        hk('1.0.31', ['PreToolUse']),
+      ])
+    ).toContainEqual({
+      symbol: 'Notification',
+      first_seen: '1.0.23',
+      last_seen: '1.0.23',
+      removed_in: '1.0.31',
+    });
+  });
+
+  it('refuses a release that loses more events at once than the list ever has', () => {
+    const all = ['A', 'B', 'C', 'D', 'E'];
+    const kept = all.slice(MAX_HOOK_EVENT_DROP + 1);
+    expect(() => distillHookEventObservations([hk('2.1.1', all), hk('2.1.2', kept)])).toThrow(
+      /2\.1\.2 lists 3 fewer hook events than 2\.1\.1/
+    );
+    expect(() =>
+      distillHookEventObservations([hk('2.1.1', all), hk('2.1.2', all.slice(MAX_HOOK_EVENT_DROP))])
+    ).not.toThrow();
+  });
+
+  it('refuses --hook-events while a cache entry predates the hook lane', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-hk-out-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(join(cache, '1.0.23.json'), JSON.stringify(hk('1.0.23', ['PreToolUse'])));
+    await writeFile(join(cache, '1.0.31.json'), JSON.stringify(hk('1.0.31')));
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const out = join(root, 'binary-observations.json');
+    expect(await main(['--cache', cache, '--out', out])).toBe(0);
+    expect(existsSync(join(root, 'hook-event-observations.json'))).toBe(false);
+    expect(await main(['--cache', cache, '--out', out, '--hook-events'])).toBe(1);
+    expect(existsSync(join(root, 'hook-event-observations.json'))).toBe(false);
+    await rm(join(cache, '1.0.31.json'));
+    expect(await main(['--cache', cache, '--out', out, '--hook-events'])).toBe(0);
+    expect(existsSync(join(root, 'hook-event-observations.json'))).toBe(true);
     logSpy.mockRestore();
     await rm(root, { recursive: true, force: true });
   });

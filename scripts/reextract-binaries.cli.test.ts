@@ -233,6 +233,7 @@ describe('reextract-binaries main()', () => {
       archive,
       '2.0.0',
       'program.option("--foo <v>","desc");' +
+        'var HK=["PreToolUse","PostToolUse"];' +
         'function h(e){if(e.request.subtype==="initialize")return 1;return 0}'
     ); // ok
     await mkdir(join(archive, '3.0.0'), { recursive: true }); // no bundle → missing
@@ -295,8 +296,10 @@ describe('reextract-binaries main()', () => {
       'modRenderSites',
       'modRenderSitesListed',
       'modElements',
+      'hookEvents',
       'textAbsent',
     ]);
+    expect(c2control.hookEvents).toEqual(['PostToolUse', 'PreToolUse']);
     expect(existsSync(join(out, '3.0.0.json'))).toBe(false);
     expect(existsSync(join(out, '4.0.0.json'))).toBe(false); // refused, not extracted
     // Those two had their prior cache entries cleared and never rewritten, so the
