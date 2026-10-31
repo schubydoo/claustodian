@@ -31,6 +31,7 @@ const SYMBOL_TYPES = [
   'mod_element',
   'hook_event',
   'model',
+  'beta_header',
 ] as const;
 
 /**

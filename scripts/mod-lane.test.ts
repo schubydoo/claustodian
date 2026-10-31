@@ -88,6 +88,12 @@ const SITE_ENUM = (sites: readonly string[]) =>
 /** A hook event list, which the shared parse reads at every version from 1.0.23. */
 const HOOKS = 'var HK=["PreToolUse","PostToolUse"];';
 
+/** A beta registry of twelve headers, the fewest the shared parse accepts from 2.1.124. */
+const BETAS = `function BF(a,b){return Object.freeze({name:a,header:b})}var BR=[${Array.from(
+  { length: 12 },
+  (_, i) => `BF("beta_${i}","beta-${i}-2026-01-01")`
+).join(',')}];`;
+
 /** A model registry of ten entries, the fewest the shared parse accepts from 2.1.195. */
 const MODELS = `var MR=[${Array.from(
   { length: 10 },
@@ -235,7 +241,7 @@ describe('extractControlAndModMethods', () => {
       )
     ).toThrow(/^mod lane: .*no mods event list/);
     const both = extractControlAndModMethods(
-      [CONTROL, TABLE, EVENTS, SITE_CALLS(['Spinner']), ELEMENT_LISTS(), HOOKS, MODELS],
+      [CONTROL, TABLE, EVENTS, SITE_CALLS(['Spinner']), ELEMENT_LISTS(), HOOKS, MODELS, BETAS],
       MOD_METHOD_FLOOR
     );
     expect(both.controlMessages).not.toEqual([]);
@@ -245,6 +251,7 @@ describe('extractControlAndModMethods', () => {
     expect(both.modElements).toEqual(['Box', 'Button', 'Svg', 'Text']);
     expect(both.hookEvents).toEqual(['PostToolUse', 'PreToolUse']);
     expect(both.models).toHaveLength(10);
+    expect(both.betaHeaders).toHaveLength(12);
   });
 });
 

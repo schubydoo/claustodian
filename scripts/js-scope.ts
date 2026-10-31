@@ -3,7 +3,7 @@
 
 /**
  * Lexical scopes for the AST lanes that resolve a variable to its declaration
- * (child-env.ts, skill-lane.ts, model-lane.ts).
+ * (child-env.ts, skill-lane.ts, model-lane.ts, beta-lane.ts).
  *
  * Minified code reuses short names in every function and often in every block, and
  * from 2.1.242 each chunk minifies its own names. So a name resolves to the nearest

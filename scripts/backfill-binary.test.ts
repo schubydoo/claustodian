@@ -12,6 +12,7 @@ import {
   distillModElementObservations,
   distillHookEventObservations,
   distillModelObservations,
+  distillBetaHeaderObservations,
   MAX_HOOK_EVENT_DROP,
   distillModEventObservations,
   distillModRenderSiteObservations,
@@ -1385,6 +1386,69 @@ describe('distillModelObservations', () => {
     expect(existsSync(join(root, 'model-observations.json'))).toBe(true);
     expect(await readFile(join(root, 'binary-descriptions.json'), 'utf-8')).toContain(
       '"model:claude-x"'
+    );
+    logSpy.mockRestore();
+    await rm(root, { recursive: true, force: true });
+  });
+});
+
+describe('distillBetaHeaderObservations', () => {
+  const bh = (
+    version: string,
+    betaHeaders?: Array<{ header: string; names: string[] }>
+  ): BinaryCacheFile => ({ version, symbols: [], betaHeaders });
+
+  it('dates each header, and removes one the registry stops holding', () => {
+    // A re-dated beta: the old header leaves, the new one arrives under the same name.
+    expect(
+      distillBetaHeaderObservations([
+        bh('2.1.124', [{ header: 'server-side-fallback-2026-06-01', names: ['fallback'] }]),
+        bh('2.1.219', [{ header: 'server-side-fallback-2026-07-01', names: ['fallback'] }]),
+      ])
+    ).toEqual([
+      {
+        symbol: 'server-side-fallback-2026-06-01',
+        first_seen: '2.1.124',
+        last_seen: '2.1.124',
+        removed_in: '2.1.219',
+      },
+      {
+        symbol: 'server-side-fallback-2026-07-01',
+        first_seen: '2.1.219',
+        last_seen: '2.1.219',
+        removed_in: null,
+      },
+    ]);
+  });
+
+  it('puts the registry names on the description timeline only with the opt-in', () => {
+    const files = [bh('2.1.124', [{ header: 'a-2026-01-01', names: ['x', 'y'] }])];
+    expect(distillDescriptions(files).descriptions['beta_header:a-2026-01-01']).toBeUndefined();
+    expect(
+      distillDescriptions(files, { betaHeaders: true }).descriptions['beta_header:a-2026-01-01']
+    ).toEqual([{ from: '2.1.124', description: 'x, y' }]);
+  });
+
+  it('refuses --beta-headers while a cache entry predates the beta lane', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-bh-out-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(
+      join(cache, '2.1.124.json'),
+      JSON.stringify(bh('2.1.124', [{ header: 'a-2026-01-01', names: ['x'] }]))
+    );
+    await writeFile(join(cache, '2.1.125.json'), JSON.stringify(bh('2.1.125')));
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const out = join(root, 'binary-observations.json');
+    expect(await main(['--cache', cache, '--out', out, '--beta-headers'])).toBe(1);
+    expect(await readFile(join(root, 'binary-descriptions.json'), 'utf-8')).not.toContain(
+      '"beta_header:'
+    );
+    await rm(join(cache, '2.1.125.json'));
+    expect(await main(['--cache', cache, '--out', out, '--beta-headers'])).toBe(0);
+    expect(existsSync(join(root, 'beta-header-observations.json'))).toBe(true);
+    expect(await readFile(join(root, 'binary-descriptions.json'), 'utf-8')).toContain(
+      '"beta_header:a-2026-01-01"'
     );
     logSpy.mockRestore();
     await rm(root, { recursive: true, force: true });

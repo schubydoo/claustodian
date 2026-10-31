@@ -12,7 +12,7 @@ equivalent and repeats the parts an agent needs in-context.
 ## The project
 
 A static, versioned dataset of the Claude Code surface — every CLI flag, environment
-variable, command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event and model,
+variable, command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event, model and beta header,
 tagged with the version it was first observed in.
 Three lanes (changelog, docs, release binaries) produce one JSON snapshot per release,
 published to <https://claustodian.dev>.
@@ -40,9 +40,9 @@ npm run scrape -- --all      # 4. everything   -> data/versions/, index, latest
 ```
 
 ⚠️ Publishing `control_message`, `mod_method`, `mod_event`, `mod_render_site`, `mod_element`,
-`hook_event` and `model` records is opt-in, and each is its own data PR — step 2 needs
-`--control`, `--mods`, `--mod-events`, `--mod-render-sites`, `--mod-elements`, `--hook-events`
-or `--models` the first time. The runbook has the reasoning.
+`hook_event`, `model` and `beta_header` records is opt-in, and each is its own data PR — step 2
+needs `--control`, `--mods`, `--mod-events`, `--mod-render-sites`, `--mod-elements`,
+`--hook-events`, `--models` or `--beta-headers` the first time. The runbook has the reasoning.
 
 `fetch-docs` resolves settings key paths against `data/binary-observations.json`, so
 the binary lane must land first or the docs lane resolves against a stale schema.
@@ -51,20 +51,21 @@ this** — there is a reconciliation step that has to happen first.
 
 ## Architecture map
 
-| Path                          | What                                                                                                             |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `scripts/extract-bundle.ts`   | positive-evidence extraction from a release bundle                                                               |
-| `scripts/control-lane.ts`     | AST extraction of the stream-json control protocol                                                               |
-| `scripts/mod-lane.ts`         | AST extraction of the mods API dispatch table, events, render sites, elements                                    |
-| `scripts/hook-lane.ts`        | AST extraction of the hook event list                                                                            |
-| `scripts/model-lane.ts`       | AST extraction of the model registry and provider objects                                                        |
-| `scripts/binary-lane.ts`      | policy: what publishes, how it is categorised, re-dating                                                         |
-| `scripts/backfill-binary.ts`  | observations → `data/binary-observations.json` (+ `--control`, `--mods`, `--mod-*`, `--hook-events`, `--models`) |
-| `scripts/fetch-docs.ts`       | official docs pages → `data/docs.json`                                                                           |
-| `scripts/scrape-changelog.ts` | changelog + all lanes → `data/versions/*.json`                                                                   |
-| `schema/symbol.schema.json`   | the record contract                                                                                              |
-| `data/`                       | **generated** — never hand-edit                                                                                  |
-| `site/index.html`             | the whole site, hand-written, no build step                                                                      |
+| Path                          | What                                                                                                                               |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `scripts/extract-bundle.ts`   | positive-evidence extraction from a release bundle                                                                                 |
+| `scripts/control-lane.ts`     | AST extraction of the stream-json control protocol                                                                                 |
+| `scripts/mod-lane.ts`         | AST extraction of the mods API dispatch table, events, render sites, elements                                                      |
+| `scripts/hook-lane.ts`        | AST extraction of the hook event list                                                                                              |
+| `scripts/model-lane.ts`       | AST extraction of the model registry and provider objects                                                                          |
+| `scripts/beta-lane.ts`        | AST extraction of the beta header registry                                                                                         |
+| `scripts/binary-lane.ts`      | policy: what publishes, how it is categorised, re-dating                                                                           |
+| `scripts/backfill-binary.ts`  | observations → `data/binary-observations.json` (+ `--control`, `--mods`, `--mod-*`, `--hook-events`, `--models`, `--beta-headers`) |
+| `scripts/fetch-docs.ts`       | official docs pages → `data/docs.json`                                                                                             |
+| `scripts/scrape-changelog.ts` | changelog + all lanes → `data/versions/*.json`                                                                                     |
+| `schema/symbol.schema.json`   | the record contract                                                                                                                |
+| `data/`                       | **generated** — never hand-edit                                                                                                    |
+| `site/index.html`             | the whole site, hand-written, no build step                                                                                        |
 
 Full detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 

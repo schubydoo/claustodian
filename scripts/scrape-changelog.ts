@@ -105,7 +105,8 @@ export interface SymbolRecord {
     | 'mod_render_site'
     | 'mod_element'
     | 'hook_event'
-    | 'model';
+    | 'model'
+    | 'beta_header';
   /**
    * Carried by control_message records and by no other type — the schema REQUIRES both
    * there and FORBIDS both elsewhere, so a stray one fails validation as surely as a
@@ -509,11 +510,17 @@ const MOD_TYPES: ReadonlySet<string> = new Set([
 ]);
 
 /**
- * Every type read by AST under a floor guard: the mods types, `hook_event` and `model`. A record
+ * Every type read by AST under a floor guard: the mods types, `hook_event`, `model` and
+ * `beta_header`. A record
  * the binary alone proves lands `active`, and the binary is the removal authority for an
  * undocumented one. A new type joins this list only by that same standard.
  */
-const AST_TYPES: ReadonlySet<string> = new Set([...MOD_TYPES, 'hook_event', 'model']);
+const AST_TYPES: ReadonlySet<string> = new Set([
+  ...MOD_TYPES,
+  'hook_event',
+  'model',
+  'beta_header',
+]);
 
 export function categorize(symbol: string, type: ExtractedSymbolType): string {
   if (type === 'cli_flag') return 'cli';
@@ -524,6 +531,7 @@ export function categorize(symbol: string, type: ExtractedSymbolType): string {
   if (MOD_TYPES.has(type)) return 'mods';
   if (type === 'hook_event') return 'hooks';
   if (type === 'model') return 'models';
+  if (type === 'beta_header') return 'betas';
   for (const [pattern, category] of ENV_CATEGORY_RULES) {
     if (pattern.test(symbol)) return category;
   }
@@ -1696,7 +1704,8 @@ export function buildEnrichedSnapshots(
   modRenderSites?: readonly ModObservation[],
   modElements?: readonly ModObservation[],
   hookEvents?: readonly ModObservation[],
-  models?: readonly ModObservation[]
+  models?: readonly ModObservation[],
+  betaHeaders?: readonly ModObservation[]
 ): VersionSnapshot[] {
   const collected = collectChangelogSymbols(blocks);
   const latest =
@@ -1706,13 +1715,14 @@ export function buildEnrichedSnapshots(
   // publish them through the release bot, dated at the tip, before the data PR that
   // carries their binary dates — see the opt-in in backfill-binary.ts. An empty list
   // closes the gate too: past the floor the distiller cannot produce one. Each other
-  // mod_* type, hook_event and model has its own file and the same gate.
+  // mod_* type, hook_event, model and beta_header has its own file and the same gate.
   const publishMods = mods !== undefined && mods.length > 0;
   const publishModEvents = modEvents !== undefined && modEvents.length > 0;
   const publishModRenderSites = modRenderSites !== undefined && modRenderSites.length > 0;
   const publishModElements = modElements !== undefined && modElements.length > 0;
   const publishHookEvents = hookEvents !== undefined && hookEvents.length > 0;
   const publishModels = models !== undefined && models.length > 0;
+  const publishBetaHeaders = betaHeaders !== undefined && betaHeaders.length > 0;
   const enriched = enrichSymbols(collected, docs, latest).filter(
     (record) =>
       (publishMods || record.type !== 'mod_method') &&
@@ -1720,7 +1730,8 @@ export function buildEnrichedSnapshots(
       (publishModRenderSites || record.type !== 'mod_render_site') &&
       (publishModElements || record.type !== 'mod_element') &&
       (publishHookEvents || record.type !== 'hook_event') &&
-      (publishModels || record.type !== 'model')
+      (publishModels || record.type !== 'model') &&
+      (publishBetaHeaders || record.type !== 'beta_header')
   );
   // The changelog-only gate needs the binary lane, so the changelog+docs contract
   // without it publishes as before.
@@ -1733,27 +1744,33 @@ export function buildEnrichedSnapshots(
           withTypedModObservations(
             withTypedModObservations(
               withTypedModObservations(
-                withModEventObservations(
-                  withModObservations(binary, mods, modMethodsDocumented(docs)),
-                  publishModEvents ? modEvents : undefined,
-                  mods,
-                  documentedOfType(docs, 'mod_event')
+                withTypedModObservations(
+                  withModEventObservations(
+                    withModObservations(binary, mods, modMethodsDocumented(docs)),
+                    publishModEvents ? modEvents : undefined,
+                    mods,
+                    documentedOfType(docs, 'mod_event')
+                  ),
+                  'mod_render_site',
+                  publishModRenderSites ? modRenderSites : undefined,
+                  documentedOfType(docs, 'mod_render_site')
                 ),
-                'mod_render_site',
-                publishModRenderSites ? modRenderSites : undefined,
-                documentedOfType(docs, 'mod_render_site')
+                'mod_element',
+                publishModElements ? modElements : undefined,
+                documentedOfType(docs, 'mod_element')
               ),
-              'mod_element',
-              publishModElements ? modElements : undefined,
-              documentedOfType(docs, 'mod_element')
+              'hook_event',
+              publishHookEvents ? hookEvents : undefined,
+              documentedOfType(docs, 'hook_event')
             ),
-            'hook_event',
-            publishHookEvents ? hookEvents : undefined,
-            documentedOfType(docs, 'hook_event')
+            'model',
+            publishModels ? models : undefined,
+            // No docs page lists model ids, so the binary is the removal authority for all.
+            new Set()
           ),
-          'model',
-          publishModels ? models : undefined,
-          // No docs page lists model ids, so the binary is the removal authority for all.
+          'beta_header',
+          publishBetaHeaders ? betaHeaders : undefined,
+          // No docs page lists beta headers, so the binary is the removal authority.
           new Set()
         ),
         binaryDescriptions
@@ -1857,13 +1874,13 @@ function withModEventObservations(
 }
 
 /**
- * The binary observations with each mods render site or element, each hook event, or
- * each model added as an observation of `type`. As for methods and events, a documented one keeps
+ * The binary observations with each mods render site or element, each hook event, each
+ * model, or each beta header added as an observation of `type`. As for methods and events, a documented one keeps
  * no binary removal.
  */
 function withTypedModObservations(
   binary: BinaryObservations,
-  type: 'mod_render_site' | 'mod_element' | 'hook_event' | 'model',
+  type: 'mod_render_site' | 'mod_element' | 'hook_event' | 'model' | 'beta_header',
   observations: readonly ModObservation[] | undefined,
   documented: ReadonlySet<string>
 ): BinaryObservations {
@@ -2035,6 +2052,9 @@ const modElementObservationsPath = (): string =>
 const modRenderSiteObservationsPath = (): string =>
   process.env.CLAUSTODIAN_MOD_RENDER_SITE_OBSERVATIONS_PATH ??
   'data/mod-render-site-observations.json';
+/** The committed beta header observations, with the same test seam. */
+const betaHeaderObservationsPath = (): string =>
+  process.env.CLAUSTODIAN_BETA_HEADER_OBSERVATIONS_PATH ?? 'data/beta-header-observations.json';
 /** The committed model observations, with the same test seam. */
 const modelObservationsPath = (): string =>
   process.env.CLAUSTODIAN_MODEL_OBSERVATIONS_PATH ?? 'data/model-observations.json';
@@ -2196,6 +2216,18 @@ export function modelRegressionRefusal(
     { path: modelObservationsPath(), type: 'model', flag: '--models' },
     models,
     priorHadModels
+  );
+}
+
+/** The beta_header case of observationRegressionRefusal. */
+export function betaHeaderRegressionRefusal(
+  betaHeaders: { present: boolean; observations: readonly ModObservation[] },
+  priorHadBetaHeaders: boolean
+): string | null {
+  return observationRegressionRefusal(
+    { path: betaHeaderObservationsPath(), type: 'beta_header', flag: '--beta-headers' },
+    betaHeaders,
+    priorHadBetaHeaders
   );
 }
 
@@ -2366,6 +2398,12 @@ export async function main(): Promise<number> {
     await priorDatasetHasRecordsOfType(priorPath, 'model')
   );
   if (modelRefusal) throw new Error(modelRefusal);
+  const betaHeaders = await loadModObservations(betaHeaderObservationsPath(), '--beta-headers');
+  const betaHeaderRefusal = betaHeaderRegressionRefusal(
+    betaHeaders,
+    await priorDatasetHasRecordsOfType(priorPath, 'beta_header')
+  );
+  if (betaHeaderRefusal) throw new Error(betaHeaderRefusal);
 
   const snapshots = buildEnrichedSnapshots(
     blocks,
@@ -2379,7 +2417,8 @@ export async function main(): Promise<number> {
     modRenderSites.present ? modRenderSites.observations : undefined,
     modElements.present ? modElements.observations : undefined,
     hookEvents.present ? hookEvents.observations : undefined,
-    models.present ? models.observations : undefined
+    models.present ? models.observations : undefined,
+    betaHeaders.present ? betaHeaders.observations : undefined
   );
   const index = buildIndex(snapshots);
 

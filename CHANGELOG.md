@@ -41,6 +41,22 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ### Added
 
+- **A `beta_header` symbol type, for the `anthropic-beta` values Claude Code can
+  send.** Each header becomes one record with the header value as its `symbol`, such
+  as `fast-mode-2026-02-01` or `context-1m-2025-08-07`, and `category: "betas"`. The
+  description is the internal name the CLI registers the header under, such as
+  `speed`. The records carry no extra fields.
+
+  The binary lane reads the calls of the beta registry factory, which first ships in
+  2.1.124, so a beta older than the factory dates from 2.1.124. The header is the
+  identity: one name can register two headers (`tool_search`), and when Anthropic
+  re-dates a beta, the old header leaves and the new one arrives, as the CLI sends it.
+  No docs page lists beta headers, so the binary is the only lane, and a header the
+  registry stops holding is removed.
+
+  The snapshots carry no `beta_header` record until a separate data PR publishes the
+  binary observations (`data/beta-header-observations.json`).
+
 - **A `model` symbol type, for the Claude models Claude Code knows.** Each model
   becomes one record with its first-party API id as its `symbol`, such as
   `claude-3-7-sonnet-20250219` or `claude-opus-5-5`, and `category: "models"`. The

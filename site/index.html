@@ -6,7 +6,7 @@
     <title>Claustodian — Claude Code surface, by version</title>
     <meta
       name="description"
-      content="Look up whether a Claude Code CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event, or model exists in a given version."
+      content="Look up whether a Claude Code CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event, model, or beta header exists in a given version."
     />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="canonical" href="https://claustodian.dev/" />
@@ -21,7 +21,7 @@
     <meta property="og:title" content="Claustodian — Claude Code surface, by version" />
     <meta
       property="og:description"
-      content="Look up whether a Claude Code CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event, or model exists in a given version."
+      content="Look up whether a Claude Code CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event, model, or beta header exists in a given version."
     />
     <meta property="og:image" content="https://claustodian.dev/og-image.png" />
     <meta property="og:image:type" content="image/png" />
@@ -35,7 +35,7 @@
     <meta name="twitter:title" content="Claustodian — Claude Code surface, by version" />
     <meta
       name="twitter:description"
-      content="Look up whether a Claude Code CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event, or model exists in a given version."
+      content="Look up whether a Claude Code CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event, model, or beta header exists in a given version."
     />
     <meta name="twitter:image" content="https://claustodian.dev/og-image.png" />
     <meta
@@ -53,7 +53,7 @@
         "@type": "Dataset",
         "name": "Claustodian",
         "alternateName": "Claude Code surface, by version",
-        "description": "A static, versioned record of every Claude Code CLI flag, environment variable, command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event and model, each tagged with the version it was first observed in and, where known, the version it was removed in. Derived only from officially published Anthropic artifacts: the changelog, the documentation pages, and release binaries.",
+        "description": "A static, versioned record of every Claude Code CLI flag, environment variable, command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event, model and beta header, each tagged with the version it was first observed in and, where known, the version it was removed in. Derived only from officially published Anthropic artifacts: the changelog, the documentation pages, and release binaries.",
         "url": "https://claustodian.dev/",
         "sameAs": "https://github.com/schubydoo/claustodian",
         "license": "https://creativecommons.org/licenses/by/4.0/",
@@ -79,7 +79,7 @@
           "Positive-evidence extraction from published release binaries"
         ],
         "variableMeasured": [
-          "Symbol type (CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event, model)",
+          "Symbol type (CLI flag, environment variable, slash command, settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event, model, beta header)",
           "Version first observed (first_seen)",
           "Version removed (removed_in)",
           "Version deprecated (deprecated_in)",
@@ -130,6 +130,7 @@
         --mod-element: #5c940d;
         --hook: #8a5a00;
         --model: #1864ab;
+        --beta: #5c7cfa;
         --noise: #868e96;
       }
       @media (prefers-color-scheme: dark) {
@@ -152,6 +153,7 @@
           --mod-element: #a9e34b;
           --hook: #e0a458;
           --model: #74c0fc;
+          --beta: #91a7ff;
           --noise: #868e96;
         }
       }
@@ -369,6 +371,9 @@
       }
       .t-model {
         background: var(--model);
+      }
+      .t-beta_header {
+        background: var(--beta);
       }
       /* A flag that only works under a subcommand. Muted like .cat — this is
          classification, not a warning. */
@@ -1253,6 +1258,12 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
                 A Claude model Claude Code knows, by its API id, e.g. <code>claude-opus-5-5</code>.
               </dd>
 
+              <dt><span class="badge t-beta_header">beta header</span></dt>
+              <dd>
+                An <code>anthropic-beta</code> value Claude Code can send, e.g.
+                <code>fast-mode-2026-02-01</code>.
+              </dd>
+
               <dt><span class="cat">cli</span></dt>
               <dd>A flag meant for you — it appears in <code>claude --help</code>.</dd>
 
@@ -1392,6 +1403,7 @@ console.<span class="t-f">log</span>(snap.symbols.<span class="t-f">some</span>(
         ['mod_element', 'Elements'],
         ['hook_event', 'Hook events'],
         ['model', 'Models'],
+        ['beta_header', 'Beta headers'],
       ]);
       const typeLabel = (t) => TYPE_LABELS.get(t) ?? t;
       // The types present in a source, ordered: known types in TYPE_LABELS order,

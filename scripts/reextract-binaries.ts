@@ -44,6 +44,7 @@ import { compareVersionsAsc, runCli } from './lib.js';
 import type { ControlMessageObservation } from './control-lane.js';
 import { extractControlAndModMethods } from './mod-lane.js';
 import type { ModelObservation } from './model-lane.js';
+import type { BetaObservation } from './beta-lane.js';
 import type { VariableSkill } from './skill-lane.js';
 
 const DEFAULT_ARCHIVE_DIR = 'scratch/binaries';
@@ -270,6 +271,7 @@ export function extractVersion(
   let variableSkills: VariableSkill[];
   let hookEvents: string[];
   let models: ModelObservation[];
+  let betaHeaders: BetaObservation[];
   try {
     ({
       controlMessages,
@@ -283,6 +285,7 @@ export function extractVersion(
       variableSkills,
       hookEvents,
       models,
+      betaHeaders,
     } = extractControlAndModMethods(chunks, version));
   } catch (error) {
     return { kind: 'failed', reason: (error as Error).message };
@@ -307,6 +310,7 @@ export function extractVersion(
       modElements,
       hookEvents,
       models,
+      betaHeaders,
       textAbsent: textAbsentFor(result.src, version, symbols, watch),
     })
   );

@@ -36,6 +36,7 @@ body:
         - mod_element
         - hook_event
         - model
+        - beta_header
         - not sure
     validations:
       required: true
