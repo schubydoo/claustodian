@@ -22,6 +22,7 @@ import {
   scrapeBinary,
 } from './scrape-binary.js';
 import { extractHookEvents } from './hook-lane.js';
+import { extractModels } from './model-lane.js';
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
@@ -40,6 +41,13 @@ const FAKE_BUNDLE = [
   `program.option("--demo-flag","a demonstration flag");`,
   // The hook lane's: every version these tests scrape is above its floor too.
   `var HK=["PreToolUse","PostToolUse","Notification"];`,
+  // The model lane's: every version here is past the registry floor, which wants ten
+  // entries at least.
+  `var MR=[${Array.from(
+    { length: 10 },
+    (_, i) =>
+      `{id:"claude-test-${i}",display_name:"Test ${i}",provider_ids:{first_party:"claude-test-${i}"}}`
+  ).join(',')}];`,
   // The control lane's. Every version these tests scrape is above ALL THREE floors,
   // so a fixture has to be a miniature of the real protocol, not a fragment: two
   // schema-bearing subtypes, a union that routes them, BOTH directional sub-unions
@@ -253,7 +261,12 @@ describe('buildCacheRecord', () => {
     } catch (e) {
       refusals.push((e as Error).message);
     }
-    expect(refusals).toHaveLength(5);
+    try {
+      extractModels('var x=1;', '2.1.242');
+    } catch (e) {
+      refusals.push((e as Error).message);
+    }
+    expect(refusals).toHaveLength(6);
     for (const message of refusals) expect(isDeterministicRefusal(message)).toBe(true);
     // And a transient failure must NOT be classified as deterministic.
     expect(isDeterministicRefusal('fetch failed')).toBe(false);
@@ -327,6 +340,7 @@ describe('buildCacheRecord', () => {
       'modRenderSitesListed',
       'modElements',
       'hookEvents',
+      'models',
       'textAbsent',
     ]);
     // 2.1.214 predates the mods API, so the mod half is an honest empty list.
@@ -338,6 +352,8 @@ describe('buildCacheRecord', () => {
     expect(record.modElements).toEqual([]);
     // The hook list is far older than the mods API, so it is read here.
     expect(record.hookEvents).toEqual(['Notification', 'PostToolUse', 'PreToolUse']);
+    expect(record.models).toHaveLength(10);
+    expect(record.models[0]).toEqual({ id: 'claude-test-0', name: 'Test 0' });
     // And the control half must be real, not an empty array standing in for it.
     expect(record.controlCount).toBe(record.controlMessages.length);
     expect(record.controlMessages.map((m) => m.symbol).sort()).toEqual([
@@ -644,7 +660,10 @@ describe('textAbsent in both cache writers', () => {
     const { join } = await import('node:path');
     const root = await mkdtemp(join(tmpdir(), 'claustodian-textabsent-'));
     try {
-      const js = 'if(process.env.CLAUDE_CODE_KEPT)x();let note="CLAUDE_CODE_TEXT_ONLY";';
+      // The model object only satisfies the model lane's floor; the proofs are the point.
+      const js =
+        'if(process.env.CLAUDE_CODE_KEPT)x();let note="CLAUDE_CODE_TEXT_ONLY";' +
+        'var M={firstParty:"claude-3-7-sonnet-20250219",bedrock:"b"};';
       const archive = join(root, 'archive');
       await mkdir(join(archive, '1.0.0', 'linux-x64'), { recursive: true });
       await writeFile(join(archive, '1.0.0', 'linux-x64', 'claude'), js);

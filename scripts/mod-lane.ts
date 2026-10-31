@@ -73,6 +73,12 @@ import {
   type VariableSkill,
 } from './skill-lane.js';
 import { collectHookEvidence, hookEventsFrom, type HookEvidence } from './hook-lane.js';
+import {
+  collectModelEvidence,
+  modelsFrom,
+  type ModelEvidence,
+  type ModelObservation,
+} from './model-lane.js';
 import { compareVersionsAsc } from './lib.js';
 import { extractControlMessages, isNode, parse, walk, type Node } from './control-lane.js';
 
@@ -578,9 +584,12 @@ export function extractControlAndModMethods(
   variableSkills: VariableSkill[];
   /** The hook events the settings schema accepts; see hook-lane.ts. */
   hookEvents: string[];
+  /** The models the release names, by first-party id; see model-lane.ts. */
+  models: ModelObservation[];
 } {
   const evidence: ModEvidence[] = [];
   const hooks: HookEvidence[] = [];
+  const models: ModelEvidence[] = [];
   const childEnv = new Set<string>();
   const skills: SkillEvidence[] = [];
   const controlMessages = extractControlMessages(source, version, (program) => {
@@ -588,6 +597,7 @@ export function extractControlAndModMethods(
     for (const name of collectChildEnvNames(program)) childEnv.add(name);
     skills.push(collectSkillEvidence(program));
     hooks.push(collectHookEvidence(program));
+    models.push(collectModelEvidence(program));
   });
   const { methods, mentions } = modEvidenceFrom(evidence, version);
   const { sites, listed } = modRenderSitesFrom(evidence, version);
@@ -602,5 +612,6 @@ export function extractControlAndModMethods(
     childEnvVars: [...childEnv].sort(),
     variableSkills: resolveVariableSkills(skills),
     hookEvents: hookEventsFrom(hooks, version),
+    models: modelsFrom(models, version),
   };
 }

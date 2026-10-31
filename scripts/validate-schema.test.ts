@@ -225,6 +225,10 @@ describe('symbol schema', () => {
     expect(validate(modMethod({ symbol: 'PreToolUse', type: 'hook_event' }))).toBe(true);
   });
 
+  it('accepts a model record', () => {
+    expect(validate(modMethod({ symbol: 'claude-opus-5-5', type: 'model' }))).toBe(true);
+  });
+
   it('accepts a mod_render_site record', () => {
     expect(validate(modMethod({ symbol: 'AbovePrompt', type: 'mod_render_site' }))).toBe(true);
   });

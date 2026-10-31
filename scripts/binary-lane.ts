@@ -1541,16 +1541,24 @@ export interface ModObservationsFile {
   symbols?: ModObservation[];
 }
 
+/** The opt-in flag of each observation file that shares the mod-observations shape. */
+export type ModObservationFlag =
+  | '--mods'
+  | '--mod-events'
+  | '--mod-render-sites'
+  | '--mod-elements'
+  | '--hook-events'
+  | '--models';
+
 /**
  * Mod observations, plus whether the file existed. Absence is the opt-in state:
  * `backfill-binary` writes the file only on `flag` or when it already exists. The
- * method file (`--mods`), the event file (`--mod-events`) and the hook event file
- * (`--hook-events`) share one shape.
+ * method file (`--mods`), the event file (`--mod-events`), the hook event file
+ * (`--hook-events`) and the model file (`--models`) share one shape.
  */
 export async function loadModObservations(
   path: string,
-  flag:
-    '--mods' | '--mod-events' | '--mod-render-sites' | '--mod-elements' | '--hook-events' = '--mods'
+  flag: ModObservationFlag = '--mods'
 ): Promise<{ observations: ModObservation[]; present: boolean }> {
   const parsed = await readOptInObservations<ModObservationsFile>(path, {
     what: {
@@ -1559,6 +1567,7 @@ export async function loadModObservations(
       '--mod-render-sites': 'mod render site observations',
       '--mod-elements': 'mod element observations',
       '--hook-events': 'hook event observations',
+      '--models': 'model observations',
     }[flag],
     absence: {
       '--mods': 'mods API methods',
@@ -1566,6 +1575,7 @@ export async function loadModObservations(
       '--mod-render-sites': 'mods render sites',
       '--mod-elements': 'mods elements',
       '--hook-events': 'hook events',
+      '--models': 'models',
     }[flag],
     regenerate: `"npm run backfill-binary -- ${flag}"`,
   });
@@ -1583,8 +1593,7 @@ export async function loadModObservations(
 export function assertModObservations(
   file: ModObservationsFile,
   path: string,
-  flag:
-    '--mods' | '--mod-events' | '--mod-render-sites' | '--mod-elements' | '--hook-events' = '--mods'
+  flag: ModObservationFlag = '--mods'
 ): void {
   if (file.$generated_by !== GENERATED_BY || file.source !== SOURCE) {
     throw new Error(

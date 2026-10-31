@@ -12,7 +12,7 @@ specific user's Claude Code version.
 Claustodian answers one question:
 
 > Does a Claude Code **symbol** — a CLI flag, environment variable, slash command,
-> settings key, stream-json control message, mods API method, mods event, mods render site, mods element, or hook event — exist in a specific
+> settings key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event, or model — exist in a specific
 > **version**, and
 > what did it do at that version?
 
@@ -67,7 +67,7 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
 ```json
 {
   "symbol": "--output-format",
-  "type": "cli_flag", // schema enum: cli_flag | command | env_var | config_key | internal_config_flag | control_message | mod_method | mod_event | mod_render_site | mod_element | hook_event (all but internal_config_flag are populated)
+  "type": "cli_flag", // schema enum: cli_flag | command | env_var | config_key | internal_config_flag | control_message | mod_method | mod_event | mod_render_site | mod_element | hook_event | model (all but internal_config_flag are populated)
   // control_message records ALSO carry "family" and "direction", which are
   // required on that type and forbidden on every other one; see
   // schema/symbol.schema.json for the conditional.

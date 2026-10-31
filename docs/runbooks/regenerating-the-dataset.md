@@ -154,7 +154,8 @@ until every entry has the key. `data/mod-render-site-observations.json` and
 `mod_render_site` records follow the same rule, with `--mod-render-sites` and the
 `modRenderSites` key, as do `data/mod-element-observations.json` and `mod_element`
 records, with `--mod-elements` and the `modElements` key. `data/hook-event-observations.json`
-and `hook_event` records follow it too, with `--hook-events` and the `hookEvents` key.
+and `hook_event` records follow it too, with `--hook-events` and the `hookEvents` key, and so
+do `data/model-observations.json` and `model` records, with `--models` and the `models` key.
 
 Step 3 must come after step 2. `fetch-docs` resolves settings-page key paths against
 `data/binary-observations.json`, because the docs group keys by topic rather than by

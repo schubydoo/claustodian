@@ -30,6 +30,7 @@ const SYMBOL_TYPES = [
   'mod_render_site',
   'mod_element',
   'hook_event',
+  'model',
 ] as const;
 
 /**
