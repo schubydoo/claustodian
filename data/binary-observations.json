@@ -3481,7 +3481,7 @@
       "type": "command",
       "first_seen": "2.1.213",
       "last_seen": "2.1.308",
-      "removed_in": null
+      "removed_in": "2.1.309"
     },
     {
       "symbol": "/artifacts",
@@ -3675,7 +3675,7 @@
       "type": "command",
       "first_seen": "2.1.198",
       "last_seen": "2.1.228",
-      "removed_in": null
+      "removed_in": "2.1.229"
     },
     {
       "symbol": "/color",
@@ -4287,7 +4287,7 @@
       "type": "command",
       "first_seen": "2.1.198",
       "last_seen": "2.1.228",
-      "removed_in": null
+      "removed_in": "2.1.229"
     },
     {
       "symbol": "/privacy-settings",
@@ -4823,7 +4823,7 @@
       "type": "command",
       "first_seen": "2.1.251",
       "last_seen": "2.1.259",
-      "removed_in": null
+      "removed_in": "2.1.260"
     },
     {
       "symbol": "/workflow-authoring",

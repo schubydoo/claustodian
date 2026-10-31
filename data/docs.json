@@ -7538,6 +7538,237 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "ConfigChange",
+      "type": "hook_event",
+      "description": "When a configuration file changes during a session",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "CwdChanged",
+      "type": "hook_event",
+      "description": "When the working directory changes, for example when Claude executes a `cd` command. Useful for reactive environment management with tools like direnv",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "DirectoryAdded",
+      "type": "hook_event",
+      "description": "When a working directory is added mid-session via `/add-dir` or the SDK `register_repo_root` control request",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "Elicitation",
+      "type": "hook_event",
+      "description": "When an MCP server requests user input during a tool call",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "ElicitationResult",
+      "type": "hook_event",
+      "description": "After a user responds to an MCP elicitation, before the response is sent back to the server",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "FileChanged",
+      "type": "hook_event",
+      "description": "When a watched file changes on disk. The `matcher` field specifies which filenames to watch",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "InstructionsLoaded",
+      "type": "hook_event",
+      "description": "When a CLAUDE.md or `.claude/rules/*.md` file is loaded into context. Fires at session start and when files are lazily loaded during a session",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "MessageDisplay",
+      "type": "hook_event",
+      "description": "While assistant message text is displayed",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "Notification",
+      "type": "hook_event",
+      "description": "When Claude Code sends a notification",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "PermissionDenied",
+      "type": "hook_event",
+      "description": "When auto mode denies a tool call, including denials without a classifier verdict. Use JSON `hookSpecificOutput.retry: true` to tell the model it may retry the denied tool call. Claude Code ignores `retry` when the classifier produced no verdict",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "PermissionRequest",
+      "type": "hook_event",
+      "description": "When a tool call needs a permission decision",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "PostCompact",
+      "type": "hook_event",
+      "description": "After context compaction completes",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "PostModelSwitch",
+      "type": "hook_event",
+      "description": "After the session's model changes, including changes Claude Code makes on its own, such as restoring the model when you resume a session",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "PostToolBatch",
+      "type": "hook_event",
+      "description": "After a full batch of parallel tool calls resolves, before the next model call",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "PostToolUse",
+      "type": "hook_event",
+      "description": "After a tool call succeeds",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "PostToolUseFailure",
+      "type": "hook_event",
+      "description": "After a tool call fails",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "PreCompact",
+      "type": "hook_event",
+      "description": "Before context compaction",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "PreModelSwitch",
+      "type": "hook_event",
+      "description": "Before Claude Code applies a model switch that you or a client requested. Can block the switch",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "PreToolUse",
+      "type": "hook_event",
+      "description": "Before a tool call executes. Can block it",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "SessionEnd",
+      "type": "hook_event",
+      "description": "When a session terminates",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "SessionStart",
+      "type": "hook_event",
+      "description": "When a session begins or resumes",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "Setup",
+      "type": "hook_event",
+      "description": "When you start Claude Code with `--init-only`, or with `--init` or `--maintenance` in `-p` mode. For one-time preparation in CI or scripts",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "Stop",
+      "type": "hook_event",
+      "description": "When Claude finishes responding",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "StopFailure",
+      "type": "hook_event",
+      "description": "When the turn ends due to an API error",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "SubagentStart",
+      "type": "hook_event",
+      "description": "When a subagent is spawned",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "SubagentStop",
+      "type": "hook_event",
+      "description": "When a subagent finishes",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "TaskCompleted",
+      "type": "hook_event",
+      "description": "When a task is being marked as completed",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "TaskCreated",
+      "type": "hook_event",
+      "description": "When a task is being created via `TaskCreate`",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "TeammateIdle",
+      "type": "hook_event",
+      "description": "When an agent team teammate is about to go idle",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "UserPromptExpansion",
+      "type": "hook_event",
+      "description": "When a user-typed command expands into a prompt, before it reaches Claude. Can block the expansion",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "UserPromptSubmit",
+      "type": "hook_event",
+      "description": "When a prompt is submitted, before Claude processes it. Also fires on turns Claude Code starts on its own",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "WorktreeCreate",
+      "type": "hook_event",
+      "description": "When a worktree is being created via `--worktree`, `isolation: \"worktree\"`, or for a background session. Replaces default git behavior",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
+      "symbol": "WorktreeRemove",
+      "type": "hook_event",
+      "description": "When a worktree that a `WorktreeCreate` hook created is being removed",
+      "doc_min_version": null,
+      "doc_page": "hooks"
+    },
+    {
       "symbol": "Box",
       "type": "mod_element",
       "description": "",
