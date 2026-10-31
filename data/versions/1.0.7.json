@@ -1838,6 +1838,66 @@
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
+    },
+    {
+      "symbol": "claude-3-5-haiku-20241022",
+      "type": "model",
+      "first_seen": "0.2.62",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "models"
+    },
+    {
+      "symbol": "claude-3-5-sonnet-20241022",
+      "type": "model",
+      "first_seen": "0.2.85",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "models"
+    },
+    {
+      "symbol": "claude-3-7-sonnet-20250219",
+      "type": "model",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "models"
+    },
+    {
+      "symbol": "claude-opus-4-20250514",
+      "type": "model",
+      "first_seen": "1.0.0",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "models"
+    },
+    {
+      "symbol": "claude-sonnet-4-20250514",
+      "type": "model",
+      "first_seen": "1.0.0",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "models"
     }
   ]
 }
