@@ -21,8 +21,12 @@
  * `H`, `k`), and those short names also belong to unrelated functions in other scopes:
  * `H("tengu_daemon_control",{…})`. So a call counts only when its callee resolves, by
  * lexical scope, to the factory's own declaration, or from 2.1.242 to an import of the
- * chunk that exports it. A header written as a variable resolves the same way
- * (`k("oauth_auth",jc)`). A factory call whose header this lane cannot read throws.
+ * chunk that exports it. A header or name written as a variable resolves the same way
+ * (`k("oauth_auth",jc)`). A factory call whose name or header this lane cannot read
+ * throws, and so does a call by an imported name the factory's chunk exports when that
+ * import cannot be followed to the factory: either would drop a header silently. A call
+ * through a member or a sequence (`(0,k)(…)`) has no binding to compare and is not
+ * read; no release writes one, and the floor catches a registry that moves to it.
  *
  * FLOORS. Below BETA_FLOOR the lane asserts nothing. From it, fewer than
  * MIN_BETA_HEADERS headers throws, because downstream a short list reads as betas
@@ -38,7 +42,7 @@ import { lookup, walkScopes, type Binding, type Scope } from './js-scope.js';
 /** First release whose bundle registers betas through the factory. */
 export const BETA_FLOOR = '2.1.124';
 
-/** The fewest headers a release from BETA_FLOOR may register. It had 17 there. */
+/** The fewest headers a release from BETA_FLOOR may register. It had 18 there. */
 const MIN_BETA_HEADERS = 12;
 
 /** A beta header value: `fast-mode-2026-02-01`, `x-cc-internal-mid-conv-cache-promotion`. */
@@ -56,8 +60,7 @@ export interface BetaObservation {
 interface Call {
   callee: string;
   scope: Scope;
-  name: Node;
-  header: Node;
+  args: Node[];
 }
 
 /** One chunk's evidence. Names resolve only once every chunk is known. */
@@ -112,19 +115,13 @@ export function collectBetaEvidence(program: Node): BetaEvidence {
       declarations.push({ name: node.id.name as string, scope });
       return;
     }
+    // Every call by a bare name, whatever its arguments: whether it is a factory call is
+    // known only once every chunk's factory is, and a factory call in a shape this lane
+    // cannot read must throw rather than drop out.
     if (node.type === 'CallExpression') {
       const callee = node.callee as Node;
-      const args = node.arguments as Node[];
-      const [name, header] = args;
-      if (
-        callee.type === 'Identifier' &&
-        args.length === 2 &&
-        name?.type === 'Literal' &&
-        typeof name.value === 'string' &&
-        NAME.test(name.value) &&
-        header
-      ) {
-        calls.push({ callee: callee.name as string, scope, name, header });
+      if (callee.type === 'Identifier') {
+        calls.push({ callee: callee.name as string, scope, args: node.arguments as Node[] });
       }
       return;
     }
@@ -198,19 +195,43 @@ export function betasFrom(chunks: readonly BetaEvidence[], version: string): Bet
     return found && isNode(init) ? stringOf(found.chunk, init, found.binding.scope) : undefined;
   };
 
+  // The names the factory's chunk exports it under. An import of one of them that cannot
+  // be followed to the factory is a call this lane would otherwise lose without a word.
+  const factoryExports = new Set<string>();
+  for (const chunk of chunks) {
+    for (const [exported, local] of chunk.exports) {
+      const binding = lookup(local, chunk.root);
+      if (binding && chunk.factories.has(binding)) factoryExports.add(exported);
+    }
+  }
+
   const headers = new Map<string, Set<string>>();
   const unreadable: string[] = [];
   for (const chunk of chunks) {
     for (const call of chunk.calls) {
       const target = resolve(chunk, call.callee, call.scope);
-      if (!target || !target.chunk.factories.has(target.binding)) continue;
-      const header = stringOf(chunk, call.header, call.scope);
+      if (!target) {
+        const imported = lookup(call.callee, call.scope)?.imported;
+        if (imported && factoryExports.has(imported.name)) {
+          unreadable.push(`a call through an import of "${imported.name}" from ${imported.source}`);
+        }
+        continue;
+      }
+      if (!target.chunk.factories.has(target.binding)) continue;
+      const [nameNode, headerNode] = call.args;
+      const name =
+        call.args.length === 2 && nameNode ? stringOf(chunk, nameNode, call.scope) : undefined;
+      if (name === undefined || !NAME.test(name) || !headerNode) {
+        unreadable.push(`a factory call with ${call.args.length} argument(s) and no readable name`);
+        continue;
+      }
+      const header = stringOf(chunk, headerNode, call.scope);
       if (header === undefined || !HEADER.test(header)) {
-        unreadable.push(`the header of "${String(call.name.value)}" (a ${call.header.type})`);
+        unreadable.push(`the header of "${name}" (a ${headerNode.type})`);
         continue;
       }
       const names = headers.get(header) ?? new Set<string>();
-      names.add(call.name.value as string);
+      names.add(name);
       headers.set(header, names);
     }
   }

@@ -49,6 +49,29 @@ describe('extractBetas', () => {
     );
   });
 
+  it('refuses a factory call whose name it cannot read, rather than dropping it', () => {
+    expect(() =>
+      extractBetas(registry(12, ',k("fastMode","fast-mode-2026-02-01")'), BETA_FLOOR)
+    ).toThrow(/no readable name/);
+    expect(() => extractBetas(registry(12, ',k("x")'), BETA_FLOOR)).toThrow(/1 argument/);
+  });
+
+  it('follows a name written as a variable', () => {
+    const src = registry(12, ',k(N,"fast-mode-2026-02-01")') + 'var N="speed";';
+    const betas = extractBetas(src, BETA_FLOOR);
+    expect(betas.find((b) => b.header === 'fast-mode-2026-02-01')?.names).toEqual(['speed']);
+  });
+
+  it('refuses a call through an import of the factory it cannot follow', () => {
+    // Two chunks export F, and nothing else is imported from that path, so the source
+    // matches both and cannot be followed to the factory.
+    const owner = `${registry(12)}export{k as F};`;
+    const other = 'function z(){}export{z as F};';
+    const user =
+      'import{F as q}from"/$bunfs/root/chunk-a.js";var X=q("speed","fast-mode-2026-02-01");';
+    expect(() => extractBetas([owner, other, user], BETA_FLOOR)).toThrow(/import of "F"/);
+  });
+
   it('refuses a factory call whose header it cannot read', () => {
     expect(() => extractBetas(registry(12, ',k("x",g())'), BETA_FLOOR)).toThrow(/CallExpression/);
   });
