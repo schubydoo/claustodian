@@ -2272,6 +2272,71 @@
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
+    },
+    {
+      "symbol": "Notification",
+      "type": "hook_event",
+      "first_seen": "1.0.23",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "When Claude Code sends a notification",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/hooks.md",
+      "category": "hooks"
+    },
+    {
+      "symbol": "PostToolUse",
+      "type": "hook_event",
+      "first_seen": "1.0.23",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "After a tool call succeeds",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/hooks.md",
+      "category": "hooks"
+    },
+    {
+      "symbol": "PreToolUse",
+      "type": "hook_event",
+      "first_seen": "1.0.23",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Before a tool call executes. Can block it",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/hooks.md",
+      "category": "hooks"
+    },
+    {
+      "symbol": "Stop",
+      "type": "hook_event",
+      "first_seen": "1.0.31",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "When Claude finishes responding",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/hooks.md",
+      "category": "hooks"
+    },
+    {
+      "symbol": "SubagentStop",
+      "type": "hook_event",
+      "first_seen": "1.0.41",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "When a subagent finishes",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/hooks.md",
+      "category": "hooks"
     }
   ]
 }
