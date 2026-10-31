@@ -221,6 +221,10 @@ describe('symbol schema', () => {
     expect(validate(modMethod({ symbol: 'Box', type: 'mod_element' }))).toBe(true);
   });
 
+  it('accepts a hook_event record', () => {
+    expect(validate(modMethod({ symbol: 'PreToolUse', type: 'hook_event' }))).toBe(true);
+  });
+
   it('accepts a mod_render_site record', () => {
     expect(validate(modMethod({ symbol: 'AbovePrompt', type: 'mod_render_site' }))).toBe(true);
   });

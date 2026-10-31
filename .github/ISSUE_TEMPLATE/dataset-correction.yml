@@ -34,6 +34,7 @@ body:
         - mod_event
         - mod_render_site
         - mod_element
+        - hook_event
         - not sure
     validations:
       required: true

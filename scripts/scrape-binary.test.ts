@@ -21,6 +21,7 @@ import {
   resolveVersion,
   scrapeBinary,
 } from './scrape-binary.js';
+import { extractHookEvents } from './hook-lane.js';
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
@@ -37,6 +38,8 @@ const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 const FAKE_BUNDLE = [
   // The flag lane's evidence.
   `program.option("--demo-flag","a demonstration flag");`,
+  // The hook lane's: every version these tests scrape is above its floor too.
+  `var HK=["PreToolUse","PostToolUse","Notification"];`,
   // The control lane's. Every version these tests scrape is above ALL THREE floors,
   // so a fixture has to be a miniature of the real protocol, not a fragment: two
   // schema-bearing subtypes, a union that routes them, BOTH directional sub-unions
@@ -245,7 +248,12 @@ describe('buildCacheRecord', () => {
     } catch (e) {
       refusals.push((e as Error).message);
     }
-    expect(refusals).toHaveLength(4);
+    try {
+      extractHookEvents('var x=1;', '2.1.242');
+    } catch (e) {
+      refusals.push((e as Error).message);
+    }
+    expect(refusals).toHaveLength(5);
     for (const message of refusals) expect(isDeterministicRefusal(message)).toBe(true);
     // And a transient failure must NOT be classified as deterministic.
     expect(isDeterministicRefusal('fetch failed')).toBe(false);
@@ -318,6 +326,7 @@ describe('buildCacheRecord', () => {
       'modRenderSites',
       'modRenderSitesListed',
       'modElements',
+      'hookEvents',
       'textAbsent',
     ]);
     // 2.1.214 predates the mods API, so the mod half is an honest empty list.
@@ -327,6 +336,8 @@ describe('buildCacheRecord', () => {
     expect(record.modEvents).toEqual([]);
     expect(record).toMatchObject({ modRenderSites: [], modRenderSitesListed: false });
     expect(record.modElements).toEqual([]);
+    // The hook list is far older than the mods API, so it is read here.
+    expect(record.hookEvents).toEqual(['Notification', 'PostToolUse', 'PreToolUse']);
     // And the control half must be real, not an empty array standing in for it.
     expect(record.controlCount).toBe(record.controlMessages.length);
     expect(record.controlMessages.map((m) => m.symbol).sort()).toEqual([

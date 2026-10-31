@@ -41,6 +41,24 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ### Added
 
+- **A `hook_event` symbol type, for the events a hook can run on.** The `hooks`
+  setting attaches a hook to an event, such as `PreToolUse`, `SessionStart` or
+  `Stop`. Each event becomes one record with that name as its `symbol` and
+  `category: "hooks"`. The records carry no extra fields. The description is the
+  "When it fires" text of the hooks reference page.
+
+  The binary lane reads the one array that lists every event the `hooks` setting
+  accepts. That array first ships in 1.0.23 with three events, and it holds 33 at
+  2.1.312. It is the whole list, so an event that leaves it is removed.
+  `InstructionsLoaded` is in it at 2.1.64, out of it at 2.1.66, and back at 2.1.69,
+  the release that announces it. Its record dates from 2.1.64 and the snapshots for
+  2.1.66 to 2.1.68 list it too, because a record has no field for a gap. The docs
+  lane reads the "Hook lifecycle" table of the hooks reference page.
+
+  `data/docs.json` lists one `hook_event` entry per documented event from the next
+  docs refresh. The snapshots carry no `hook_event` record until a separate data PR
+  publishes the binary observations (`data/hook-event-observations.json`).
+
 - **Skills named by a variable, and env reads across chunks.** The binary lane now
   reads a skill whose `name:` is a variable, also when another chunk defines that
   variable. From about 2.1.232 several skills register that way, so `/schedule`,

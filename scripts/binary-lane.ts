@@ -1544,11 +1544,13 @@ export interface ModObservationsFile {
 /**
  * Mod observations, plus whether the file existed. Absence is the opt-in state:
  * `backfill-binary` writes the file only on `flag` or when it already exists. The
- * method file (`--mods`) and the event file (`--mod-events`) share one shape.
+ * method file (`--mods`), the event file (`--mod-events`) and the hook event file
+ * (`--hook-events`) share one shape.
  */
 export async function loadModObservations(
   path: string,
-  flag: '--mods' | '--mod-events' | '--mod-render-sites' | '--mod-elements' = '--mods'
+  flag:
+    '--mods' | '--mod-events' | '--mod-render-sites' | '--mod-elements' | '--hook-events' = '--mods'
 ): Promise<{ observations: ModObservation[]; present: boolean }> {
   const parsed = await readOptInObservations<ModObservationsFile>(path, {
     what: {
@@ -1556,12 +1558,14 @@ export async function loadModObservations(
       '--mod-events': 'mod event observations',
       '--mod-render-sites': 'mod render site observations',
       '--mod-elements': 'mod element observations',
+      '--hook-events': 'hook event observations',
     }[flag],
     absence: {
       '--mods': 'mods API methods',
       '--mod-events': 'mods events',
       '--mod-render-sites': 'mods render sites',
       '--mod-elements': 'mods elements',
+      '--hook-events': 'hook events',
     }[flag],
     regenerate: `"npm run backfill-binary -- ${flag}"`,
   });
@@ -1579,7 +1583,8 @@ export async function loadModObservations(
 export function assertModObservations(
   file: ModObservationsFile,
   path: string,
-  flag: '--mods' | '--mod-events' | '--mod-render-sites' | '--mod-elements' = '--mods'
+  flag:
+    '--mods' | '--mod-events' | '--mod-render-sites' | '--mod-elements' | '--hook-events' = '--mods'
 ): void {
   if (file.$generated_by !== GENERATED_BY || file.source !== SOURCE) {
     throw new Error(

@@ -38,6 +38,16 @@ function mockPageBody(url: string): string {
       '\n\n'
     );
   }
+  if (page === 'hooks') {
+    // The lifecycle table, with enough events to clear the type floor.
+    const events = Array.from({ length: TYPE_MIN_SYMBOLS.hook_event ?? 0 }, (_, i) => i);
+    return [
+      '## Hook lifecycle',
+      '| Event | When it fires |',
+      '| :- | :- |',
+      ...events.map((i) => `| \`MockHook${String.fromCharCode(65 + i)}\` | A mocked event |`),
+    ].join('\n');
+  }
   if (page === 'plugins/mods/reference') {
     // One namespace row per method keeps the yield equal to the floor, and the
     // events clear their type floor.
@@ -888,7 +898,8 @@ describe('assertDocsCoverage', () => {
     modEvents = TYPE_MIN_SYMBOLS.mod_event ?? 0,
     modMethods = TYPE_MIN_SYMBOLS.mod_method ?? 0,
     modRenderSites = TYPE_MIN_SYMBOLS.mod_render_site ?? 0,
-    modElements = TYPE_MIN_SYMBOLS.mod_element ?? 0
+    modElements = TYPE_MIN_SYMBOLS.mod_element ?? 0,
+    hookEvents = TYPE_MIN_SYMBOLS.hook_event ?? 0
   ) => ({
     $generated_by: 'scripts/fetch-docs.ts',
     source_pages: officialSourcePages(),
@@ -931,6 +942,13 @@ describe('assertDocsCoverage', () => {
         doc_min_version: null,
         doc_page: 'mock-types-page',
       })),
+      ...Array.from({ length: hookEvents }, (_, i) => ({
+        symbol: `MockHook${i}`,
+        type: 'hook_event' as const,
+        description: 'A mocked event',
+        doc_min_version: null,
+        doc_page: 'mock-types-page',
+      })),
     ],
   });
   const atFloor = () =>
@@ -955,6 +973,16 @@ describe('assertDocsCoverage', () => {
     expect(() => assertDocsCoverage(index(atFloor(), TYPE_MIN_SYMBOLS.mod_event, 0))).toThrow(
       /0 mod_method symbols/
     );
+  });
+
+  it('throws when the hooks page loses its lifecycle table', () => {
+    // The hooks page has no page floor, so the type floor is its only guard.
+    const t = TYPE_MIN_SYMBOLS;
+    expect(() =>
+      assertDocsCoverage(
+        index(atFloor(), t.mod_event, t.mod_method, t.mod_render_site, t.mod_element, 1)
+      )
+    ).toThrow(/1 hook_event symbols/);
   });
 
   it('throws on a partial collapse, not only an empty page', () => {
@@ -1606,5 +1634,64 @@ describe('parseDocPage — the runner and MCP env-var pages', () => {
       '| `CLAUDE_CODE_MCP_SERVER_NAME` | the name of the MCP server |',
     ].join('\n');
     expect(parseDocPage('mcp', page).map((e) => e.symbol)).toEqual(['CLAUDE_CODE_MCP_SERVER_NAME']);
+  });
+});
+
+describe('parseDocPage — hooks reference events', () => {
+  const events = (page: string) =>
+    parseDocPage('hooks', page).filter((e) => e.type === 'hook_event');
+  const LIFECYCLE = [
+    '## Hook lifecycle',
+    '',
+    '| Event | When it fires |',
+    '| :- | :- |',
+    '| `SessionStart` | When a session begins or resumes |',
+    '| `PreToolUse` | Before a tool call executes. Can block it |',
+    '',
+    '## Hook events',
+    '',
+    '### SessionStart',
+    '',
+    '| Matcher | When it fires |',
+    '| :- | :- |',
+    '| `startup` | New session |',
+  ];
+
+  it('reads the lifecycle table with its descriptions, and no table outside it', () => {
+    expect(events(LIFECYCLE.join('\n'))).toEqual([
+      {
+        symbol: 'SessionStart',
+        type: 'hook_event',
+        description: 'When a session begins or resumes',
+        doc_min_version: null,
+        doc_page: 'hooks',
+      },
+      {
+        symbol: 'PreToolUse',
+        type: 'hook_event',
+        description: 'Before a tool call executes. Can block it',
+        doc_min_version: null,
+        doc_page: 'hooks',
+      },
+    ]);
+  });
+
+  it('refuses another header, a second table, and a row that names no single event', () => {
+    const page = (...rows: string[]) =>
+      ['## Hook lifecycle', '| Event | When it fires |', '| :- | :- |', ...rows].join('\n');
+    expect(() =>
+      events(['## Hook lifecycle', '| Hook | When it fires |', '| :- | :- |'].join('\n'))
+    ).toThrow(/header other than/);
+    expect(() =>
+      events(page('| `Stop` | x y z |', '', '| Event | When it fires |', '| :- | :- |'))
+    ).toThrow(/second table/);
+    expect(() => events(page('| `Stop`, `StopFailure` | When it stops |'))).toThrow(
+      /names no single event/
+    );
+  });
+
+  it('skips a lifecycle example inside fenced code', () => {
+    const page = ['## Configuration', '```md', ...LIFECYCLE.slice(0, 5), '```'].join('\n');
+    expect(events(page)).toEqual([]);
   });
 });

@@ -176,6 +176,7 @@ export function buildCacheRecord(
     modElements,
     childEnvVars,
     variableSkills,
+    hookEvents,
   } = extractControlAndModMethods(chunks, version);
   const symbols = withVariableSkills(withChildEnvVars(readSymbols, childEnvVars), variableSkills);
   return {
@@ -193,6 +194,7 @@ export function buildCacheRecord(
     modRenderSites,
     modRenderSitesListed,
     modElements,
+    hookEvents,
     textAbsent: textAbsentFor(bundle, version, symbols, watch),
   };
 }
@@ -217,6 +219,8 @@ export interface BinaryCacheRecord {
   modRenderSitesListed: boolean;
   /** The element types this release lists; see modElementsFrom. */
   modElements: string[];
+  /** The hook events this release lists; see hookEventsFrom. */
+  hookEvents: string[];
   /** Earlier-seen names this release neither extracts nor holds as text; see textAbsent. */
   textAbsent: string[];
 }
@@ -315,6 +319,7 @@ export const CONTROL_REFUSAL_EXIT = 2;
 const REFUSAL_PREFIXES = [
   'control lane:',
   'mod lane:',
+  'hook lane:',
   'slice-bundle:',
   'settings schema:',
   // A release before FIRST_COMPILED_CACHE: refused on every retry, so an

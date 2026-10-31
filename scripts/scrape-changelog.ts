@@ -103,7 +103,8 @@ export interface SymbolRecord {
     | 'mod_method'
     | 'mod_event'
     | 'mod_render_site'
-    | 'mod_element';
+    | 'mod_element'
+    | 'hook_event';
   /**
    * Carried by control_message records and by no other type — the schema REQUIRES both
    * there and FORBIDS both elsewhere, so a stray one fails validation as surely as a
@@ -506,6 +507,13 @@ const MOD_TYPES: ReadonlySet<string> = new Set([
   'mod_element',
 ]);
 
+/**
+ * Every type read by AST under a floor guard: the mods types and `hook_event`. A record
+ * the binary alone proves lands `active`, and the binary is the removal authority for an
+ * undocumented one. A new type joins this list only by that same standard.
+ */
+const AST_TYPES: ReadonlySet<string> = new Set([...MOD_TYPES, 'hook_event']);
+
 export function categorize(symbol: string, type: ExtractedSymbolType): string {
   if (type === 'cli_flag') return 'cli';
   if (type === 'command') return 'command';
@@ -513,6 +521,7 @@ export function categorize(symbol: string, type: ExtractedSymbolType): string {
   // otherwise bucket them all as "other".
   if (type === 'config_key' || type === 'internal_config_flag') return 'settings';
   if (MOD_TYPES.has(type)) return 'mods';
+  if (type === 'hook_event') return 'hooks';
   for (const [pattern, category] of ENV_CATEGORY_RULES) {
     if (pattern.test(symbol)) return category;
   }
@@ -1508,9 +1517,9 @@ export function enrichWithBinary(
     // A mod method's removal comes from the binary: the changelog never retracts a
     // mention, so without this a changelog-named method would outlive the dispatch
     // table that proved it. A documented method never gets here with a removal —
-    // see withModObservations. Every MOD_TYPES type is the same case.
+    // see withModObservations. Every AST_TYPES type is the same case.
     const described =
-      MOD_TYPES.has(obs.type) && obs.removed_in !== null && promoted.removed_in === null
+      AST_TYPES.has(obs.type) && obs.removed_in !== null && promoted.removed_in === null
         ? finalizeRecord({
             ...promoted,
             first_seen_estimated: promoted.first_seen_estimated === true,
@@ -1563,10 +1572,10 @@ export function enrichWithBinary(
     // A maintainer-audited symbol graduates from the needs_review default to
     // active with a first-party description; everything else stays needs_review.
     const promo = promotionFor(obs.type, obs.symbol);
-    // Every MOD_TYPES type is read by AST under a floor guard — the standard
+    // Every AST_TYPES type is read by AST under a floor guard — the standard
     // control_message records meet, not the regex-lane evidence that keeps other
     // binary-only symbols at needs_review.
-    const settled = promo !== undefined || MOD_TYPES.has(obs.type);
+    const settled = promo !== undefined || AST_TYPES.has(obs.type);
     merged.push(
       finalizeRecord({
         symbol: obs.symbol,
@@ -1683,7 +1692,8 @@ export function buildEnrichedSnapshots(
   mods?: readonly ModObservation[],
   modEvents?: readonly ModObservation[],
   modRenderSites?: readonly ModObservation[],
-  modElements?: readonly ModObservation[]
+  modElements?: readonly ModObservation[],
+  hookEvents?: readonly ModObservation[]
 ): VersionSnapshot[] {
   const collected = collectChangelogSymbols(blocks);
   const latest =
@@ -1693,17 +1703,19 @@ export function buildEnrichedSnapshots(
   // publish them through the release bot, dated at the tip, before the data PR that
   // carries their binary dates — see the opt-in in backfill-binary.ts. An empty list
   // closes the gate too: past the floor the distiller cannot produce one. Each other
-  // mod_* type has its own file and the same gate.
+  // mod_* type, and hook_event, has its own file and the same gate.
   const publishMods = mods !== undefined && mods.length > 0;
   const publishModEvents = modEvents !== undefined && modEvents.length > 0;
   const publishModRenderSites = modRenderSites !== undefined && modRenderSites.length > 0;
   const publishModElements = modElements !== undefined && modElements.length > 0;
+  const publishHookEvents = hookEvents !== undefined && hookEvents.length > 0;
   const enriched = enrichSymbols(collected, docs, latest).filter(
     (record) =>
       (publishMods || record.type !== 'mod_method') &&
       (publishModEvents || record.type !== 'mod_event') &&
       (publishModRenderSites || record.type !== 'mod_render_site') &&
-      (publishModElements || record.type !== 'mod_element')
+      (publishModElements || record.type !== 'mod_element') &&
+      (publishHookEvents || record.type !== 'hook_event')
   );
   // The changelog-only gate needs the binary lane, so the changelog+docs contract
   // without it publishes as before.
@@ -1714,19 +1726,24 @@ export function buildEnrichedSnapshots(
         corroborated,
         withTypedModObservations(
           withTypedModObservations(
-            withModEventObservations(
-              withModObservations(binary, mods, modMethodsDocumented(docs)),
-              publishModEvents ? modEvents : undefined,
-              mods,
-              documentedOfType(docs, 'mod_event')
+            withTypedModObservations(
+              withModEventObservations(
+                withModObservations(binary, mods, modMethodsDocumented(docs)),
+                publishModEvents ? modEvents : undefined,
+                mods,
+                documentedOfType(docs, 'mod_event')
+              ),
+              'mod_render_site',
+              publishModRenderSites ? modRenderSites : undefined,
+              documentedOfType(docs, 'mod_render_site')
             ),
-            'mod_render_site',
-            publishModRenderSites ? modRenderSites : undefined,
-            documentedOfType(docs, 'mod_render_site')
+            'mod_element',
+            publishModElements ? modElements : undefined,
+            documentedOfType(docs, 'mod_element')
           ),
-          'mod_element',
-          publishModElements ? modElements : undefined,
-          documentedOfType(docs, 'mod_element')
+          'hook_event',
+          publishHookEvents ? hookEvents : undefined,
+          documentedOfType(docs, 'hook_event')
         ),
         binaryDescriptions
       )
@@ -1829,13 +1846,13 @@ function withModEventObservations(
 }
 
 /**
- * The binary observations with each mods render site or element added as an
- * observation of `type`. As for methods and events, a documented one keeps no binary
- * removal.
+ * The binary observations with each mods render site or element, or each hook event,
+ * added as an observation of `type`. As for methods and events, a documented one keeps
+ * no binary removal.
  */
 function withTypedModObservations(
   binary: BinaryObservations,
-  type: 'mod_render_site' | 'mod_element',
+  type: 'mod_render_site' | 'mod_element' | 'hook_event',
   observations: readonly ModObservation[] | undefined,
   documented: ReadonlySet<string>
 ): BinaryObservations {
@@ -2007,6 +2024,9 @@ const modElementObservationsPath = (): string =>
 const modRenderSiteObservationsPath = (): string =>
   process.env.CLAUSTODIAN_MOD_RENDER_SITE_OBSERVATIONS_PATH ??
   'data/mod-render-site-observations.json';
+/** The committed hook event observations, with the same test seam. */
+const hookEventObservationsPath = (): string =>
+  process.env.CLAUSTODIAN_HOOK_EVENT_OBSERVATIONS_PATH ?? 'data/hook-event-observations.json';
 /** The committed mod event observations, with the same test seam. */
 const modEventObservationsPath = (): string =>
   process.env.CLAUSTODIAN_MOD_EVENT_OBSERVATIONS_PATH ?? 'data/mod-event-observations.json';
@@ -2138,6 +2158,18 @@ export function modElementRegressionRefusal(
     { path: modElementObservationsPath(), type: 'mod_element', flag: '--mod-elements' },
     elements,
     priorHadElements
+  );
+}
+
+/** The hook_event case of observationRegressionRefusal. */
+export function hookEventRegressionRefusal(
+  events: { present: boolean; observations: readonly ModObservation[] },
+  priorHadEvents: boolean
+): string | null {
+  return observationRegressionRefusal(
+    { path: hookEventObservationsPath(), type: 'hook_event', flag: '--hook-events' },
+    events,
+    priorHadEvents
   );
 }
 
@@ -2296,6 +2328,12 @@ export async function main(): Promise<number> {
     await priorDatasetHasRecordsOfType(priorPath, 'mod_element')
   );
   if (modElementRefusal) throw new Error(modElementRefusal);
+  const hookEvents = await loadModObservations(hookEventObservationsPath(), '--hook-events');
+  const hookEventRefusal = hookEventRegressionRefusal(
+    hookEvents,
+    await priorDatasetHasRecordsOfType(priorPath, 'hook_event')
+  );
+  if (hookEventRefusal) throw new Error(hookEventRefusal);
 
   const snapshots = buildEnrichedSnapshots(
     blocks,
@@ -2307,7 +2345,8 @@ export async function main(): Promise<number> {
     mods.present ? mods.observations : undefined,
     modEvents.present ? modEvents.observations : undefined,
     modRenderSites.present ? modRenderSites.observations : undefined,
-    modElements.present ? modElements.observations : undefined
+    modElements.present ? modElements.observations : undefined,
+    hookEvents.present ? hookEvents.observations : undefined
   );
   const index = buildIndex(snapshots);
 

@@ -19,11 +19,11 @@ A record whose accuracy depends on non-public material will be rejected. This po
 
 ## The three provenance lanes
 
-| Lane      | `provenance` | Trust                     | Merge policy                                                                                                                                                                                                                                                                                                                 |
-| --------- | ------------ | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Changelog | `changelog`  | `confidence: high`        | Authoritative — bot PRs are auto-mergeable once CI passes.                                                                                                                                                                                                                                                                   |
-| Docs      | `docs`       | `high` / `medium`         | Official docs pages; supply authoritative descriptions and, via a doc `min-version`, an anchored `first_seen`. Absent a min-version, `first_seen` is an estimate (`first_seen_estimated`, `confidence: medium`).                                                                                                             |
-| Binary    | `binary`     | `medium` / `high` / `low` | Lands as `status: needs_review` at `confidence: medium`; a human must confirm before it flips to `active` (and to `high`). **Except `control_message` and the `mod_*` types**, which land `active` with no human confirmation; `control_message` grades `confidence` by the rule in `schema/symbol.schema.json` — see below. |
+| Lane      | `provenance` | Trust                     | Merge policy                                                                                                                                                                                                                                                                                                                               |
+| --------- | ------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Changelog | `changelog`  | `confidence: high`        | Authoritative — bot PRs are auto-mergeable once CI passes.                                                                                                                                                                                                                                                                                 |
+| Docs      | `docs`       | `high` / `medium`         | Official docs pages; supply authoritative descriptions and, via a doc `min-version`, an anchored `first_seen`. Absent a min-version, `first_seen` is an estimate (`first_seen_estimated`, `confidence: medium`).                                                                                                                           |
+| Binary    | `binary`     | `medium` / `high` / `low` | Lands as `status: needs_review` at `confidence: medium`; a human must confirm before it flips to `active` (and to `high`). **Except `control_message`, the `mod_*` types and `hook_event`**, which land `active` with no human confirmation; `control_message` grades `confidence` by the rule in `schema/symbol.schema.json` — see below. |
 
 `first_seen_estimated: true` marks an upper bound (an incidental changelog mention, or a docs page with no min-version); the binary lane confirms these — and, for `control_message`, produces them: a subtype can be invisible to extraction until its declaration becomes provable, so its date is the version it became visible. That bound does not clear in later versions; the admission signal is read at `first_seen` and stays. Never move a `binary`/`needs_review` record to `active` without confirming the symbol against an official artifact. Keep the lanes distinct.
 
@@ -31,11 +31,13 @@ A record whose accuracy depends on non-public material will be rejected. This po
 
 **Why `mod_method` is exempt too.** The mod lane reads each method's name as a key of the mods API dispatch table, by AST, and refuses a release that has no such table or two of them. Existence is established by the artifact in the same way.
 
-**Why `mod_event` is exempt too.** The mod lane reads each event as a string literal of the one array that lists every event the hooks engine accepts, by AST. It refuses a release that has no such array, two of them, or an element it cannot read.
+**Why `mod_event` is exempt too.** The mod lane reads each event as a string literal of the one array that lists every event a mod can pass to `on()`, by AST. It refuses a release that has no such array, two of them, or an element it cannot read.
 
 **Why `mod_render_site` is exempt too.** The mod lane reads each site from the render-site enum the bundle describes as the list of components a mod may draw, and from the `useRenderInput` calls that draw them, by AST. It refuses a release from 2.1.285 on that has no such enum, and any element or argument it cannot read.
 
 **Why `mod_element` is exempt too.** The mod lane reads each element from the one object that lists the elements each app can draw, by AST. It refuses a release that has no such object, two of them, or a name it cannot read.
+
+**Why `hook_event` is exempt too.** The hook lane reads each event as a string literal of the one array that lists every event the `hooks` setting accepts, by AST. It refuses a release from 1.0.23 on that has no such array, two full-size copies that disagree, or an event named beside `PreToolUse` in another array but missing from the list.
 
 ## Data contract
 
