@@ -136,18 +136,6 @@
       "category": "cli-internal"
     },
     {
-      "symbol": "--delete",
-      "type": "cli_flag",
-      "first_seen": "1.0.89",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
-    },
-    {
       "symbol": "--disallowed-tools",
       "type": "cli_flag",
       "first_seen": "1.0.86",
