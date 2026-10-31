@@ -26,6 +26,14 @@ describe('resolveVariableSkills', () => {
     ]);
   });
 
+  it('skips a built-in workflow, which carries whenToUse and phases', () => {
+    const src =
+      'function VG(H,$){w.push({source:"built-in",...$,script:H})}' +
+      'var te7="autopilot",ee7="An end-to-end task runner";' +
+      'VG(`script`,{name:te7,description:ee7,whenToUse:"w",phases:[{title:"Plan"}]});';
+    expect(skills(src)).toEqual([]);
+  });
+
   it('needs the menuDescription or whenToUse marker', () => {
     expect(skills('var a="crmsh";x({name:a,aliases:["crm"],keywords:1})')).toEqual([]);
     expect(skills('var a="dream";x({name:a,whenToUse:"When idle"})')).toEqual([
