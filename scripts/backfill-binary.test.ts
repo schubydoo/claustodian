@@ -223,6 +223,33 @@ describe('distillObservations', () => {
     expect(removedIn(history('child-env', true))).toBe('2.0.3');
   });
 
+  it('stops the run when a scope ends while the flag keeps other scopes', () => {
+    const file = (
+      version: string,
+      scopes?: string[],
+      evidence = 'argv-switch'
+    ): BinaryCacheFile => ({
+      version,
+      symbols: [{ symbol: '--port', type: 'cli_flag', evidence, ...(scopes ? { scopes } : {}) }],
+    });
+    const lost = [file('2.1.300', ['runner', 'runner orchestrator']), file('2.1.301', ['runner'])];
+    expect(() => distillObservations(lost)).toThrow(
+      /--port has scope "runner orchestrator" until 2\.1\.300, but 2\.1\.301/
+    );
+    // A later release that proves no scope at all is not a loss.
+    const unproven = [file('2.1.300', ['runner', 'runner orchestrator']), file('2.1.301')];
+    expect(() => distillObservations(unproven)).not.toThrow();
+    // A scope that comes back, or every scope still present, is not a loss either.
+    const steady = [
+      file('2.1.300', ['runner']),
+      file('2.1.301', ['runner', 'runner orchestrator']),
+    ];
+    expect(() => distillObservations(steady)).not.toThrow();
+    // A flag with strong evidence publishes top-level, so its scopes do not apply.
+    const strong = [...lost, file('2.1.302', undefined, 'registration')];
+    expect(() => distillObservations(strong)).not.toThrow();
+  });
+
   it('marks a symbol switch_case_only when every version proved it that way', () => {
     const files = [
       evFile('2.1.223', '--health-port', 'argv-switch'),
@@ -283,7 +310,12 @@ describe('distillObservations', () => {
             symbol: '--api-url',
             type: 'cli_flag',
             evidence: 'argv-switch',
-            scopes: ['self-hosted-runner', 'self-hosted-runner decode-token'],
+            // The 2.1.224 scope stays: a scope that ends stops the run (see below).
+            scopes: [
+              'self-hosted-runner',
+              'self-hosted-runner decode-token',
+              'self-hosted-runner orchestrator',
+            ],
           },
         ],
       },
