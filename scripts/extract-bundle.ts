@@ -104,19 +104,24 @@ const COMMAND_BACK = 700;
  *     out of window range entirely. See those two constants for why the spec must
  *     match end to end.
  *   - `process.argv` membership: `.includes`/`.indexOf` (optionally after `.slice(n)`);
- *   - args-array predicate: `.find`/`.some`/`.filter((o)=>o==="--flag" …)`, including
- *     `||`/`&&`-chained comparisons in the same predicate (e.g.
- *     `t.slice(1).find((o)=>o==="--enabled"||o==="--disabled")`).
  *   - switch-case dispatch: `case"--flag":` in a hand-rolled argv parser — matched
  *     separately (FLAG_SWITCH_CASE), see that constant.
  * All are self-referential — a subprocess/browser flag never appears this way.
  * Each branch requires the flag to be *inside* the check, not merely near it:
  * an unrelated `process.argv.slice(2)` next to a `spawn(g,["--x"])` must not
  * count, and a foreign flag array literal (`new RegExp(["--write","--fix"])`)
- * has no membership call or `===` comparison, so it is correctly ignored.
+ * has no membership call, so it is correctly ignored.
+ *
+ * An args-array predicate (`.some((o)=>o==="--flag")`) is NOT evidence, although
+ * Claude Code checks its own argv that way too (`t.find((m)=>m==="--bg"…)`). The
+ * same shape checks the arguments of shell commands that Claude Code analyzes:
+ * `tr --delete`, `ps --forest`, `sudo --shell`, `rm --recursive`, `pyright --watch`.
+ * The text cannot tell whose arguments an array holds, and that branch published
+ * about a dozen such flags. A real flag it was the only proof for (`--routine`)
+ * waits for a stronger rule rather than shipping beside the phantoms.
  */
 const FLAG_OWN_EVIDENCE =
-  /\.(?:option|addOption)\([^)]{0,85}$|process\.argv(?:\.slice\(\s*\d*\s*\))?\.(?:includes|indexOf)\(\s*["'`]$|\.(?:find|some|filter)\([\s\S]{0,80}?\b\w+\s*===?\s*["'`]$/;
+  /\.(?:option|addOption)\([^)]{0,85}$|process\.argv(?:\.slice\(\s*\d*\s*\))?\.(?:includes|indexOf)\(\s*["'`]$/;
 
 /**
  * A `case"--flag":` label — Claude Code dispatching on its own already-parsed argv
@@ -327,18 +332,44 @@ export function extractEnvVars(src: string): Map<string, string> {
  *
  * Deliberately NOT the publication predicate, which is wider. See
  * isAccessorEvidenceEnv for why NEEDS_REVIEW_ENV cannot serve as evidence here.
+ *
+ * THE MAP MUST ALSO BE AN ENV MAP. The getter shape is the export map of any
+ * bundled module (`Tr(x,{NAME:()=>ref,…})`), and the real env map is one of them,
+ * so the shape cannot tell them apart. What it holds can. An entry counts only when
+ * another key of the same object is in `proven`, the names that a read already
+ * proves in this release. The env map is full of such names (`DISABLE_TELEMETRY`,
+ * `CLAUDE_CODE_USE_BEDROCK`); the OAuth scope constants, the agents-md
+ * `CLAUDE_NAMES` table and the skill modules hold none, and every name the
+ * ungated rule ever found in the archive came from one of those.
  */
-export function extractAccessorEnvVars(src: string): Map<string, string> {
+export function extractAccessorEnvVars(
+  src: string,
+  proven: ReadonlySet<string>
+): Map<string, string> {
   const out = new Map<string, string>(); // symbol -> category
+  const envMap = new Map<number, boolean>(); // object start -> holds a proven name
   for (const m of src.matchAll(ENV_ACCESSOR)) {
     const name = m[1];
     if (!name || SYMBOL_DENYLIST.has(name)) continue;
     const category = categorize(name, 'env_var');
     if (!isAccessorEvidenceEnv(name, category)) continue;
-    out.set(name, category);
+    // The match starts on the `{` or `,` before the key; scan from just after it.
+    const at = (m.index as number) + 1;
+    const open = objectOpenFrom(src, at, at - ACCESSOR_MAP_SPAN);
+    let isEnvMap = envMap.get(open);
+    if (isEnvMap === undefined) {
+      // From the brace itself, so the first key keeps the `{` the pattern needs.
+      const object = src.slice(open - 1, objectCloseFrom(src, open, open + ACCESSOR_MAP_SPAN));
+      isEnvMap = [...object.matchAll(ENV_ACCESSOR)].some((k) => proven.has(k[1] as string));
+      envMap.set(open, isEnvMap);
+    }
+    if (isEnvMap) out.set(name, category);
   }
   return out;
 }
+
+/** How far around an accessor entry to look for its map's braces: the 2.1.314 env map is ~13 KB. */
+const ACCESSOR_MAP_SPAN = 40_000;
 
 /**
  * From an opening bracket at `open`, the index of its match — tracking (), [], {}
@@ -1086,12 +1117,31 @@ export function extractNameReaderEnvVars(chunks: readonly string[]): Map<string,
 }
 
 /**
+ * Where each chunk sits in the flat text, in order. Every chunk is a slice of the
+ * same artifact, so each one is found after the one before it. A chunk that is not
+ * found means the two views disagree, and that throws rather than guessing which
+ * text is code. Without chunks, the whole text is one range.
+ */
+function chunkRanges(src: string, chunks: readonly string[] | undefined): [number, number][] {
+  if (!chunks) return [[0, src.length]];
+  const ranges: [number, number][] = [];
+  let from = 0;
+  for (const chunk of chunks) {
+    const at = src.indexOf(chunk, from);
+    if (at < 0) throw new Error('extract-bundle: a chunk is not a slice of the artifact text');
+    ranges.push([at, at + chunk.length]);
+    from = at + chunk.length;
+  }
+  return ranges;
+}
+
+/**
  * Flags with positive own-evidence. Scans every `--flag` occurrence and keeps a
  * flag the first time an occurrence carries registration or argv evidence in the
  * preceding window — so a flag that appears once as a subprocess arg and once in
  * `.option(...)` is still (correctly) kept.
  */
-export function extractFlags(src: string): Map<string, Evidence> {
+export function extractFlags(src: string, chunks?: readonly string[]): Map<string, Evidence> {
   const out = new Map<string, Evidence>();
   // Option constructors first: a shared factory moves the `.addOption(` call away
   // from the spec, so the look-back below cannot see it (the 2.1.84 `--cowork`
@@ -1104,9 +1154,16 @@ export function extractFlags(src: string): Map<string, Evidence> {
       if (FLAG_GRAMMAR.test(flag)) out.set(flag, 'registration');
     }
   }
+  // The look-back counts only inside the JavaScript chunks. A compiled release also
+  // embeds files that are not Claude Code's code, such as a skill's helper script with
+  // its own `process.argv.includes('--seq-floor')`. The scan stays over the flat text,
+  // in its order, so the first occurrence and its label are what they were.
+  const ranges = chunkRanges(src, chunks);
+  const inChunk = (at: number) => ranges.some(([from, to]) => at >= from && at < to);
   for (const m of src.matchAll(FLAG_TOKEN)) {
     const flag = m[0];
     if (!FLAG_GRAMMAR.test(flag) || out.has(flag) || m.index === undefined) continue;
+    if (!inChunk(m.index)) continue;
     const before = src.slice(Math.max(0, m.index - FLAG_EVIDENCE_WINDOW), m.index);
     if (!FLAG_OWN_EVIDENCE.test(before)) continue;
     out.set(flag, /\.(?:option|addOption)\(/.test(before) ? 'registration' : 'argv');
@@ -1379,7 +1436,7 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
   }
   // Accessor-map getters fill in first-party env vars CC never reads inline, for
   // the eras and entries the registry does not cover.
-  const accessor = extractAccessorEnvVars(src);
+  const accessor = extractAccessorEnvVars(src, new Set([...envReads.keys(), ...registry.keys()]));
   for (const [symbol, category] of accessor) {
     if (envReads.has(symbol) || registry.has(symbol)) continue;
     symbols.push({ symbol, type: 'env_var', category, evidence: 'accessor-map' });
@@ -1399,7 +1456,7 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
     if (paramReads.has(symbol)) continue;
     symbols.push({ symbol, type: 'env_var', category, evidence: 'process-env' });
   }
-  const flags = extractFlags(src);
+  const flags = extractFlags(src, scopeChunks);
   const flagDescriptions = extractFlagDescriptions(src, new Set(flags.keys()));
   // Scope only attaches to `argv-switch` evidence. The stronger paths are already
   // top-level or already curated, and a flag they proved must not be narrowed by a

@@ -20,6 +20,16 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ### Fixed
 
+- **Fewer phantom binary records.** Two binary rules published names that were never
+  Claude Code flags or env vars. The accessor-map rule read the export maps of bundled
+  modules, so constants such as `CLAUDE_AI_OAUTH_SCOPES` and `CLAUDE_NAMES` became env
+  vars. It now needs another key of the same map to be a proven env var. The argv rule
+  read argument checks of shell commands that Claude Code analyzes, such as
+  `rm --recursive` and `ps --forest`, and of embedded helper scripts. Those no longer
+  count. From the next binary re-extract, these records leave the dataset.
+  `--routine` loses its only binary evidence, and the `/plugin list` filters
+  `--enabled` and `--disabled` are no longer CLI flags.
+
 - **Binary-only symbols that left after 2.1.160 now get a `removed_in`.** Before, the
   binary lane inferred a removal only for a symbol last seen before 2.1.160, so a
   symbol that left later stayed current forever. Now a removal needs proof: the name

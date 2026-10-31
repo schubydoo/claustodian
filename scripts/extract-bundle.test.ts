@@ -146,8 +146,18 @@ describe('extractEnvVars', () => {
 });
 
 describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
+  // Each map below also holds PROVEN_ENV, a name a read proves, so it is an env map.
+  // Each test source has one map, so the key goes in after its one opening brace.
+  const proven = new Set(['PROVEN_ENV']);
+  const acc = (src: string) => {
+    const open = src.indexOf('{') + 1;
+    return extractAccessorEnvVars(
+      `${src.slice(0, open)}PROVEN_ENV:()=>p,${src.slice(open)}`,
+      proven
+    );
+  };
   it('captures claude-code NAME:()=> getter entries', () => {
-    const env = extractAccessorEnvVars('let E={CLAUDE_CODE_FOO:()=>x,ANTHROPIC_BAR:()=>y};');
+    const env = acc('let E={CLAUDE_CODE_FOO:()=>x,ANTHROPIC_BAR:()=>y};');
     expect(env.get('CLAUDE_CODE_FOO')).toBe('claude-code');
     expect(env.get('ANTHROPIC_BAR')).toBe('claude-code');
   });
@@ -159,7 +169,7 @@ describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
     // removal — EMBEDDED_SEARCH_TOOLS, ENABLE_LSP_TOOL and
     // ENABLE_SESSION_PERSISTENCE all carried removed_in while sitting in the tip
     // binary as `NAME:()=>ref`.
-    const env = extractAccessorEnvVars('{EMBEDDED_SEARCH_TOOLS:()=>a,ENABLE_LSP_TOOL:()=>b}');
+    const env = acc('{EMBEDDED_SEARCH_TOOLS:()=>a,ENABLE_LSP_TOOL:()=>b}');
     expect(env.has('EMBEDDED_SEARCH_TOOLS')).toBe(true);
     expect(env.has('ENABLE_LSP_TOOL')).toBe(true);
   });
@@ -169,7 +179,7 @@ describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
     // evidence that a same-named getter key is an env var rather than one of the
     // constants that make up ~43% of the map. These still publish when the direct
     // `process.env.X` path proves them, which is the signal the audit was over.
-    const env = extractAccessorEnvVars('{CLAUBBIT:()=>1,LOCAL_BRIDGE:()=>2,BAT_THEME:()=>3}');
+    const env = acc('{CLAUBBIT:()=>1,LOCAL_BRIDGE:()=>2,BAT_THEME:()=>3}');
     expect(env.size).toBe(0);
   });
 
@@ -177,9 +187,7 @@ describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
     // The accessor gate answers "is this an env var at all"; publication answers
     // "is this env var CC's own". The first must never be the looser of the two.
     const admitted = [
-      ...extractAccessorEnvVars(
-        '{EMBEDDED_SEARCH_TOOLS:()=>a,NUMBER_FORMAT_RANGES:()=>b,CLAUBBIT:()=>c}'
-      ).entries(),
+      ...acc('{EMBEDDED_SEARCH_TOOLS:()=>a,NUMBER_FORMAT_RANGES:()=>b,CLAUBBIT:()=>c}').entries(),
     ];
     for (const [name, category] of admitted)
       expect(isPublishableBinaryEnv(name, category)).toBe(true);
@@ -194,19 +202,17 @@ describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
     // the claude-code gate must exclude every one of them.
     // None of these are on an audited list, so widening the gate must not admit
     // them: the map is ~43% non-env constants.
-    const env = extractAccessorEnvVars(
-      '{NEVER:()=>0,BROWSER_TOOLS:()=>t,NODE_OPTIONS:()=>o,AWS_REGION:()=>r}'
-    );
+    const env = acc('{NEVER:()=>0,BROWSER_TOOLS:()=>t,NODE_OPTIONS:()=>o,AWS_REGION:()=>r}');
     expect(env.size).toBe(0);
   });
 
   it('still applies the denylist', () => {
-    expect(extractAccessorEnvVars('{JSON:()=>0,CLAUDE_REAL:()=>1}').has('JSON')).toBe(false);
+    expect(acc('{JSON:()=>0,CLAUDE_REAL:()=>1}').has('JSON')).toBe(false);
   });
 
   it('anchors to object-key position, not mid-identifier', () => {
-    expect(extractAccessorEnvVars('{a:1,CLAUDE_CODE_X:()=>1}').has('CLAUDE_CODE_X')).toBe(true);
-    expect(extractAccessorEnvVars('{myCLAUDE_CODE_Y:()=>1}').has('CLAUDE_CODE_Y')).toBe(false);
+    expect(acc('{a:1,CLAUDE_CODE_X:()=>1}').has('CLAUDE_CODE_X')).toBe(true);
+    expect(acc('{myCLAUDE_CODE_Y:()=>1}').has('CLAUDE_CODE_Y')).toBe(false);
   });
 
   it('tags accessor-map-only vars in the bundle; a direct read wins and is not duplicated', () => {
@@ -216,6 +222,22 @@ describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
     expect(syms.find((x) => x.symbol === 'CLAUDE_CODE_READ')?.evidence).toBe('process-env');
     expect(syms.find((x) => x.symbol === 'CLAUDE_CODE_GETTER_ONLY')?.evidence).toBe('accessor-map');
     expect(syms.filter((x) => x.symbol === 'CLAUDE_CODE_READ')).toHaveLength(1);
+  });
+
+  it('admits nothing from a map that holds no proven name', () => {
+    // A module export map (`Tr(x,{…})`) has the env map's shape; its keys are constants.
+    const src =
+      'Tr(a,{CLAUDE_AI_OAUTH_SCOPES:()=>x,CLAUDE_AI_INFERENCE_SCOPE:()=>y});' +
+      'Tr(b,{CLAUDE_CODE_USE_BEDROCK:()=>z,CLAUDE_CODE_NEW_TOGGLE:()=>w});';
+    const env = extractAccessorEnvVars(src, new Set(['CLAUDE_CODE_USE_BEDROCK']));
+    expect([...env.keys()]).toEqual(['CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_NEW_TOGGLE']);
+  });
+
+  it('reads the map a key sits in, not a neighbouring or nested one', () => {
+    const src = '{CLAUDE_PROVEN:()=>a,inner:{CLAUDE_NESTED:()=>b}};{CLAUDE_ALONE:()=>c}';
+    expect([...extractAccessorEnvVars(src, new Set(['CLAUDE_PROVEN'])).keys()]).toEqual([
+      'CLAUDE_PROVEN',
+    ]);
   });
 });
 
@@ -235,12 +257,23 @@ describe('extractFlags — positive evidence only', () => {
     expect(flags.get('--verbose')).toBe('argv');
   });
 
-  it('includes flags checked via a .find/.some/.filter args predicate (incl. ||-chained)', () => {
-    // the exact minified shape from the bundle for `claude mcp ls --enabled/--disabled`
-    const src = 'let n=t.slice(1).find((o)=>o==="--enabled"||o==="--disabled");';
-    const flags = extractFlags(src);
-    expect(flags.get('--enabled')).toBe('argv');
-    expect(flags.get('--disabled')).toBe('argv');
+  it('does not treat an args-array predicate as evidence', () => {
+    // The same shape checks a shell command's arguments, not Claude Code's own argv:
+    // the `/plugin list` filter and the `rm` delete check from the bundle.
+    const src =
+      'let n=t.slice(1).find((o)=>o==="--enabled"||o==="--disabled");' +
+      'let y=s.some((v)=>v==="--recursive"||/^-[a-zA-Z]*[rR]/.test(v));';
+    expect([...extractFlags(src).keys()]).toEqual([]);
+  });
+
+  it('reads argv evidence only inside the JavaScript chunks', () => {
+    // A compiled release also embeds a skill's helper script, outside every chunk.
+    const code = 'if(process.argv.includes("--print"))x();';
+    const script = "const f = process.argv.includes('--seq-floor')";
+    const src = `${code}\n${script}`;
+    expect([...extractFlags(src).keys()].sort()).toEqual(['--print', '--seq-floor']);
+    expect([...extractFlags(src, [code]).keys()]).toEqual(['--print']);
+    expect(() => extractFlags(src, ['not in the text'])).toThrow(/not a slice/);
   });
 
   it('does not treat a foreign flag array/regex literal as own-evidence', () => {
