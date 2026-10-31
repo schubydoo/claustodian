@@ -36,6 +36,7 @@ import {
   parseChangelog,
   uncorroboratedBy,
   hookEventRegressionRefusal,
+  modelRegressionRefusal,
 } from './scrape-changelog.js';
 import type { DocsIndex } from './fetch-docs.js';
 import type { SymbolRecord } from './scrape-changelog.js';
@@ -3076,6 +3077,75 @@ describe('hook_event records', () => {
       /hook-event-observations\.json is missing.*--hook-events/
     );
     expect(hookEventRegressionRefusal({ present: false, observations: [] }, false)).toBeNull();
+  });
+});
+
+describe('model records', () => {
+  const docs: DocsIndex = { $generated_by: 'scripts/fetch-docs.ts', source_pages: [], symbols: [] };
+  const binary: BinaryObservations = {
+    $generated_by: 'scripts/backfill-binary.ts',
+    source: 'binary',
+    note: '',
+    observedVersions: ['0.2.9', '2.1.196', '2.1.300'],
+    symbols: [],
+  };
+  const blocks = parseChangelog(
+    '## 2.1.300\n\n- Fixed a crash\n\n## 2.1.196\n\n- Fixed a crash\n\n## 0.2.9\n\n- Fixed another crash\n'
+  );
+  const obs = (symbol: string, removed_in: string | null = null) => ({
+    symbol,
+    first_seen: '0.2.9',
+    last_seen: removed_in === null ? '2.1.300' : '0.2.9',
+    removed_in,
+  });
+  const run = (models?: ReturnType<typeof obs>[]) =>
+    buildEnrichedSnapshots(
+      blocks,
+      docs,
+      binary,
+      undefined,
+      { 'model:claude-3-7-sonnet-20250219': [{ from: '2.1.196', description: 'Sonnet 3.7' }] },
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      models
+    );
+  const at = (snapshots: ReturnType<typeof run>, version: string) =>
+    (snapshots.find((s) => s.version === version)?.symbols ?? []).filter((r) => r.type === 'model');
+
+  it('publishes a binary-only model active, in category models, named from its registry era', () => {
+    const snapshots = run([obs('claude-3-7-sonnet-20250219')]);
+    expect(at(snapshots, '2.1.300')[0]).toMatchObject({
+      symbol: 'claude-3-7-sonnet-20250219',
+      first_seen: '0.2.9',
+      provenance: 'binary',
+      status: 'active',
+      category: 'models',
+      description: 'Sonnet 3.7',
+    });
+    // Before the registry there is no display name to cite.
+    expect(at(snapshots, '0.2.9')[0]?.description).toBe('');
+  });
+
+  it('removes a model where the CLI stops naming it', () => {
+    const snapshots = run([obs('claude-3-7-sonnet-20250219'), obs('claude-gone', '2.1.196')]);
+    expect(at(snapshots, '0.2.9').map((r) => r.symbol)).toContain('claude-gone');
+    expect(at(snapshots, '2.1.196').map((r) => r.symbol)).not.toContain('claude-gone');
+  });
+
+  it('publishes no model until its observation file exists', () => {
+    expect(at(run(), '2.1.300')).toEqual([]);
+    expect(at(run([]), '2.1.300')).toEqual([]);
+  });
+
+  it('refuses a scrape that would drop every published model', () => {
+    expect(modelRegressionRefusal({ present: false, observations: [] }, true)).toMatch(
+      /model-observations\.json is missing.*--models/
+    );
+    expect(modelRegressionRefusal({ present: false, observations: [] }, false)).toBeNull();
   });
 });
 

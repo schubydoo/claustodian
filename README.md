@@ -16,7 +16,7 @@
 [![Code: Apache-2.0](https://img.shields.io/badge/code-Apache--2.0-blue.svg)](LICENSE)
 [![Data: CC BY 4.0](https://img.shields.io/badge/data-CC--BY--4.0-blue.svg)](LICENSE-DATA)
 
-A static, versioned, machine-parseable record of every Claude Code CLI flag, environment variable, command, config key, stream-json control message, mods API method, mods event, mods render site, mods element and hook event — each tagged with the version it **first appeared** in (and, when known, when it was removed). Answer _"does feature X exist in Claude Code version Y?"_ by fetching a file, in any language, with no scraping.
+A static, versioned, machine-parseable record of every Claude Code CLI flag, environment variable, command, config key, stream-json control message, mods API method, mods event, mods render site, mods element, hook event and model — each tagged with the version it **first appeared** in (and, when known, when it was removed). Answer _"does feature X exist in Claude Code version Y?"_ by fetching a file, in any language, with no scraping.
 
 ## Why
 
@@ -92,7 +92,7 @@ Every record carries a `provenance`:
 
 - **`changelog`** — the official `CHANGELOG.md`. Authoritative for existence.
 - **`docs`** — the official documentation pages (`code.claude.com/docs`). Supplies the authoritative description and, where a page states a `min-version`, an anchored `first_seen`.
-- **`binary`** — published release binaries, by positive-evidence detection: CLI flags (commander registration or `argv` checks), env vars (the typed registry), built-in _and_ skill/menu commands, `settings.json` keys read out of the embedded schema, stream-json **control messages** (AST of the control protocol), **mods API methods** (AST of the mods API dispatch table), **mods events** (AST of the mods event list), **mods render sites** (AST of the render-site enum and `useRenderInput` calls), **mods elements** (AST of the per-app element lists), and **hook events** (AST of the hook event list). Binary flag, env-var, command and settings-key finds land as `status: needs_review` until a first-party description confirms them.
+- **`binary`** — published release binaries, by positive-evidence detection: CLI flags (commander registration or `argv` checks), env vars (the typed registry), built-in _and_ skill/menu commands, `settings.json` keys read out of the embedded schema, stream-json **control messages** (AST of the control protocol), **mods API methods** (AST of the mods API dispatch table), **mods events** (AST of the mods event list), **mods render sites** (AST of the render-site enum and `useRenderInput` calls), **mods elements** (AST of the per-app element lists), **hook events** (AST of the hook event list), and **models** (AST of the model registry and, before it, the per-model provider objects). Binary flag, env-var, command and settings-key finds land as `status: needs_review` until a first-party description confirms them.
 
 > **Coverage limitation — plugin commands.** Commands supplied by the **plugin/marketplace** subsystem register outside the CLI binary, so the binary lane cannot date them at all. Their absence is **not** evidence they never existed. Skill-provided commands (`/schedule`, `/loop`) _are_ captured.
 
@@ -104,7 +104,7 @@ Three lanes feed the dataset today:
 
 - **changelog lane** — schema + validator, the changelog scraper, and Pages publishing.
 - **docs lane** — official docs descriptions and anchored `first_seen` from `min-version` annotations.
-- **binary lane** — undocumented-symbol coverage from release binaries (flags, env vars, built-in commands, `settings.json` keys read out of the embedded schema, stream-json control messages, mods API methods, mods events, mods render sites, mods elements, and hook events), plus `first_seen` corrections and conservative cliff-aware removal detection.
+- **binary lane** — undocumented-symbol coverage from release binaries (flags, env vars, built-in commands, `settings.json` keys read out of the embedded schema, stream-json control messages, mods API methods, mods events, mods render sites, mods elements, hook events, and models), plus `first_seen` corrections and conservative cliff-aware removal detection.
 
 ### Roadmap / backlog
 

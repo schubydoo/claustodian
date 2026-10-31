@@ -30,6 +30,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from '
 import { join } from 'node:path';
 import type { ControlMessageObservation } from './control-lane.js';
 import { extractControlAndModMethods } from './mod-lane.js';
+import type { ModelObservation } from './model-lane.js';
 import { sliceEmbeddedChunks } from './slice-bundle.js';
 import {
   extractBundleSymbols,
@@ -177,6 +178,7 @@ export function buildCacheRecord(
     childEnvVars,
     variableSkills,
     hookEvents,
+    models,
   } = extractControlAndModMethods(chunks, version);
   const symbols = withVariableSkills(withChildEnvVars(readSymbols, childEnvVars), variableSkills);
   return {
@@ -195,6 +197,7 @@ export function buildCacheRecord(
     modRenderSitesListed,
     modElements,
     hookEvents,
+    models,
     textAbsent: textAbsentFor(bundle, version, symbols, watch),
   };
 }
@@ -221,6 +224,8 @@ export interface BinaryCacheRecord {
   modElements: string[];
   /** The hook events this release lists; see hookEventsFrom. */
   hookEvents: string[];
+  /** The models this release names, with display names; see modelsFrom. */
+  models: ModelObservation[];
   /** Earlier-seen names this release neither extracts nor holds as text; see textAbsent. */
   textAbsent: string[];
 }
@@ -320,6 +325,7 @@ const REFUSAL_PREFIXES = [
   'control lane:',
   'mod lane:',
   'hook lane:',
+  'model lane:',
   'slice-bundle:',
   'settings schema:',
   // A release before FIRST_COMPILED_CACHE: refused on every retry, so an

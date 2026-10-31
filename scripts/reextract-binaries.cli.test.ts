@@ -54,6 +54,12 @@ const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 const NO_OBSERVATIONS = join(tmpdir(), 'claustodian-empty-observations.json');
 writeFileSync(NO_OBSERVATIONS, JSON.stringify({ symbols: [] }));
 
+/**
+ * One model provider object. The model lane refuses a release from 0.2.9 on that names no
+ * model, so every fixture bundle the extractor reads carries one.
+ */
+const MODEL = 'var M={firstParty:"claude-3-7-sonnet-20250219",bedrock:"b"};';
+
 /** Writes a compiled `<version>/linux-x64/claude` bundle + a realistic multi-platform
  * SHA256SUMS (so the checksum lookup must skip non-matching lines to find ours). */
 async function writeCompiled(archive: string, version: string, js: string): Promise<void> {
@@ -145,14 +151,14 @@ describe('reextract-binaries readBundleSource', () => {
   it('refuses a bundle with no SHA256SUMS at all', async () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-nosums-'));
     await mkdir(join(root, '1.0.0', 'linux-x64'), { recursive: true });
-    await writeFile(join(root, '1.0.0', 'linux-x64', 'claude'), 'process.env.X;');
+    await writeFile(join(root, '1.0.0', 'linux-x64', 'claude'), 'process.env.X;' + MODEL);
     expect(readBundleSource(root, '1.0.0').kind).toBe('unverified');
   });
 
   it('refuses when SHA256SUMS exists but lists no entry for the bundle', async () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-noentry-'));
     await mkdir(join(root, '1.0.0', 'linux-x64'), { recursive: true });
-    await writeFile(join(root, '1.0.0', 'linux-x64', 'claude'), 'process.env.X;');
+    await writeFile(join(root, '1.0.0', 'linux-x64', 'claude'), 'process.env.X;' + MODEL);
     await writeFile(join(root, '1.0.0', 'SHA256SUMS'), `${sha256('x')}  some-other-file\n`);
     expect(readBundleSource(root, '1.0.0').kind).toBe('unverified');
   });
@@ -161,7 +167,7 @@ describe('reextract-binaries readBundleSource', () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-badtgz-'));
     const pkg = join(root, 'pkg');
     await mkdir(join(pkg, 'package'), { recursive: true });
-    await writeFile(join(pkg, 'package', 'cli.js'), 'process.env.X;');
+    await writeFile(join(pkg, 'package', 'cli.js'), 'process.env.X;' + MODEL);
     await mkdir(join(root, '1.0.0'), { recursive: true });
     const tgz = join(root, '1.0.0', 'bundle.tgz');
     execFileSync('tar', ['czf', tgz, '-C', pkg, 'package/cli.js']);
@@ -225,7 +231,7 @@ describe('reextract-binaries main()', () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-main-'));
     const archive = join(root, 'archive');
     const out = join(root, 'out');
-    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();'); // ok
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();' + MODEL); // ok
     // Valid JS, and carrying a control request: the control lane parses the bundle
     // and refuses a version at or above the dispatch floor that yields nothing, so a
     // fixture for this era has to be a real program rather than a fragment.
@@ -234,6 +240,7 @@ describe('reextract-binaries main()', () => {
       '2.0.0',
       'program.option("--foo <v>","desc");' +
         'var HK=["PreToolUse","PostToolUse"];' +
+        MODEL +
         'function h(e){if(e.request.subtype==="initialize")return 1;return 0}'
     ); // ok
     await mkdir(join(archive, '3.0.0'), { recursive: true }); // no bundle → missing
@@ -297,9 +304,11 @@ describe('reextract-binaries main()', () => {
       'modRenderSitesListed',
       'modElements',
       'hookEvents',
+      'models',
       'textAbsent',
     ]);
     expect(c2control.hookEvents).toEqual(['PostToolUse', 'PreToolUse']);
+    expect(c2control.models).toEqual([{ id: 'claude-3-7-sonnet-20250219' }]);
     expect(existsSync(join(out, '3.0.0.json'))).toBe(false);
     expect(existsSync(join(out, '4.0.0.json'))).toBe(false); // refused, not extracted
     // Those two had their prior cache entries cleared and never rewritten, so the
@@ -321,7 +330,7 @@ describe('reextract-binaries main()', () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-refuse-'));
     const archive = join(root, 'archive');
     const out = join(root, 'out');
-    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();'); // below the floor
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();' + MODEL); // below the floor
     await writeCompiled(archive, '2.0.0', 'this is not parseable javascript {{{'); // refused
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -357,7 +366,7 @@ describe('reextract-binaries main()', () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-crash-'));
     const archive = join(root, 'archive');
     const out = join(root, 'out');
-    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();' + MODEL);
     await mkdir(join(out, '0.9.0.json'), { recursive: true });
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -376,7 +385,7 @@ describe('reextract-binaries main()', () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-marker-'));
     const archive = join(root, 'archive');
     const out = join(root, 'out');
-    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();' + MODEL);
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
     // A prior run left the cache marked; a clean run lowers it. NOTE this does not
@@ -405,7 +414,7 @@ describe('reextract-binaries main()', () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-marker2-'));
     const archive = join(root, 'archive');
     const out = join(root, 'out');
-    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();' + MODEL);
     await writeCompiled(archive, '2.0.0', 'this is not parseable javascript {{{');
     logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -436,7 +445,7 @@ describe('reextract-binaries main()', () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-prune-'));
     const archive = join(root, 'archive');
     const out = join(root, 'out');
-    await writeCompiled(archive, '1.0.0', 'process.env.CLAUDE_CODE_C;');
+    await writeCompiled(archive, '1.0.0', 'process.env.CLAUDE_CODE_C;' + MODEL);
     await mkdir(out, { recursive: true });
     await writeFile(join(out, '9.9.9.json'), '{"stale":1}'); // old version, gone from archive
     await writeFile(join(out, '_verify-report.json'), '{"ok":1}'); // sidecar, keep
@@ -462,7 +471,7 @@ describe('reextract-binaries main()', () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-safeout-'));
     const archive = join(root, 'archive');
     const out = join(root, 'out');
-    await writeCompiled(archive, '1.0.0', 'process.env.X;');
+    await writeCompiled(archive, '1.0.0', 'process.env.X;' + MODEL);
     await mkdir(out, { recursive: true });
     await writeFile(join(out, 'latest.json'), '{"important":1}'); // e.g. a mistyped --out data
     await expect(
@@ -500,7 +509,7 @@ describe('reextract-binaries main()', () => {
     const out = join(root, 'out');
     const pkg = join(root, 'pkg');
     await mkdir(join(pkg, 'package'), { recursive: true });
-    await writeFile(join(pkg, 'package', 'cli.js'), 'process.env.CLAUDE_CODE_TGZ;');
+    await writeFile(join(pkg, 'package', 'cli.js'), `process.env.CLAUDE_CODE_TGZ;${MODEL}`);
     await mkdir(join(archive, '1.0.0'), { recursive: true });
     const tgz = join(archive, '1.0.0', 'bundle.tgz');
     execFileSync('tar', ['czf', tgz, '-C', pkg, 'package/cli.js']);
@@ -550,9 +559,9 @@ describe('reextract-binaries parallel jobs', () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-jobs-'));
     const archive = join(root, 'archive');
     for (const [v, js] of [
-      ['1.0.0', 'if(process.env.CLAUDE_CODE_A)x();'],
-      ['1.0.1', 'if(process.env.CLAUDE_CODE_B)x();'],
-      ['1.0.2', 'program.option("--bar <v>","desc");'],
+      ['1.0.0', 'if(process.env.CLAUDE_CODE_A)x();' + MODEL],
+      ['1.0.1', 'if(process.env.CLAUDE_CODE_B)x();' + MODEL],
+      ['1.0.2', 'program.option("--bar <v>","desc");' + MODEL],
     ] as const)
       await writeCompiled(archive, v, js);
     await mkdir(join(archive, '1.0.3'), { recursive: true }); // missing
@@ -601,7 +610,7 @@ describe('reextract-binaries parallel jobs', () => {
   it("reports a task's outcome, or its unexpected error, by index", async () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-task-'));
     const archive = join(root, 'archive');
-    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();' + MODEL);
     const out = join(root, 'out');
     await mkdir(out);
     expect(
@@ -656,7 +665,7 @@ describe('reextract-binaries parallel jobs', () => {
   it('stops the run when a job hits an unexpected error', async () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-jobs-err-'));
     const archive = join(root, 'archive');
-    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();' + MODEL);
     // An output folder that does not exist makes the job's write throw, an error
     // outside the lanes' refusals, which the pool must surface as a failed run.
     await expect(
@@ -710,8 +719,8 @@ describe('reextract-binaries parallel jobs', () => {
   it('loads the observations and writes their textAbsent proof, with one job or several', async () => {
     root = await mkdtemp(join(tmpdir(), 'claustodian-reextract-watch-'));
     const archive = join(root, 'archive');
-    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();');
-    await writeCompiled(archive, '1.0.1', 'if(process.env.CLAUDE_CODE_A)x();');
+    await writeCompiled(archive, '1.0.0', 'if(process.env.CLAUDE_CODE_A)x();' + MODEL);
+    await writeCompiled(archive, '1.0.1', 'if(process.env.CLAUDE_CODE_A)x();' + MODEL);
     const observations = join(root, 'observations.json');
     await writeFile(
       observations,

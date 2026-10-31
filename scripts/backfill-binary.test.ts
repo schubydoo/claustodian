@@ -11,6 +11,7 @@ import {
   distillDescriptions,
   distillModElementObservations,
   distillHookEventObservations,
+  distillModelObservations,
   MAX_HOOK_EVENT_DROP,
   distillModEventObservations,
   distillModRenderSiteObservations,
@@ -1314,6 +1315,64 @@ describe('distillHookEventObservations', () => {
     await rm(join(cache, '1.0.31.json'));
     expect(await main(['--cache', cache, '--out', out, '--hook-events'])).toBe(0);
     expect(existsSync(join(root, 'hook-event-observations.json'))).toBe(true);
+    logSpy.mockRestore();
+    await rm(root, { recursive: true, force: true });
+  });
+});
+
+describe('distillModelObservations', () => {
+  const md = (version: string, models?: Array<{ id: string; name?: string }>): BinaryCacheFile => ({
+    version,
+    symbols: [],
+    models,
+  });
+
+  it('dates each model by its first-party id', () => {
+    expect(
+      distillModelObservations([
+        md('2.1.170', [{ id: 'claude-mythos-5' }]),
+        md('0.2.9', [{ id: 'claude-3-7-sonnet-20250219' }]),
+        md('2.1.196', [
+          { id: 'claude-3-7-sonnet-20250219', name: 'Sonnet 3.7' },
+          { id: 'claude-mythos-5', name: 'Mythos 5' },
+        ]),
+      ])
+    ).toEqual([
+      {
+        symbol: 'claude-3-7-sonnet-20250219',
+        first_seen: '0.2.9',
+        last_seen: '2.1.196',
+        removed_in: null,
+      },
+      { symbol: 'claude-mythos-5', first_seen: '2.1.170', last_seen: '2.1.196', removed_in: null },
+    ]);
+  });
+
+  it('puts each display name on the description timeline, from the release that has it', () => {
+    const { descriptions } = distillDescriptions([
+      md('2.1.170', [{ id: 'claude-mythos-5' }]),
+      md('2.1.196', [{ id: 'claude-mythos-5', name: 'Mythos 5' }]),
+      md('2.1.200', [{ id: 'claude-mythos-5', name: 'Mythos 5' }]),
+    ]);
+    expect(descriptions['model:claude-mythos-5']).toEqual([
+      { from: '2.1.196', description: 'Mythos 5' },
+    ]);
+  });
+
+  it('refuses --models while a cache entry predates the model lane', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-md-out-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(join(cache, '0.2.9.json'), JSON.stringify(md('0.2.9', [{ id: 'claude-x' }])));
+    await writeFile(join(cache, '0.2.10.json'), JSON.stringify(md('0.2.10')));
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const out = join(root, 'binary-observations.json');
+    expect(await main(['--cache', cache, '--out', out])).toBe(0);
+    expect(existsSync(join(root, 'model-observations.json'))).toBe(false);
+    expect(await main(['--cache', cache, '--out', out, '--models'])).toBe(1);
+    await rm(join(cache, '0.2.10.json'));
+    expect(await main(['--cache', cache, '--out', out, '--models'])).toBe(0);
+    expect(existsSync(join(root, 'model-observations.json'))).toBe(true);
     logSpy.mockRestore();
     await rm(root, { recursive: true, force: true });
   });

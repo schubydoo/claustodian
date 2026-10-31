@@ -88,6 +88,13 @@ const SITE_ENUM = (sites: readonly string[]) =>
 /** A hook event list, which the shared parse reads at every version from 1.0.23. */
 const HOOKS = 'var HK=["PreToolUse","PostToolUse"];';
 
+/** A model registry of ten entries, the fewest the shared parse accepts from 2.1.195. */
+const MODELS = `var MR=[${Array.from(
+  { length: 10 },
+  (_, i) =>
+    `{id:"claude-test-${i}",display_name:"Test ${i}",provider_ids:{first_party:"claude-test-${i}"}}`
+).join(',')}];`;
+
 const CONTROL = [
   `var Ee=(f)=>f,Se=(o)=>o,xt=(s)=>s,fs=(a)=>a;`,
   `var A1=Ee(()=>Se({subtype:xt("initialize")}).describe("Initializes the session."));`,
@@ -228,7 +235,7 @@ describe('extractControlAndModMethods', () => {
       )
     ).toThrow(/^mod lane: .*no mods event list/);
     const both = extractControlAndModMethods(
-      [CONTROL, TABLE, EVENTS, SITE_CALLS(['Spinner']), ELEMENT_LISTS(), HOOKS],
+      [CONTROL, TABLE, EVENTS, SITE_CALLS(['Spinner']), ELEMENT_LISTS(), HOOKS, MODELS],
       MOD_METHOD_FLOOR
     );
     expect(both.controlMessages).not.toEqual([]);
@@ -237,6 +244,7 @@ describe('extractControlAndModMethods', () => {
     expect(both).toMatchObject({ modRenderSites: ['Spinner'], modRenderSitesListed: false });
     expect(both.modElements).toEqual(['Box', 'Button', 'Svg', 'Text']);
     expect(both.hookEvents).toEqual(['PostToolUse', 'PreToolUse']);
+    expect(both.models).toHaveLength(10);
   });
 });
 

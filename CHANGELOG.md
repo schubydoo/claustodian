@@ -41,6 +41,24 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ### Added
 
+- **A `model` symbol type, for the Claude models Claude Code knows.** Each model
+  becomes one record with its first-party API id as its `symbol`, such as
+  `claude-3-7-sonnet-20250219` or `claude-opus-5-5`, and `category: "models"`. The
+  description is the model's display name, such as "Opus 5.5". The records carry no
+  extra fields.
+
+  The binary lane reads two constructs. From 2.1.195 the bundle has a model registry,
+  and each entry gives the first-party id and the display name. Before it, each model
+  has a provider object that gives the first-party id. So models date back to 0.2.9,
+  where `claude-3-7-sonnet-20250219` is the only one. A snapshot before 2.1.195 has no
+  display name to cite, so its model descriptions are empty. The short registry id,
+  such as `claude-sonnet-4-5`, is not the identity: it does not exist before the
+  registry, and a rename of it would read as a removal. No docs page lists model ids,
+  so the binary is the only lane, and a model the CLI stops naming is removed.
+
+  The snapshots carry no `model` record until a separate data PR publishes the binary
+  observations (`data/model-observations.json`).
+
 - **A `hook_event` symbol type, for the events a hook can run on.** The `hooks`
   setting attaches a hook to an event, such as `PreToolUse`, `SessionStart` or
   `Stop`. Each event becomes one record with that name as its `symbol` and
