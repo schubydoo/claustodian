@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.314",
+  "claudeCodeVersion": "2.1.316",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -1041,18 +1041,6 @@
       ]
     },
     {
-      "symbol": "--delete",
-      "type": "cli_flag",
-      "first_seen": "1.0.89",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
-    },
-    {
       "symbol": "--description",
       "type": "cli_flag",
       "first_seen": "2.1.157",
@@ -1097,18 +1085,6 @@
       ]
     },
     {
-      "symbol": "--dir",
-      "type": "cli_flag",
-      "first_seen": "2.1.290",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
-    },
-    {
       "symbol": "--disable-slash-commands",
       "type": "cli_flag",
       "first_seen": "2.0.60",
@@ -1118,19 +1094,6 @@
       "confidence": "high",
       "description": "Disable all skills and commands for this session",
       "description_source": "docs",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
-      "symbol": "--disabled",
-      "type": "cli_flag",
-      "first_seen": "2.1.163",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Added `/plugin list` command to list installed plugins, with `--enabled`/`--disabled` filters",
-      "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -1300,19 +1263,6 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli-internal"
-    },
-    {
-      "symbol": "--enabled",
-      "type": "cli_flag",
-      "first_seen": "2.1.163",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Added `/plugin list` command to list installed plugins, with `--enabled`/`--disabled` filters",
-      "description_source": "changelog",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
     },
     {
       "symbol": "--env",
@@ -1517,18 +1467,6 @@
       ]
     },
     {
-      "symbol": "--forest",
-      "type": "cli_flag",
-      "first_seen": "2.1.290",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
-    },
-    {
       "symbol": "--fork-session",
       "type": "cli_flag",
       "first_seen": "1.0.119",
@@ -1592,6 +1530,19 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--gateway-json",
+      "type": "cli_flag",
+      "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "For a program that shows the Cloud gateway sign-in to a person: writes its questions as JSON lines and reads the answers from stdin",
+      "source_url": null,
+      "category": "cli-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "--git-host-rewrite",
@@ -1933,18 +1884,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--inspect",
-      "type": "cli_flag",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
-    },
-    {
       "symbol": "--interactive",
       "type": "cli_flag",
       "first_seen": "2.1.124",
@@ -2098,18 +2037,6 @@
       ]
     },
     {
-      "symbol": "--local-file",
-      "type": "cli_flag",
-      "first_seen": "2.1.257",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
-    },
-    {
       "symbol": "--lock-to-account",
       "type": "cli_flag",
       "first_seen": "2.1.224",
@@ -2157,18 +2084,6 @@
         "self-hosted-runner",
         "self-hosted-runner orchestrator"
       ]
-    },
-    {
-      "symbol": "--login",
-      "type": "cli_flag",
-      "first_seen": "2.1.290",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
     },
     {
       "symbol": "--maintenance",
@@ -2864,7 +2779,10 @@
       "description": "Shell command the runner runs for every connection to your egress proxy, using its trimmed stdout as the `Proxy-Authorization` header value. Requires `HTTPS_PROXY` or `HTTP_PROXY`, and can't be combined with `--proxy-authorization-file`. See Authenticate to an egress proxy. Requires Claude Code v2.1.238 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--proxy-authorization-file",
@@ -2877,7 +2795,10 @@
       "description": "File the runner reads for every connection to your egress proxy, using its trimmed contents as the `Proxy-Authorization` header value. Use this flag for a token another process rotates in place. Carries the same requirements as `--proxy-authorization-command`, and can't be combined with it. See Authenticate to an egress proxy. Requires Claude Code v2.1.238 or later.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--prune",
@@ -2955,18 +2876,6 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli-internal"
-    },
-    {
-      "symbol": "--recursive",
-      "type": "cli_flag",
-      "first_seen": "2.1.259",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
     },
     {
       "symbol": "--ref",
@@ -3230,18 +3139,6 @@
       "description_source": "binary"
     },
     {
-      "symbol": "--routine",
-      "type": "cli_flag",
-      "first_seen": "2.1.119",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
-    },
-    {
       "symbol": "--runner-declares",
       "type": "cli_flag",
       "first_seen": "2.1.307",
@@ -3445,18 +3342,6 @@
       "category": "cli-internal"
     },
     {
-      "symbol": "--seq-floor",
-      "type": "cli_flag",
-      "first_seen": "2.1.246",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
-    },
-    {
       "symbol": "--server-auto-mode-lists",
       "type": "cli_flag",
       "first_seen": "2.1.295",
@@ -3473,16 +3358,17 @@
       ]
     },
     {
-      "symbol": "--server-option",
+      "symbol": "--session-began-as-copy",
       "type": "cli_flag",
-      "first_seen": "2.1.92",
+      "first_seen": "2.1.315",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "",
+      "description": "Sent by the server. 1 means that the session began as a copy of another, so --resume in print mode does not continue the last turn of the session it was copied from, and does not run a tool call that a hook deferred in it; any other value is ignored. Means the same as CLAUDE_CODE_SESSION_BEGAN_AS_COPY=1; either one is enough.",
       "source_url": null,
-      "category": "cli"
+      "category": "cli-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "--session-id",
@@ -3564,18 +3450,6 @@
       "description": "Path to a settings JSON file or an inline JSON string. Values you set here override the same keys in your `settings.json` files for this session. Keys you omit keep their file-based values. The file must be a regular file no larger than 2 MiB. See settings precedence",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
-      "symbol": "--shell",
-      "type": "cli_flag",
-      "first_seen": "2.1.290",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "cli"
     },
     {
@@ -4007,18 +3881,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--vanilla",
-      "type": "cli_flag",
-      "first_seen": "2.1.275",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
-    },
-    {
       "symbol": "--verbose",
       "type": "cli_flag",
       "first_seen": "0.2.9",
@@ -4059,18 +3921,6 @@
       "description": "Output the version number",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
-      "category": "cli"
-    },
-    {
-      "symbol": "--watch",
-      "type": "cli_flag",
-      "first_seen": "2.1.27",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "cli"
     },
     {
@@ -4273,26 +4123,25 @@
     {
       "symbol": "/artifact-capabilities",
       "type": "command",
-      "first_seen": "2.1.285",
-      "first_seen_estimated": true,
+      "first_seen": "2.1.209",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "**Skill.** Load the reference for the runtime capabilities a published artifact can use, such as calling your connectors or offering a file download, including which ones your account has. Claude normally loads it on its own before building a page that uses one. Available where artifacts are",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
     },
     {
-      "symbol": "/artifact-components",
+      "symbol": "/artifact-design",
       "type": "command",
-      "first_seen": "2.1.232",
+      "first_seen": "2.1.182",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Embed reusable components in an Artifact",
+      "description": "Design guidance for Artifacts",
       "source_url": null,
       "category": "command",
       "description_source": "binary"
@@ -4309,6 +4158,19 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
+    },
+    {
+      "symbol": "/artifact-pr-review",
+      "type": "command",
+      "first_seen": "2.1.213",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Publish a PR review briefing Artifact from a template",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/artifacts",
@@ -4569,6 +4431,19 @@
       "category": "command"
     },
     {
+      "symbol": "/claude-code-docs",
+      "type": "command",
+      "first_seen": "2.1.163",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Answer questions about Claude Code features and settings",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
       "symbol": "/claude-in-chrome",
       "type": "command",
       "first_seen": "2.1.7",
@@ -4620,6 +4495,19 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
+    },
+    {
+      "symbol": "/code-walkthrough",
+      "type": "command",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Generate an interactive walkthrough artifact for code",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/color",
@@ -5337,6 +5225,19 @@
       "category": "command"
     },
     {
+      "symbol": "/memory-types",
+      "type": "command",
+      "first_seen": "2.1.120",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Full reference for the memory type taxonomy — what each type captures, when to save it, how to structure the body, with examples.",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
       "symbol": "/migrate",
       "type": "command",
       "first_seen": "2.1.182",
@@ -5505,7 +5406,7 @@
     {
       "symbol": "/plugin-authoring",
       "type": "command",
-      "first_seen": "2.1.287",
+      "first_seen": "2.1.260",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -5554,6 +5455,19 @@
       "category": "command"
     },
     {
+      "symbol": "/pr",
+      "type": "command",
+      "first_seen": "2.1.229",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Create a pull request",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
       "symbol": "/pr-comments",
       "type": "command",
       "first_seen": "0.2.9",
@@ -5565,6 +5479,19 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
+    },
+    {
+      "symbol": "/pr-explainer",
+      "type": "command",
+      "first_seen": "2.1.198",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Generate a shareable walkthrough artifact for a PR",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/privacy-settings",
@@ -5923,6 +5850,18 @@
       "description": "Analyze the changes on your current branch for security vulnerabilities. Reviews the diff between your branch and origin's default branch, identifying risks like injection, auth issues, and data exposure. Needs an `origin` remote; if the review fails with an `ambiguous argument` error, see the error reference",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/send-to-project",
+      "type": "command",
+      "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "command"
     },
     {
@@ -6441,7 +6380,20 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Sketch on a whiteboard Artifact you can send to Claude",
+      "description": "Pair on a whiteboard artifact — you draw, Claude answers on it",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "/whiteboard-mp",
+      "type": "command",
+      "first_seen": "2.1.251",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Sketch together on a live whiteboard Artifact that Claude draws on too",
       "source_url": null,
       "category": "command",
       "description_source": "binary"
@@ -6449,12 +6401,11 @@
     {
       "symbol": "/workflow-authoring",
       "type": "command",
-      "first_seen": "2.1.251",
-      "first_seen_estimated": true,
+      "first_seen": "2.1.248",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "**Skill.** Load the reference for writing dynamic workflow scripts: the script API, resume behavior, quality patterns, and worked examples. Claude normally loads it on its own before writing a script; run it yourself before editing a saved script by hand. Available when dynamic workflows are enabled, and requires Claude Code v2.1.248 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
@@ -6485,19 +6436,6 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
-    },
-    {
-      "symbol": "/workshop",
-      "type": "command",
-      "first_seen": "2.1.216",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Workshop a document through artifact decisions",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
     },
     {
       "symbol": "$schema",
@@ -8512,6 +8450,19 @@
       "category": "settings"
     },
     {
+      "symbol": "permissions.blockReadsExemptPaths",
+      "type": "config_key",
+      "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "For the program that starts Claude Code: read only from --settings and from settings that program sends while the session runs; ignored in user, project, local and managed settings. Absolute paths, each a folder with all below it or one file, that blockReadsOutsideWorkingDirectories lets through beside the working directories. It allows nothing: an allow rule, the permission mode or the user still decides each read, as with that setting off, and a shell command that hands such a path to a program is still asked about unless a Read allow rule covers it. The paths do not become working directories, so blockWritesOutsideWorkingDirectories refuses writes to them, and they are not told to MCP servers or to the model. Each path counts as written: a link in it is not followed and a pattern is not expanded, so list every spelling that a read may arrive by. Ignored: an entry that starts with ~, has a \"..\" segment or has white space at either end (as written or once normalized), a relative or network path, and the root of a filesystem. Does not change what sandboxed commands may read (sandbox.filesystem.allowRead does).",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
       "symbol": "permissions.blockReadsOutsideWorkingDirectories",
       "type": "config_key",
       "first_seen": "2.1.257",
@@ -8532,7 +8483,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Refuse file-tool writes (Write, Edit, NotebookEdit) outside the working directories in every permission mode; true in any settings source wins. No allow rule lifts it. Files that Claude Code keeps for the session are not refused: its plan files, scratchpad and background job folder, and the auto-memory of this project, unless the CLAUDE_COWORK_MEMORY_PATH_OVERRIDE environment variable or a repository settings file points it elsewhere. Nothing runs them unless the model asks. Also refuses file-tool writes to Claude Code settings files, inside the working directories too, and takes EnterWorktree and ExitWorktree, which move the working directory, out of the tools on offer. Does not limit shell commands, MCP tools, the programs that hooks run, or the memory tools. Cloud sessions (Claude Code on the web), whose file tools run in a container that is itself the boundary, may not apply it.",
+      "description": "Refuse file-tool writes (Write, Edit, NotebookEdit) outside the working directories in every permission mode; true in any settings source wins. No allow rule lifts it. Files that Claude Code keeps for the session are not refused: its plan files, scratchpad and background job folder, and the auto-memory of this project, unless a repository settings file points it elsewhere. Nothing runs them unless the model asks. Also refuses file-tool writes to Claude Code settings files, inside the working directories too, and takes EnterWorktree and ExitWorktree, which move the working directory, out of the tools on offer. Does not limit shell commands, MCP tools, the programs that hooks run, or the memory tools. Cloud sessions (Claude Code on the web), whose file tools run in a container that is itself the boundary, may not apply it.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -13486,18 +13437,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_AGENT",
-      "type": "env_var",
-      "first_seen": "2.1.119",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_AGENTS_SELECT",
       "type": "env_var",
       "first_seen": "2.1.119",
@@ -13563,54 +13502,6 @@
       "symbol": "CLAUDE_AGENT_SDK_VERSION",
       "type": "env_var",
       "first_seen": "1.0.128",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_AI_INFERENCE_SCOPE",
-      "type": "env_var",
-      "first_seen": "2.1.48",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_AI_OAUTH_SCOPES",
-      "type": "env_var",
-      "first_seen": "2.1.48",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_AI_PROFILE_SCOPE",
-      "type": "env_var",
-      "first_seen": "2.1.64",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_API_SKILL_DESCRIPTION",
-      "type": "env_var",
-      "first_seen": "2.1.108",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -13940,9 +13831,33 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_BG_SILENT_PEER_TIMEOUT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_BG_SOCKET_TOKENS_PATH",
       "type": "env_var",
       "first_seen": "2.1.169",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_BG_SOCK_ADMIT_SILENT_PEERS",
+      "type": "env_var",
+      "first_seen": "2.1.315",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -15180,6 +15095,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_AUTO_MODE_FULL_CONTEXT",
+      "type": "env_var",
+      "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_AUTO_MODE_MODEL",
       "type": "env_var",
       "first_seen": "2.1.160",
@@ -15670,6 +15597,18 @@
       "symbol": "CLAUDE_CODE_CCR_LONG_POLL",
       "type": "env_var",
       "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_CCR_ONE_PLUGIN_LOAD_PER_RELOAD",
+      "type": "env_var",
+      "first_seen": "2.1.315",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -16673,9 +16612,33 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_HELD_MESSAGE_RECOGNITION",
+      "type": "env_var",
+      "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_HOOK_FORWARDING",
       "type": "env_var",
       "first_seen": "2.1.239",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_HTTPS_AGENT_KEEPING",
+      "type": "env_var",
+      "first_seen": "2.1.315",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -16744,6 +16707,19 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_LOOPED_CROSS_CERT_DROP",
+      "type": "env_var",
+      "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `CLAUDE_CODE_DISABLE_LOOPED_CROSS_CERT_DROP` to keep system cross-certificates that certify each other in a loop, for servers whose private CA needs one",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -17121,6 +17097,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_SELF_NAMED_CERT_DROP",
+      "type": "env_var",
+      "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_STARTUP_WORK_GATE",
       "type": "env_var",
       "first_seen": "2.1.281",
@@ -17206,6 +17194,19 @@
       "confidence": "high",
       "description": "Set to `1` so that `claude ultrareview` doesn't exit with `Error: Workspace not trusted` in a folder you haven't trusted when it can't ask you to trust it, such as in CI. Set it in the environment that launches Claude Code, not a settings `env` block, and only where every such run starts in a folder you trust. Runs that can ask still ask. Requires Claude Code v2.1.309 or later",
       "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_ULTRATHINK",
+      "type": "env_var",
+      "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `CLAUDE_CODE_DISABLE_ULTRATHINK`, which turns the `ultrathink` keyword off",
+      "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -18093,18 +18094,6 @@
       "symbol": "CLAUDE_CODE_FORCE_MID_CONVERSATION_SYSTEM",
       "type": "env_var",
       "first_seen": "2.1.154",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_FORCE_SANDBOX",
-      "type": "env_var",
-      "first_seen": "2.1.51",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -19346,9 +19335,9 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_MCP_HANDED_LISTINGS",
+      "symbol": "CLAUDE_CODE_MCP_MEMORY_CGROUP",
       "type": "env_var",
-      "first_seen": "2.1.311",
+      "first_seen": "2.1.239",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -19358,9 +19347,9 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_MCP_MEMORY_CGROUP",
+      "symbol": "CLAUDE_CODE_MCP_NO_REDIAL_AFTER_POLICY_REFUSAL",
       "type": "env_var",
-      "first_seen": "2.1.239",
+      "first_seen": "2.1.315",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -19495,6 +19484,18 @@
       "symbol": "CLAUDE_CODE_MCP_SERVE_WORKSPACE_ROOT",
       "type": "env_var",
       "first_seen": "2.1.302",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MCP_SKIP_UNCHANGED_RELIST",
+      "type": "env_var",
+      "first_seen": "2.1.315",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -21492,6 +21493,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SESSION_BEGAN_AS_COPY",
+      "type": "env_var",
+      "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SESSION_ID",
       "type": "env_var",
       "first_seen": "2.0.24",
@@ -21680,18 +21693,6 @@
       "symbol": "CLAUDE_CODE_SKILL_ATTRIBUTION",
       "type": "env_var",
       "first_seen": "2.1.259",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_SKILL_NAME",
-      "type": "env_var",
-      "first_seen": "2.1.154",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -22011,6 +22012,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SORTED_OTTER",
+      "type": "env_var",
+      "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SPAWNED_BY_SERVER",
       "type": "env_var",
       "first_seen": "2.1.307",
@@ -22180,6 +22193,19 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SUBAGENT_EFFORT",
+      "type": "env_var",
+      "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `CLAUDE_CODE_SUBAGENT_EFFORT` to set the effort level subagents run at when nothing else names one, instead of inheriting the session's",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -23713,30 +23739,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_IN_CHROME_DOMAIN_RULE_TOOL",
-      "type": "env_var",
-      "first_seen": "2.1.176",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_IN_CHROME_MCP_SERVER_NAME",
-      "type": "env_var",
-      "first_seen": "2.1.176",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_JOB_DIR",
       "type": "env_var",
       "first_seen": "2.1.119",
@@ -23801,18 +23803,6 @@
       "symbol": "CLAUDE_MOCK_HEADERLESS_429",
       "type": "env_var",
       "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_NAMES",
-      "type": "env_var",
-      "first_seen": "2.1.274",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -26559,6 +26549,18 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "other"
+    },
+    {
+      "symbol": "SHELLOPTS",
+      "type": "env_var",
+      "first_seen": "2.1.8",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {

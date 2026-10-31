@@ -607,6 +607,12 @@
         "description": "Resume a session linked to a PR by PR number/URL, or open interactive picker with optional search term"
       }
     ],
+    "cli_flag:--gateway-json": [
+      {
+        "from": "2.1.315",
+        "description": "For a program that shows the Cloud gateway sign-in to a person: writes its questions as JSON lines and reads the answers from stdin"
+      }
+    ],
     "cli_flag:--global": [
       {
         "from": "0.2.9",
@@ -1265,6 +1271,12 @@
         "description": "Use remote WebSocket endpoint for SDK I/O streaming (only with -p and stream-json format)"
       }
     ],
+    "cli_flag:--session-began-as-copy": [
+      {
+        "from": "2.1.315",
+        "description": "Sent by the server. 1 means that the session began as a copy of another, so --resume in print mode does not continue the last turn of the session it was copied from, and does not run a tool call that a hook deferred in it; any other value is ignored. Means the same as CLAUDE_CODE_SESSION_BEGAN_AS_COPY=1; either one is enough."
+      }
+    ],
     "cli_flag:--session-id": [
       {
         "from": "1.0.53",
@@ -1591,10 +1603,38 @@
         "description": "List all currently approved tools"
       }
     ],
+    "command:/artifact-capabilities": [
+      {
+        "from": "2.1.209",
+        "description": "Runtime capabilities for published Artifacts"
+      }
+    ],
     "command:/artifact-components": [
       {
         "from": "2.1.232",
         "description": "Embed reusable components in an Artifact"
+      }
+    ],
+    "command:/artifact-design": [
+      {
+        "from": "2.1.182",
+        "description": "Design guidance for Artifact pages"
+      },
+      {
+        "from": "2.1.187",
+        "description": "Design guidance for Artifacts"
+      }
+    ],
+    "command:/artifact-diagramming": [
+      {
+        "from": "2.1.221",
+        "description": "Diagramming guidance for Artifacts"
+      }
+    ],
+    "command:/artifact-pr-review": [
+      {
+        "from": "2.1.213",
+        "description": "Publish a PR review briefing Artifact from a template"
       }
     ],
     "command:/artifacts": [
@@ -1741,6 +1781,12 @@
         "description": "Build and debug apps that use the Claude API"
       }
     ],
+    "command:/claude-code-docs": [
+      {
+        "from": "2.1.163",
+        "description": "Answer questions about Claude Code features and settings"
+      }
+    ],
     "command:/claude-in-chrome": [
       {
         "from": "2.1.7",
@@ -1769,6 +1815,22 @@
       {
         "from": "2.1.242",
         "description": "Choose whether cloud sessions use the plugins enabled on this machine"
+      }
+    ],
+    "command:/code-review": [
+      {
+        "from": "2.1.163",
+        "description": "Review the current diff for bugs and cleanups"
+      },
+      {
+        "from": "2.1.223",
+        "description": "Review the current diff or a PR for bugs and cleanups"
+      }
+    ],
+    "command:/code-walkthrough": [
+      {
+        "from": "2.1.198",
+        "description": "Generate an interactive walkthrough artifact for code"
       }
     ],
     "command:/color": [
@@ -1847,6 +1909,12 @@
       {
         "from": "2.1.163",
         "description": "Manage background services and routines"
+      }
+    ],
+    "command:/dataviz": [
+      {
+        "from": "2.1.198",
+        "description": "Chart and dashboard design guidance"
       }
     ],
     "command:/debug": [
@@ -2191,6 +2259,12 @@
         "description": "Edit CLAUDE.md files and memory settings"
       }
     ],
+    "command:/memory-types": [
+      {
+        "from": "2.1.120",
+        "description": "Full reference for the memory type taxonomy — what each type captures, when to save it, how to structure the body, with examples."
+      }
+    ],
     "command:/migrate": [
       {
         "from": "2.1.182",
@@ -2309,6 +2383,16 @@
         "description": "Manage Claude Code plugins"
       }
     ],
+    "command:/plugin-authoring": [
+      {
+        "from": "2.1.260",
+        "description": "Write a plugin made of function hooks"
+      },
+      {
+        "from": "2.1.283",
+        "description": "Write a mod: a live pane, view or behaviour change in Claude Code"
+      }
+    ],
     "command:/plugin-types": [
       {
         "from": "2.1.242",
@@ -2329,10 +2413,22 @@
         "description": "Discover Claude Code features through quick interactive lessons"
       }
     ],
+    "command:/pr": [
+      {
+        "from": "2.1.229",
+        "description": "Create a pull request"
+      }
+    ],
     "command:/pr-comments": [
       {
         "from": "0.2.9",
         "description": "Get comments from a GitHub pull request"
+      }
+    ],
+    "command:/pr-explainer": [
+      {
+        "from": "2.1.198",
+        "description": "Generate a shareable walkthrough artifact for a PR"
       }
     ],
     "command:/privacy-settings": [
@@ -2727,6 +2823,12 @@
         "description": "Configure usage credits or request them from your admin when you hit a limit"
       }
     ],
+    "command:/verify": [
+      {
+        "from": "2.1.312",
+        "description": "Try your change and report if it works"
+      }
+    ],
     "command:/version": [
       {
         "from": "2.1.83",
@@ -2783,6 +2885,26 @@
       {
         "from": "2.1.218",
         "description": "Sketch on a whiteboard Artifact you can send to Claude"
+      },
+      {
+        "from": "2.1.246",
+        "description": "Pair on a whiteboard Artifact — you draw, Claude answers on it"
+      },
+      {
+        "from": "2.1.260",
+        "description": "Pair on a whiteboard artifact — you draw, Claude answers on it"
+      }
+    ],
+    "command:/whiteboard-mp": [
+      {
+        "from": "2.1.251",
+        "description": "Sketch together on a live whiteboard Artifact that Claude draws on too"
+      }
+    ],
+    "command:/workflow-authoring": [
+      {
+        "from": "2.1.248",
+        "description": "Load the reference for writing Workflow tool scripts"
       }
     ],
     "command:/workflow-launch-exec": [
@@ -2809,6 +2931,10 @@
       {
         "from": "2.1.216",
         "description": "Workshop a document through artifact decisions"
+      },
+      {
+        "from": "2.1.221",
+        "description": "Build a design together, one decision at a time"
       }
     ],
     "config_key:$schema": [
@@ -3169,6 +3295,10 @@
       {
         "from": "2.1.269",
         "description": "Whether the Bash tool shows a diff of the files a Bash command changed (PostToolUse Bash hooks get the changed-file list in tool_response). Set to false to turn that off. Default: on when the Bash tool handles file edits. Only user, flag or policy settings can turn it on outside auto and bypassPermissions modes."
+      },
+      {
+        "from": "2.1.315",
+        "description": "Whether the Bash tool shows a diff of the files a Bash command changed (PostToolUse Bash hooks get the changed-file list in tool_response). Set to false to turn that off. Default: off, except in auto and bypassPermissions modes when the Bash tool handles file edits or the model's configuration turns it on. Only user, flag or policy settings can turn it on in other modes."
       }
     ],
     "config_key:bashOutputMaxChars": [
@@ -3885,6 +4015,12 @@
         "description": "List of permission rules that should always prompt for confirmation"
       }
     ],
+    "config_key:permissions.blockReadsExemptPaths": [
+      {
+        "from": "2.1.315",
+        "description": "For the program that starts Claude Code: read only from --settings and from settings that program sends while the session runs; ignored in user, project, local and managed settings. Absolute paths, each a folder with all below it or one file, that blockReadsOutsideWorkingDirectories lets through beside the working directories. It allows nothing: an allow rule, the permission mode or the user still decides each read, as with that setting off, and a shell command that hands such a path to a program is still asked about unless a Read allow rule covers it. The paths do not become working directories, so blockWritesOutsideWorkingDirectories refuses writes to them, and they are not told to MCP servers or to the model. Each path counts as written: a link in it is not followed and a pattern is not expanded, so list every spelling that a read may arrive by. Ignored: an entry that starts with ~, has a \"..\" segment or has white space at either end (as written or once normalized), a relative or network path, and the root of a filesystem. Does not change what sandboxed commands may read (sandbox.filesystem.allowRead does)."
+      }
+    ],
     "config_key:permissions.blockReadsOutsideWorkingDirectories": [
       {
         "from": "2.1.257",
@@ -3899,6 +4035,10 @@
       {
         "from": "2.1.314",
         "description": "Refuse file-tool writes (Write, Edit, NotebookEdit) outside the working directories in every permission mode; true in any settings source wins. No allow rule lifts it. Files that Claude Code keeps for the session are not refused: its plan files, scratchpad and background job folder, and the auto-memory of this project, unless the CLAUDE_COWORK_MEMORY_PATH_OVERRIDE environment variable or a repository settings file points it elsewhere. Nothing runs them unless the model asks. Also refuses file-tool writes to Claude Code settings files, inside the working directories too, and takes EnterWorktree and ExitWorktree, which move the working directory, out of the tools on offer. Does not limit shell commands, MCP tools, the programs that hooks run, or the memory tools. Cloud sessions (Claude Code on the web), whose file tools run in a container that is itself the boundary, may not apply it."
+      },
+      {
+        "from": "2.1.315",
+        "description": "Refuse file-tool writes (Write, Edit, NotebookEdit) outside the working directories in every permission mode; true in any settings source wins. No allow rule lifts it. Files that Claude Code keeps for the session are not refused: its plan files, scratchpad and background job folder, and the auto-memory of this project, unless a repository settings file points it elsewhere. Nothing runs them unless the model asks. Also refuses file-tool writes to Claude Code settings files, inside the working directories too, and takes EnterWorktree and ExitWorktree, which move the working directory, out of the tools on offer. Does not limit shell commands, MCP tools, the programs that hooks run, or the memory tools. Cloud sessions (Claude Code on the web), whose file tools run in a container that is itself the boundary, may not apply it."
       }
     ],
     "config_key:permissions.defaultMode": [

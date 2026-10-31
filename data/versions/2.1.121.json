@@ -556,18 +556,6 @@
       "category": "cli-internal"
     },
     {
-      "symbol": "--delete",
-      "type": "cli_flag",
-      "first_seen": "1.0.89",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
-    },
-    {
       "symbol": "--disable-slash-commands",
       "type": "cli_flag",
       "first_seen": "2.0.60",
@@ -1443,18 +1431,6 @@
       "description_source": "binary"
     },
     {
-      "symbol": "--routine",
-      "type": "cli_flag",
-      "first_seen": "2.1.119",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
-    },
-    {
       "symbol": "--sandbox",
       "type": "cli_flag",
       "first_seen": "2.1.51",
@@ -1518,18 +1494,6 @@
       "description_source": "binary",
       "source_url": null,
       "category": "cli-internal"
-    },
-    {
-      "symbol": "--server-option",
-      "type": "cli_flag",
-      "first_seen": "2.1.92",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "cli"
     },
     {
       "symbol": "--session-id",
@@ -1847,18 +1811,6 @@
       "description": "Enable verbose logging, shows full turn-by-turn output. Overrides the `viewMode` setting for this session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
-      "symbol": "--watch",
-      "type": "cli_flag",
-      "first_seen": "2.1.27",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "cli"
     },
     {
@@ -2808,6 +2760,19 @@
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
+    },
+    {
+      "symbol": "/memory-types",
+      "type": "command",
+      "first_seen": "2.1.120",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Full reference for the memory type taxonomy — what each type captures, when to save it, how to structure the body, with examples.",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/mobile",
@@ -7188,18 +7153,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_AGENT",
-      "type": "env_var",
-      "first_seen": "2.1.119",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_AGENTS_SELECT",
       "type": "env_var",
       "first_seen": "2.1.119",
@@ -7253,54 +7206,6 @@
       "symbol": "CLAUDE_AGENT_SDK_VERSION",
       "type": "env_var",
       "first_seen": "1.0.128",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_AI_INFERENCE_SCOPE",
-      "type": "env_var",
-      "first_seen": "2.1.48",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_AI_OAUTH_SCOPES",
-      "type": "env_var",
-      "first_seen": "2.1.48",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_AI_PROFILE_SCOPE",
-      "type": "env_var",
-      "first_seen": "2.1.64",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_API_SKILL_DESCRIPTION",
-      "type": "env_var",
-      "first_seen": "2.1.108",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -8651,7 +8556,7 @@
       "symbol": "CLAUDE_CODE_FORCE_SANDBOX",
       "type": "env_var",
       "first_seen": "2.1.51",
-      "removed_in": null,
+      "removed_in": "2.1.300",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -11703,6 +11608,18 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "other"
+    },
+    {
+      "symbol": "SHELLOPTS",
+      "type": "env_var",
+      "first_seen": "2.1.8",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
