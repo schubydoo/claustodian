@@ -79,6 +79,12 @@ import {
   type ModelEvidence,
   type ModelObservation,
 } from './model-lane.js';
+import {
+  betasFrom,
+  collectBetaEvidence,
+  type BetaEvidence,
+  type BetaObservation,
+} from './beta-lane.js';
 import { compareVersionsAsc } from './lib.js';
 import { extractControlMessages, isNode, parse, walk, type Node } from './control-lane.js';
 
@@ -586,10 +592,13 @@ export function extractControlAndModMethods(
   hookEvents: string[];
   /** The models the release names, by first-party id; see model-lane.ts. */
   models: ModelObservation[];
+  /** The beta headers the release registers, with their names; see beta-lane.ts. */
+  betaHeaders: BetaObservation[];
 } {
   const evidence: ModEvidence[] = [];
   const hooks: HookEvidence[] = [];
   const models: ModelEvidence[] = [];
+  const betas: BetaEvidence[] = [];
   const childEnv = new Set<string>();
   const skills: SkillEvidence[] = [];
   const controlMessages = extractControlMessages(source, version, (program) => {
@@ -598,6 +607,7 @@ export function extractControlAndModMethods(
     skills.push(collectSkillEvidence(program));
     hooks.push(collectHookEvidence(program));
     models.push(collectModelEvidence(program));
+    betas.push(collectBetaEvidence(program));
   });
   const { methods, mentions } = modEvidenceFrom(evidence, version);
   const { sites, listed } = modRenderSitesFrom(evidence, version);
@@ -613,5 +623,6 @@ export function extractControlAndModMethods(
     variableSkills: resolveVariableSkills(skills),
     hookEvents: hookEventsFrom(hooks, version),
     models: modelsFrom(models, version),
+    betaHeaders: betasFrom(betas, version),
   };
 }

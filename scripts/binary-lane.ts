@@ -1548,13 +1548,15 @@ export type ModObservationFlag =
   | '--mod-render-sites'
   | '--mod-elements'
   | '--hook-events'
-  | '--models';
+  | '--models'
+  | '--beta-headers';
 
 /**
  * Mod observations, plus whether the file existed. Absence is the opt-in state:
  * `backfill-binary` writes the file only on `flag` or when it already exists. The
  * method file (`--mods`), the event file (`--mod-events`), the hook event file
- * (`--hook-events`) and the model file (`--models`) share one shape.
+ * (`--hook-events`), the model file (`--models`) and the beta header file
+ * (`--beta-headers`) share one shape.
  */
 export async function loadModObservations(
   path: string,
@@ -1568,6 +1570,7 @@ export async function loadModObservations(
       '--mod-elements': 'mod element observations',
       '--hook-events': 'hook event observations',
       '--models': 'model observations',
+      '--beta-headers': 'beta header observations',
     }[flag],
     absence: {
       '--mods': 'mods API methods',
@@ -1576,6 +1579,7 @@ export async function loadModObservations(
       '--mod-elements': 'mods elements',
       '--hook-events': 'hook events',
       '--models': 'models',
+      '--beta-headers': 'beta headers',
     }[flag],
     regenerate: `"npm run backfill-binary -- ${flag}"`,
   });

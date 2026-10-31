@@ -305,6 +305,7 @@ describe('reextract-binaries main()', () => {
       'modElements',
       'hookEvents',
       'models',
+      'betaHeaders',
       'textAbsent',
     ]);
     expect(c2control.hookEvents).toEqual(['PostToolUse', 'PreToolUse']);

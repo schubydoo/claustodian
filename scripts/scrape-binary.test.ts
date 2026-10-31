@@ -23,6 +23,7 @@ import {
 } from './scrape-binary.js';
 import { extractHookEvents } from './hook-lane.js';
 import { extractModels } from './model-lane.js';
+import { extractBetas } from './beta-lane.js';
 
 const sha256 = (s: string) => createHash('sha256').update(s).digest('hex');
 
@@ -41,6 +42,11 @@ const FAKE_BUNDLE = [
   `program.option("--demo-flag","a demonstration flag");`,
   // The hook lane's: every version these tests scrape is above its floor too.
   `var HK=["PreToolUse","PostToolUse","Notification"];`,
+  // The beta lane's: every version here is past its floor, which wants twelve headers.
+  `function BF(a,b){return Object.freeze({name:a,header:b})}var BR=[${Array.from(
+    { length: 12 },
+    (_, i) => `BF("beta_${i}","beta-${i}-2026-01-01")`
+  ).join(',')}];`,
   // The model lane's: every version here is past the registry floor, which wants ten
   // entries at least.
   `var MR=[${Array.from(
@@ -266,7 +272,12 @@ describe('buildCacheRecord', () => {
     } catch (e) {
       refusals.push((e as Error).message);
     }
-    expect(refusals).toHaveLength(6);
+    try {
+      extractBetas('var x=1;', '2.1.242');
+    } catch (e) {
+      refusals.push((e as Error).message);
+    }
+    expect(refusals).toHaveLength(7);
     for (const message of refusals) expect(isDeterministicRefusal(message)).toBe(true);
     // And a transient failure must NOT be classified as deterministic.
     expect(isDeterministicRefusal('fetch failed')).toBe(false);
@@ -341,6 +352,7 @@ describe('buildCacheRecord', () => {
       'modElements',
       'hookEvents',
       'models',
+      'betaHeaders',
       'textAbsent',
     ]);
     // 2.1.214 predates the mods API, so the mod half is an honest empty list.
@@ -354,6 +366,8 @@ describe('buildCacheRecord', () => {
     expect(record.hookEvents).toEqual(['Notification', 'PostToolUse', 'PreToolUse']);
     expect(record.models).toHaveLength(10);
     expect(record.models[0]).toEqual({ id: 'claude-test-0', name: 'Test 0' });
+    expect(record.betaHeaders).toHaveLength(12);
+    expect(record.betaHeaders[0]).toEqual({ header: 'beta-0-2026-01-01', names: ['beta_0'] });
     // And the control half must be real, not an empty array standing in for it.
     expect(record.controlCount).toBe(record.controlMessages.length);
     expect(record.controlMessages.map((m) => m.symbol).sort()).toEqual([

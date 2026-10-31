@@ -5,7 +5,7 @@
  * Minimal zero-dependency client for the Claustodian dataset.
  *
  * Claustodian answers: "does a Claude Code symbol (CLI flag / env var / slash
- * command / settings key / control message / mods API method / mods event / mods render site / mods element / hook event / model) exist in version Y,
+ * command / settings key / control message / mods API method / mods event / mods render site / mods element / hook event / model / beta header) exist in version Y,
  * and what did it
  * do at that version?" The data is
  * static JSON on GitHub Pages — this client just fetches it and applies the
@@ -18,7 +18,7 @@
 
 export const DEFAULT_BASE = 'https://claustodian.dev/data';
 
-// All twelve values the schema's `type` enum allows. cli_flag, command, env_var and
+// All thirteen values the schema's `type` enum allows. cli_flag, command, env_var and
 // config_key are populated. internal_config_flag is reserved by the schema and
 // deliberately unused — internal-ness is carried by `category` (`settings-internal`),
 // because typing off a description would churn a record's identity every time
@@ -32,6 +32,8 @@ export const DEFAULT_BASE = 'https://claustodian.dev/data';
 // mod_element records an element a mod draws with, such as `Box`. hook_event records
 // name a point where a hook from the `hooks` setting can run, such as `PreToolUse`, and
 // model records name a Claude model by its first-party API id, such as `claude-opus-5-5`.
+// beta_header records name an `anthropic-beta` value Claude Code can send, such as
+// `fast-mode-2026-02-01`.
 export type SymbolType =
   | 'cli_flag'
   | 'command'
@@ -44,7 +46,8 @@ export type SymbolType =
   | 'mod_render_site'
   | 'mod_element'
   | 'hook_event'
-  | 'model';
+  | 'model'
+  | 'beta_header';
 export type Status = 'active' | 'deprecated' | 'removed' | 'needs_review';
 export type Confidence = 'high' | 'medium' | 'low';
 

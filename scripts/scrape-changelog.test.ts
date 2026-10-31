@@ -37,6 +37,7 @@ import {
   uncorroboratedBy,
   hookEventRegressionRefusal,
   modelRegressionRefusal,
+  betaHeaderRegressionRefusal,
 } from './scrape-changelog.js';
 import type { DocsIndex } from './fetch-docs.js';
 import type { SymbolRecord } from './scrape-changelog.js';
@@ -3146,6 +3147,75 @@ describe('model records', () => {
       /model-observations\.json is missing.*--models/
     );
     expect(modelRegressionRefusal({ present: false, observations: [] }, false)).toBeNull();
+  });
+});
+
+describe('beta_header records', () => {
+  const docs: DocsIndex = { $generated_by: 'scripts/fetch-docs.ts', source_pages: [], symbols: [] };
+  const binary: BinaryObservations = {
+    $generated_by: 'scripts/backfill-binary.ts',
+    source: 'binary',
+    note: '',
+    observedVersions: ['2.1.124', '2.1.219', '2.1.300'],
+    symbols: [],
+  };
+  const blocks = parseChangelog(
+    '## 2.1.300\n\n- Fixed a crash\n\n## 2.1.219\n\n- Fixed a crash\n\n## 2.1.124\n\n- Fixed another crash\n'
+  );
+  const obs = (symbol: string, removed_in: string | null = null) => ({
+    symbol,
+    first_seen: '2.1.124',
+    last_seen: removed_in === null ? '2.1.300' : '2.1.124',
+    removed_in,
+  });
+  const run = (betas?: ReturnType<typeof obs>[]) =>
+    buildEnrichedSnapshots(
+      blocks,
+      docs,
+      binary,
+      undefined,
+      { 'beta_header:fast-mode-2026-02-01': [{ from: '2.1.124', description: 'speed' }] },
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      betas
+    );
+  const at = (snapshots: ReturnType<typeof run>, version: string) =>
+    (snapshots.find((s) => s.version === version)?.symbols ?? []).filter(
+      (r) => r.type === 'beta_header'
+    );
+
+  it('publishes a header active, in category betas, described by its registry name', () => {
+    expect(at(run([obs('fast-mode-2026-02-01')]), '2.1.300')[0]).toMatchObject({
+      symbol: 'fast-mode-2026-02-01',
+      first_seen: '2.1.124',
+      provenance: 'binary',
+      status: 'active',
+      category: 'betas',
+      description: 'speed',
+    });
+  });
+
+  it('removes a header where the registry stops holding it', () => {
+    const snapshots = run([obs('fast-mode-2026-02-01'), obs('old-beta-2026-01-01', '2.1.219')]);
+    expect(at(snapshots, '2.1.124').map((r) => r.symbol)).toContain('old-beta-2026-01-01');
+    expect(at(snapshots, '2.1.219').map((r) => r.symbol)).not.toContain('old-beta-2026-01-01');
+  });
+
+  it('publishes no beta header until its observation file exists', () => {
+    expect(at(run(), '2.1.300')).toEqual([]);
+    expect(at(run([]), '2.1.300')).toEqual([]);
+  });
+
+  it('refuses a scrape that would drop every published beta header', () => {
+    expect(betaHeaderRegressionRefusal({ present: false, observations: [] }, true)).toMatch(
+      /beta-header-observations\.json is missing.*--beta-headers/
+    );
+    expect(betaHeaderRegressionRefusal({ present: false, observations: [] }, false)).toBeNull();
   });
 });
 

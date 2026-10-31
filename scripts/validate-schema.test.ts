@@ -225,6 +225,10 @@ describe('symbol schema', () => {
     expect(validate(modMethod({ symbol: 'PreToolUse', type: 'hook_event' }))).toBe(true);
   });
 
+  it('accepts a beta_header record', () => {
+    expect(validate(modMethod({ symbol: 'fast-mode-2026-02-01', type: 'beta_header' }))).toBe(true);
+  });
+
   it('accepts a model record', () => {
     expect(validate(modMethod({ symbol: 'claude-opus-5-5', type: 'model' }))).toBe(true);
   });

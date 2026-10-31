@@ -31,6 +31,7 @@ import { join } from 'node:path';
 import type { ControlMessageObservation } from './control-lane.js';
 import { extractControlAndModMethods } from './mod-lane.js';
 import type { ModelObservation } from './model-lane.js';
+import type { BetaObservation } from './beta-lane.js';
 import { sliceEmbeddedChunks } from './slice-bundle.js';
 import {
   extractBundleSymbols,
@@ -179,6 +180,7 @@ export function buildCacheRecord(
     variableSkills,
     hookEvents,
     models,
+    betaHeaders,
   } = extractControlAndModMethods(chunks, version);
   const symbols = withVariableSkills(withChildEnvVars(readSymbols, childEnvVars), variableSkills);
   return {
@@ -198,6 +200,7 @@ export function buildCacheRecord(
     modElements,
     hookEvents,
     models,
+    betaHeaders,
     textAbsent: textAbsentFor(bundle, version, symbols, watch),
   };
 }
@@ -226,6 +229,8 @@ export interface BinaryCacheRecord {
   hookEvents: string[];
   /** The models this release names, with display names; see modelsFrom. */
   models: ModelObservation[];
+  /** The beta headers this release registers, with their names; see betasFrom. */
+  betaHeaders: BetaObservation[];
   /** Earlier-seen names this release neither extracts nor holds as text; see textAbsent. */
   textAbsent: string[];
 }
@@ -326,6 +331,7 @@ const REFUSAL_PREFIXES = [
   'mod lane:',
   'hook lane:',
   'model lane:',
+  'beta lane:',
   'slice-bundle:',
   'settings schema:',
   // A release before FIRST_COMPILED_CACHE: refused on every retry, so an

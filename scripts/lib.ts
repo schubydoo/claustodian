@@ -15,7 +15,7 @@ import { pathToFileURL } from 'node:url';
  * backticked tokens as those four and nothing else. The docs lane adds `config_key`
  * from the settings tables, the `mod_*` types from the mods reference (the changelog
  * lane produces only `mod_method` of those) and `hook_event` from the hooks reference,
- * and the binary lane alone produces `model`. The binary
+ * and the binary lane alone produces `model` and `beta_header`. The binary
  * lane also reads settings keys out of the embedded zod schema. This is the SCHEMA's
  * `type` enum minus `control_message`, and it is narrower than `SymbolRecord`'s
  * union, which carries `control_message` because `controlRecordsFor` assembles
@@ -36,7 +36,8 @@ export type ExtractedSymbolType =
   | 'mod_render_site'
   | 'mod_element'
   | 'hook_event'
-  | 'model';
+  | 'model'
+  | 'beta_header';
 
 export const CHANGELOG_URL =
   'https://raw.githubusercontent.com/anthropics/claude-code/main/CHANGELOG.md';
