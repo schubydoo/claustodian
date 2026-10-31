@@ -801,6 +801,11 @@ function parseArgs(argv: string[]): CliOptions {
 export async function main(argv: string[]): Promise<number> {
   const options = parseArgs(argv);
   const files = await loadCacheFiles(options.cacheDir);
+  // Before any file is written, and only when the hook file is to be written: its drop
+  // guard throws, and a run that publishes no hook events must not stop on it.
+  const hookEventsPath = join(dirname(options.outPath), 'hook-event-observations.json');
+  const hookEvents =
+    options.hookEvents || existsSync(hookEventsPath) ? distillHookEventObservations(files) : [];
 
   const observations = distillObservations(files);
   await writeFile(options.outPath, `${JSON.stringify(observations, null, 2)}\n`, 'utf-8');
@@ -820,7 +825,6 @@ export async function main(argv: string[]): Promise<number> {
   const modEvents = distillModEventObservations(files);
   const modRenderSites = distillModRenderSiteObservations(files);
   const modElements = distillModElementObservations(files);
-  const hookEvents = distillHookEventObservations(files);
   const lanes: OptInLane[] = [
     {
       path: join(dirname(options.outPath), 'control-observations.json'),
@@ -878,7 +882,7 @@ export async function main(argv: string[]): Promise<number> {
       summary: `${modElements.length} mods element(s)`,
     },
     {
-      path: join(dirname(options.outPath), 'hook-event-observations.json'),
+      path: hookEventsPath,
       flag: '--hook-events',
       requested: options.hookEvents,
       what: 'hook event observations',

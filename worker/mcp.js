@@ -40,7 +40,8 @@ const VERSION_RE = /^\d+\.\d+\.\d+$/;
 export const isValidVersion = (v) => typeof v === 'string' && VERSION_RE.test(v);
 
 // Every symbol type in schema/symbol.schema.json's `type` enum — including
-// control_message, the mod_* types and the declared-but-unpublished internal_config_flag. A type
+// control_message, the mod_* types, hook_event and the declared-but-unpublished
+// internal_config_flag. A type
 // missing here is rejected by the tool validator below and hidden from its enum,
 // so worker/mcp.test.js pins this to the schema to stop it drifting again.
 export const SYMBOL_TYPES = [

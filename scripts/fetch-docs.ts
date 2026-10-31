@@ -113,8 +113,9 @@ export const PAGE_MIN_SYMBOLS: Partial<Record<(typeof DOC_PAGES)[number], number
 /**
  * Floors per symbol TYPE, for a type that shares a page with a larger one. The mods
  * reference page holds both its method table and its event tables, and the method
- * rows alone clear that page's floor, so an emptied Events section would pass it.
- * Set near half the present yield, as the page floors are.
+ * rows alone clear that page's floor, so an emptied Events section would pass it. The
+ * hooks page has no page floor, so `hook_event` is its only guard. Set near half the
+ * present yield, as the page floors are.
  */
 export const TYPE_MIN_SYMBOLS: Partial<Record<DocSymbolType, number>> = {
   mod_method: 40,

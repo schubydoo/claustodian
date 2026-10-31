@@ -1280,6 +1280,25 @@ describe('distillHookEventObservations', () => {
     ).not.toThrow();
   });
 
+  it('runs the drop guard only when the hook file is to be written', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'claustodian-hk-drop-'));
+    const cache = join(root, 'cache');
+    await mkdir(cache, { recursive: true });
+    await writeFile(join(cache, '2.1.1.json'), JSON.stringify(hk('2.1.1', ['A', 'B', 'C', 'D'])));
+    await writeFile(join(cache, '2.1.2.json'), JSON.stringify(hk('2.1.2', ['D'])));
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const out = join(root, 'binary-observations.json');
+    expect(await main(['--cache', cache, '--out', out])).toBe(0);
+    await rm(out);
+    await expect(main(['--cache', cache, '--out', out, '--hook-events'])).rejects.toThrow(
+      /3 fewer hook events/
+    );
+    // It throws before writing anything.
+    expect(existsSync(out)).toBe(false);
+    logSpy.mockRestore();
+    await rm(root, { recursive: true, force: true });
+  });
+
   it('refuses --hook-events while a cache entry predates the hook lane', async () => {
     const root = await mkdtemp(join(tmpdir(), 'claustodian-hk-out-'));
     const cache = join(root, 'cache');

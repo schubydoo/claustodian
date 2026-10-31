@@ -67,7 +67,7 @@ A snapshot is `{ claudeCodeVersion, schemaVersion, symbols: [...] }`. Each symbo
 ```json
 {
   "symbol": "--output-format",
-  "type": "cli_flag", // schema enum: cli_flag | command | env_var | config_key | internal_config_flag | control_message | mod_method | mod_event | mod_render_site | mod_element (all but internal_config_flag are populated)
+  "type": "cli_flag", // schema enum: cli_flag | command | env_var | config_key | internal_config_flag | control_message | mod_method | mod_event | mod_render_site | mod_element | hook_event (all but internal_config_flag are populated)
   // control_message records ALSO carry "family" and "direction", which are
   // required on that type and forbidden on every other one; see
   // schema/symbol.schema.json for the conditional.

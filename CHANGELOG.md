@@ -51,8 +51,9 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
   accepts. That array first ships in 1.0.23 with three events, and it holds 33 at
   2.1.312. It is the whole list, so an event that leaves it is removed.
   `InstructionsLoaded` is in it at 2.1.64, out of it at 2.1.66, and back at 2.1.69,
-  the release that announces it, so its record dates from 2.1.64. The docs lane
-  reads the "Hook lifecycle" table of the hooks reference page.
+  the release that announces it. Its record dates from 2.1.64 and the snapshots for
+  2.1.66 to 2.1.68 list it too, because a record has no field for a gap. The docs
+  lane reads the "Hook lifecycle" table of the hooks reference page.
 
   `data/docs.json` lists one `hook_event` entry per documented event from the next
   docs refresh. The snapshots carry no `hook_event` record until a separate data PR
