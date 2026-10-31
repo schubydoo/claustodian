@@ -1349,11 +1349,13 @@ describe('distillModelObservations', () => {
   });
 
   it('puts each display name on the description timeline, from the release that has it', () => {
-    const { descriptions } = distillDescriptions([
+    const files = [
       md('2.1.170', [{ id: 'claude-mythos-5' }]),
       md('2.1.196', [{ id: 'claude-mythos-5', name: 'Mythos 5' }]),
       md('2.1.200', [{ id: 'claude-mythos-5', name: 'Mythos 5' }]),
-    ]);
+    ];
+    expect(distillDescriptions(files).descriptions['model:claude-mythos-5']).toBeUndefined();
+    const { descriptions } = distillDescriptions(files, { models: true });
     expect(descriptions['model:claude-mythos-5']).toEqual([
       { from: '2.1.196', description: 'Mythos 5' },
     ]);
@@ -1363,16 +1365,27 @@ describe('distillModelObservations', () => {
     const root = await mkdtemp(join(tmpdir(), 'claustodian-md-out-'));
     const cache = join(root, 'cache');
     await mkdir(cache, { recursive: true });
-    await writeFile(join(cache, '0.2.9.json'), JSON.stringify(md('0.2.9', [{ id: 'claude-x' }])));
+    await writeFile(
+      join(cache, '0.2.9.json'),
+      JSON.stringify(md('0.2.9', [{ id: 'claude-x', name: 'X' }]))
+    );
     await writeFile(join(cache, '0.2.10.json'), JSON.stringify(md('0.2.10')));
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     const out = join(root, 'binary-observations.json');
     expect(await main(['--cache', cache, '--out', out])).toBe(0);
     expect(existsSync(join(root, 'model-observations.json'))).toBe(false);
     expect(await main(['--cache', cache, '--out', out, '--models'])).toBe(1);
+    // Nor do the names reach the description timeline while an entry is unscanned.
+    const names = (await readFile(join(root, 'binary-descriptions.json'), 'utf-8')).includes(
+      '"model:'
+    );
+    expect(names).toBe(false);
     await rm(join(cache, '0.2.10.json'));
     expect(await main(['--cache', cache, '--out', out, '--models'])).toBe(0);
     expect(existsSync(join(root, 'model-observations.json'))).toBe(true);
+    expect(await readFile(join(root, 'binary-descriptions.json'), 'utf-8')).toContain(
+      '"model:claude-x"'
+    );
     logSpy.mockRestore();
     await rm(root, { recursive: true, force: true });
   });

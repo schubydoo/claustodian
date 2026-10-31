@@ -1553,8 +1553,8 @@ export type ModObservationFlag =
 /**
  * Mod observations, plus whether the file existed. Absence is the opt-in state:
  * `backfill-binary` writes the file only on `flag` or when it already exists. The
- * method file (`--mods`), the event file (`--mod-events`) and the hook event file
- * (`--hook-events`) share one shape.
+ * method file (`--mods`), the event file (`--mod-events`), the hook event file
+ * (`--hook-events`) and the model file (`--models`) share one shape.
  */
 export async function loadModObservations(
   path: string,

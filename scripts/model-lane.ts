@@ -15,7 +15,8 @@
  *   0.2.61   f10={bedrock:"us.anthropic.claude-3-7-sonnet-20250219-v1:0",vertex:"…",firstParty:"claude-3-7-sonnet-20250219"}
  *   0.2.62   O10="claude-3-7-sonnet-20250219",S10={firstParty:O10,bedrock:"…",vertex:"…"}
  *
- * From REGISTRY_FLOOR, each model has a registry entry, with a display name:
+ * From REGISTRY_FLOOR, each model has a registry entry, whose `display_name`, when it
+ * has one, becomes the description:
  *
  *   2.1.316  {id:"claude-opus-5-5",family:"opus",display_name:"Opus 5.5",…,provider_ids:{first_party:"claude-opus-5-5",…},…}
  *
@@ -27,9 +28,9 @@
  * limits (`firstParty:2000`) and flags (`firstParty:!0`), so only the registry counts.
  *
  * WHAT IS NOT A MODEL. `retirementDates:{firstParty:"June 15, 2026",bedrock:…}` has a
- * provider object's keys, and so does a provider entry set to null. A string value that
- * is not shaped like a model id is skipped; any other value this lane cannot resolve to
- * a string throws, because it could hide a model and publish it as removed.
+ * provider object's keys, and so does a provider entry set to null. A date and a null are
+ * skipped. Any other value that is not a model-shaped id string throws, because it could
+ * hide a model and publish it as removed.
  *
  * FLOORS. Every archived release names at least one model, so zero throws. From
  * REGISTRY_FLOOR, fewer than MIN_REGISTRY_ENTRIES registry entries throws: the registry
@@ -54,6 +55,9 @@ const MIN_REGISTRY_ENTRIES = 10;
 
 /** A first-party model id: `claude-opus-5-5`, `claude-3-7-sonnet-20250219`. */
 const MODEL_ID = /^claude-[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** A retirement date, the one non-id string a provider object's keys carry: `June 15, 2026`. */
+const DATE = /^[A-Z][a-z]+ \d{1,2}, \d{4}$/;
 
 /** One model a release names, with its registry display name when it has one. */
 export interface ModelObservation {
@@ -126,7 +130,11 @@ export function collectModelEvidence(program: Node): ModelEvidence {
       });
       continue;
     }
-    if (id === null || !MODEL_ID.test(id)) continue;
+    if (id === null || DATE.test(id)) continue;
+    if (!MODEL_ID.test(id)) {
+      unreadable.push({ note: `a first-party id "${id}"`, registry: site.registry });
+      continue;
+    }
     const name = site.name ? stringOf(site.name, site.scope) : undefined;
     if (site.name && typeof name !== 'string') {
       unreadable.push({

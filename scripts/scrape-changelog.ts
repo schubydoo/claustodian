@@ -1857,8 +1857,8 @@ function withModEventObservations(
 }
 
 /**
- * The binary observations with each mods render site or element, or each hook event,
- * added as an observation of `type`. As for methods and events, a documented one keeps
+ * The binary observations with each mods render site or element, each hook event, or
+ * each model added as an observation of `type`. As for methods and events, a documented one keeps
  * no binary removal.
  */
 function withTypedModObservations(

@@ -57,6 +57,10 @@ describe('extractModels', () => {
     expect(() => extractModels(later, REGISTRY_FLOOR)).toThrow(/MemberExpression/);
   });
 
+  it('refuses an id string that is neither a model id nor a date', () => {
+    expect(() => extractModels(provider('Claude.Opus'), '0.2.9')).toThrow(/"Claude.Opus"/);
+  });
+
   it('refuses a registry too short to be the whole list', () => {
     expect(() => extractModels(registry(9), REGISTRY_FLOOR)).toThrow(/9 model registry entries/);
   });

@@ -411,11 +411,20 @@ function normalizeDescriptionWhitespace(text: string): string {
   return text.replace(/ {2,}/g, ' ').trim();
 }
 
-export function distillDescriptions(files: BinaryCacheFile[]): BinaryDescriptions {
+/**
+ * The description timeline of every binary symbol. With `models`, each model's registry
+ * display name joins it too, as `model:<id>`. The caller passes it only when the model
+ * file is being published and every entry was scanned: from a cache scanned only at the
+ * tip, the names would all date from the tip.
+ */
+export function distillDescriptions(
+  files: BinaryCacheFile[],
+  { models = false }: { models?: boolean } = {}
+): BinaryDescriptions {
   const seen = new Map<string, Array<{ version: string; description: string }>>();
   for (const file of files) {
     // A model's description is its registry display name, which can change by release.
-    const named = (file.models ?? []).flatMap(({ id, name }) =>
+    const named = (models ? (file.models ?? []) : []).flatMap(({ id, name }) =>
       name ? [{ type: 'model', symbol: id, description: name }] : []
     );
     for (const s of [...file.symbols, ...named]) {
@@ -841,7 +850,11 @@ export async function main(argv: string[]): Promise<number> {
 
   // The description timeline is written alongside the observations (same dir), so
   // a scratch --out during tests keeps both outputs out of committed data/.
-  const descriptions = distillDescriptions(files);
+  const modelsPath = join(dirname(options.outPath), 'model-observations.json');
+  const descriptions = distillDescriptions(files, {
+    models:
+      (options.models || existsSync(modelsPath)) && files.every((f) => f.models !== undefined),
+  });
   const descPath = join(dirname(options.outPath), 'binary-descriptions.json');
   await writeFile(descPath, `${JSON.stringify(descriptions, null, 2)}\n`, 'utf-8');
 
@@ -923,7 +936,7 @@ export async function main(argv: string[]): Promise<number> {
       summary: `${hookEvents.length} hook event(s)`,
     },
     {
-      path: join(dirname(options.outPath), 'model-observations.json'),
+      path: modelsPath,
       flag: '--models',
       requested: options.models,
       what: 'model observations',

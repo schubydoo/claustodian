@@ -39,7 +39,7 @@ A record whose accuracy depends on non-public material will be rejected. This po
 
 **Why `hook_event` is exempt too.** The hook lane reads each event as a string literal of the one array that lists every event the `hooks` setting accepts, by AST. It refuses a release from 1.0.23 on that has no such array, two full-size copies that disagree, or an event named beside `PreToolUse` in another array but missing from the list.
 
-**Why `model` is exempt too.** The model lane reads each model's first-party API id from the model registry, and before 2.1.195 from each model's provider object, by AST, resolving a variable to its declaration. It refuses a release that names no model, a registry with too few entries, an id it cannot resolve, or one model with two display names.
+**Why `model` is exempt too.** The model lane reads each model's first-party API id from the model registry, and up to and including 2.1.195 from each model's provider object, by AST, resolving a variable to its declaration. It refuses a release that names no model, a registry with too few entries, an id it cannot resolve, or one model with two display names.
 
 ## Data contract
 
