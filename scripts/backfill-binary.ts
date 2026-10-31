@@ -214,7 +214,9 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       // switch in one release may be commander-registered in the next). Track whether
       // ANY version proved it by something other than a switch-case label, so the
       // scope caveat is dropped the moment better evidence exists.
-      const strong = evidence !== 'argv-switch';
+      // A predicate-only sighting dates and corroborates a flag, but it is not proof
+      // that bare `claude` accepts it, so it cannot drop a subcommand's scope.
+      const strong = evidence !== 'argv-switch' && !predicateOnly;
       const named = evidence !== 'command-alias';
       let entry = seenIn.get(key);
       if (entry) {

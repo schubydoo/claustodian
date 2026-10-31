@@ -246,6 +246,31 @@ describe('distillObservations', () => {
     expect(bg).toMatchObject({ symbol: '--bg', first_seen: '2.1.119', last_seen: '2.1.187' });
   });
 
+  it('does not let a predicate-only sighting erase a subcommand scope', () => {
+    const files: BinaryCacheFile[] = [
+      {
+        version: '2.1.245',
+        symbols: [{ symbol: '--px', type: 'cli_flag', evidence: 'argv', predicateOnly: true }],
+      },
+      {
+        version: '2.1.246',
+        symbols: [
+          {
+            symbol: '--px',
+            type: 'cli_flag',
+            evidence: 'argv-switch',
+            scopes: ['self-hosted-runner'],
+          },
+        ],
+      },
+    ];
+    expect(distillObservations(files).symbols[0]).toMatchObject({
+      first_seen: '2.1.245',
+      switch_case_only: true,
+      scopes: ['self-hosted-runner'],
+    });
+  });
+
   it('stops the run when a scope ends while the flag keeps other scopes', () => {
     const file = (
       version: string,

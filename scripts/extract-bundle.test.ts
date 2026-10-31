@@ -775,6 +775,28 @@ describe('extractBundleSymbols', () => {
     expect(sym?.description).toBeUndefined();
   });
 
+  it('lets a complete switch scope win over a predicate label', () => {
+    // The runner compares the flag in its own argv and dispatches it by `case`.
+    const runner =
+      'var A5h={};ut(A5h,{main:()=>x});' +
+      'console.log(`Usage: claude self-hosted-runner [options]`);' +
+      'if(a.some((o)=>o==="--proxy-x"))p();switch(n){case"--proxy-x":t.c=i;break;}';
+    expect(extractBundleSymbols(runner).find((s) => s.symbol === '--proxy-x')).toMatchObject({
+      evidence: 'argv-switch',
+      scopes: ['self-hosted-runner'],
+    });
+    // A top-level argv check later in the bundle is proof the scope cannot override.
+    const both = `${runner}if(process.argv.includes("--proxy-x"))q();`;
+    expect(extractBundleSymbols(both).find((s) => s.symbol === '--proxy-x')).toMatchObject({
+      evidence: 'argv',
+    });
+    // A scope left incomplete by a banner-less parser keeps the predicate's label.
+    const help = `${runner}var B={};ut(B,{z:()=>y});switch(m){case"--proxy-x":break}`;
+    const sym = extractBundleSymbols(help).find((s) => s.symbol === '--proxy-x');
+    expect(sym).toMatchObject({ evidence: 'argv' });
+    expect(sym).not.toHaveProperty('scopes');
+  });
+
   it('adds a skill-registry command the built-in registry misses', () => {
     const out = extractBundleSymbols(
       'Fc({name:"claude-in-chrome",menuDescription:"Let Claude use Chrome"})'

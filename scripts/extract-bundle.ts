@@ -1154,11 +1154,14 @@ function chunkRanges(src: string, chunks: readonly string[] | undefined): [numbe
 export function extractFlags(
   src: string,
   chunks?: readonly string[],
-  predicateOnly?: Set<string>
+  predicateOnly?: Set<string>,
+  predicateLabel?: Set<string>
 ): Map<string, Evidence> {
   const out = new Map<string, Evidence>();
   // Flags some rule other than the predicate proves in this release.
   const otherProof = new Set<string>();
+  // Flags whose label came from a predicate, with no registration or argv check.
+  const fromPredicate = new Set<string>();
   // Option constructors first: a shared factory moves the `.addOption(` call away
   // from the spec, so the look-back below cannot see it (the 2.1.84 `--cowork`
   // refactor). Registration is also the stronger label, so it should win.
@@ -1189,8 +1192,12 @@ export function extractFlags(
     // The first occurrence with any evidence sets the label, as it always has.
     if (!out.has(flag)) {
       out.set(flag, /\.(?:option|addOption)\(/.test(before) ? 'registration' : 'argv');
+      if (!own) fromPredicate.add(flag);
     }
-    if (own) otherProof.add(flag);
+    if (own) {
+      otherProof.add(flag);
+      fromPredicate.delete(flag);
+    }
   }
   // Last, and additive only: a switch-case label never relabels a flag the stronger
   // paths above already proved, it only reaches the hand-rolled parsers they cannot.
@@ -1201,6 +1208,7 @@ export function extractFlags(
     if (!out.has(flag)) out.set(flag, 'argv-switch');
   }
   for (const flag of out.keys()) if (!otherProof.has(flag)) predicateOnly?.add(flag);
+  for (const flag of fromPredicate) predicateLabel?.add(flag);
   return out;
 }
 
@@ -1483,15 +1491,22 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
     symbols.push({ symbol, type: 'env_var', category, evidence: 'process-env' });
   }
   const predicateOnly = new Set<string>();
-  const flags = extractFlags(src, scopeChunks, predicateOnly);
+  const predicateLabel = new Set<string>();
+  const flags = extractFlags(src, scopeChunks, predicateOnly, predicateLabel);
   const flagDescriptions = extractFlagDescriptions(src, new Set(flags.keys()));
   // Scope only attaches to `argv-switch` evidence. The stronger paths are already
   // top-level or already curated, and a flag they proved must not be narrowed by a
   // subcommand parser that happens to accept the same name.
   const switchScopes = extractSwitchCaseScopes(scopeChunks ?? src);
   const hiddenFlags = extractHiddenFlags(src);
-  for (const [symbol, evidence] of flags) {
+  for (const [symbol, label] of flags) {
     const description = flagDescriptions.get(symbol);
+    // A predicate label is not top-level proof when this release's switch-case
+    // parsers give the flag a complete scope: the runner compares
+    // `--proxy-authorization-command` in its own argv and dispatches it by `case`.
+    // `--help` keeps its label, because the /plugin parser leaves its scope incomplete.
+    const evidence: Evidence =
+      predicateLabel.has(symbol) && switchScopes.has(symbol) ? 'argv-switch' : label;
     const scopes = evidence === 'argv-switch' ? switchScopes.get(symbol) : undefined;
     symbols.push({
       symbol,
