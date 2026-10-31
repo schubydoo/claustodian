@@ -61,6 +61,14 @@ describe('extractModels', () => {
     expect(() => extractModels(provider('Claude.Opus'), '0.2.9')).toThrow(/"Claude.Opus"/);
   });
 
+  it('refuses a registry entry whose provider ids it cannot read', () => {
+    const hidden = `,{id:"claude-x",display_name:"X",provider_ids:P}`;
+    expect(() => extractModels(registry(10, hidden), REGISTRY_FLOOR)).toThrow(/Identifier/);
+    // The schema that defines an entry is not an entry: its display name is a call.
+    const schema = 'var S=H.object({display_name:H.string(),provider_ids:H.object({})});';
+    expect(extractModels(registry(10) + schema, REGISTRY_FLOOR)).toHaveLength(10);
+  });
+
   it('refuses a registry too short to be the whole list', () => {
     expect(() => extractModels(registry(9), REGISTRY_FLOOR)).toThrow(/9 model registry entries/);
   });

@@ -110,6 +110,14 @@ export function collectModelEvidence(program: Node): ModelEvidence {
     const providers = propertyValue(node, 'provider_ids');
     const registryId =
       providers?.type === 'ObjectExpression' ? propertyValue(providers, 'first_party') : undefined;
+    // An entry with a literal display name is a registry entry. If its provider ids
+    // cannot be read, its model would vanish while the other entries pass the count.
+    // (The schema that defines the entry has `provider_ids` too, but its display name
+    // is a call such as `H.string()`, so it is not caught here.)
+    const displayName = propertyValue(node, 'display_name');
+    if (providers && !registryId && displayName?.type === 'Literal') {
+      sites.push({ id: providers, registry: true, scope });
+    }
     if (registryId) {
       sites.push({
         id: registryId,
