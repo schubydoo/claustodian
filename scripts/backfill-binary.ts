@@ -64,6 +64,8 @@ export interface BinaryCacheFile {
     scopes?: readonly string[];
     /** Registered with commander's `.hideHelp()` in this version. */
     hidden?: true;
+    /** Only an args-array predicate proved this flag in this version; see below. */
+    predicateOnly?: true;
   }>;
   /**
    * Written by both cache writers: the `type:symbol` keys of names seen in an
@@ -201,10 +203,12 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
       namedIn: string[];
       /** Versions whose only proof was a child-env key; see the removal below. */
       childEnvIn: Set<string>;
+      /** True once a version proves the symbol by more than an args-array predicate. */
+      corroborated: boolean;
     }
   >();
   for (const file of files) {
-    for (const { symbol, type, evidence, scopes, hidden } of file.symbols) {
+    for (const { symbol, type, evidence, scopes, hidden, predicateOnly } of file.symbols) {
       const key = `${type}:${symbol}`;
       // Evidence is per-version and can strengthen over releases (a flag parsed by a
       // switch in one release may be commander-registered in the next). Track whether
@@ -219,6 +223,7 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
         if (hidden) entry.hiddenIn.add(file.version);
         if (named) entry.namedIn.push(file.version);
         if (evidence === 'child-env') entry.childEnvIn.add(file.version);
+        entry.corroborated ||= !predicateOnly;
       } else {
         entry = {
           symbol,
@@ -231,6 +236,7 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
           hiddenIn: new Set(hidden ? [file.version] : []),
           namedIn: named ? [file.version] : [],
           childEnvIn: new Set(evidence === 'child-env' ? [file.version] : []),
+          corroborated: !predicateOnly,
         };
         seenIn.set(key, entry);
       }
@@ -266,7 +272,13 @@ export function distillObservations(files: BinaryCacheFile[]): BinaryObservation
     hiddenIn,
     namedIn,
     childEnvIn,
+    corroborated,
   } of seenIn.values()) {
+    // An args-array predicate also matches the argument checks of shell commands
+    // Claude Code analyzes (`rm --recursive`), so a flag no release proves another
+    // way is not recorded at all. A corroborated flag keeps every sighting, so
+    // `--help` still dates from its first predicate check.
+    if (!corroborated) continue;
     const sorted = [...versions].sort(compareVersionsAsc);
     // Scopes are a union across releases, so a subcommand that later stops accepting
     // the flag would stay listed in every later snapshot (issue 503). No archived flag

@@ -257,13 +257,39 @@ describe('extractFlags — positive evidence only', () => {
     expect(flags.get('--verbose')).toBe('argv');
   });
 
-  it('does not treat an args-array predicate as evidence', () => {
+  it('marks a flag only an args-array predicate proves as predicateOnly', () => {
     // The same shape checks a shell command's arguments, not Claude Code's own argv:
     // the `/plugin list` filter and the `rm` delete check from the bundle.
     const src =
       'let n=t.slice(1).find((o)=>o==="--enabled"||o==="--disabled");' +
       'let y=s.some((v)=>v==="--recursive"||/^-[a-zA-Z]*[rR]/.test(v));';
-    expect([...extractFlags(src).keys()]).toEqual([]);
+    const only = new Set<string>();
+    const flags = extractFlags(src, undefined, only);
+    expect(flags.get('--enabled')).toBe('argv');
+    expect([...only].sort()).toEqual(['--disabled', '--enabled', '--recursive']);
+  });
+
+  it('keeps the predicate label first, and any other proof clears the mark', () => {
+    // `--bg` is checked by a predicate first and registered with commander later;
+    // `--help` is checked by a predicate and dispatched by a switch. The first
+    // occurrence sets the label, as before, and neither flag is predicateOnly.
+    // Separate sources: the look-back window would otherwise reach across them.
+    const read = (src: string) => {
+      const only = new Set<string>();
+      return { flags: extractFlags(src, undefined, only), only };
+    };
+    const bg = read('let c=t.find((m)=>m==="--bg");.option("--bg","run in the background");');
+    expect(bg.flags.get('--bg')).toBe('argv');
+    expect([...bg.only]).toEqual([]);
+    const help = read('if(a.some((o)=>o==="--help"))h();switch(x){case"--help":break}');
+    expect(help.flags.get('--help')).toBe('argv');
+    expect([...help.only]).toEqual([]);
+  });
+
+  it('carries the predicateOnly mark into the cache record', () => {
+    const syms = extractBundleSymbols('let y=s.some((v)=>v==="--recursive");.option("--print")');
+    expect(syms.find((x) => x.symbol === '--recursive')).toMatchObject({ predicateOnly: true });
+    expect(syms.find((x) => x.symbol === '--print')).not.toHaveProperty('predicateOnly');
   });
 
   it('reads argv evidence only inside the JavaScript chunks', () => {

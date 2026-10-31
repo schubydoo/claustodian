@@ -72,6 +72,8 @@ export interface BundleSymbol {
   declaredType?: string;
   /** True when the CLI registers this flag with `.hideHelp()` — see extractHiddenFlags. */
   hidden?: true;
+  /** True when an args-array predicate is this release's only proof; see FLAG_PREDICATE. */
+  predicateOnly?: true;
   /**
    * For a flag proved only by a subcommand's `case"--flag":` label: the complete
    * set of invocation paths whose parsers accept it (`self-hosted-runner`,
@@ -112,16 +114,24 @@ const COMMAND_BACK = 700;
  * count, and a foreign flag array literal (`new RegExp(["--write","--fix"])`)
  * has no membership call, so it is correctly ignored.
  *
- * An args-array predicate (`.some((o)=>o==="--flag")`) is NOT evidence, although
- * Claude Code checks its own argv that way too (`t.find((m)=>m==="--bg"…)`). The
- * same shape checks the arguments of shell commands that Claude Code analyzes:
- * `tr --delete`, `ps --forest`, `sudo --shell`, `rm --recursive`, `pyright --watch`.
- * The text cannot tell whose arguments an array holds, and that branch published
- * about a dozen such flags. A real flag it was the only proof for (`--routine`)
- * waits for a stronger rule rather than shipping beside the phantoms.
+ *   - args-array predicate: `.find`/`.some`/`.filter((o)=>o==="--flag" …)`, including
+ *     `||`/`&&`-chained comparisons in the same predicate. This one only corroborates:
+ *     see FLAG_PREDICATE.
  */
 const FLAG_OWN_EVIDENCE =
   /\.(?:option|addOption)\([^)]{0,85}$|process\.argv(?:\.slice\(\s*\d*\s*\))?\.(?:includes|indexOf)\(\s*["'`]$/;
+
+/**
+ * An args-array predicate, `.some((o)=>o==="--flag")`. Claude Code checks its own argv
+ * this way (`t.find((m)=>m==="--bg"…)`), and so do its checks of shell commands it
+ * analyzes: `tr --delete`, `ps --forest`, `sudo --shell`, `rm --recursive`,
+ * `pyright --watch`. The text cannot tell whose arguments an array holds. So the
+ * predicate keeps its old label and priority, which dates `--help` from 2.0.12 and
+ * `--bg` from 2.1.119, but a flag it alone proves in a release is marked
+ * `predicateOnly`, and backfill drops a flag that no release proves another way.
+ * Every phantom it produced has no other proof in any release.
+ */
+const FLAG_PREDICATE = /\.(?:find|some|filter)\([\s\S]{0,80}?\b\w+\s*===?\s*["'`]$/;
 
 /**
  * A `case"--flag":` label — Claude Code dispatching on its own already-parsed argv
@@ -1141,8 +1151,14 @@ function chunkRanges(src: string, chunks: readonly string[] | undefined): [numbe
  * preceding window — so a flag that appears once as a subprocess arg and once in
  * `.option(...)` is still (correctly) kept.
  */
-export function extractFlags(src: string, chunks?: readonly string[]): Map<string, Evidence> {
+export function extractFlags(
+  src: string,
+  chunks?: readonly string[],
+  predicateOnly?: Set<string>
+): Map<string, Evidence> {
   const out = new Map<string, Evidence>();
+  // Flags some rule other than the predicate proves in this release.
+  const otherProof = new Set<string>();
   // Option constructors first: a shared factory moves the `.addOption(` call away
   // from the spec, so the look-back below cannot see it (the 2.1.84 `--cowork`
   // refactor). Registration is also the stronger label, so it should win.
@@ -1151,7 +1167,10 @@ export function extractFlags(src: string, chunks?: readonly string[]): Map<strin
     const spec = m[2] ?? '';
     if (!OPTION_SPEC.test(spec)) continue;
     for (const flag of spec.match(FLAG_TOKEN) ?? []) {
-      if (FLAG_GRAMMAR.test(flag)) out.set(flag, 'registration');
+      if (FLAG_GRAMMAR.test(flag)) {
+        out.set(flag, 'registration');
+        otherProof.add(flag);
+      }
     }
   }
   // The look-back counts only inside the JavaScript chunks. A compiled release also
@@ -1162,19 +1181,26 @@ export function extractFlags(src: string, chunks?: readonly string[]): Map<strin
   const inChunk = (at: number) => ranges.some(([from, to]) => at >= from && at < to);
   for (const m of src.matchAll(FLAG_TOKEN)) {
     const flag = m[0];
-    if (!FLAG_GRAMMAR.test(flag) || out.has(flag) || m.index === undefined) continue;
+    if (!FLAG_GRAMMAR.test(flag) || otherProof.has(flag) || m.index === undefined) continue;
     if (!inChunk(m.index)) continue;
     const before = src.slice(Math.max(0, m.index - FLAG_EVIDENCE_WINDOW), m.index);
-    if (!FLAG_OWN_EVIDENCE.test(before)) continue;
-    out.set(flag, /\.(?:option|addOption)\(/.test(before) ? 'registration' : 'argv');
+    const own = FLAG_OWN_EVIDENCE.test(before);
+    if (!own && !FLAG_PREDICATE.test(before)) continue;
+    // The first occurrence with any evidence sets the label, as it always has.
+    if (!out.has(flag)) {
+      out.set(flag, /\.(?:option|addOption)\(/.test(before) ? 'registration' : 'argv');
+    }
+    if (own) otherProof.add(flag);
   }
   // Last, and additive only: a switch-case label never relabels a flag the stronger
   // paths above already proved, it only reaches the hand-rolled parsers they cannot.
   for (const m of src.matchAll(FLAG_SWITCH_CASE)) {
     const flag = m[2];
-    if (flag === undefined || out.has(flag) || !FLAG_GRAMMAR.test(flag)) continue;
-    out.set(flag, 'argv-switch');
+    if (flag === undefined || !FLAG_GRAMMAR.test(flag)) continue;
+    otherProof.add(flag);
+    if (!out.has(flag)) out.set(flag, 'argv-switch');
   }
+  for (const flag of out.keys()) if (!otherProof.has(flag)) predicateOnly?.add(flag);
   return out;
 }
 
@@ -1456,7 +1482,8 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
     if (paramReads.has(symbol)) continue;
     symbols.push({ symbol, type: 'env_var', category, evidence: 'process-env' });
   }
-  const flags = extractFlags(src, scopeChunks);
+  const predicateOnly = new Set<string>();
+  const flags = extractFlags(src, scopeChunks, predicateOnly);
   const flagDescriptions = extractFlagDescriptions(src, new Set(flags.keys()));
   // Scope only attaches to `argv-switch` evidence. The stronger paths are already
   // top-level or already curated, and a flag they proved must not be narrowed by a
@@ -1474,6 +1501,7 @@ export function extractBundleSymbols(src: string, scopeChunks?: readonly string[
       ...(description ? { description } : {}),
       ...(scopes ? { scopes } : {}),
       ...(hiddenFlags.has(symbol) ? { hidden: true as const } : {}),
+      ...(predicateOnly.has(symbol) ? { predicateOnly: true as const } : {}),
     });
   }
   // An alias is tagged apart from a registered name: the date of an alias is not
