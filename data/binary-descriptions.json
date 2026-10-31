@@ -5194,6 +5194,138 @@
         "from": "2.1.118",
         "description": "When set to true in either admin-only Windows source — the HKLM SOFTWARE/Policies/ClaudeCode registry key or C:/Program Files/ClaudeCode/managed-settings.json — WSL reads managed settings from the full Windows policy chain (HKLM, C:/Program Files/ClaudeCode via DrvFs, HKCU) in addition to /etc/claude-code. Windows sources take priority. The flag is also required in HKCU itself for HKCU policy to apply on WSL (double opt-in: admin enables the chain, user confirms HKCU). On native Windows the flag has no effect."
       }
+    ],
+    "model:claude-3-5-haiku-20241022": [
+      {
+        "from": "2.1.195",
+        "description": "Haiku 3.5"
+      }
+    ],
+    "model:claude-3-5-sonnet-20241022": [
+      {
+        "from": "2.1.195",
+        "description": "Sonnet 3.5"
+      }
+    ],
+    "model:claude-3-7-sonnet-20250219": [
+      {
+        "from": "2.1.195",
+        "description": "Sonnet 3.7"
+      }
+    ],
+    "model:claude-fable-5": [
+      {
+        "from": "2.1.195",
+        "description": "Fable 5"
+      }
+    ],
+    "model:claude-fable-5-1": [
+      {
+        "from": "2.1.257",
+        "description": "Fable 5.1"
+      }
+    ],
+    "model:claude-haiku-4-5-20251001": [
+      {
+        "from": "2.1.195",
+        "description": "Haiku 4.5"
+      }
+    ],
+    "model:claude-haiku-5-5": [
+      {
+        "from": "2.1.293",
+        "description": "Haiku 5.5"
+      }
+    ],
+    "model:claude-mythos-5": [
+      {
+        "from": "2.1.196",
+        "description": "Mythos 5"
+      }
+    ],
+    "model:claude-mythos-5-1": [
+      {
+        "from": "2.1.257",
+        "description": "Mythos 5.1"
+      }
+    ],
+    "model:claude-opus-4-1-20250805": [
+      {
+        "from": "2.1.195",
+        "description": "Opus 4.1"
+      }
+    ],
+    "model:claude-opus-4-20250514": [
+      {
+        "from": "2.1.195",
+        "description": "Opus 4"
+      }
+    ],
+    "model:claude-opus-4-5-20251101": [
+      {
+        "from": "2.1.195",
+        "description": "Opus 4.5"
+      }
+    ],
+    "model:claude-opus-4-6": [
+      {
+        "from": "2.1.195",
+        "description": "Opus 4.6"
+      }
+    ],
+    "model:claude-opus-4-7": [
+      {
+        "from": "2.1.195",
+        "description": "Opus 4.7"
+      }
+    ],
+    "model:claude-opus-4-8": [
+      {
+        "from": "2.1.195",
+        "description": "Opus 4.8"
+      }
+    ],
+    "model:claude-opus-5": [
+      {
+        "from": "2.1.219",
+        "description": "Opus 5"
+      }
+    ],
+    "model:claude-opus-5-5": [
+      {
+        "from": "2.1.280",
+        "description": "Opus 5.5"
+      }
+    ],
+    "model:claude-sonnet-4-20250514": [
+      {
+        "from": "2.1.195",
+        "description": "Sonnet 4"
+      }
+    ],
+    "model:claude-sonnet-4-5-20250929": [
+      {
+        "from": "2.1.195",
+        "description": "Sonnet 4.5"
+      }
+    ],
+    "model:claude-sonnet-4-6": [
+      {
+        "from": "2.1.195",
+        "description": "Sonnet 4.6"
+      }
+    ],
+    "model:claude-sonnet-5": [
+      {
+        "from": "2.1.197",
+        "description": "Sonnet 5"
+      }
+    ],
+    "model:claude-sonnet-5-5": [
+      {
+        "from": "2.1.284",
+        "description": "Sonnet 5.5"
+      }
     ]
   }
 }
