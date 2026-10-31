@@ -147,9 +147,15 @@ describe('extractEnvVars', () => {
 
 describe('extractAccessorEnvVars — first-party accessor-map getters', () => {
   // Each map below also holds PROVEN_ENV, a name a read proves, so it is an env map.
+  // Each test source has one map, so the key goes in after its one opening brace.
   const proven = new Set(['PROVEN_ENV']);
-  const acc = (src: string) =>
-    extractAccessorEnvVars(src.replace('{', '{PROVEN_ENV:()=>p,'), proven);
+  const acc = (src: string) => {
+    const open = src.indexOf('{') + 1;
+    return extractAccessorEnvVars(
+      `${src.slice(0, open)}PROVEN_ENV:()=>p,${src.slice(open)}`,
+      proven
+    );
+  };
   it('captures claude-code NAME:()=> getter entries', () => {
     const env = acc('let E={CLAUDE_CODE_FOO:()=>x,ANTHROPIC_BAR:()=>y};');
     expect(env.get('CLAUDE_CODE_FOO')).toBe('claude-code');
