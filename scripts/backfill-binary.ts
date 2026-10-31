@@ -885,14 +885,28 @@ export async function main(argv: string[]): Promise<number> {
   // a scratch --out during tests keeps both outputs out of committed data/.
   const modelsPath = join(dirname(options.outPath), 'model-observations.json');
   const betaHeadersPath = join(dirname(options.outPath), 'beta-header-observations.json');
-  const descriptions = distillDescriptions(files, {
-    models:
-      (options.models || existsSync(modelsPath)) && files.every((f) => f.models !== undefined),
-    betaHeaders:
-      (options.betaHeaders || existsSync(betaHeadersPath)) &&
-      files.every((f) => f.betaHeaders !== undefined),
-  });
+  // A lane's names join the timeline when its file is published from a fully scanned
+  // cache. When the file is wanted but the cache is not fully scanned, the lane refuses
+  // below and keeps its file as it was, so its names are kept as they were too.
+  const wantsModels = options.models || existsSync(modelsPath);
+  const wantsBetaHeaders = options.betaHeaders || existsSync(betaHeadersPath);
+  const models = wantsModels && files.every((f) => f.models !== undefined);
+  const betaHeaders = wantsBetaHeaders && files.every((f) => f.betaHeaders !== undefined);
+  const descriptions = distillDescriptions(files, { models, betaHeaders });
   const descPath = join(dirname(options.outPath), 'binary-descriptions.json');
+  const kept = [
+    ...(wantsModels && !models ? ['model:'] : []),
+    ...(wantsBetaHeaders && !betaHeaders ? ['beta_header:'] : []),
+  ];
+  if (kept.length > 0 && existsSync(descPath)) {
+    const previous = JSON.parse(await readFile(descPath, 'utf-8')) as BinaryDescriptions;
+    for (const [key, eras] of Object.entries(previous.descriptions)) {
+      if (kept.some((prefix) => key.startsWith(prefix))) descriptions.descriptions[key] = eras;
+    }
+    descriptions.descriptions = Object.fromEntries(
+      Object.entries(descriptions.descriptions).sort(([a], [b]) => (a < b ? -1 : 1))
+    );
+  }
   await writeFile(descPath, `${JSON.stringify(descriptions, null, 2)}\n`, 'utf-8');
 
   // Sibling files rather than sections of the observations, mirroring the
@@ -904,8 +918,8 @@ export async function main(argv: string[]): Promise<number> {
   const modEvents = distillModEventObservations(files);
   const modRenderSites = distillModRenderSiteObservations(files);
   const modElements = distillModElementObservations(files);
-  const models = distillModelObservations(files);
-  const betaHeaders = distillBetaHeaderObservations(files);
+  const modelObservations = distillModelObservations(files);
+  const betaHeaderObservations = distillBetaHeaderObservations(files);
   const lanes: OptInLane[] = [
     {
       path: join(dirname(options.outPath), 'control-observations.json'),
@@ -981,8 +995,8 @@ export async function main(argv: string[]): Promise<number> {
       lane: 'model-lane',
       isScanned: (file) => file.models !== undefined,
       note: MODEL_NOTE,
-      symbols: models,
-      summary: `${models.length} model(s)`,
+      symbols: modelObservations,
+      summary: `${modelObservations.length} model(s)`,
     },
     {
       path: betaHeadersPath,
@@ -992,8 +1006,8 @@ export async function main(argv: string[]): Promise<number> {
       lane: 'beta-lane',
       isScanned: (file) => file.betaHeaders !== undefined,
       note: BETA_HEADER_NOTE,
-      symbols: betaHeaders,
-      summary: `${betaHeaders.length} beta header(s)`,
+      symbols: betaHeaderObservations,
+      summary: `${betaHeaderObservations.length} beta header(s)`,
     },
   ];
 

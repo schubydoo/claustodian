@@ -1450,6 +1450,13 @@ describe('distillBetaHeaderObservations', () => {
     expect(await readFile(join(root, 'binary-descriptions.json'), 'utf-8')).toContain(
       '"beta_header:a-2026-01-01"'
     );
+    // Once the file exists, an unscanned entry makes the lane refuse, and its names must
+    // survive the refused run rather than vanish from the timeline.
+    await writeFile(join(cache, '2.1.125.json'), JSON.stringify(bh('2.1.125')));
+    expect(await main(['--cache', cache, '--out', out])).toBe(1);
+    expect(await readFile(join(root, 'binary-descriptions.json'), 'utf-8')).toContain(
+      '"beta_header:a-2026-01-01"'
+    );
     logSpy.mockRestore();
     await rm(root, { recursive: true, force: true });
   });
