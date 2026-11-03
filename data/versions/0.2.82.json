@@ -108,7 +108,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Limit the number of agentic turns (print mode only). Exits with an error when the limit is reached. No limit by default. With `--input-format stream-json`, a message still queued when the limit ends a turn stays queued and starts a new turn with its own limit",
+      "description": "Limit the number of agentic turns (print mode only). No limit by default. With `--input-format stream-json`, a message still queued when the limit ends a turn stays queued and starts a new turn with its own limit",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli-internal"
@@ -1013,6 +1013,18 @@
       "description": "Protocol for OTLP exporter, applies to all signals. Claude Code has no default protocol, so set this or the signal-specific protocol variable for each `otlp` exporter you enable",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_TIMEOUT",
+      "type": "env_var",
+      "first_seen": "0.2.76",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
     },
     {

@@ -847,7 +847,7 @@
     {
       "symbol": "--max-turns",
       "type": "cli_flag",
-      "description": "Limit the number of agentic turns (print mode only). Exits with an error when the limit is reached. No limit by default. With `--input-format stream-json`, a message still queued when the limit ends a turn stays queued and starts a new turn with its own limit",
+      "description": "Limit the number of agentic turns (print mode only). No limit by default. With `--input-format stream-json`, a message still queued when the limit ends a turn stays queued and starts a new turn with its own limit",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -1949,7 +1949,7 @@
     {
       "symbol": "/permissions",
       "type": "command",
-      "description": "Manage allow, ask, and deny rules for tool permissions. Opens an interactive dialog where you can view rules by scope, add or remove rules, manage working directories, and review recent auto mode denials. You can also view and edit auto mode classifier rules from the dialog's **Auto mode** tab. When you run it while Claude is responding, Claude Code opens the dialog immediately and applies your changes starting with Claude's next tool call in the same turn. Before v2.1.234, Claude Code queued the command until the turn finished. Alias: `/allowed-tools`",
+      "description": "Manage allow, ask, and deny rules for tool permissions. Opens an interactive dialog where you can view rules by scope, add or remove rules, manage working directories, and review recent auto mode denials. You can also view and edit auto mode classifier rules from the dialog's **Auto mode** tab. Alias: `/allowed-tools`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -3242,6 +3242,13 @@
       "type": "config_key",
       "description": "Make Claude's file tools refuse reads outside your working directories in every permission mode, including `bypassPermissions`. Claude Code denies `Read`, `Grep`, `Glob`, and `LSP` calls on those paths and tells Claude to ask you to add the directory with `/add-dir`. Files Claude Code itself needs stay readable, such as your skills, plugins, rules, agents, commands, and the `CLAUDE.md` memory file under `~/.claude/`. Requires Claude Code v2.1.257 or later.",
       "doc_min_version": "2.1.257",
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "permissions.blockWritesOutsideWorkingDirectories",
+      "type": "config_key",
+      "description": "Make the `Write`, `Edit`, and `NotebookEdit` tools refuse paths outside your working directories in every permission mode, including `bypassPermissions`, apart from some of Claude Code's own files. The key doesn't limit shell commands, MCP tools, or the programs hooks run. To limit where shell commands write, turn on sandboxing. Requires Claude Code v2.1.314 or later.",
+      "doc_min_version": "2.1.314",
       "doc_page": "settings-reference"
     },
     {
@@ -4845,7 +4852,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_CFC_PROMPT",
       "type": "env_var",
-      "description": "Set to `1` to keep the Claude in Chrome browser tools available while omitting the Chrome section of the system prompt and the `/claude-in-chrome` bundled skill. For hosts that embed Claude Code and supply their own browser guidance. Requires Claude Code v2.1.257 or later",
+      "description": "For hosts that embed Claude Code and supply their own browser guidance. Set to `1` to keep the Claude in Chrome browser tools available while omitting the Chrome section of the system prompt and the `/claude-in-chrome` bundled skill. In VS Code, the extension at v2.1.314 or later also leaves the Claude in Chrome instructions out of a session's messages. Requires Claude Code v2.1.257 or later",
       "doc_min_version": "2.1.257",
       "doc_page": "env-vars"
     },
@@ -5328,7 +5335,7 @@
     {
       "symbol": "CLAUDE_CODE_GLOB_TIMEOUT_SECONDS",
       "type": "env_var",
-      "description": "Timeout in seconds for Glob tool file discovery. Defaults to 20 seconds on most platforms and 60 seconds on WSL",
+      "description": "Timeout in seconds for Glob and Grep tool searches. Defaults to 20 seconds on most platforms and 60 seconds on WSL",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -5538,21 +5545,21 @@
     {
       "symbol": "CLAUDE_CODE_OAUTH_REFRESH_TOKEN",
       "type": "env_var",
-      "description": "OAuth refresh token for Claude.ai authentication. When set, `claude auth login` exchanges this token directly instead of opening a browser. Requires `CLAUDE_CODE_OAUTH_SCOPES`. Useful for provisioning authentication in automated environments",
+      "description": "OAuth refresh token for claude.ai authentication. When set, `claude auth login` exchanges this token directly instead of opening a browser. Requires `CLAUDE_CODE_OAUTH_SCOPES`. Useful for provisioning authentication in automated environments. Ignored in project and local settings",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
       "symbol": "CLAUDE_CODE_OAUTH_SCOPES",
       "type": "env_var",
-      "description": "Space-separated OAuth scopes the refresh token was issued with, such as `\"user:profile user:inference user:sessions:claude_code\"`. Required when `CLAUDE_CODE_OAUTH_REFRESH_TOKEN` is set",
+      "description": "Space-separated OAuth scopes the refresh token was issued with, such as `\"user:profile user:inference user:sessions:claude_code\"`. Required when `CLAUDE_CODE_OAUTH_REFRESH_TOKEN` is set. Ignored in project and local settings",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
       "symbol": "CLAUDE_CODE_OAUTH_TOKEN",
       "type": "env_var",
-      "description": "OAuth access token for claude.ai authentication. Alternative to `/login` for SDK and automated environments. Takes precedence over keychain-stored credentials. Generate one with `claude setup-token`. Unless you run `/login`, Claude Code uses the token you set for the whole session. To replace an expired token, generate a new one and restart",
+      "description": "OAuth access token for claude.ai authentication. Alternative to `/login` for SDK and automated environments. Ignored in project and local settings. Takes precedence over keychain-stored credentials. Generate one with `claude setup-token`. Unless you run `/login`, Claude Code uses the token you set for the whole session. To replace an expired token, generate a new one and restart",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -6742,7 +6749,7 @@
     {
       "symbol": "FORCE_HYPERLINK",
       "type": "env_var",
-      "description": "Set to `1` to enable clickable OSC 8 hyperlinks when your terminal supports them but isn't auto-detected, or `0` to disable them. When unset, Claude Code enables hyperlinks only when it detects terminal support. Claude Code parses this value as a number, not a Boolean, so a value such as `false`, `no`, or `off` enables hyperlinks rather than disabling them. The footer PR or merge request badge renders as a hyperlink even when Claude Code can't detect terminal support, such as over SSH. Set `0` to render the badge as plain text",
+      "description": "Set to `1` to enable clickable OSC 8 hyperlinks when your terminal supports them but isn't auto-detected. When unset, Claude Code enables most hyperlinks only when it detects terminal support. The footer PR or merge request badge and long sign-in URLs are links either way. Set `0`, `false`, `no`, or `off` to render all of them as plain text. Before v2.1.314, `false`, `no`, and `off` enabled hyperlinks instead",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },

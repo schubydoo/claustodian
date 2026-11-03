@@ -237,7 +237,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Limit the number of agentic turns (print mode only). Exits with an error when the limit is reached. No limit by default. With `--input-format stream-json`, a message still queued when the limit ends a turn stays queued and starts a new turn with its own limit",
+      "description": "Limit the number of agentic turns (print mode only). No limit by default. With `--input-format stream-json`, a message still queued when the limit ends a turn stays queued and starts a new turn with its own limit",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli-internal"
@@ -1018,8 +1018,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open the upgrade page in your browser to switch to a higher plan tier. When the browser fails to open, the command shows a sign-in prompt without printing the URL",
-      "description_source": "docs",
+      "description": "Upgrade to Max for higher rate limits and more Opus",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -1918,7 +1918,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "OAuth access token for claude.ai authentication. Alternative to `/login` for SDK and automated environments. Takes precedence over keychain-stored credentials. Generate one with `claude setup-token`. Unless you run `/login`, Claude Code uses the token you set for the whole session. To replace an expired token, generate a new one and restart",
+      "description": "OAuth access token for claude.ai authentication. Alternative to `/login` for SDK and automated environments. Ignored in project and local settings. Takes precedence over keychain-stored credentials. Generate one with `claude setup-token`. Unless you run `/login`, Claude Code uses the token you set for the whole session. To replace an expired token, generate a new one and restart",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -2557,6 +2557,18 @@
       "description": "Protocol for OTLP exporter, applies to all signals. Claude Code has no default protocol, so set this or the signal-specific protocol variable for each `otlp` exporter you enable",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_EXPORTER_OTLP_TIMEOUT",
+      "type": "env_var",
+      "first_seen": "0.2.76",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
     },
     {
