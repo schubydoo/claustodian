@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.317",
+  "claudeCodeVersion": "2.1.318",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -523,6 +523,19 @@
       "description_source": "binary"
     },
     {
+      "symbol": "tool-provenance-2026-10-26",
+      "type": "beta_header",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "ccr_tool_provenance",
+      "source_url": null,
+      "category": "betas",
+      "description_source": "binary"
+    },
+    {
       "symbol": "tool-search-tool-2025-10-19",
       "type": "beta_header",
       "first_seen": "2.1.124",
@@ -570,6 +583,19 @@
       "provenance": "binary",
       "confidence": "medium",
       "description": "mid_conv_cache_promotion_ok_latch",
+      "source_url": null,
+      "category": "betas",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "x-cc-internal-tool-provenance-server-url",
+      "type": "beta_header",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "tool_provenance_server_url_latch",
       "source_url": null,
       "category": "betas",
       "description_source": "binary"
@@ -1789,7 +1815,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the effort level for the current session. Options: `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`. Available levels depend on the model. `ultracode` requests `xhigh` effort with ultracode turned on, and requires Claude Code v2.1.203 or later. Overrides the `modelSettings` and `effortLevel` settings for this session and does not persist",
+      "description": "Set the effort level for the current session. Options: `low`, `medium`, `high`, `xhigh`, `max`, or `ultracode`. Available levels depend on the model. `ultracode` requests `xhigh` effort with ultracode turned on, and requires Claude Code v2.1.203 or later. On the main conversation's model, overrides the `modelSettings` and `effortLevel` settings for this session and doesn't persist",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -2609,6 +2635,18 @@
       ]
     },
     {
+      "symbol": "--list",
+      "type": "cli_flag",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli-internal"
+    },
+    {
       "symbol": "--lock-to-account",
       "type": "cli_flag",
       "first_seen": "2.1.224",
@@ -2708,6 +2746,18 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--max-cost",
+      "type": "cli_flag",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli-internal"
     },
     {
       "symbol": "--max-cost-usd",
@@ -3015,6 +3065,18 @@
       "confidence": "high",
       "description": "Work directly on <branch> in the remote session (checkout and push to it). On self-hosted environments this includes pushing to the default branch when it is not protected — use GitHub branch protection to restrict. Mutually exclusive with --ref. Requires --cloud or --environment.",
       "description_source": "binary",
+      "source_url": null,
+      "category": "cli-internal"
+    },
+    {
+      "symbol": "--output",
+      "type": "cli_flag",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
       "source_url": null,
       "category": "cli-internal"
     },
@@ -3481,11 +3543,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Release a session slot after N minutes of inactivity once a turn finishes or the session waits for the user's action. Some sessions don't count as idle, so pair with `--kill-session-after-min`. A finished background task keeps the session busy for at most the `SELF_HOSTED_RUNNER_BG_RESULT_GRACE_MS` window. To delay a release, set `--hold-idle-file`. `0` disables.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "self-hosted-runner"
@@ -4521,6 +4583,19 @@
       "category": "cli-internal"
     },
     {
+      "symbol": "--web",
+      "type": "cli_flag",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Add the server as a claude.ai connector instead of to local config",
+      "source_url": null,
+      "category": "cli-internal",
+      "description_source": "binary"
+    },
+    {
       "symbol": "--with",
       "type": "cli_flag",
       "first_seen": "2.1.157",
@@ -4817,7 +4892,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "**Skill.** Orchestrate large-scale changes across a codebase in parallel. Researches the codebase, decomposes the work into 5 to 30 independent units, and presents a plan. Once approved, spawns one background subagent per unit in an isolated worktree. Each subagent implements its unit, runs tests, and publishes its change. Requires a git repository or a `WorktreeCreate` hook that creates the worktrees. Outside a git repository, `/batch` requires Claude Code v2.1.281 or later. Example: `/batch migrate src/ from JavaScript to TypeScript`",
+      "description": "**Skill.** Orchestrate large-scale changes across a codebase in parallel. Researches the codebase, decomposes the work into 5 to 30 independent units, and presents a plan. Once approved, spawns one background subagent per unit in an isolated worktree. Each subagent implements its unit, runs tests, and opens a PR or reports what happened. Requires a git repository or a `WorktreeCreate` hook that creates the worktrees. Outside a git repository, `/batch` requires Claude Code v2.1.281 or later. Example: `/batch migrate src/ from JavaScript to TypeScript`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6066,6 +6141,19 @@
       "category": "command"
     },
     {
+      "symbol": "/project",
+      "type": "command",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Set the claude.ai Project for this session's usage reports",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
+    },
+    {
       "symbol": "/prototype",
       "type": "command",
       "first_seen": "2.1.221",
@@ -7277,7 +7365,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "The claude.ai Project this session names for your organization's usage reports: the Project's UUID, or its ID starting with \"claude_proj_\". An empty string names none and stops lower-precedence files from naming one; the organization default still applies. Sent only when Claude Code uses your claude.ai login, connects directly to the Anthropic API, is not in a cloud session, and CLAUDE_CODE_ATTRIBUTION_HEADER is not 0. CLAUDE_CODE_ATTRIBUTION_PROJECT takes precedence over it. Set in managed settings, it overrides people's own settings files. A project's .claude/settings.json and settings.local.json count only once the folder is trusted; for runs in a folder nobody has trusted, such as CI, use CLAUDE_CODE_ATTRIBUTION_PROJECT.",
+      "description": "The claude.ai Project this session names for your organization's usage reports: the Project's ID, starting with \"claude_proj_\" or \"chan_\", or the UUID of a \"claude_proj_\" Project. An empty string names none and stops lower-precedence files from naming one; the organization default still applies. Sent only when Claude Code uses your claude.ai login, connects directly to the Anthropic API, is not in a cloud session, and CLAUDE_CODE_ATTRIBUTION_HEADER is not 0. CLAUDE_CODE_ATTRIBUTION_PROJECT takes precedence over it. Set in managed settings, it overrides people's own settings files. A project's .claude/settings.json and settings.local.json count only once the folder is trusted; for runs in a folder nobody has trusted, such as CI, use CLAUDE_CODE_ATTRIBUTION_PROJECT.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -7303,7 +7391,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "The Project used when neither CLAUDE_CODE_ATTRIBUTION_PROJECT nor attributionProject names one: its UUID, or its ID starting with \"claude_proj_\".",
+      "description": "The Project used when neither CLAUDE_CODE_ATTRIBUTION_PROJECT nor attributionProject names one: its ID, starting with \"claude_proj_\" or \"chan_\", or the UUID of a \"claude_proj_\" Project.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -7383,7 +7471,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Install the Claude Code IDE extension automatically when you run Claude Code from a VS Code terminal. Appears in `/config` as **Auto-install IDE extension** when you run Claude Code inside a VS Code or JetBrains terminal.",
+      "description": "Let `/ide` install the Claude Code IDE extension in a running VS Code, Cursor, or Devin Desktop when you run the command from an external terminal. Claude Code doesn't install the extension when you start it. Appears in `/config` as **Auto-install IDE extension** when you run Claude Code inside a VS Code or JetBrains terminal.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "global-config"
@@ -8124,6 +8212,19 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
+    },
+    {
+      "symbol": "disableReplyCheck",
+      "type": "config_key",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Disable the reply check in Claude Tag sessions on a self-hosted runner. The check re-prompts Claude, at most four times a turn, when a turn ends without a call to one of Claude Tag's reply tools. It is not a hook, so disableAllHooks does not affect it. Disabling it also stops two messages to Claude that Anthropic's service can request for such a session: a nudge after a long stretch of work with no visible update, and a reminder added to prompts. Claude Code's built-in reminder to give progress updates, on models that have it, is then no longer held back. Set it in managed settings; false there keeps the check on. Everywhere else it is ignored and the check stays on. Has no effect on sessions that Anthropic hosts.",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
     },
     {
       "symbol": "disableSideloadFlags",
@@ -9758,7 +9859,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Make Claude Code exit with an error at startup when `sandbox.enabled` is `true` but the sandbox can't start, because a dependency is missing or the platform is unsupported. Without this key, Claude Code runs commands unsandboxed. Managed deployments that require sandboxing as a security gate can use this setting.",
+      "description": "Make Claude Code exit with an error at startup when `sandbox.enabled` is `true` but the sandbox can't start because the platform doesn't support it or the dependency check fails. Without this key, Claude Code runs commands unsandboxed. Managed deployments that require sandboxing as a security gate can use this setting.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9914,7 +10015,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List additional XPC and Mach service names the macOS sandbox may look up. Tools that communicate over XPC, such as the iOS Simulator or Playwright, need their services listed here.",
+      "description": "List additional XPC and Mach service names the macOS sandbox may look up. Tools that communicate over XPC, such as the iOS Simulator or Playwright, need their services listed here. Sandboxed commands can reach outside the sandbox to each service that you list, and the sandbox doesn't confine what those services do for those commands.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -10465,7 +10566,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Add SSH connections whose host comes from a command to the Desktop environment selector. When you create a connection or replace its host, Desktop runs the entry's command on your computer and connects to the host that the command prints. Requires Claude Desktop v3.6556.0 or later on macOS or Linux, signed in with a Claude account.",
+      "description": "Add SSH connections whose host comes from a command to the Desktop environment selector. When you create a connection or create another machine for it, Desktop runs the entry's command on your computer and connects to the host that the command prints.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -11641,7 +11742,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "@internal Requests the workspace git diff for the thin-client /diff dialog. The worker resolves one base ref for both stats and hunks (the merge-base with the base branch the session names, else the default branch, when HEAD is on another branch with commits beyond it, so committed and uncommitted changes show together, uncommitted rows first; otherwise working tree vs HEAD) and applies the standard caps (5s git timeout, 50 files, 1MB/file).",
+      "description": "@internal Requests the workspace diff for the thin-client /diff dialog. The worker resolves one base ref for both stats and hunks (the merge-base with the base branch the session names, else the default branch, when HEAD is on another branch with commits beyond it, so committed and uncommitted changes show together, uncommitted rows first; otherwise working tree vs HEAD) and applies the standard caps (5s git timeout, 50 files, 1MB/file).",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -16349,6 +16450,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_CONFIG_LOCK_WAIT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_CONFIG_PROBE",
       "type": "env_var",
       "first_seen": "2.1.286",
@@ -16784,6 +16897,18 @@
       "description": "Set to `1` to disable the advisor tool. The `/advisor` command becomes unavailable, any configured `advisorModel` is ignored, and the `--advisor` flag is accepted but has no effect, so existing scripts that pass it continue to work without errors",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_AGENT_PROGRESS_SUMMARIES",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -17716,6 +17841,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_STOP_OF_HELD_MESSAGES",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_STRUCTURED_OUTPUTS",
       "type": "env_var",
       "first_seen": "2.1.288",
@@ -17777,6 +17914,18 @@
       "description": "Set to `1` to omit the `thinking` parameter from API requests entirely. This is a compatibility option for proxies and gateways that reject the parameter. On models that think by default, omitting the parameter means the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead. Neither variable turns thinking off on Opus 5.5, Sonnet 5.5, Haiku 5.5, or the Fable models, which can't have thinking turned off. On third-party providers, `MAX_THINKING_TOKENS=0` likewise omits the parameter, so the two variables behave the same there",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_TRANSCRIPT_READ_AHEAD",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -18549,6 +18698,42 @@
       "description": "Set to `1` to enable agent teams. Agent teams are experimental and disabled by default",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_EXPERIMENTAL_CODE_MODE",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_EXPERIMENTAL_CODE_MODE_RESTART",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_EXPERIMENTAL_CODE_MODE_RESTARTED_FROM",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -19514,7 +19699,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to skip auto-installation of IDE extensions. Equivalent to setting `autoInstallIdeExtension` to `false`",
+      "description": "Set to `1` to stop `/ide` from installing the IDE extension. Equivalent to setting `autoInstallIdeExtension` to `false`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -19729,6 +19914,18 @@
       "symbol": "CLAUDE_CODE_LOOP_PERSISTENT",
       "type": "env_var",
       "first_seen": "2.1.129",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MAIN_REPLY_HOLD_MS",
+      "type": "env_var",
+      "first_seen": "2.1.318",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -20127,6 +20324,18 @@
       "symbol": "CLAUDE_CODE_MCP_SERVE_TOOL_OUTPUT",
       "type": "env_var",
       "first_seen": "2.1.295",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MCP_SERVE_TUNNEL_BINARY_FRAMES",
+      "type": "env_var",
+      "first_seen": "2.1.318",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -21156,6 +21365,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_PROGRAM_USE_CASE_STAMPED",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_PROJECTS_SESSION",
       "type": "env_var",
       "first_seen": "2.1.282",
@@ -21724,6 +21945,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_REPLY_GATE_POLICY",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_REPORT_FINDINGS",
       "type": "env_var",
       "first_seen": "2.1.218",
@@ -21776,6 +22009,18 @@
       "symbol": "CLAUDE_CODE_RESULT_NONCE",
       "type": "env_var",
       "first_seen": "2.1.285",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_RESUME_CACHE_WARM",
+      "type": "env_var",
+      "first_seen": "2.1.318",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -22751,6 +22996,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SPARE_KEEPS_BOOT_SESSION_ID",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SPAWNED_BY_SERVER",
       "type": "env_var",
       "first_seen": "2.1.307",
@@ -22877,6 +23134,18 @@
       "symbol": "CLAUDE_CODE_STREAM_EVENT_MAX_LINE_BYTES",
       "type": "env_var",
       "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_STREAM_TIMER_SLACK_MS",
+      "type": "env_var",
+      "first_seen": "2.1.318",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -23295,6 +23564,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_TELEPORT_MOVE",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_TERMINAL_MCP_TOOLS",
       "type": "env_var",
       "first_seen": "2.1.181",
@@ -23651,6 +23932,18 @@
       "symbol": "CLAUDE_CODE_TWO_STAGE_CLASSIFIER",
       "type": "env_var",
       "first_seen": "2.1.71",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_ULTRAREVIEW_LAUNCH_RECORD",
+      "type": "env_var",
+      "first_seen": "2.1.318",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -25070,6 +25363,19 @@
       "description": "When `1`, skip the `.git` presence check after a `checkout` hook runs. Set this when your hook materializes a non-git source.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_SPAWN_REASON",
+      "type": "env_var",
+      "first_seen": "2.1.318",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "medium",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -28353,7 +28659,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "A subagent or an agent team teammate is about to start. For a teammate, `e.isTeammate` is `true`.",
+      "description": "A subagent or an agent team teammate is about to start, or a subagent that finished or stopped is about to run again. For a teammate, `e.isTeammate` is `true`. For a resumed run, `e.resume` is set.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
