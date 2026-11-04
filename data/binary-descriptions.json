@@ -267,6 +267,12 @@
         "description": "token_efficient_tools"
       }
     ],
+    "beta_header:tool-provenance-2026-10-26": [
+      {
+        "from": "2.1.318",
+        "description": "ccr_tool_provenance"
+      }
+    ],
     "beta_header:tool-search-tool-2025-10-19": [
       {
         "from": "2.1.124",
@@ -289,6 +295,12 @@
       {
         "from": "2.1.212",
         "description": "mid_conv_cache_promotion_ok_latch"
+      }
+    ],
+    "beta_header:x-cc-internal-tool-provenance-server-url": [
+      {
+        "from": "2.1.318",
+        "description": "tool_provenance_server_url_latch"
       }
     ],
     "cli_flag:--ablation": [
@@ -1825,6 +1837,12 @@
         "description": "Watch a Claude artifact (id or URL) in this session and hear about new versions and comments"
       }
     ],
+    "cli_flag:--web": [
+      {
+        "from": "2.1.318",
+        "description": "Add the server as a claude.ai connector instead of to local config"
+      }
+    ],
     "cli_flag:--workload": [
       {
         "from": "2.1.71",
@@ -2731,6 +2749,12 @@
         "description": "Options shown when the Pro plan Claude Code trial has ended"
       }
     ],
+    "command:/project": [
+      {
+        "from": "2.1.318",
+        "description": "Set the claude.ai Project for this session's usage reports"
+      }
+    ],
     "command:/prototype": [
       {
         "from": "2.1.221",
@@ -3421,6 +3445,10 @@
       {
         "from": "2.1.305",
         "description": "The claude.ai Project this session names for your organization's usage reports: the Project's UUID, or its ID starting with \"claude_proj_\". An empty string names none and stops lower-precedence files from naming one; the organization default still applies. Sent only when Claude Code uses your claude.ai login, connects directly to the Anthropic API, is not in a cloud session, and CLAUDE_CODE_ATTRIBUTION_HEADER is not 0. CLAUDE_CODE_ATTRIBUTION_PROJECT takes precedence over it. Set in managed settings, it overrides people's own settings files. A project's .claude/settings.json and settings.local.json count only once the folder is trusted; for runs in a folder nobody has trusted, such as CI, use CLAUDE_CODE_ATTRIBUTION_PROJECT."
+      },
+      {
+        "from": "2.1.318",
+        "description": "The claude.ai Project this session names for your organization's usage reports: the Project's ID, starting with \"claude_proj_\" or \"chan_\", or the UUID of a \"claude_proj_\" Project. An empty string names none and stops lower-precedence files from naming one; the organization default still applies. Sent only when Claude Code uses your claude.ai login, connects directly to the Anthropic API, is not in a cloud session, and CLAUDE_CODE_ATTRIBUTION_HEADER is not 0. CLAUDE_CODE_ATTRIBUTION_PROJECT takes precedence over it. Set in managed settings, it overrides people's own settings files. A project's .claude/settings.json and settings.local.json count only once the folder is trusted; for runs in a folder nobody has trusted, such as CI, use CLAUDE_CODE_ATTRIBUTION_PROJECT."
       }
     ],
     "config_key:attributionProjectPolicy": [
@@ -3433,6 +3461,10 @@
       {
         "from": "2.1.305",
         "description": "The Project used when neither CLAUDE_CODE_ATTRIBUTION_PROJECT nor attributionProject names one: its UUID, or its ID starting with \"claude_proj_\"."
+      },
+      {
+        "from": "2.1.318",
+        "description": "The Project used when neither CLAUDE_CODE_ATTRIBUTION_PROJECT nor attributionProject names one: its ID, starting with \"claude_proj_\" or \"chan_\", or the UUID of a \"claude_proj_\" Project."
       }
     ],
     "config_key:autoCompactEnabled": [
@@ -3693,6 +3725,10 @@
       {
         "from": "2.1.89",
         "description": "Number of days to retain chat transcripts before automatic cleanup (default: 30). Minimum 1. Use a large value for long retention; use --no-session-persistence to disable transcript writes entirely."
+      },
+      {
+        "from": "2.1.318",
+        "description": "Number of days to retain chat transcripts before automatic cleanup (default: 30). Minimum 1. Use a large value for long retention; use --no-session-persistence to disable transcript writes entirely. Cleanup deletes data only on this computer, not anything stored by Anthropic."
       }
     ],
     "config_key:companyAnnouncements": [
@@ -3745,6 +3781,10 @@
       {
         "from": "2.1.248",
         "description": "Retention ceiling in days for session transcripts created or last written by a desktop-host surface (Claude Desktop, Cowork), which are otherwise exempt from the cleanupPeriodDays sweep. 0 (the default) means no ceiling: such transcripts are kept until deleted another way. Unlike cleanupPeriodDays, 0 is allowed because this setting never disables writes — it only bounds an exemption from deletion. The ceiling is a hard cap: it also bounds an active archive grace, so the grace window of a release marker never keeps files past the ceiling. Ignored when cleanupPeriodDays is managed by org policy. A ceiling at or below cleanupPeriodDays effectively disables the exemption: those transcripts age out on the regular cleanupPeriodDays schedule, so the effective retention is whichever of the two periods is longer."
+      },
+      {
+        "from": "2.1.318",
+        "description": "Retention ceiling in days for session transcripts created or last written by a desktop-host surface (Claude Desktop, Cowork), which are otherwise exempt from the cleanupPeriodDays sweep. 0 (the default) means no ceiling: such transcripts are kept until deleted another way. Unlike cleanupPeriodDays, 0 is allowed because this setting never disables writes — it only bounds an exemption from deletion. The ceiling is a hard cap: it also bounds an active archive grace, so the grace window of a release marker never keeps files past the ceiling. Ignored when cleanupPeriodDays is managed by org policy. A ceiling at or below cleanupPeriodDays effectively disables the exemption: those transcripts age out on the regular cleanupPeriodDays schedule, so the effective retention is whichever of the two periods is longer. Cleanup deletes data only on this computer, not anything stored by Anthropic."
       }
     ],
     "config_key:dialogExpiry": [
@@ -3823,6 +3863,12 @@
       {
         "from": "2.1.128",
         "description": "Disable Remote Control (claude.ai/code, `claude remote-control`, `--remote-control`/`--rc`, auto-start, and the in-session toggle). Typically set in managed settings."
+      }
+    ],
+    "config_key:disableReplyCheck": [
+      {
+        "from": "2.1.318",
+        "description": "Disable the reply check in Claude Tag sessions on a self-hosted runner. The check re-prompts Claude, at most four times a turn, when a turn ends without a call to one of Claude Tag's reply tools. It is not a hook, so disableAllHooks does not affect it. Disabling it also stops two messages to Claude that Anthropic's service can request for such a session: a nudge after a long stretch of work with no visible update, and a reminder added to prompts. Claude Code's built-in reminder to give progress updates, on models that have it, is then no longer held back. Set it in managed settings; false there keeps the check on. Everywhere else it is ignored and the check stays on. Has no effect on sessions that Anthropic hosts."
       }
     ],
     "config_key:disableSideloadFlags": [
@@ -4397,6 +4443,10 @@
       {
         "from": "2.1.169",
         "description": "Marketplace names whose plugins may surface as contextual install suggestions (relevance-based tips). No marketplace-declared suggestions surface without this allowlist; the built-in first-party frontend-design tip is unaffected. Only honored when set in managed settings (policy scope); the key is ignored in user, project, and local settings. A name only takes effect when the marketplace is registered on the machine AND its registered source is also declared in managed settings, either as the extraKnownMarketplaces entry for that name or as an entry of strictKnownMarketplaces. A marketplace registered from a different source under an allowlisted name is ignored. The official marketplace is exempt from the source requirement: allowlisting its name alone suffices, since that name can only register from the official Anthropic source."
+      },
+      {
+        "from": "2.1.318",
+        "description": "Marketplace names whose plugins may surface as contextual install suggestions (relevance-based tips). No marketplace-declared suggestions surface without this allowlist; the built-in tips for Anthropic's own plugins are unaffected. Only honored when set in managed settings (policy scope); the key is ignored in user, project, and local settings. A name only takes effect when the marketplace is registered on the machine AND its registered source is also declared in managed settings, either as the extraKnownMarketplaces entry for that name or as an entry of strictKnownMarketplaces. A marketplace registered from a different source under an allowlisted name is ignored. The official marketplace is exempt from the source requirement: allowlisting its name alone suffices, since that name can only register from the official Anthropic source."
       }
     ],
     "config_key:pluginTrustMessage": [

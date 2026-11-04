@@ -3705,8 +3705,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set how many days Claude Code keeps session transcripts and other application data before deleting them. Claude Code runs the deletion as a background sweep after a session starts, as long as it can safely determine the retention period. The sweep deletes transcripts without showing a message, so a session you haven't used for longer than the retention period no longer appears in the `/resume` picker.",
-      "description_source": "docs",
+      "description": "Number of days to retain chat transcripts before automatic cleanup (default: 30). Minimum 1. Use a large value for long retention; use --no-session-persistence to disable transcript writes entirely.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7703,7 +7703,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to skip auto-installation of IDE extensions. Equivalent to setting `autoInstallIdeExtension` to `false`",
+      "description": "Set to `1` to stop `/ide` from installing the IDE extension. Equivalent to setting `autoInstallIdeExtension` to `false`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
