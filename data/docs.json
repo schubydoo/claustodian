@@ -2355,7 +2355,7 @@
     {
       "symbol": "agentPushNotifEnabled",
       "type": "config_key",
-      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**. When you change it there, Claude Code also saves the value to your account.",
+      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. In a local session, Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**. When you change it there, Claude Code also saves the value to your account.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -2510,7 +2510,7 @@
     {
       "symbol": "autoInstallIdeExtension",
       "type": "config_key",
-      "description": "Let `/ide` install the Claude Code IDE extension in a running VS Code, Cursor, or Devin Desktop when you run the command from an external terminal. Claude Code doesn't install the extension when you start it. Appears in `/config` as **Auto-install IDE extension** when you run Claude Code inside a VS Code or JetBrains terminal.",
+      "description": "Let `/ide` install the Claude Code IDE extension in a running VS Code, Cursor, or Devin Desktop when you run the command from an external terminal. Claude Code doesn't install or update the extension when you start `claude`. Before v2.1.318, Claude Code installs or updates the extension when you start `claude` in one of those editors' terminals, unless this key is `false`.",
       "doc_min_version": null,
       "doc_page": "settings-reference",
       "category": "global-config"
@@ -2951,14 +2951,14 @@
     {
       "symbol": "fastMode",
       "type": "config_key",
-      "description": "Turn fast mode on for sessions where it's available, for interactive work like rapid iteration or live debugging where you want speed at a higher cost per token. You don't usually edit this key by hand: running `/fast` writes `fastMode: true` to `~/.claude/settings.json`, and running it again to turn fast mode off removes the key. Fast mode runs only on Opus 5.5, Opus 5, and Opus 4.8: turning it on from another model switches you to Opus, and switching to an unsupported model turns it off. See Switch models while fast mode is on.",
+      "description": "Turn fast mode on for sessions where it's available, for interactive work such as rapid iteration or live debugging where you want speed at a higher cost per token. You don't usually edit this key yourself. Running `/fast` writes `fastMode: true` to `~/.claude/settings.json`, and running it again to turn fast mode off removes the key.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
       "symbol": "fastModePerSessionOptIn",
       "type": "config_key",
-      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so fast mode is on at the start of every later session. Set this key to `true` to stop that: a saved `fastMode: true` no longer turns fast mode on at session start, and each person has to run `/fast` in each session they want it. Claude Code leaves the `fastMode` key in their file, so turning this key off restores the old behavior.",
+      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so new sessions on a supported model start with fast mode on. Set this key to `true` to stop that: a saved `fastMode: true` no longer turns fast mode on at session start, and each person runs `/fast` in each session they want it. Claude Code leaves `fastMode` in their file, so turning this key off restores the old behavior.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3077,7 +3077,7 @@
     {
       "symbol": "inputNeededNotifEnabled",
       "type": "config_key",
-      "description": "Get a push notification on your phone when a permission prompt or question is waiting for your input. Claude Code sends these only while Remote Control is connected. Appears in `/config` as **Push when actions required**.",
+      "description": "Get a push notification on your phone when a permission prompt or question is waiting for your input. In a local session, Claude Code sends these only while Remote Control is connected. Appears in `/config` as **Push when actions required**.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3212,7 +3212,7 @@
     {
       "symbol": "permissions",
       "type": "config_key",
-      "description": "Control which tools Claude can use without asking, which ones always prompt, and which ones are blocked, and set the permission mode a session starts in. Every `permissions.*` key below nests under this object.",
+      "description": "Control which tools Claude can use without asking, which ones prompt, and which ones are blocked. Also set the default permission mode for new sessions. Every `permissions.*` key below nests under this object.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3254,7 +3254,7 @@
     {
       "symbol": "permissions.defaultMode",
       "type": "config_key",
-      "description": "Set the permission mode new sessions start in. When you leave it unset, sessions start in the built-in default for your surface.",
+      "description": "Set the default permission mode for new sessions. When you leave it unset, the built-in default for your surface applies.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -4152,7 +4152,7 @@
     {
       "symbol": "ANTHROPIC_BEDROCK_SERVICE_TIER",
       "type": "env_var",
-      "description": "Amazon Bedrock service tier (`default`, `flex`, or `priority`). Sent as the `X-Amzn-Bedrock-Service-Tier` header. See Amazon Bedrock",
+      "description": "Amazon Bedrock service tier (`default`, `flex`, or `priority`). See Amazon Bedrock",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4724,6 +4724,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_CONFIG_LOCK_WAIT_MS",
+      "type": "env_var",
+      "description": "Milliseconds that a command adding or removing a `user` or `local` scope MCP server, such as `claude mcp add`, keeps trying for the lock on `~/.claude.json` before it fails. With it unset, the command waits about 10 to 20 seconds, and a shorter value changes nothing. Requires Claude Code v2.1.318 or later",
+      "doc_min_version": "2.1.318",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_CONNECT_TIMEOUT_MS",
       "type": "env_var",
       "description": "Removed in v2.1.186 and now a no-op. Previously set a separate timeout for the connect, TLS, and response-header phase of a streaming API request. Use `API_TIMEOUT_MS` instead. For the response-header phase of a streaming request, see `CLAUDE_STREAM_FIRST_BYTE_TIMEOUT_MS`",
@@ -4840,6 +4847,13 @@
       "type": "env_var",
       "description": "Set to `1` to stop Claude Code from terminating background shell commands under memory pressure. By default, on macOS and Linux, Claude Code terminates background shells when the operating system reports critical memory pressure and the session has been idle for 30 minutes with no turn or subagent running. Windows has no memory-pressure signal, so this variable has no effect there. Requires Claude Code v2.1.193 or later",
       "doc_min_version": "2.1.193",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_BG_STABLE_PATH",
+      "type": "env_var",
+      "description": "On macOS with the native installer, set to `1` to run each background session's host process from the installed binary, not `~/.local/share/claude/ClaudeCode.app`. macOS may then ask again for permissions such as folder access, including after each update. Set it in the `env` block of user settings, a managed settings file, or an MDM policy, not your shell. To remove `ClaudeCode.app`, delete it yourself. Requires Claude Code v2.1.295 or later",
+      "doc_min_version": "2.1.295",
       "doc_page": "env-vars"
     },
     {
@@ -5109,6 +5123,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_DROP_UNAVAILABLE_DEFERRED_TOOL",
+      "type": "env_var",
+      "description": "Set to `1` to drop a deferred tool call whose tool isn't available when you resume with `-p`. Without this variable, the call stays pending and a prompt you send doesn't reach Claude. Requires Claude Code v2.1.319 or later",
+      "doc_min_version": "2.1.319",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_EFFORT_LEVEL",
       "type": "env_var",
       "description": "Set the effort level for supported models. Values: `low`, `medium`, `high`, `xhigh`, or `max`. Available levels depend on the model. Takes precedence over `--effort`, `/effort`, and the `modelSettings` and `effortLevel` settings. A `maxEffortLevel` cap still applies. Set it to `auto` or `unset` to have Claude Code send no effort level, so that the API applies its own default for the model. See Adjust effort level",
@@ -5244,7 +5265,7 @@
     {
       "symbol": "CLAUDE_CODE_EXTRA_BODY",
       "type": "env_var",
-      "description": "JSON object to merge into the top level of every API request body. Useful for passing provider-specific parameters that Claude Code doesn't expose directly. A value exported in your shell also applies to the background sessions you dispatch with `claude agents` or `--bg`. Before v2.1.206, background sessions ignored a shell-exported value and used whatever copy the background supervisor process inherited",
+      "description": "JSON object to merge into the top level of model request bodies except on some requests outside the conversation, such as `/model` checks. Useful for passing provider-specific parameters that Claude Code doesn't expose directly. A value exported in your shell also applies to the background sessions you dispatch with `claude agents` or `--bg`. Before v2.1.206, background sessions ignored a shell-exported value and used whatever copy the background supervisor process inherited",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -5370,7 +5391,7 @@
     {
       "symbol": "CLAUDE_CODE_IDE_SKIP_AUTO_INSTALL",
       "type": "env_var",
-      "description": "Set to `1` to stop `/ide` from installing the IDE extension. Equivalent to setting `autoInstallIdeExtension` to `false`",
+      "description": "Set to `1` to stop `/ide` from installing the IDE extension. Equivalent to setting `autoInstallIdeExtension` to `false`. Claude Code versions before v2.1.318 also install or update the extension when you start `claude` in a VS Code, Cursor, or Devin Desktop terminal. This variable stops that too",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -5748,7 +5769,7 @@
     {
       "symbol": "CLAUDE_CODE_REMOTE_MCP_CONFIG",
       "type": "env_var",
-      "description": "Path to a file in `CLAUDE_CONFIG_DIR` holding the MCP server definitions that Anthropic's control plane delivered for this session. If your wrapper rebuilds the child's environment, carry this variable over. Without it, when the control plane updates the delivered servers, the child shuts down any stdio, HTTP, or SSE server your wrapper adds with `--mcp-config` that isn't in the update. Requires Claude Code v2.1.299 or later.",
+      "description": "Path to a file in `CLAUDE_CONFIG_DIR` holding the control plane's delivered MCP servers. If your wrapper rebuilds the child's environment, carry this variable, `CLAUDE_CODE_REMOTE`, and `CLAUDE_CODE_ENVIRONMENT_KIND` over unchanged; the runner sets all three. If `CLAUDE_CODE_REMOTE` arrives but this variable or `CLAUDE_CODE_ENVIRONMENT_KIND` doesn't, the child stops stdio, HTTP, and SSE servers your wrapper adds with `--mcp-config` that an update of the delivered servers omits. Requires Claude Code v2.1.299 or later.",
       "doc_min_version": "2.1.299",
       "doc_page": "self-hosted-environments-configuration"
     },
@@ -6481,6 +6502,13 @@
       "doc_page": "self-hosted-environments-reference"
     },
     {
+      "symbol": "CLAUDE_RUNNER_SPAWN_REASON",
+      "type": "env_var",
+      "description": "Why Anthropic sent this spawn request, such as `runner_lost` or `resumed`. Unset when the request carries no well-formed reason, so read it as `\"${CLAUDE_RUNNER_SPAWN_REASON:-}\"`. Requires Claude Code v2.1.318 or later on the orchestrator",
+      "doc_min_version": "2.1.318",
+      "doc_page": "self-hosted-environments-configuration"
+    },
+    {
       "symbol": "CLAUDE_RUNNER_USE_GIT_PROXY",
       "type": "env_var",
       "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Supersedes the rewrite flags.",
@@ -6861,7 +6889,7 @@
     {
       "symbol": "MCP_PROTOCOL_NEGOTIATION",
       "type": "env_var",
-      "description": "On the v2 MCP client runtime only, controls whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `legacy` to skip the probe, so that every server connects with the handshake from before that revision. Set `auto` to probe the server kinds that support the probe: HTTP and stdio servers, claude.ai connectors, and the connectors of cloud and Remote Control sessions. With the variable unset, Claude Code probes those same kinds by default; see MCP client runtimes. Any other value is ignored with a warning in the debug log. Requires Claude Code v2.1.221 or later",
+      "description": "On the v2 MCP client runtime only, controls whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `legacy` to keep every server on the earlier handshake, or `auto` to probe the server kinds that support it. Unset, Claude Code probes them but can skip some servers. Any other value is ignored with a warning in the debug log. Requires Claude Code v2.1.221 or later",
       "doc_min_version": "2.1.221",
       "doc_page": "env-vars"
     },
