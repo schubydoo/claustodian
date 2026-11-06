@@ -3342,11 +3342,11 @@
       "first_seen": "2.1.268",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Remove a session's per-session directories under `<base-dir>/_sessions/` when the session ends on this runner, whatever the outcome. Reuse a pre-warmed checkout describes what they hold and who can read them when they stay. The removal is best-effort: the per-session directories stay in place when the runner is killed or reaches its drain deadline before cleanup runs. With the flag on, a failed or interrupted session's debug log isn't kept on disk. Requires Claude Code v2.1.268 or later.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "self-hosted-runner"
@@ -6807,7 +6807,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**. When you change it there, Claude Code also saves the value to your account.",
+      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. In a local session, Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**. When you change it there, Claude Code also saves the value to your account.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7121,8 +7121,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Let `/ide` install the Claude Code IDE extension in a running VS Code, Cursor, or Devin Desktop when you run the command from an external terminal. Claude Code doesn't install the extension when you start it. Appears in `/config` as **Auto-install IDE extension** when you run Claude Code inside a VS Code or JetBrains terminal.",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "global-config"
     },
@@ -8106,7 +8105,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn fast mode on for sessions where it's available, for interactive work like rapid iteration or live debugging where you want speed at a higher cost per token. You don't usually edit this key by hand: running `/fast` writes `fastMode: true` to `~/.claude/settings.json`, and running it again to turn fast mode off removes the key. Fast mode runs only on Opus 5.5, Opus 5, and Opus 4.8: turning it on from another model switches you to Opus, and switching to an unsupported model turns it off. See Switch models while fast mode is on.",
+      "description": "Turn fast mode on for sessions where it's available, for interactive work such as rapid iteration or live debugging where you want speed at a higher cost per token. You don't usually edit this key yourself. Running `/fast` writes `fastMode: true` to `~/.claude/settings.json`, and running it again to turn fast mode off removes the key.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8119,7 +8118,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so fast mode is on at the start of every later session. Set this key to `true` to stop that: a saved `fastMode: true` no longer turns fast mode on at session start, and each person has to run `/fast` in each session they want it. Claude Code leaves the `fastMode` key in their file, so turning this key off restores the old behavior.",
+      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so new sessions on a supported model start with fast mode on. Set this key to `true` to stop that: a saved `fastMode: true` no longer turns fast mode on at session start, and each person runs `/fast` in each session they want it. Claude Code leaves `fastMode` in their file, so turning this key off restores the old behavior.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8364,7 +8363,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Get a push notification on your phone when a permission prompt or question is waiting for your input. Claude Code sends these only while Remote Control is connected. Appears in `/config` as **Push when actions required**.",
+      "description": "Get a push notification on your phone when a permission prompt or question is waiting for your input. In a local session, Claude Code sends these only while Remote Control is connected. Appears in `/config` as **Push when actions required**.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8676,7 +8675,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Control which tools Claude can use without asking, which ones always prompt, and which ones are blocked, and set the permission mode a session starts in. Every `permissions.*` key below nests under this object.",
+      "description": "Control which tools Claude can use without asking, which ones prompt, and which ones are blocked. Also set the default permission mode for new sessions. Every `permissions.*` key below nests under this object.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8741,7 +8740,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set the permission mode new sessions start in. When you leave it unset, sessions start in the built-in default for your surface.",
+      "description": "Set the default permission mode for new sessions. When you leave it unset, the built-in default for your surface applies.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -12515,6 +12514,18 @@
       "category": "other"
     },
     {
+      "symbol": "ALL_PROXY",
+      "type": "env_var",
+      "first_seen": "2.1.210",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "network"
+    },
+    {
       "symbol": "ANTHROPIC_API_KEY",
       "type": "env_var",
       "first_seen": "0.2.54",
@@ -12640,7 +12651,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Amazon Bedrock service tier (`default`, `flex`, or `priority`). Sent as the `X-Amzn-Bedrock-Service-Tier` header. See Amazon Bedrock",
+      "description": "Amazon Bedrock service tier (`default`, `flex`, or `priority`). See Amazon Bedrock",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -15620,11 +15631,11 @@
       "first_seen": "1.0.36",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Path to client certificate file for mTLS authentication",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -16215,11 +16226,12 @@
       "type": "env_var",
       "first_seen": "2.1.295",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "On macOS with the native installer, set to `1` to run each background session's host process from the installed binary, not `~/.local/share/claude/ClaudeCode.app`. macOS may then ask again for permissions such as folder access, including after each update. Set it in the `env` block of user settings, a managed settings file, or an MDM policy, not your shell. To remove `ClaudeCode.app`, delete it yourself. Requires Claude Code v2.1.295 or later",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -16457,11 +16469,11 @@
       "first_seen": "2.1.251",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to `1` so that Claude waits for the result of an MCP task in an interactive session. While automatic backgrounding is on, it still moves the call to the background after two minutes by default.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -17508,7 +17520,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "JSON object to merge into the top level of every API request body. Useful for passing provider-specific parameters that Claude Code doesn't expose directly. A value exported in your shell also applies to the background sessions you dispatch with `claude agents` or `--bg`. Before v2.1.206, background sessions ignored a shell-exported value and used whatever copy the background supervisor process inherited",
+      "description": "JSON object to merge into the top level of model request bodies except on some requests outside the conversation, such as `/model` checks. Useful for passing provider-specific parameters that Claude Code doesn't expose directly. A value exported in your shell also applies to the background sessions you dispatch with `claude agents` or `--bg`. Before v2.1.206, background sessions ignored a shell-exported value and used whatever copy the background supervisor process inherited",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -18391,8 +18403,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to stop `/ide` from installing the IDE extension. Equivalent to setting `autoInstallIdeExtension` to `false`",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
@@ -18547,11 +18558,11 @@
       "type": "env_var",
       "first_seen": "2.1.157",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -23021,11 +23032,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Absolute path where the working tree must be left",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-configuration.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -24391,7 +24402,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "On the v2 MCP client runtime only, controls whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `legacy` to skip the probe, so that every server connects with the handshake from before that revision. Set `auto` to probe the server kinds that support the probe: HTTP and stdio servers, claude.ai connectors, and the connectors of cloud and Remote Control sessions. With the variable unset, Claude Code probes those same kinds by default; see MCP client runtimes. Any other value is ignored with a warning in the debug log. Requires Claude Code v2.1.221 or later",
+      "description": "On the v2 MCP client runtime only, controls whether Claude Code probes servers for MCP protocol revision 2026-07-28. Set `legacy` to keep every server on the earlier handshake, or `auto` to probe the server kinds that support it. Unset, Claude Code probes them but can skip some servers. Any other value is ignored with a warning in the debug log. Requires Claude Code v2.1.221 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
