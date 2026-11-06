@@ -360,6 +360,12 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   // 2.1.289 binary the name appears only in the Bash command analyzer's sets of
   // shell variable names; nothing reads it from the environment.
   'BASHPID',
+  // The same class, from the 2.1.316 bugfix bullet "Fixed bash scripts started
+  // from the Bash tool stopping after their first command when `SHELLOPTS` is
+  // exported". Bash owns it. In the 2.1.319 binary it appears only in the sets of
+  // variables stripped from a child shell's environment. The binary lane keeps
+  // its own record: 2.1.8 to 2.1.26 read it to set `igncr` on Windows.
+  'SHELLOPTS',
   // OS/shell environment variables Claude Code reads but does not own; the
   // changelog names them incidentally ("a stale `PATH`"; and the 2.1.251 bullet
   // "no longer set `CLAUDE_CONFIG_DIR`, `CLAUDE_CODE_TMPDIR`, or `TMPDIR`/`TMP`/
