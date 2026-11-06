@@ -169,6 +169,11 @@ describe('extractSymbols', () => {
         'Fixed Bash tool permission check to prompt before a `BASHPID` assignment whose value the shell would evaluate as arithmetic, instead of allowing it silently'
       )
     ).toEqual([]);
+    expect(
+      extractSymbols(
+        'Fixed bash scripts started from the Bash tool stopping after their first command when `SHELLOPTS` is exported'
+      )
+    ).toEqual([]);
     // The temp-dir bullet drops the OS vars `TMPDIR`/`TMP`/`TEMP` but MUST keep the
     // real Claude Code vars it names alongside them — proving the drop is targeted,
     // not the whole bullet going empty.
@@ -326,6 +331,7 @@ describe('extractSymbols', () => {
       'GIT_SSL_CAINFO',
       'GIT_SSL_NO_VERIFY',
       'GIT_CONFIG',
+      'SHELLOPTS',
       'TERM',
       'PATH',
       'HOME',
