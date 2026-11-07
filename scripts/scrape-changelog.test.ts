@@ -159,6 +159,8 @@ describe('extractSymbols', () => {
         'call the GitHub API directly (via `gh auth token`, `GH_TOKEN`, or `GITHUB_TOKEN`)'
       )
     ).toEqual([]);
+    // `--hostname` is gh api's flag, not Claude Code's. It is still published, and
+    // its removal is deferred to a later decision. This pin is not proof of ownership.
     expect(
       extractSymbols(
         'Changed the built-in `gh api` in cloud sessions: a host other than github.com set in `GH_HOST` or `GH_REPO` is now refused (use `--hostname` or a full URL), and stderr notes requests to other hosts'
