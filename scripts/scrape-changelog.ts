@@ -349,6 +349,11 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   // ownership line the git primitives above sit on.
   'GH_TOKEN',
   'GITHUB_TOKEN',
+  // The same line, from the 2.1.290 bullet "a host other than github.com set in
+  // `GH_HOST` or `GH_REPO` is now refused". The GitHub CLI defines both in its
+  // `gh help environment` topic. Claude Code's built-in `gh api` reads them.
+  'GH_HOST',
+  'GH_REPO',
   // Shell (bash) built-in variables named only as EXAMPLES, from the 2.1.251
   // bugfix bullet "auto-approving commands that assign an arithmetic expression to
   // an integer shell variable (e.g. `OPTIND=1`/`0`, `RANDOM=2+2`)". They match via
