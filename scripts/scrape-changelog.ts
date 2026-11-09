@@ -1320,8 +1320,8 @@ function finalizeRecord(input: SymbolRecord & { first_seen_estimated: boolean })
  * `first_seen`: a docs `min-version` (authoritative) or an introducing bullet
  * anchors it (confidence "high"); an incidental-only mention or a docs page
  * without a min-version leaves it an upper bound (`first_seen_estimated`,
- * confidence "medium") for the binary lane to correct. An estimate that survives
- * every lane is then frozen against the prior dataset (see freezeEstimatedFirstSeen).
+ * confidence "medium") for the binary lane to correct. An estimate is frozen against
+ * the prior dataset before and after the binary lane (see freezeEstimatedFirstSeen).
  */
 export function enrichSymbols(
   collected: Map<string, CollectedSymbol>,
@@ -1547,8 +1547,15 @@ export function enrichWithBinary(
             removed_in: obs.removed_in,
           })
         : promoted;
-    const redateTo = binaryRedateVersion(obs, described.first_seen_estimated === true);
-    if (redateTo === null || compareVersionsAsc(redateTo, described.first_seen) >= 0) {
+    const estimated = described.first_seen_estimated === true;
+    const redateTo = binaryRedateVersion(obs, estimated);
+    // A sighting at the estimate's own version proves that date too, so it anchors
+    // an ESTIMATE as an earlier one does. The estimate is frozen before this lane, so
+    // without this a symbol that docs and the binary first show in one release would
+    // stay estimated for good. An anchored date is only ever moved earlier.
+    if (redateTo === null) return described;
+    const order = compareVersionsAsc(redateTo, described.first_seen);
+    if (order > 0 || (order === 0 && !estimated)) {
       return described;
     }
     // A switch-case-only observation is subcommand-scoped, so it says nothing about
@@ -1677,9 +1684,10 @@ export function controlRecordsFor(
  * symbol with no date evidence gets `latestVersion` as its upper bound, which
  * would otherwise creep forward to the newest release on every scrape (pure
  * churn). Once a lane anchors a symbol its estimate is cleared, so this only
- * touches records still `first_seen_estimated` after the binary lane — and only
- * pulls first_seen EARLIER, to the version we already recorded it at (our own
- * committed history is the timeline). A newly-seen estimate has no prior entry
+ * touches records still `first_seen_estimated` — and only pulls first_seen
+ * EARLIER, to the version we already recorded it at (our own committed history is
+ * the timeline). buildEnrichedSnapshots runs it before the binary lane, so that lane
+ * compares its sighting with the frozen date and not with the tip, and again after. A newly-seen estimate has no prior entry
  * and stays at `latestVersion`, freezing there for every subsequent scrape.
  */
 export function freezeEstimatedFirstSeen(

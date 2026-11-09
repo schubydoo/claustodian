@@ -1812,6 +1812,16 @@ describe('a frozen estimate is not re-dated later by the binary lane', () => {
     expect(recordAt(snaps, '2.1.210')).toBeDefined();
   });
 
+  it('anchors a frozen estimate that the binary first sees in the same release', () => {
+    // Frozen at 2.1.319 and first seen by the binary at 2.1.319: the sighting proves
+    // the date, so the record must not stay an estimate for good.
+    const prior = new Map([['env_var:CLAUDE_PLUGIN_DATA', '2.1.319']]);
+    const snaps = buildEnrichedSnapshots(blocks, docs, binary, prior);
+    expect(recordAt(snaps, '2.1.321')?.first_seen).toBe('2.1.319');
+    expect(recordAt(snaps, '2.1.321')?.first_seen_estimated).toBeUndefined();
+    expect(recordAt(snaps, '2.1.321')?.confidence).toBe('high');
+  });
+
   it('still re-dates to a binary sighting earlier than the frozen estimate', () => {
     const prior = new Map([['env_var:CLAUDE_PLUGIN_DATA', '2.1.321']]);
     const snaps = buildEnrichedSnapshots(blocks, docs, binary, prior);

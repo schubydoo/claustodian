@@ -1187,6 +1187,19 @@ describe('parseDocPage — mods reference', () => {
     expect(methods().every((e) => e.doc_min_version === null)).toBe(true);
   });
 
+  it('reads a list whose first method is a link', () => {
+    const page = [
+      '## Mods API methods',
+      '| Namespace | Methods |',
+      '| :- | :- |',
+      '| `$.ui` | [`toast`](/docs/x), `status` |',
+    ].join('\n');
+    expect(parseDocPage('plugins/mods/reference', page).map((e) => e.symbol)).toEqual([
+      '$.ui.toast',
+      '$.ui.status',
+    ]);
+  });
+
   it('reads a list ending in "or", and names written as calls', () => {
     const page = [
       '## Mods API methods',
@@ -1214,6 +1227,8 @@ describe('parseDocPage — mods reference', () => {
       // A link the list cannot read must not end the list early either.
       '| `$.ui` | `toast`, [see the guide](/docs/x), `status` |',
       '| `$.ui` | `toast`, [`get_all`](/docs/x), `status` |',
+      // Prose that starts with a link is not a method list.
+      '| `$.ui` | See [the guide](/docs/x): `toast` |',
       '| $.ui | `toast` |',
       '| `$.ui` |',
       '|',
