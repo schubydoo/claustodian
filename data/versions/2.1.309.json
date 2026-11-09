@@ -7931,7 +7931,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. The desktop app reads this key; the terminal CLI ignores it.",
+      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. HTML previews in SSH and WSL sessions still open, but they don't run scripts. The desktop app reads this key; the terminal CLI ignores it.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
