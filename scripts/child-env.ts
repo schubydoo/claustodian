@@ -27,7 +27,9 @@
  * HOW AN OBJECT REACHES THE OPTION. An env site is a property named `env`, or one
  * whose camelCase name ends in `Env` (`enforcedEnv`, `extendEnv`): the session
  * runner passes its object as `La({inheritedEnv:process.env,enforcedEnv:Zn})` and
- * hands the result to `{env:Pe}`. From the site's value the walk follows only the
+ * hands the result to `{env:Pe}`. A plain `=` assignment to a member of either name
+ * (`z.env=Y`) is a site too: the plugin MCP server code writes its object that way
+ * from 2.1.78 to 2.1.318. From the site's value the walk follows only the
  * parts that can carry the environment itself: an object literal's KEYS, its
  * spreads, both arms of `?:`, both sides of `&&`/`||`/`??`, call arguments, and a
  * variable, through up to ENV_FLOW_HOPS declarations in scope. It never reads a
@@ -108,13 +110,32 @@ function envParts(x: unknown, ids: Set<string>, objects: Node[]): void {
   }
 }
 
-/** Every env site in `program`, each with the scope its value is read in. */
+/** A member's property name as written (`o.env`, `o["env"]`), or undefined. */
+function memberName(m: Node): string | undefined {
+  if (m.type !== 'MemberExpression') return undefined;
+  const prop = m.property as Node;
+  if (!m.computed && prop.type === 'Identifier') return prop.name as string;
+  if (m.computed && prop.type === 'Literal' && typeof prop.value === 'string') return prop.value;
+  return undefined;
+}
+
+/**
+ * Every env site in `program`, each with the scope its value is read in. A site is
+ * an `env` property of an object literal, or a plain assignment to an `env` member.
+ * The plugin MCP server code builds its object and then writes `z.env=Y` from
+ * 2.1.78 to 2.1.318, so a property-only rule never saw CLAUDE_PLUGIN_DATA there.
+ */
 function collectSites(program: Node): { value: unknown; scope: Scope }[] {
   const sites: { value: unknown; scope: Scope }[] = [];
   walkScopes(program, (n, scope) => {
-    if (n.type !== 'Property') return;
-    const name = keyName(n);
-    if (name !== undefined && ENV_SITE.test(name)) sites.push({ value: n.value, scope });
+    const name =
+      n.type === 'Property'
+        ? keyName(n)
+        : n.type === 'AssignmentExpression' && n.operator === '='
+          ? memberName(n.left as Node)
+          : undefined;
+    if (name === undefined || !ENV_SITE.test(name)) return;
+    sites.push({ value: n.type === 'Property' ? n.value : n.right, scope });
   });
   return sites;
 }
