@@ -11,6 +11,29 @@ describe('collectChildEnvNames', () => {
     ]);
   });
 
+  it('treats an assignment to an `env` member as an env site', () => {
+    // The plugin MCP server shape from 2.1.78 to 2.1.318: the object is built,
+    // then assigned to the server config's env, which Claude Code spawns with.
+    const src =
+      'function m(e,n){let z={...e},Y={CLAUDE_PLUGIN_ROOT:n.path,CLAUDE_PLUGIN_DATA:d(n),' +
+      '...z.env||{}};if(z.env=Y,z.cwd)z.cwd=1;return z}';
+    expect(names(src)).toEqual(['CLAUDE_PLUGIN_DATA', 'CLAUDE_PLUGIN_ROOT']);
+    expect(names('o.extendEnv={CLAUDE_ASSIGNED_ENV:1}')).toEqual(['CLAUDE_ASSIGNED_ENV']);
+    expect(names('o["env"]={CLAUDE_QUOTED_MEMBER:1}')).toEqual(['CLAUDE_QUOTED_MEMBER']);
+  });
+
+  it('reads no assignment that is not a plain `=` to an env member', () => {
+    for (const src of [
+      'o.environment={CLAUDE_NOT_ENV:1}',
+      'o[k]={CLAUDE_COMPUTED:1}',
+      'env={CLAUDE_BARE_NAME:1}',
+      'o.env||={CLAUDE_LOGICAL:1}',
+      'o.env.X={CLAUDE_DEEPER:1}',
+    ]) {
+      expect(names(src)).toEqual([]);
+    }
+  });
+
   it('follows a variable through a wrapper call into its declaration', () => {
     // The hook shape: the object is declared first and reaches `env` inside a call.
     const src =
