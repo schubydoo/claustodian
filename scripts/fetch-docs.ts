@@ -801,8 +801,9 @@ function assertReadableRow(
  * namespace (`` `$.ui` ``, sometimes as a link) and lists its methods in backticks,
  * often followed by notes that backtick other words: `$.agent` lists status values,
  * and `$.state` names helper functions. So only the LEADING run of backticked words
- * (optionally written as calls) joined by commas, "and" or "or" is read, which is
- * the method list on every row.
+ * (optionally written as calls, optionally as a link such as `$.ui`'s
+ * [`place`](…)) joined by commas, "and" or "or" is read, which is the method list
+ * on every row.
  *
  * No row dates a method: a version in a note (`$.agent`'s v2.1.289) dates the note.
  * The rows carry no per-method description either, so the description is empty and
@@ -824,13 +825,13 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
     if (namespaceCell === 'Namespace') continue; // the header row
     const namespace = /`\$\.([a-z][a-zA-Z0-9]*)`/.exec(namespaceCell ?? '')?.[1];
     const run =
-      /^[^`]*((?:`[a-z][a-zA-Z0-9]*(?:\(\))?`(?:,\s*(?:(?:and|or)\s+)?|\s+(?:and|or)\s+)?)+)/.exec(
+      /^[^`]*((?:(?:`[a-z][a-zA-Z0-9]*(?:\(\))?`|\[`[a-z][a-zA-Z0-9]*(?:\(\))?`\]\([^)\s]*\))(?:,\s*(?:(?:and|or)\s+)?|\s+(?:and|or)\s+)?)+)/.exec(
         methodsCell ?? ''
       );
     const leading = run?.[1];
-    // A list that stops at a backtick stopped at a name it cannot read, so the rest
-    // of the list would be lost; the notes after a whole list start with prose.
-    const cutShort = run !== null && run.input.slice(run[0].length).startsWith('`');
+    // A list that stops at a backtick or a link stopped at a name it cannot read, so
+    // the rest of the list would be lost; the notes after a whole list start with prose.
+    const cutShort = run !== null && /^[`[]/.test(run.input.slice(run[0].length));
     // Every row of this table names methods, so a row this cannot read is a parser
     // gap, not an empty row. The page floor only catches a large loss.
     if (namespace === undefined || leading === undefined || cutShort) {
