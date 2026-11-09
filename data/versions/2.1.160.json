@@ -12760,6 +12760,19 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_PLUGIN_DATA",
+      "type": "env_var",
+      "first_seen": "2.1.78",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "`~/.claude/plugins/data/<id>/`, created on first reference and kept across plugin updates. `<id>` is the plugin identifier with every character other than a letter, digit, `_`, or `-` replaced by `-`",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins/manifest-reference.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_PLUGIN_ROOT",
       "type": "env_var",
       "first_seen": "1.0.85",
