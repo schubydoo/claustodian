@@ -16,6 +16,16 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ---
 
+## 2026-11-09
+
+### Fixed
+
+- **A binary sighting in the estimated release now proves the date.** Before, an
+  estimated `first_seen` lost the estimate only for a binary sighting in an EARLIER
+  release. A binary sighting in the same release proves the date too. From the next
+  data update, such a record has `confidence: "high"` and no `first_seen_estimated`.
+  No `first_seen` value changes.
+
 ## 2026-10-30
 
 ### Fixed
