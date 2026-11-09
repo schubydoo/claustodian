@@ -15587,7 +15587,7 @@
     {
       "symbol": "CLAUDE_PLUGIN_DATA",
       "type": "env_var",
-      "first_seen": "2.1.319",
+      "first_seen": "2.1.78",
       "last_seen": "2.1.321",
       "removed_in": null
     },
