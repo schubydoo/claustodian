@@ -1771,6 +1771,55 @@ describe('estimate does not float across a release bump', () => {
   });
 });
 
+describe('a frozen estimate is not re-dated later by the binary lane', () => {
+  // The CLAUDE_PLUGIN_DATA case: a docs-only env var with no min-version was frozen
+  // at 2.1.210, and the binary lane first saw it at 2.1.319. When the tip passed
+  // 2.1.319, the binary sighting beat the floating 2.1.321 bound, and the record
+  // was "re-dated" LATER than the frozen 2.1.210, out of every snapshot between.
+  const docs = docsIndex([
+    {
+      symbol: 'CLAUDE_PLUGIN_DATA',
+      type: 'env_var',
+      description: 'plugin data dir',
+      doc_min_version: null,
+      doc_page: 'plugins/manifest-reference',
+    },
+  ]);
+  const binary: BinaryObservations = {
+    $generated_by: 'scripts/backfill-binary.ts',
+    source: 'binary',
+    note: '',
+    observedVersions: ['2.1.210', '2.1.319', '2.1.321'],
+    symbols: [
+      {
+        symbol: 'CLAUDE_PLUGIN_DATA',
+        type: 'env_var',
+        first_seen: '2.1.319',
+        last_seen: '2.1.321',
+        removed_in: null,
+      },
+    ],
+  };
+  const blocks = ['2.1.210', '2.1.319', '2.1.321'].map((version) => ({ version, bullets: [] }));
+  const recordAt = (snaps: ReturnType<typeof buildEnrichedSnapshots>, v: string) =>
+    snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === 'CLAUDE_PLUGIN_DATA');
+
+  it('keeps the earlier frozen estimate', () => {
+    const prior = new Map([['env_var:CLAUDE_PLUGIN_DATA', '2.1.210']]);
+    const snaps = buildEnrichedSnapshots(blocks, docs, binary, prior);
+    expect(recordAt(snaps, '2.1.321')?.first_seen).toBe('2.1.210');
+    expect(recordAt(snaps, '2.1.321')?.first_seen_estimated).toBe(true);
+    expect(recordAt(snaps, '2.1.210')).toBeDefined();
+  });
+
+  it('still re-dates to a binary sighting earlier than the frozen estimate', () => {
+    const prior = new Map([['env_var:CLAUDE_PLUGIN_DATA', '2.1.321']]);
+    const snaps = buildEnrichedSnapshots(blocks, docs, binary, prior);
+    expect(recordAt(snaps, '2.1.321')?.first_seen).toBe('2.1.319');
+    expect(recordAt(snaps, '2.1.321')?.first_seen_estimated).toBeUndefined();
+  });
+});
+
 describe('assembleSnapshots — per-version descriptions (binary timeline)', () => {
   const cmd = (over: Partial<SymbolRecord>): SymbolRecord => ({
     symbol: '/review',

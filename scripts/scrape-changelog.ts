@@ -1747,7 +1747,16 @@ export function buildEnrichedSnapshots(
   // The changelog-only gate needs the binary lane, so the changelog+docs contract
   // without it publishes as before.
   const uncorroborated = binary ? uncorroboratedBy(docs, binary) : () => false;
-  const corroborated = enriched.filter((record) => !uncorroborated(record.type, record.symbol));
+  // Freeze BEFORE the binary lane as well as after it. The binary lane re-dates an
+  // estimate to any sighting earlier than its first_seen, and an unfrozen estimate
+  // still sits at the tip. So a sighting later than the frozen date but earlier
+  // than the tip moved the record LATER and cleared the estimate, and the freeze
+  // below then skipped it: CLAUDE_PLUGIN_DATA went from 2.1.210 to 2.1.319.
+  const freeze = (records: SymbolRecord[]) =>
+    priorFirstSeen ? freezeEstimatedFirstSeen(records, priorFirstSeen) : records;
+  const corroborated = freeze(
+    enriched.filter((record) => !uncorroborated(record.type, record.symbol))
+  );
   const withBinary = binary
     ? enrichWithBinary(
         corroborated,
@@ -1789,9 +1798,7 @@ export function buildEnrichedSnapshots(
     : enriched;
   const withRemovals = applyChangelogRemovals(withBinary);
   const withDeprecations = applyChangelogDeprecations(withRemovals);
-  const frozen = priorFirstSeen
-    ? freezeEstimatedFirstSeen(withDeprecations, priorFirstSeen)
-    : withDeprecations;
+  const frozen = freeze(withDeprecations);
   const snapshots = assembleSnapshots(
     frozen,
     blocks,
