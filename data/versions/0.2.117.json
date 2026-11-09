@@ -631,8 +631,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Install a Shift+Enter keybinding for newlines in VS Code, Cursor, Devin Desktop, Alacritty, or Zed. In Apple Terminal, enable Option+Enter for newlines and turn off the audible bell instead. In iTerm2, turn on clipboard access so that `/copy` works",
-      "description_source": "docs",
+      "description": "Install Shift+Enter key binding for newlines (iTerm2 and VSCode only)",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
