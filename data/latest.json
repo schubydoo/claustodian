@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.319",
+  "claudeCodeVersion": "2.1.321",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -1720,6 +1720,19 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--discard",
+      "type": "cli_flag",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Delete what is set aside instead of restoring it",
+      "source_url": null,
+      "category": "cli",
+      "description_source": "binary"
     },
     {
       "symbol": "--drain-grace-sec",
@@ -6908,7 +6921,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Ultra, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. `/cost` and `/stats` are aliases",
+      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Ultra, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. Behind a Claude apps gateway that tracks spend, shows your spend through the gateway. `/cost` and `/stats` are aliases",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -8115,7 +8128,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. The desktop app reads this key; the terminal CLI ignores it.",
+      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. HTML previews in SSH and WSL sessions still open, but they don't run scripts. The desktop app reads this key; the terminal CLI ignores it.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8495,7 +8508,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so new sessions on a supported model start with fast mode on. Set this key to `true` to stop that: a saved `fastMode: true` no longer turns fast mode on at session start, and each person runs `/fast` in each session they want it. Claude Code leaves `fastMode` in their file, so turning this key off restores the old behavior.",
+      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so new sessions on a supported model start with fast mode on. On Fable 5.2, that happens only if they turned it on while using Fable 5.2. To make each person run `/fast` in each session they want it, set this key to `true`. Claude Code leaves `fastMode` in their file, so turning this key off restores the old behavior.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9166,13 +9179,13 @@
       "type": "config_key",
       "first_seen": "2.1.319",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Never wait for a person to answer a tool permission prompt: a call that would prompt is denied at once, the model is told, and the turn carries on. This is what --permission-prompts none does for -p, in every kind of session, subagents and agent teams included. Allow rules, the permission mode, auto mode's classifier and PermissionRequest hooks decide first, as they do without it; it only ever denies, and allows nothing. Claude's questions and plan mode's tools are not offered to the model, and an MCP server's request for input is cancelled unless an Elicitation hook answers it. An app or script that answers prompts through canUseTool or --permission-prompt-tool is not asked either: answer from a PermissionRequest hook instead. Read from user settings, --settings and managed settings; project and local settings are ignored, and true in any of those sources wins.",
-      "source_url": null,
-      "category": "settings",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set this to `true` to keep a session running when nobody is there to answer a permission prompt. Claude Code denies a tool call that would otherwise wait on a prompt, and the turn continues. Requires Claude Code v2.1.319 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
     },
     {
       "symbol": "permissions.disableAutoMode",
@@ -12431,7 +12444,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "@internal Moves the session to a new working directory — the headless twin of /cd, for SDK hosts like Claude Desktop. Runs the same validation, Cd(...) permission rules, and relocation path as the interactive command, with the trust prompt delegated to the host via the needs_trust response arm. Before the first turn the move re-anchors start-of-session state (the first request is built as for a start in the new directory, no move notice); after a turn the prefix is preserved and the move arrives as an appended notice. SessionStart hooks are never re-run by set_cwd (those of the launch directory already ran and their output stays in the session); a host that starts the process before its directory is known should use --await-claim and claim_session, which run them in the bound directory instead. Rejected while a turn is in flight.",
+      "description": "@internal Moves the session to a new working directory — the headless twin of /cd, for SDK hosts like Claude Desktop. Runs the same validation, Cd(...) permission rules, and relocation path as the interactive command, with the trust prompt delegated to the host via the needs_trust response arm. Before the first turn the move re-anchors start-of-session state (the first request is built as for a start in the new directory, no move notice); after a turn the prefix is preserved and the move arrives as an appended notice. SessionStart hooks are never re-run by set_cwd (those of the launch directory already ran and their output stays in the session); a host that starts the process before its directory is known should use --await-claim and claim_session, which run them in the bound directory instead. Rejected while a turn is in flight, and, on a Remote Control session, when it comes from a remote client rather than from the process that owns the CLI's stdin.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -14435,6 +14448,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_BG_DISPATCH_ENTRYPOINT",
+      "type": "env_var",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_BG_GATEWAY_WITHHELD",
       "type": "env_var",
       "first_seen": "2.1.302",
@@ -16064,6 +16089,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_BRIDGE_CHILD_START_DIR",
+      "type": "env_var",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_BRIDGE_MCP_CARRIER",
       "type": "env_var",
       "first_seen": "2.1.239",
@@ -16122,6 +16159,18 @@
       "description": "Set automatically in Bash tool and hook command subprocesses while the session has an active Remote Control connection, and removed when the connection ends. The value is the session's ID in `session_` form, the same identifier that appears in the session's `claude.ai/code` URL, so a script can link back to the session that ran it. Requires Claude Code v2.1.199 or later. In cloud sessions, read `CLAUDE_CODE_REMOTE_SESSION_ID` instead",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_BRIDGE_SETTINGS_BINDING",
+      "type": "env_var",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -16321,6 +16370,18 @@
       "symbol": "CLAUDE_CODE_CCR_OWN_CONNECTION_POOL",
       "type": "env_var",
       "first_seen": "2.1.309",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_CCR_REQUESTS_BY_FETCH",
+      "type": "env_var",
+      "first_seen": "2.1.321",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -18396,18 +18457,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_ENABLE_CONFIG_MISSING_READ_GUARD",
-      "type": "env_var",
-      "first_seen": "2.1.317",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_ENABLE_DESIGN_SYNC",
       "type": "env_var",
       "first_seen": "2.1.166",
@@ -19310,6 +19359,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_GIT_CHECK_ONLY_IN_REPOSITORY",
+      "type": "env_var",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_GLOB_HIDDEN",
       "type": "env_var",
       "first_seen": "2.1.14",
@@ -19667,6 +19728,18 @@
       "symbol": "CLAUDE_CODE_HOST_GUARDS_ARTIFACTS_MCP",
       "type": "env_var",
       "first_seen": "2.1.312",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_HOST_OWNED_CONFIG_DIR",
+      "type": "env_var",
+      "first_seen": "2.1.321",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -20426,6 +20499,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_MCP_SERVE_GARBAGE_COLLECTIONS",
+      "type": "env_var",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_MCP_SERVE_INTERFACE_MIN_VERSION",
       "type": "env_var",
       "first_seen": "2.1.299",
@@ -20749,6 +20834,18 @@
       "symbol": "CLAUDE_CODE_NORMALIZE_PREFIX_CACHE_VERIFY",
       "type": "env_var",
       "first_seen": "2.1.319",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_NOTIFICATIONS_HOST",
+      "type": "env_var",
+      "first_seen": "2.1.321",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -21273,11 +21370,11 @@
       "first_seen": "2.1.259",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Controls whether Claude Code reloads a mod when the mod's files change. Reloading applies to a mod you load from a directory with `--plugin-dir`, and it's on by default in interactive sessions. Set to `1` to turn it on in non-interactive sessions as well, or `0` to turn it off in every session. Requires Claude Code v2.1.287 or later. See mod settings and environment variables",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -21650,7 +21747,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Set to `1` to allow the proxy to perform DNS resolution instead of the caller. Opt-in for environments where the proxy should handle hostname resolution",
+      "description": "Set to `1` to allow the proxy to perform DNS resolution instead of the caller. Opt-in for environments where the proxy should handle hostname resolution. When `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` is set, set this in the environment of the process that starts Claude Code",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -24009,6 +24106,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_TOOL_PICTURE_SERVERS",
+      "type": "env_var",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_TOTAL_TOKENS_REMINDER",
       "type": "env_var",
       "first_seen": "2.1.176",
@@ -24166,6 +24275,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_ULTRAREVIEW_PR_AS_MERGED",
+      "type": "env_var",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_ULTRAREVIEW_QUOTA_FIXTURE",
       "type": "env_var",
       "first_seen": "2.1.224",
@@ -24193,6 +24314,42 @@
       "symbol": "CLAUDE_CODE_UPFRONT_TOOLS",
       "type": "env_var",
       "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_USER_DELEGATED_SESSION_ALLOWED_CHECK_MODELS",
+      "type": "env_var",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_USER_DELEGATED_SESSION_ALLOWED_PROVIDERS",
+      "type": "env_var",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_USER_DELEGATED_SESSION_DIRECT_API",
+      "type": "env_var",
+      "first_seen": "2.1.321",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -25061,12 +25218,11 @@
     {
       "symbol": "CLAUDE_PLUGIN_DATA",
       "type": "env_var",
-      "first_seen": "2.1.210",
-      "first_seen_estimated": true,
+      "first_seen": "2.1.319",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "`~/.claude/plugins/data/<id>/`, created on first reference and kept across plugin updates. `<id>` is the plugin identifier with every character other than a letter, digit, `_`, or `-` replaced by `-`",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/manifest-reference.md",
@@ -25304,7 +25460,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Absolute path where the working tree must be left",
+      "description": "Absolute path where the working tree must be left. See Checkout folder names.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -28217,6 +28373,20 @@
       "category": "other"
     },
     {
+      "symbol": "VERTEX_REGION_CLAUDE_FABLE_5_2",
+      "type": "env_var",
+      "first_seen": "2.1.321",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Override region for Claude Fable 5.2 when using Google Cloud's Agent Platform. Added in v2.1.321",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "other"
+    },
+    {
       "symbol": "VERTEX_REGION_CLAUDE_HAIKU_4_5",
       "type": "env_var",
       "first_seen": "2.0.17",
@@ -29646,6 +29816,18 @@
       "category": "mods"
     },
     {
+      "symbol": "$.decision.ask",
+      "type": "mod_method",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
       "symbol": "$.env.get",
       "type": "mod_method",
       "first_seen": "2.1.267",
@@ -29783,10 +29965,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "mods"
     },
     {
@@ -30281,10 +30463,10 @@
       "first_seen": "2.1.319",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -30293,10 +30475,10 @@
       "first_seen": "2.1.319",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -30305,10 +30487,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "mods"
     },
     {
@@ -30366,10 +30548,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -30378,10 +30560,22 @@
       "first_seen": "2.1.271",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "$.ui.cancelNotify",
+      "type": "mod_method",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -30402,10 +30596,10 @@
       "first_seen": "2.1.280",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -30414,10 +30608,10 @@
       "first_seen": "2.1.271",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -30438,10 +30632,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -30450,10 +30644,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -30523,10 +30717,10 @@
       "first_seen": "2.1.271",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -30548,10 +30742,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -30560,10 +30754,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -30621,10 +30815,10 @@
       "first_seen": "2.1.317",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -30669,10 +30863,10 @@
       "first_seen": "2.1.314",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -30849,6 +31043,19 @@
       "description_source": "binary"
     },
     {
+      "symbol": "claude-fable-5-2",
+      "type": "model",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Fable 5.2",
+      "source_url": null,
+      "category": "models",
+      "description_source": "binary"
+    },
+    {
       "symbol": "claude-haiku-4-5-20251001",
       "type": "model",
       "first_seen": "2.0.17",
@@ -30896,6 +31103,19 @@
       "provenance": "binary",
       "confidence": "medium",
       "description": "Mythos 5.1",
+      "source_url": null,
+      "category": "models",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "claude-mythos-5-2",
+      "type": "model",
+      "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Mythos 5.2",
       "source_url": null,
       "category": "models",
       "description_source": "binary"

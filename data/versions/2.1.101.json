@@ -3795,7 +3795,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so new sessions on a supported model start with fast mode on. Set this key to `true` to stop that: a saved `fastMode: true` no longer turns fast mode on at session start, and each person runs `/fast` in each session they want it. Claude Code leaves `fastMode` in their file, so turning this key off restores the old behavior.",
+      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so new sessions on a supported model start with fast mode on. On Fable 5.2, that happens only if they turned it on while using Fable 5.2. To make each person run `/fast` in each session they want it, set this key to `true`. Claude Code leaves `fastMode` in their file, so turning this key off restores the old behavior.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7885,7 +7885,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Set to `1` to allow the proxy to perform DNS resolution instead of the caller. Opt-in for environments where the proxy should handle hostname resolution",
+      "description": "Set to `1` to allow the proxy to perform DNS resolution instead of the caller. Opt-in for environments where the proxy should handle hostname resolution. When `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` is set, set this in the environment of the process that starts Claude Code",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"

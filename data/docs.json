@@ -2285,7 +2285,7 @@
     {
       "symbol": "/usage",
       "type": "command",
-      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Ultra, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. `/cost` and `/stats` are aliases",
+      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Ultra, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. Behind a Claude apps gateway that tracks spend, shows your spend through the gateway. `/cost` and `/stats` are aliases",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2775,7 +2775,7 @@
     {
       "symbol": "disableBrowserExternalNavigation",
       "type": "config_key",
-      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. The desktop app reads this key; the terminal CLI ignores it.",
+      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. HTML previews in SSH and WSL sessions still open, but they don't run scripts. The desktop app reads this key; the terminal CLI ignores it.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -2958,7 +2958,7 @@
     {
       "symbol": "fastModePerSessionOptIn",
       "type": "config_key",
-      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so new sessions on a supported model start with fast mode on. Set this key to `true` to stop that: a saved `fastMode: true` no longer turns fast mode on at session start, and each person runs `/fast` in each session they want it. Claude Code leaves `fastMode` in their file, so turning this key off restores the old behavior.",
+      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so new sessions on a supported model start with fast mode on. On Fable 5.2, that happens only if they turned it on while using Fable 5.2. To make each person run `/fast` in each session they want it, set this key to `true`. Claude Code leaves `fastMode` in their file, so turning this key off restores the old behavior.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3263,6 +3263,13 @@
       "type": "config_key",
       "description": "List the tool uses Claude Code blocks. Use it for files that hold API keys, secrets, or environment values: Claude Code excludes matching files from file discovery and search results, denies reads of them, and blocks the Edit and Write tools on the matching paths.",
       "doc_min_version": null,
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "permissions.denyInsteadOfPrompting",
+      "type": "config_key",
+      "description": "Set this to `true` to keep a session running when nobody is there to answer a permission prompt. Claude Code denies a tool call that would otherwise wait on a prompt, and the turn continues. Requires Claude Code v2.1.319 or later.",
+      "doc_min_version": "2.1.319",
       "doc_page": "settings-reference"
     },
     {
@@ -5755,7 +5762,7 @@
     {
       "symbol": "CLAUDE_CODE_PROXY_RESOLVES_HOSTS",
       "type": "env_var",
-      "description": "Set to `1` to allow the proxy to perform DNS resolution instead of the caller. Opt-in for environments where the proxy should handle hostname resolution",
+      "description": "Set to `1` to allow the proxy to perform DNS resolution instead of the caller. Opt-in for environments where the proxy should handle hostname resolution. When `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` is set, set this in the environment of the process that starts Claude Code",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -6371,7 +6378,7 @@
     {
       "symbol": "CLAUDE_RUNNER_CHECKOUT_PATH",
       "type": "env_var",
-      "description": "Absolute path where the working tree must be left",
+      "description": "Absolute path where the working tree must be left. See Checkout folder names.",
       "doc_min_version": null,
       "doc_page": "self-hosted-environments-configuration"
     },
@@ -7559,6 +7566,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "VERTEX_REGION_CLAUDE_FABLE_5_2",
+      "type": "env_var",
+      "description": "Override region for Claude Fable 5.2 when using Google Cloud's Agent Platform. Added in v2.1.321",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "VERTEX_REGION_CLAUDE_HAIKU_4_5",
       "type": "env_var",
       "description": "Override region for Claude Haiku 4.5 when using Google Cloud's Agent Platform",
@@ -8644,6 +8658,20 @@
       "doc_page": "plugins/mods/reference"
     },
     {
+      "symbol": "$.theme.clear",
+      "type": "mod_method",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "$.theme.set",
+      "type": "mod_method",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
       "symbol": "$.tool.call",
       "type": "mod_method",
       "description": "",
@@ -8679,20 +8707,6 @@
       "doc_page": "plugins/mods/reference"
     },
     {
-      "symbol": "$.ui.ask",
-      "type": "mod_method",
-      "description": "",
-      "doc_min_version": null,
-      "doc_page": "plugins/mods/reference"
-    },
-    {
-      "symbol": "$.ui.blit",
-      "type": "mod_method",
-      "description": "",
-      "doc_min_version": null,
-      "doc_page": "plugins/mods/reference"
-    },
-    {
       "symbol": "$.ui.close",
       "type": "mod_method",
       "description": "",
@@ -8700,42 +8714,7 @@
       "doc_page": "plugins/mods/reference"
     },
     {
-      "symbol": "$.ui.copy",
-      "type": "mod_method",
-      "description": "",
-      "doc_min_version": null,
-      "doc_page": "plugins/mods/reference"
-    },
-    {
-      "symbol": "$.ui.focus",
-      "type": "mod_method",
-      "description": "",
-      "doc_min_version": null,
-      "doc_page": "plugins/mods/reference"
-    },
-    {
       "symbol": "$.ui.invalidate",
-      "type": "mod_method",
-      "description": "",
-      "doc_min_version": null,
-      "doc_page": "plugins/mods/reference"
-    },
-    {
-      "symbol": "$.ui.log",
-      "type": "mod_method",
-      "description": "",
-      "doc_min_version": null,
-      "doc_page": "plugins/mods/reference"
-    },
-    {
-      "symbol": "$.ui.notice",
-      "type": "mod_method",
-      "description": "",
-      "doc_min_version": null,
-      "doc_page": "plugins/mods/reference"
-    },
-    {
-      "symbol": "$.ui.notify",
       "type": "mod_method",
       "description": "",
       "doc_min_version": null,
@@ -8763,34 +8742,6 @@
       "doc_page": "plugins/mods/reference"
     },
     {
-      "symbol": "$.ui.scroll",
-      "type": "mod_method",
-      "description": "",
-      "doc_min_version": null,
-      "doc_page": "plugins/mods/reference"
-    },
-    {
-      "symbol": "$.ui.selection",
-      "type": "mod_method",
-      "description": "",
-      "doc_min_version": null,
-      "doc_page": "plugins/mods/reference"
-    },
-    {
-      "symbol": "$.ui.status",
-      "type": "mod_method",
-      "description": "",
-      "doc_min_version": null,
-      "doc_page": "plugins/mods/reference"
-    },
-    {
-      "symbol": "$.ui.toast",
-      "type": "mod_method",
-      "description": "",
-      "doc_min_version": null,
-      "doc_page": "plugins/mods/reference"
-    },
-    {
       "symbol": "AbovePrompt",
       "type": "mod_render_site",
       "description": "",
@@ -8812,6 +8763,13 @@
       "doc_page": "plugins/mods/reference"
     },
     {
+      "symbol": "Backdrop",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
       "symbol": "CommandOutput",
       "type": "mod_render_site",
       "description": "",
@@ -8827,6 +8785,13 @@
     },
     {
       "symbol": "Pane",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Placed",
       "type": "mod_render_site",
       "description": "",
       "doc_min_version": null,

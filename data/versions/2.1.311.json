@@ -6757,7 +6757,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Ultra, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. `/cost` and `/stats` are aliases",
+      "description": "Show session cost, plan usage limits, and activity stats. On a Pro, Max, Ultra, Team, or Enterprise plan, includes a breakdown of what counts against your plan limits. Behind a Claude apps gateway that tracks spend, shows your spend through the gateway. `/cost` and `/stats` are aliases",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -7097,8 +7097,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List the services a machine may reach Claude through, such as the Anthropic API, Amazon Bedrock, or an LLM gateway. A session on a provider that isn't listed is refused at startup, at login, and when it next contacts the API, so switching to an unlisted provider mid-session is refused too. The refusal message names what selected the provider and the steps to continue. Requires Claude Code v2.1.285 or later.",
-      "description_source": "docs",
+      "description": "Managed settings only (managed-settings.json, MDM, or server-managed). The API providers Claude Code may use on this machine: \"anthropic\" (the Anthropic API on Anthropic's own host, via a claude.ai or Console sign-in or an API key; pair it with forceLoginMethod / forceLoginOrgUUID to require a sign-in), \"bedrock\", \"vertex\", \"foundry\", \"anthropicAws\", \"mantle\" (each meaning that provider's own service: its regional, FIPS, private-endpoint and sovereign-cloud hosts), \"customEndpoint\" (the Anthropic API or a cloud provider's API sent to some other host — ANTHROPIC_BASE_URL, that provider's ANTHROPIC_*_BASE_URL, a Foundry resource name that is not a bare name, or for Bedrock the AWS SDK's AWS_ENDPOINT_URL[_BEDROCK[_RUNTIME]] — such as an LLM gateway; admitted only for the value pinned in the \"env\" block of the same managed source), or \"gateway\" (the Cloud gateway sign-in). A session on a provider that is not listed is refused at startup, at login, and when it next contacts the API, with a message naming what selected the provider and the entry that would allow it. Under a list, where first-party traffic goes (ANTHROPIC_BASE_URL, a gateway sign-in) is honored only when the same managed source pins it in \"env\" (or forceLoginGatewayUrl), and a claude ssh tunnel into the machine is refused. A cloud provider's credential and tenancy variables, and the network path and TLS trust (HTTPS_PROXY, NODE_EXTRA_CA_CERTS, CLAUDE_CODE_CERT_STORE), are not judged by this list; set those for the fleet in the managed \"env\" block, whose values replace the user's. To route Bedrock through a gateway for a fleet, pin ANTHROPIC_BEDROCK_BASE_URL there (it is what the clients use, ahead of an endpoint_url in ~/.aws/config, which this list does not judge); the AWS SDK's AWS_ENDPOINT_URL* pins only sanction where the SDK's own clients go and never stand in for the \"bedrock\" entry. Unset allows every provider; an empty array allows none. Only a list in managed-settings.json or MDM is enforcement on the machine: it cannot be widened or hidden by server-managed settings and reaches every session. A list set only in the admin console reaches only sessions that fetch your server-managed settings — not a session on a cloud provider, another organization or a non-Anthropic ANTHROPIC_BASE_URL, one authenticating only with apiKeyHelper or ANTHROPIC_AUTH_TOKEN, a Pro/Max login, --bare without an API key, or a first launch before the fetch lands — all conditions the user controls. Versions that predate this setting ignore it; pair it with a minimum-version policy on a mixed fleet. 'claude auth status' reports the Anthropic API as apiProvider \"firstParty\".",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7963,7 +7963,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. The desktop app reads this key; the terminal CLI ignores it.",
+      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. HTML previews in SSH and WSL sessions still open, but they don't run scripts. The desktop app reads this key; the terminal CLI ignores it.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8317,7 +8317,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so new sessions on a supported model start with fast mode on. Set this key to `true` to stop that: a saved `fastMode: true` no longer turns fast mode on at session start, and each person runs `/fast` in each session they want it. Claude Code leaves `fastMode` in their file, so turning this key off restores the old behavior.",
+      "description": "Normally, running `/fast` saves `fastMode` to a person's user settings, so new sessions on a supported model start with fast mode on. On Fable 5.2, that happens only if they turned it on while using Fable 5.2. To make each person run `/fast` in each session they want it, set this key to `true`. Claude Code leaves `fastMode` in their file, so turning this key off restores the old behavior.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8432,8 +8432,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Restrict which kind of account people can log in with. Set `\"claudeai\"` to allow only claude.ai accounts, `\"console\"` to allow only Claude Console accounts, or `\"gateway\"` to send people to a cloud gateway instead of a first-party login. Administrators set it in managed settings and pair it with `forceLoginOrgUUID` to keep developers' claude.ai logins inside one organization.",
-      "description_source": "docs",
+      "description": "Force a specific login method: \"claudeai\" for Claude Pro/Max, \"console\" for Console billing, \"gateway\" for the Cloud gateway OIDC device flow",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -20441,11 +20441,11 @@
       "first_seen": "2.1.259",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Controls whether Claude Code reloads a mod when the mod's files change. Reloading applies to a mod you load from a directory with `--plugin-dir`, and it's on by default in interactive sessions. Set to `1` to turn it on in non-interactive sessions as well, or `0` to turn it off in every session. Requires Claude Code v2.1.287 or later. See mod settings and environment variables",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -20794,7 +20794,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "Set to `1` to allow the proxy to perform DNS resolution instead of the caller. Opt-in for environments where the proxy should handle hostname resolution",
+      "description": "Set to `1` to allow the proxy to perform DNS resolution instead of the caller. Opt-in for environments where the proxy should handle hostname resolution. When `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` is set, set this in the environment of the process that starts Claude Code",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -23931,20 +23931,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_PLUGIN_DATA",
-      "type": "env_var",
-      "first_seen": "2.1.210",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "medium",
-      "description": "`~/.claude/plugins/data/<id>/`, created on first reference and kept across plugin updates. `<id>` is the plugin identifier with every character other than a letter, digit, `_`, or `-` replaced by `-`",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins/manifest-reference.md",
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_PLUGIN_ROOT",
       "type": "env_var",
       "first_seen": "1.0.85",
@@ -24176,7 +24162,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Absolute path where the working tree must be left",
+      "description": "Absolute path where the working tree must be left. See Checkout folder names.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -28617,10 +28603,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "mods"
     },
     {
@@ -29115,10 +29101,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "mods"
     },
     {
@@ -29176,10 +29162,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -29188,10 +29174,10 @@
       "first_seen": "2.1.271",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -29212,10 +29198,10 @@
       "first_seen": "2.1.280",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -29224,10 +29210,10 @@
       "first_seen": "2.1.271",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -29248,10 +29234,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -29260,10 +29246,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -29321,10 +29307,10 @@
       "first_seen": "2.1.271",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -29346,10 +29332,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -29358,10 +29344,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": null,
       "category": "mods"
     },
     {
