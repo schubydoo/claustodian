@@ -1142,7 +1142,7 @@ describe('parseDocPage — mods reference', () => {
     '| Namespace | Methods |',
     '| :- | :- |',
     "| `$.plugin` | `name`, `root`: this plugin's name and directory |",
-    '| [`$.ui`](/docs/en/plugins/mods/interface#pick-where-to-draw) | `resolve`, `toast`, `blit` |',
+    '| [`$.ui`](/docs/en/plugins/mods/interface#pick-where-to-draw) | `resolve`, [`place`](/docs/en/plugins/mods/interface#place-a-row-in-the-transcript), `toast`, `blit`, `view`. `view` requires Claude Code v2.1.300 or later and `place` v2.1.314 or later. |',
     "| `$.agent` | `register`, `spawn`, `list`. `list()` returns this session's subagents and teammates, each with a `status` of `pending`, `running`, `waiting`, `idle`, `completed`, `failed`, or `killed`, where `idle` and `waiting` require Claude Code v2.1.289 or later. |",
     '| [`$.state`](/docs/en/plugins/mods/interface#keep-a-value-in-\\$-state) | Reactive state: `get`, `set`, with the helpers `atom`, `read`, `update`, `derive`, and `memberOf` imported from `claude-code` |',
     '| `$.telemetry` | `log`, `mark`. A record is sent only when Claude Code or a built-in mod makes the call. |',
@@ -1161,8 +1161,10 @@ describe('parseDocPage — mods reference', () => {
       '$.plugin.name',
       '$.plugin.root',
       '$.ui.resolve',
+      '$.ui.place',
       '$.ui.toast',
       '$.ui.blit',
+      '$.ui.view',
       '$.agent.register',
       '$.agent.spawn',
       '$.agent.list',
@@ -1183,6 +1185,19 @@ describe('parseDocPage — mods reference', () => {
   it('dates nothing from a version that a row note gives for something else', () => {
     // `$.agent` says statuses require v2.1.289; that is not when `list` appeared.
     expect(methods().every((e) => e.doc_min_version === null)).toBe(true);
+  });
+
+  it('reads a list whose first method is a link', () => {
+    const page = [
+      '## Mods API methods',
+      '| Namespace | Methods |',
+      '| :- | :- |',
+      '| `$.ui` | [`toast`](/docs/x), `status` |',
+    ].join('\n');
+    expect(parseDocPage('plugins/mods/reference', page).map((e) => e.symbol)).toEqual([
+      '$.ui.toast',
+      '$.ui.status',
+    ]);
   });
 
   it('reads a list ending in "or", and names written as calls', () => {
@@ -1209,6 +1224,11 @@ describe('parseDocPage — mods reference', () => {
       '| `$.ui` | `get_all`, `status` |',
       // A readable prefix must not hide an unreadable name later in the list.
       '| `$.ui` | `toast`, `get_all`, `status` |',
+      // A link the list cannot read must not end the list early either.
+      '| `$.ui` | `toast`, [see the guide](/docs/x), `status` |',
+      '| `$.ui` | `toast`, [`get_all`](/docs/x), `status` |',
+      // Prose that starts with a link is not a method list.
+      '| `$.ui` | See [the guide](/docs/x): `toast` |',
       '| $.ui | `toast` |',
       '| `$.ui` |',
       '|',
