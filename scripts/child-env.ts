@@ -25,10 +25,11 @@
  * Code's own.
  *
  * HOW AN OBJECT REACHES THE OPTION. An env site is a property named `env`, or one
- * whose camelCase name ends in `Env` (`enforcedEnv`, `extendEnv`), or a plain
- * assignment to a member of either name (`z.env=Y`): the session
+ * whose camelCase name ends in `Env` (`enforcedEnv`, `extendEnv`): the session
  * runner passes its object as `La({inheritedEnv:process.env,enforcedEnv:Zn})` and
- * hands the result to `{env:Pe}`. From the site's value the walk follows only the
+ * hands the result to `{env:Pe}`. A plain `=` assignment to a member of either name
+ * (`z.env=Y`) is a site too: the plugin MCP server code writes its object that way
+ * from 2.1.78 to 2.1.318. From the site's value the walk follows only the
  * parts that can carry the environment itself: an object literal's KEYS, its
  * spreads, both arms of `?:`, both sides of `&&`/`||`/`??`, call arguments, and a
  * variable, through up to ENV_FLOW_HOPS declarations in scope. It never reads a
