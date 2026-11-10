@@ -4033,6 +4033,10 @@
       {
         "from": "2.1.36",
         "description": "When true, fast mode is enabled. When absent or false, fast mode is off."
+      },
+      {
+        "from": "2.1.322",
+        "description": "When true, fast mode is enabled. When absent or false, fast mode is off. On Vertex a saved value is ignored: use /fast each session."
       }
     ],
     "config_key:fastModePerSessionOptIn": [

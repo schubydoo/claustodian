@@ -5570,7 +5570,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "List the subagents, agent team teammates, and other Claude Code sessions Claude can message, with the name to use for each. See cross-session messaging. Also available as `/peers`. Requires Claude Code v2.1.224 or later; earlier versions report `Unknown command: /list-agents`. Teammate rows and the first line showing this session's own name require v2.1.239 or later. Available only in sessions where cross-session messaging is enabled",
+      "description": "List the subagents, agent team teammates, and other Claude Code sessions Claude can message, with the name to use for each. See cross-session messaging. Also available as `/peers`. Teammate rows and the first line showing this session's own name require v2.1.239 or later. Available only in sessions where cross-session messaging is enabled",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6183,7 +6183,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Alias of `/code-review`: reviews the current diff, or a PR number, branch, or path you pass, such as `/review 1234`, and takes the same effort levels and flags. With no level given, the review reuses the last `low` through `max` level you typed; see Review locally with `/code-review` for the exact rules. For a deep cloud review, use `/code-review ultra`. Before v2.1.223, `/review` was a separate command that ran a single-pass, read-only review of a GitHub pull request by number, listing open PRs to pick from when run with no argument; from v2.1.186 through v2.1.201, it ran the same multi-agent engine as `/code-review medium`",
+      "description": "Alias of `/code-review`: reviews the current diff, or a PR number, branch, or path you pass, such as `/review 1234`, and takes the same effort levels and flags. With no level given, the review reuses the last `low` through `max` level you typed; see Review locally with `/code-review` for the exact rules. For a deep cloud review, use `/code-review ultra`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -7732,7 +7732,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose what this session does with messages arriving from your other Claude Code sessions. When no value applies, Claude Code decides per message from the two sessions' permission-mode classes. Requires Claude Code v2.1.224 or later.",
+      "description": "Choose what this session does with messages arriving from your other Claude Code sessions. When no value applies, Claude Code decides per message from the two sessions' permission-mode classes.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8232,7 +8232,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Register additional plugin marketplaces by name, so that people who open the repository, or everyone your managed settings reach, get the marketplace without adding it themselves. Claude Code registers each marketplace it doesn't already know. Whether a plugin that `enabledPlugins` names from it installs depends on the plugin's source and which file enables it; that entry has the rules.",
+      "description": "Register additional plugin marketplaces by name, so that people who open the repository, or everyone your managed settings reach, get the marketplace without adding it themselves. Claude Code registers each marketplace it doesn't already know. Whether a plugin that `enabledPlugins` names from it installs depends on the plugin's source and which file enables it; Enabled in project settings but not installed has the rules.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8258,8 +8258,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn fast mode on for sessions where it's available, for interactive work such as rapid iteration or live debugging where you want speed at a higher cost per token. You don't usually edit this key yourself. Running `/fast` writes `fastMode: true` to `~/.claude/settings.json`, and running it again to turn fast mode off removes the key.",
-      "description_source": "docs",
+      "description": "When true, fast mode is enabled. When absent or false, fast mode is off.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -25746,7 +25746,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `false` to exclude account UUID from metrics attributes (default: included). See Monitoring",
+      "description": "Set to `false` to exclude account UUID from metric and event attributes (default: included). See Monitoring",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "telemetry"
@@ -25759,7 +25759,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `true` to include the session entrypoint in metrics attributes (default: excluded). Added in v2.1.152. See Monitoring",
+      "description": "Set to `true` to include the session entrypoint in metric and event attributes (default: excluded). Added in v2.1.152. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
@@ -25798,7 +25798,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `false` to exclude session ID from metrics attributes (default: included). See Monitoring",
+      "description": "Set to `false` to exclude session ID from metric and event attributes (default: included). See Monitoring",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "telemetry"
@@ -25811,7 +25811,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `true` to include Claude Code version in metrics attributes (default: excluded). See Monitoring",
+      "description": "Set to `true` to include Claude Code version in metric and event attributes (default: excluded). See Monitoring",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "telemetry"

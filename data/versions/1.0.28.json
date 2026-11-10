@@ -1922,7 +1922,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `false` to exclude account UUID from metrics attributes (default: included). See Monitoring",
+      "description": "Set to `false` to exclude account UUID from metric and event attributes (default: included). See Monitoring",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "telemetry"
@@ -1935,7 +1935,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `false` to exclude session ID from metrics attributes (default: included). See Monitoring",
+      "description": "Set to `false` to exclude session ID from metric and event attributes (default: included). See Monitoring",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "telemetry"
@@ -1948,7 +1948,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `true` to include Claude Code version in metrics attributes (default: excluded). See Monitoring",
+      "description": "Set to `true` to include Claude Code version in metric and event attributes (default: excluded). See Monitoring",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "telemetry"
