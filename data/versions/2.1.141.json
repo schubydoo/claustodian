@@ -4691,7 +4691,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Register additional plugin marketplaces by name, so that people who open the repository, or everyone your managed settings reach, get the marketplace without adding it themselves. Claude Code registers each marketplace it doesn't already know. Whether a plugin that `enabledPlugins` names from it installs depends on the plugin's source and which file enables it; that entry has the rules.",
+      "description": "Register additional plugin marketplaces by name, so that people who open the repository, or everyone your managed settings reach, get the marketplace without adding it themselves. Claude Code registers each marketplace it doesn't already know. Whether a plugin that `enabledPlugins` names from it installs depends on the plugin's source and which file enables it; Enabled in project settings but not installed has the rules.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -4704,8 +4704,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn fast mode on for sessions where it's available, for interactive work such as rapid iteration or live debugging where you want speed at a higher cost per token. You don't usually edit this key yourself. Running `/fast` writes `fastMode: true` to `~/.claude/settings.json`, and running it again to turn fast mode off removes the key.",
-      "description_source": "docs",
+      "description": "When true, fast mode is enabled. When absent or false, fast mode is off.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -12533,7 +12533,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `false` to exclude account UUID from metrics attributes (default: included). See Monitoring",
+      "description": "Set to `false` to exclude account UUID from metric and event attributes (default: included). See Monitoring",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "telemetry"
@@ -12546,7 +12546,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `false` to exclude session ID from metrics attributes (default: included). See Monitoring",
+      "description": "Set to `false` to exclude session ID from metric and event attributes (default: included). See Monitoring",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "telemetry"
@@ -12559,7 +12559,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `true` to include Claude Code version in metrics attributes (default: excluded). See Monitoring",
+      "description": "Set to `true` to include Claude Code version in metric and event attributes (default: excluded). See Monitoring",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "telemetry"
