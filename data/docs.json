@@ -1443,7 +1443,7 @@
     {
       "symbol": "--use-anthropic-git-proxy",
       "type": "cli_flag",
-      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Supersedes the rewrite flags.",
+      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Also requires Claude Code v2.1.267 or later. Supersedes the rewrite flags.",
       "doc_min_version": null,
       "doc_page": "self-hosted-environments-reference",
       "doc_scopes": [
@@ -2725,7 +2725,7 @@
     {
       "symbol": "desktopSessionCleanupPeriodDays",
       "type": "config_key",
-      "description": "Set an age limit in days for the transcripts of sessions you started or most recently continued in Claude Desktop or Cowork. Without this key, Claude Code keeps those transcripts at any age. Claude Code deletes each one once it's older than both this limit and `cleanupPeriodDays`, so with `cleanupPeriodDays` at its default of 30, a value of `7` still keeps them 30 days. Cleaned up automatically lists the cases where `cleanupPeriodDays` applies instead and Claude Code ignores this key. Requires Claude Code v2.1.248 or later.",
+      "description": "Set an age limit in days for the transcripts of sessions you started or most recently continued in Claude Desktop or Cowork. Without this key, Claude Code keeps those transcripts at any age, except in cases such as a session you deleted in Claude Desktop. Requires Claude Code v2.1.248 or later.",
       "doc_min_version": "2.1.248",
       "doc_page": "settings-reference"
     },
@@ -2832,6 +2832,13 @@
       "symbol": "disableRemoteControl",
       "type": "config_key",
       "description": "Turn off Remote Control: Claude Code then refuses `claude remote-control`, the `--remote-control` flag, auto-start, and the in-session toggle, and reports that your organization's policy disabled it. Place it in managed settings for per-device MDM enforcement.",
+      "doc_min_version": null,
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "disableRemotePreviewScripts",
+      "type": "config_key",
+      "description": "Keep scripts from running when people preview an HTML file from an SSH or WSL session in the desktop app. External browsing in the Browser pane is unaffected.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3007,7 +3014,7 @@
     {
       "symbol": "forceLoginMethod",
       "type": "config_key",
-      "description": "Restrict which kind of account people can log in with. Set `\"claudeai\"` to allow only claude.ai accounts, `\"console\"` to allow only Claude Console accounts, or `\"gateway\"` to send people to a cloud gateway instead of a first-party login. Administrators set it in managed settings and pair it with `forceLoginOrgUUID` to keep developers' claude.ai logins inside one organization.",
+      "description": "Restrict which kind of account people can log in with: `\"claudeai\"` for claude.ai sign-in or `\"console\"` for Claude Console sign-in. Set `\"gateway\"` to send people to a cloud gateway instead of a first-party login. Administrators set it in managed settings and pair it with `forceLoginOrgUUID` to keep developers' claude.ai logins inside one organization.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3836,7 +3843,7 @@
     {
       "symbol": "strictPluginOnlyCustomization",
       "type": "config_key",
-      "description": "Block skills, agents, hooks, and MCP servers from user and project sources, so they can come only from plugins or managed settings. Combine it with `strictKnownMarketplaces` to control the full customization supply chain: the marketplace allowlist controls which plugins users can install.",
+      "description": "Block skills, agents, hooks, and MCP servers from user and project sources. Combine it with `strictKnownMarketplaces` to choose which marketplaces users can install plugins from. Add `disableSideloadFlags` to reject the CLI flags that sideload plugins, agents, and MCP servers for a single run.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3906,7 +3913,7 @@
     {
       "symbol": "syntaxHighlightingDisabled",
       "type": "config_key",
-      "description": "Claude Code colors code by language in the diffs, code blocks, and file previews it shows in the terminal, with its built-in highlighter; no plugin or language server is involved. Set this key to `true` to show them as plain text instead, for example if the colors clash with your terminal theme or slow a screen reader.",
+      "description": "Claude Code colors code by language in the diffs, code blocks, and file previews it shows in the terminal, with its built-in highlighter. Set this key to `true` to show them as plain text instead, for example if the colors clash with your terminal theme or slow a screen reader.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -4887,7 +4894,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_CRON",
       "type": "env_var",
-      "description": "Set to `1` to disable session-scoped scheduled tasks. The `/loop` skill and cron tools become unavailable and any already-scheduled tasks stop firing, including tasks that are already running mid-session",
+      "description": "Set to `1` to disable session-scoped scheduled tasks. The `/loop` skill and `CronCreate` become unavailable and any already-scheduled tasks stop firing, including tasks that are already running mid-session",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4917,6 +4924,13 @@
       "type": "env_var",
       "description": "Set to `1` to disable fast mode",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_FEATURE_FLAGS",
+      "type": "env_var",
+      "description": "Set to `1` to turn off feature-flag fetching. Requires Claude Code v2.1.319 or later. With this variable set, Remote Control and the other features that need feature-flag fetching are unavailable. Telemetry event logging stays on unless `DISABLE_TELEMETRY` is also set. The older name, `DISABLE_GROWTHBOOK`, still works, and it is the only one that v2.1.124 through v2.1.318 read",
+      "doc_min_version": "2.1.319",
       "doc_page": "env-vars"
     },
     {
@@ -6411,6 +6425,13 @@
       "doc_page": "self-hosted-environments-configuration"
     },
     {
+      "symbol": "CLAUDE_RUNNER_DISABLE_RENEWAL_WARNING",
+      "type": "env_var",
+      "description": "When `1`, the runner doesn't post `The server has refused to renew this session's access to the model` in a session. After each refusal, it waits until the next scheduled renewal to ask again. Requires Claude Code v2.1.319 or later.",
+      "doc_min_version": "2.1.319",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
       "symbol": "CLAUDE_RUNNER_EXIT_REASON",
       "type": "env_var",
       "description": "How the session ended; see the values below the table",
@@ -6518,7 +6539,7 @@
     {
       "symbol": "CLAUDE_RUNNER_USE_GIT_PROXY",
       "type": "env_var",
-      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Supersedes the rewrite flags.",
+      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Also requires Claude Code v2.1.267 or later. Supersedes the rewrite flags.",
       "doc_min_version": null,
       "doc_page": "self-hosted-environments-reference"
     },
@@ -6637,8 +6658,8 @@
     {
       "symbol": "DISABLE_GROWTHBOOK",
       "type": "env_var",
-      "description": "Set to `1` or `true` to disable feature-flag fetching and use code defaults for every flag. This makes Remote Control and the other features that need feature-flag fetching unavailable. Setting it to `0` or `false` leaves fetching on. Telemetry event logging stays on unless `DISABLE_TELEMETRY` is also set",
-      "doc_min_version": null,
+      "description": "Set to `1` to turn off feature-flag fetching. Requires Claude Code v2.1.124 or later. Superseded by `CLAUDE_CODE_DISABLE_FEATURE_FLAGS`, which requires v2.1.319 or later: use that name unless a machine on v2.1.318 or earlier reads the configuration. This name still works",
+      "doc_min_version": "2.1.124",
       "doc_page": "env-vars"
     },
     {
