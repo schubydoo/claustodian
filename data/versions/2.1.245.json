@@ -1721,6 +1721,19 @@
       ]
     },
     {
+      "symbol": "--global",
+      "type": "cli_flag",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Use global config",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli",
+      "description_source": "binary"
+    },
+    {
       "symbol": "--handle-uri",
       "type": "cli_flag",
       "first_seen": "2.1.83",
@@ -1843,11 +1856,11 @@
       "type": "cli_flag",
       "first_seen": "2.1.64",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
       "description": "Bind address",
-      "source_url": null,
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "description_source": "binary"
     },
@@ -2464,11 +2477,11 @@
       "first_seen": "2.0.63",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Disable session persistence so sessions are not saved to disk and cannot be resumed. Print mode only. The `CLAUDE_CODE_SKIP_PROMPT_HISTORY` environment variable does the same in any mode",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -3679,7 +3692,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Supersedes the rewrite flags.",
+      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
@@ -5788,11 +5801,11 @@
       "first_seen": "2.0.32",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Order Claude Code stickers",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -6361,8 +6374,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Let an unanswered `AskUserQuestion` dialog auto-continue after a period of idle time, submitting whatever options you had already selected. Set it when you step away and want Claude to continue without you. With the default, questions wait until you answer them. For when the timer pauses or never starts, see Question auto-continue timeout.",
-      "description_source": "docs",
+      "description": "Idle time before Claude's questions auto-continue with any answers selected so far. Defaults to never — auto-continue only runs when explicitly set to 60s/5m/10m.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7263,8 +7276,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn individual plugins on or off, keyed by `plugin-name@marketplace-name`. A plugin with no entry at any scope falls back to its `defaultEnabled` value. When you enable or disable a plugin with `/plugin` or `claude plugin enable`, Claude Code writes this key for you.",
-      "description_source": "docs",
+      "description": "Enabled plugins using plugin-id@marketplace-id format. Example: { \"formatter@anthropic-tools\": true }. Also supports extended format with version constraints. Settings precedence is user < project < local < flag < policy, so to disable a plugin that project settings enable, set it to false in .claude/settings.local.json — setting false in ~/.claude/settings.json is overridden by the project.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -9251,7 +9264,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Block skills, agents, hooks, and MCP servers from user and project sources, so they can come only from plugins or managed settings. Combine it with `strictKnownMarketplaces` to control the full customization supply chain: the marketplace allowlist controls which plugins users can install.",
+      "description": "Block skills, agents, hooks, and MCP servers from user and project sources. Combine it with `strictKnownMarketplaces` to choose which marketplaces users can install plugins from. Add `disableSideloadFlags` to reject the CLI flags that sideload plugins, agents, and MCP servers for a single run.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9333,8 +9346,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "When Claude runs subagents, Claude Code lists them in a task display below the prompt, one row per subagent showing `name · description · token count`. This key lets you run your own command to rewrite those rows, for example to show each subagent's context usage as a percentage. On each refresh, Claude Code sends the visible rows as one JSON object on stdin, with a `tasks` array carrying each subagent's `id`, `name`, `status`, `model`, `tokenCount`, and more, and replaces the row for each `id` you write back as a `{\"id\", \"content\"}` line. Rows you don't write back keep the default rendering.",
-      "description_source": "docs",
+      "description": "Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -9396,7 +9409,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Claude Code colors code by language in the diffs, code blocks, and file previews it shows in the terminal, with its built-in highlighter; no plugin or language server is involved. Set this key to `true` to show them as plain text instead, for example if the colors clash with your terminal theme or slow a screen reader.",
+      "description": "Claude Code colors code by language in the diffs, code blocks, and file previews it shows in the terminal, with its built-in highlighter. Set this key to `true` to show them as plain text instead, for example if the colors clash with your terminal theme or slow a screen reader.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -11808,11 +11821,11 @@
       "first_seen": "2.0.20",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set the percentage (1-100) of the auto-compact window at which auto-compaction triggers. Use lower values like `50` to compact earlier; the variable can't raise the threshold, so values above the default percentage are ignored. It applies only in sessions that compact before the model's context limit. Applies to both main conversations and subagents",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -13644,7 +13657,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable session-scoped scheduled tasks. The `/loop` skill and cron tools become unavailable and any already-scheduled tasks stop firing, including tasks that are already running mid-session",
+      "description": "Set to `1` to disable session-scoped scheduled tasks. The `/loop` skill and `CronCreate` become unavailable and any already-scheduled tasks stop firing, including tasks that are already running mid-session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -19169,7 +19182,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Supersedes the rewrite flags.",
+      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "claude-code"
@@ -19527,11 +19540,11 @@
       "first_seen": "0.2.39",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to any non-empty value, such as `1`, to opt out of error reporting. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn error reporting back on",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -19568,7 +19581,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` or `true` to disable feature-flag fetching and use code defaults for every flag. This makes Remote Control and the other features that need feature-flag fetching unavailable. Setting it to `0` or `false` leaves fetching on. Telemetry event logging stays on unless `DISABLE_TELEMETRY` is also set",
+      "description": "Set to `1` to turn off feature-flag fetching. Requires Claude Code v2.1.124 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -20485,11 +20498,11 @@
       "first_seen": "0.2.76",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Protocol for OTLP exporter, applies to all signals. Claude Code has no default protocol, so set this or the signal-specific protocol variable for each `otlp` exporter you enable",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
     },
     {

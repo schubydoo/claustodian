@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.322",
+  "claudeCodeVersion": "2.1.323",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -2187,6 +2187,19 @@
       ]
     },
     {
+      "symbol": "--global",
+      "type": "cli_flag",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Use global config",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli",
+      "description_source": "binary"
+    },
+    {
       "symbol": "--handle-uri",
       "type": "cli_flag",
       "first_seen": "2.1.83",
@@ -2325,11 +2338,11 @@
       "type": "cli_flag",
       "first_seen": "2.1.64",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
       "description": "Bind address",
-      "source_url": null,
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "description_source": "binary"
     },
@@ -2399,6 +2412,18 @@
       "description": "Automatically connect to IDE on startup if exactly one valid IDE is available",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli"
+    },
+    {
+      "symbol": "--ignore-persisted-trust",
+      "type": "cli_flag",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "cli"
     },
     {
@@ -2646,6 +2671,19 @@
       ]
     },
     {
+      "symbol": "--lead-verify-key",
+      "type": "cli_flag",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "When the teammate was launched, then the public key that checks the team lead's messages",
+      "source_url": null,
+      "category": "cli-internal",
+      "description_source": "binary"
+    },
+    {
       "symbol": "--list",
       "type": "cli_flag",
       "first_seen": "2.1.318",
@@ -2731,6 +2769,19 @@
       "description_source": "binary",
       "source_url": null,
       "category": "cli-internal"
+    },
+    {
+      "symbol": "--managed-settings-in-initialize",
+      "type": "cli_flag",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Read the managed settings from the managedSettings field of the initialize control request instead of --managed-settings, and exit if they cannot be used (SDK use only; requires --await-initialize)",
+      "source_url": null,
+      "category": "cli-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "--marketplace",
@@ -3043,11 +3094,11 @@
       "first_seen": "2.0.63",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Disable session persistence so sessions are not saved to disk and cannot be resumed. Print mode only. The `CLAUDE_CODE_SKIP_PROMPT_HISTORY` environment variable does the same in any mode",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -3767,6 +3818,18 @@
       "scopes": [
         "self-hosted-runner"
       ]
+    },
+    {
+      "symbol": "--review-md",
+      "type": "cli_flag",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli-internal"
     },
     {
       "symbol": "--rewind-files",
@@ -4501,7 +4564,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Supersedes the rewrite flags.",
+      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Also requires Claude Code v2.1.267 or later. Supersedes the rewrite flags.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
@@ -6674,11 +6737,11 @@
       "first_seen": "2.0.32",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Order Claude Code stickers",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -7868,6 +7931,19 @@
       "category": "settings"
     },
     {
+      "symbol": "clawdFileProgressEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "@internal Whether to show Clawd, Claude Code's mascot, carrying the file on the progress line when a file goes to or from a connector",
+      "source_url": null,
+      "category": "settings-internal",
+      "description_source": "binary"
+    },
+    {
       "symbol": "cleanupPeriodDays",
       "type": "config_key",
       "first_seen": "0.2.116",
@@ -8021,7 +8097,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set an age limit in days for the transcripts of sessions you started or most recently continued in Claude Desktop or Cowork. Without this key, Claude Code keeps those transcripts at any age. Claude Code deletes each one once it's older than both this limit and `cleanupPeriodDays`, so with `cleanupPeriodDays` at its default of 30, a value of `7` still keeps them 30 days. Cleaned up automatically lists the cases where `cleanupPeriodDays` applies instead and Claude Code ignores this key. Requires Claude Code v2.1.248 or later.",
+      "description": "Set an age limit in days for the transcripts of sessions you started or most recently continued in Claude Desktop or Cowork. Without this key, Claude Code keeps those transcripts at any age, except in cases such as a session you deleted in Claude Desktop. Requires Claude Code v2.1.248 or later.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8208,6 +8284,20 @@
       "provenance": "docs",
       "confidence": "high",
       "description": "Turn off Remote Control: Claude Code then refuses `claude remote-control`, the `--remote-control` flag, auto-start, and the in-session toggle, and reports that your organization's policy disabled it. Place it in managed settings for per-device MDM enforcement.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
+    },
+    {
+      "symbol": "disableRemotePreviewScripts",
+      "type": "config_key",
+      "first_seen": "2.1.323",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "Keep scripts from running when people preview an HTML file from an SSH or WSL session in the desktop app. External browsing in the Browser pane is unaffected.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8609,7 +8699,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Restrict which kind of account people can log in with. Set `\"claudeai\"` to allow only claude.ai accounts, `\"console\"` to allow only Claude Console accounts, or `\"gateway\"` to send people to a cloud gateway instead of a first-party login. Administrators set it in managed settings and pair it with `forceLoginOrgUUID` to keep developers' claude.ai logins inside one organization.",
+      "description": "Restrict which kind of account people can log in with: `\"claudeai\"` for claude.ai sign-in or `\"console\"` for Claude Console sign-in. Set `\"gateway\"` to send people to a cloud gateway instead of a first-party login. Administrators set it in managed settings and pair it with `forceLoginOrgUUID` to keep developers' claude.ai logins inside one organization.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9096,6 +9186,19 @@
       "category": "settings"
     },
     {
+      "symbol": "permissions.blockFileToolReadsOutsideWorkingDirectories",
+      "type": "config_key",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "@internal For the program that starts Claude Code: read only from --settings at the launch; ignored in settings sent to a running session and in user, project, local and managed settings. Refuse reads outside the working directories, other than a shell command's, in every permission mode: reads by the file tools (Read, Grep, Glob, LSP) and by other built-in tools that send or publish a file, attachments, connectors' file inputs, Chrome uploads, memory recall, a project's CLAUDE.md includes and memory. No allow rule lifts it, and blockReadsExemptPaths applies to it. With it on, only the starting directory, --add-dir and the additionalDirectories of --settings or of settings sent later by that program (a full path, on Windows with its drive, or ~ or ~/…; a relative entry does not count) count as working directories, for it and for blockWritesOutsideWorkingDirectories: the user, project, local and managed settings and /add-dir add none. Claude Code's own files stay readable: this project's and this session's files in its configuration folder, this project's memory unless a user, project or local settings file, or managed settings, chose that folder, and the CLAUDE.md, rules, skills, plugins, agents and commands in its configuration folder. It is blockReadsOutsideWorkingDirectories without that setting's hold on the shell: it does not limit shell commands, sandboxed or not, nor what MCP servers and the programs that hooks run read by themselves. Like that setting, it does not stop Claude Code loading skills, commands, agents, output styles and workflows from .claude folders above the working directory (as far as the repository's root; outside a repository, the home folder or the disk's root), nor through links in a .claude folder, the working directory's own included. It does not limit writes, but Edit and Write need an existing file read first, and where Read is refused only a shell command (such as cat) can do that. Cloud sessions (Claude Code on the web), whose file tools run in a container that is itself the boundary, may not apply it.",
+      "source_url": null,
+      "category": "settings-internal",
+      "description_source": "binary"
+    },
+    {
       "symbol": "permissions.blockReadsExemptPaths",
       "type": "config_key",
       "first_seen": "2.1.315",
@@ -9355,6 +9458,19 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
+    },
+    {
+      "symbol": "precomputeArmTokens",
+      "type": "config_key",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "@internal Read from the flag settings only, for a host that sends /compact below the automatic threshold: the main conversation starts its background compaction summary at this many tokens, when that is sooner than it would by itself, so that /compact finds it ready. A window set below the billing boundary compacts without a background summary, and this does not change that.",
+      "source_url": null,
+      "category": "settings-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "precomputeCompactionEnabled",
@@ -10692,7 +10808,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Block skills, agents, hooks, and MCP servers from user and project sources, so they can come only from plugins or managed settings. Combine it with `strictKnownMarketplaces` to control the full customization supply chain: the marketplace allowlist controls which plugins users can install.",
+      "description": "Block skills, agents, hooks, and MCP servers from user and project sources. Combine it with `strictKnownMarketplaces` to choose which marketplaces users can install plugins from. Add `disableSideloadFlags` to reject the CLI flags that sideload plugins, agents, and MCP servers for a single run.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -10850,7 +10966,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Claude Code colors code by language in the diffs, code blocks, and file previews it shows in the terminal, with its built-in highlighter; no plugin or language server is involved. Set this key to `true` to show them as plain text instead, for example if the colors clash with your terminal theme or slow a screen reader.",
+      "description": "Claude Code colors code by language in the diffs, code blocks, and file previews it shows in the terminal, with its built-in highlighter. Set this key to `true` to show them as plain text instead, for example if the colors clash with your terminal theme or slow a screen reader.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -11541,7 +11657,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "@internal Requests the browsers connected to the session's Claude in Chrome server, as the terminal's /chrome browser picker lists them. Fails when the server is not connected.",
+      "description": "@internal Requests the browsers connected to the session's Claude in Chrome server, as the terminal's /chrome browser picker lists them. Fails when the server is not connected, and in a cloud session.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -11798,7 +11914,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "@internal Request from the CLI subprocess to the SDK host for a fresh provider credential after a 401 or an AWS / Google Cloud credential failure when the host owns the credential (Cowork 3P).",
+      "description": "@internal Request from the CLI subprocess to the SDK host for a fresh provider credential when the host owns it (Cowork 3P). status is the HTTP status that caused the request: 401, or 403 from a customer gateway. Any other cause, such as a revoked-token 403, omits it.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -11975,7 +12091,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Reads one MCP Apps (SEP-1865) UI resource — a `ui://` URI, typically the `_meta.ui.resourceUri` a tool declares — from a connected MCP server the CLI itself dialed, with `resources/read`, for a host that renders it. Read-only and no model turn. The reply is untrusted third-party content (HTML): render it sandboxed. SDK-type MCP servers (config.type === \"sdk\") are rejected — they are caller-provided, so the caller can read them directly. Errors name the cause: a non-ui:// URI, an unknown server, a server that managed policy blocks, that is disabled or that the project has not approved (the refusals mcp_reconnect gives), a server that is not connected (failed, pending or needs-auth: send mcp_reconnect; a connected server, or one still listed from the discovery cache, is read through the same connect path a tool call takes), a response over the size limit, or the server's own resources/read error (over a transport that stores frames, one fixed sentence in its place). Refused on a lane that redacts what it persists (a Remote Control bridge worker, a tenant worker) and by the client of a cloud-hosted session. Advertised as `mcp_read_resource_v1` in system/init.capabilities.",
+      "description": "Reads one MCP Apps (SEP-1865) UI resource — a `ui://` URI, typically the `_meta.ui.resourceUri` a tool declares — from a connected MCP server the CLI itself dialed, with `resources/read`, for a host that renders it. Read-only and no model turn. The reply is untrusted third-party content (HTML): render it sandboxed. SDK-type MCP servers (config.type === \"sdk\") are rejected — they are caller-provided, so the caller can read them directly. Errors name the cause: a non-ui:// URI, an unknown server, in a cloud session a server on the user's own computer or browser, a server that managed policy blocks, that is disabled or that the project has not approved (the refusals mcp_reconnect gives), a server that is not connected (failed, pending or needs-auth: send mcp_reconnect; a connected server, or one still listed from the discovery cache, is read through the same connect path a tool call takes), a response over the size limit, or the server's own resources/read error (over a transport that stores frames, one fixed sentence in its place). Refused on a lane that redacts what it persists (a Remote Control bridge worker, a tenant worker) and by the client of a cloud-hosted session. Advertised as `mcp_read_resource_v1` in system/init.capabilities.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -12028,6 +12144,20 @@
       "direction": "host_to_cli"
     },
     {
+      "symbol": "mcp_tasks_changed",
+      "type": "control_message",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "low",
+      "description": "",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": null
+    },
+    {
       "symbol": "mcp_toggle",
       "type": "control_message",
       "first_seen": "2.1.15",
@@ -12066,7 +12196,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "@internal Request from the CLI subprocess to the SDK host for a fresh OAuth access token: after a 401 with no local refresh token, or, with kind, when the CLI first needs that bearer.",
+      "description": "@internal Request from the CLI subprocess to the SDK host for a fresh OAuth access token: with no kind, when it has no local refresh token, most often after a 401; with kind, when it first needs that bearer.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -12384,7 +12514,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "@internal Switches the session's Claude in Chrome server to the given browser, as the terminal's picker does. Fails when the server is not connected.",
+      "description": "@internal Switches the session's Claude in Chrome server to the given browser, as the terminal's picker does. Fails when the server is not connected, and in a cloud session.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -14234,11 +14364,11 @@
       "first_seen": "2.0.20",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set the percentage (1-100) of the auto-compact window at which auto-compaction triggers. Use lower values like `50` to compact earlier; the variable can't raise the threshold, so values above the default percentage are ignored. It applies only in sessions that compact before the model's context limit. Applies to both main conversations and subagents",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -14514,6 +14644,18 @@
       "symbol": "CLAUDE_BG_RV_AUTH",
       "type": "env_var",
       "first_seen": "2.1.169",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_BG_SESSION_CREDENTIAL",
+      "type": "env_var",
+      "first_seen": "2.1.323",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -15724,6 +15866,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_AUTOMOUNT_ROOTS",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_AUTOUPDATER_DISABLED_BY_HOST",
       "type": "env_var",
       "first_seen": "2.1.295",
@@ -16394,6 +16548,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_CCR_SKIP_NEEDLESS_STARTUP_READS",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_CCR_SLOW_SKILLS_WATCH",
       "type": "env_var",
       "first_seen": "2.1.317",
@@ -16907,6 +17073,42 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DESKTOP_MESSAGE_CARD",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DESKTOP_MODE_FROM_RECORD",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DESKTOP_PLUGIN_INSTALL_FRAMES",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DESKTOP_SKILLS_PLUGIN_DIR",
       "type": "env_var",
       "first_seen": "2.1.302",
@@ -17046,11 +17248,12 @@
       "type": "env_var",
       "first_seen": "2.1.318",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `CLAUDE_CODE_DISABLE_AGENT_PROGRESS_SUMMARIES` (available since 2.1.318): set it to `1` to turn off subagent progress summaries and the requests that write them (anthropics/claude-code#86879)",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -17316,7 +17519,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable session-scoped scheduled tasks. The `/loop` skill and cron tools become unavailable and any already-scheduled tasks stop firing, including tasks that are already running mid-session",
+      "description": "Set to `1` to disable session-scoped scheduled tasks. The `/loop` skill and `CronCreate` become unavailable and any already-scheduled tasks stop firing, including tasks that are already running mid-session",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -17405,8 +17608,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added the `CLAUDE_CODE_DISABLE_FEATURE_FLAGS` environment variable, which stops feature-flag fetching without turning off telemetry; every flag then uses its built-in default",
-      "description_source": "changelog",
+      "description": "Set to `1` to turn off feature-flag fetching. Requires Claude Code v2.1.319 or later. With this variable set, Remote Control and the other features that need feature-flag fetching are unavailable. Telemetry event logging stays on unless `DISABLE_TELEMETRY` is also set. The older name, `DISABLE_GROWTHBOOK`, still works, and it is the only one that v2.1.124 through v2.1.318 read",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -18941,6 +19144,42 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_FEATURE_FLAGS_KICK_FROM_INIT",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_FEATURE_FLAGS_KICK_ON_WARM_CACHE",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_FEATURE_FLAGS_REFRESH_INTERVAL_MS",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_FEDERATION_CACHE_DIR",
       "type": "env_var",
       "first_seen": "2.1.242",
@@ -19641,9 +19880,33 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_HOOK_HEARTBEAT_INTERVAL_MS",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_HOSTED_DESKTOP",
       "type": "env_var",
       "first_seen": "2.1.290",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_HOST_ARTIFACT_TYPE_COMMANDS",
+      "type": "env_var",
+      "first_seen": "2.1.323",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -20498,6 +20761,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_MCP_SERVE_MEMORY_WALKS_DEADLINE_MS",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_MCP_SERVE_SETTINGS",
       "type": "env_var",
       "first_seen": "2.1.295",
@@ -21048,6 +21323,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_OVERLOADED_RETRY_MAX_WAIT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_OVERRIDE_DATE",
       "type": "env_var",
       "first_seen": "2.1.160",
@@ -21401,6 +21688,18 @@
       "description": "Set to `1` to clone GitHub `owner/repo` shorthand sources over HTTPS instead of SSH. Applies to plugin install and update, and to `/plugin marketplace add` and `update`. Useful in CI runners, containers, or any environment without a configured SSH key for `github.com`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_PLUGIN_REMOTE_MCP_REACHABLE_HOSTS_HINT",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -22276,6 +22575,19 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_RESUME_HINT_COMMAND",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `CLAUDE_CODE_RESUME_HINT_COMMAND`, which a program that starts Claude Code can set to have the exit hint name its own resume command",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_RESUME_INTERRUPTED_TURN",
       "type": "env_var",
       "first_seen": "2.1.42",
@@ -22611,6 +22923,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SDK_MCP_TOOL_IDLE_TIMEOUT",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SDK_READS_SESSION_STATE",
       "type": "env_var",
       "first_seen": "2.1.284",
@@ -22701,6 +23025,18 @@
       "symbol": "CLAUDE_CODE_SESSION_BEGAN_AS_COPY",
       "type": "env_var",
       "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SESSION_CREATED_AT_MS",
+      "type": "env_var",
+      "first_seen": "2.1.323",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -22806,6 +23142,18 @@
       "description": "Command prefix that wraps shell commands Claude Code spawns: Bash tool calls, hook commands, status line commands, and stdio MCP server startup commands. PowerShell hooks and exec-form hooks run without the prefix. Useful for logging or auditing. Setting a bare executable path such as `/path/to/logger.sh` runs each command as `/path/to/logger.sh '<command>'`. The wrapper receives the command line as a single shell-quoted argument in `$1`, so the wrapper must re-evaluate `$1` with a shell, for example `exec bash -c \"$1\"`. Treating `$1` as a bare executable path breaks stdio MCP servers that pass arguments such as `npx -y <package>`. For Bash tool calls, `$1` contains the full shell invocation Claude Code assembles, including environment setup, not only the command Claude ran",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SHOWN_PLUGINS_DIR",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -23734,6 +24082,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SYSTEM_PROMPT_FEATURE_FLAG",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SYSTEM_PROMPT_GB_FEATURE",
       "type": "env_var",
       "first_seen": "2.1.111",
@@ -24268,6 +24628,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_ULTRAREVIEW_REVIEW_MD_FILE",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_UNWATCHED_REPLY_HOLD_MS",
       "type": "env_var",
       "first_seen": "2.1.311",
@@ -24292,6 +24664,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_USER_DELEGATED_SESSION",
+      "type": "env_var",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_USER_DELEGATED_SESSION_ALLOWED_CHECK_MODELS",
       "type": "env_var",
       "first_seen": "2.1.321",
@@ -24307,6 +24691,18 @@
       "symbol": "CLAUDE_CODE_USER_DELEGATED_SESSION_ALLOWED_PROVIDERS",
       "type": "env_var",
       "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_USER_DELEGATED_SESSION_ANY_CHECK_MODEL",
+      "type": "env_var",
+      "first_seen": "2.1.323",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -25502,11 +25898,12 @@
       "type": "env_var",
       "first_seen": "2.1.319",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "When `1`, the runner doesn't post `The server has refused to renew this session's access to the model` in a session. After each refusal, it waits until the next scheduled renewal to ask again. Requires Claude Code v2.1.319 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "claude-code"
     },
     {
@@ -25760,7 +26157,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Supersedes the rewrite flags.",
+      "description": "Clone repositories on github.com via the Anthropic git proxy instead of customer-managed git auth. Requires `--capacity 1` and git 2.32 or later; the runner refuses to start otherwise. Also requires Claude Code v2.1.267 or later. Supersedes the rewrite flags.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
       "category": "claude-code"
@@ -26179,11 +26576,11 @@
       "first_seen": "0.2.39",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set to any non-empty value, such as `1`, to opt out of error reporting. **Setting it to `0` or `false` still opts out**, unlike most on/off variables; unset the variable to turn error reporting back on",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -26220,7 +26617,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` or `true` to disable feature-flag fetching and use code defaults for every flag. This makes Remote Control and the other features that need feature-flag fetching unavailable. Setting it to `0` or `false` leaves fetching on. Telemetry event logging stays on unless `DISABLE_TELEMETRY` is also set",
+      "description": "Set to `1` to turn off feature-flag fetching. Requires Claude Code v2.1.124 or later. Superseded by `CLAUDE_CODE_DISABLE_FEATURE_FLAGS`, which requires v2.1.319 or later: use that name unless a machine on v2.1.318 or earlier reads the configuration. This name still works",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "other"
@@ -27138,11 +27535,11 @@
       "first_seen": "0.2.76",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Protocol for OTLP exporter, applies to all signals. Claude Code has no default protocol, so set this or the signal-specific protocol variable for each `otlp` exporter you enable",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/monitoring-usage.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
     },
     {
@@ -28926,6 +29323,18 @@
       "confidence": "high",
       "description": "",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "Progress",
+      "type": "mod_element",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {

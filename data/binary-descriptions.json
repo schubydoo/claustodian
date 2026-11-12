@@ -1071,6 +1071,12 @@
         "description": "Show only rules whose label starts with this prefix (case-insensitive)"
       }
     ],
+    "cli_flag:--lead-verify-key": [
+      {
+        "from": "2.1.323",
+        "description": "When the teammate was launched, then the public key that checks the team lead's messages"
+      }
+    ],
     "cli_flag:--maintenance": [
       {
         "from": "2.1.10",
@@ -1081,6 +1087,12 @@
       {
         "from": "2.1.118",
         "description": "Policy-tier settings JSON from a spawning parent process (SDK use only)"
+      }
+    ],
+    "cli_flag:--managed-settings-in-initialize": [
+      {
+        "from": "2.1.323",
+        "description": "Read the managed settings from the managedSettings field of the initialize control request instead of --managed-settings, and exit if they cannot be used (SDK use only; requires --await-initialize)"
       }
     ],
     "cli_flag:--marketplace": [
@@ -2999,6 +3011,10 @@
       {
         "from": "2.0.32",
         "description": "Order Claude Code stickers"
+      },
+      {
+        "from": "2.1.323",
+        "description": "Check Claude Code sticker availability"
       }
     ],
     "command:/stop": [
@@ -3347,6 +3363,10 @@
       {
         "from": "2.1.305",
         "description": "When true (and set in managed settings), permission rules from user, project, local, and --settings files and allow rules from --allowedTools are ignored; only managed settings can add allow rules through settings. The allowed-tools frontmatter of skills and custom commands from user, project, and --add-dir sources, and of plugins no managed setting vouches for, is ignored too. Plugins keep theirs only on an admin-backed channel: host-delivered --plugin-dir plugins (in Claude Desktop, only while this is not set by the organization's own managed settings), the official marketplace registered from its unpinned anthropics source, claude.ai-synced plugins Anthropic attests, the saved login organization's claude.ai-hosted marketplaces, marketplaces whose registered source managed extraKnownMarketplaces declares or an exact or owner-pinned (owner/*) strictKnownMarketplaces entry names at the path it pins (an npm marketplace source only when the registration and the declared entry pin the same registry, and a settings marketplace source only when every nested npm plugin entry pins one on a bare package name — unpinned, the package resolves through the member's own npm config, and a non-bare spelling packs as an exotic spec the pin does not bind, so nothing an entry names is what was fetched), and npm-direct (package@npm) plugins whose recorded resolution a registry-pinned managed npm strictKnownMarketplaces entry names (host and path patterns and enabledPlugins ids do not vouch); managed and bundled skills keep theirs. --disallowedTools, skill disallowed-tools, and other deny and ask rules from the command line or the current session still apply."
+      },
+      {
+        "from": "2.1.323",
+        "description": "When true (and set in managed settings), permission rules from user, project, local, and --settings files and allow rules from --allowedTools are ignored; only managed settings can add allow rules through settings. The allowed-tools frontmatter of skills and custom commands from user, project, and --add-dir sources, and of plugins no managed setting vouches for, is ignored too. Plugins keep theirs only on an admin-backed channel: host-delivered --plugin-dir plugins (in Claude Desktop, only while this is not set by the organization's own managed settings), the official marketplace registered from its unpinned anthropics source, claude.ai-synced plugins Anthropic attests, the saved login organization's claude.ai-hosted marketplaces, marketplaces whose registered source managed extraKnownMarketplaces declares or an exact or owner-pinned (owner/*) strictKnownMarketplaces entry names at the path it pins (an npm marketplace source only when the registration and the declared entry pin the same registry, and a settings marketplace source only when every nested npm plugin entry pins one on a bare package name — unpinned, the package resolves through the member's own npm config, and a non-bare spelling packs as an exotic spec the pin does not bind, so nothing an entry names is what was fetched) (host and path patterns and enabledPlugins ids do not vouch); managed and bundled skills keep theirs. --disallowedTools, skill disallowed-tools, and other deny and ask rules from the command line or the current session still apply."
       }
     ],
     "config_key:allowedChannelPlugins": [
@@ -3421,6 +3441,10 @@
       {
         "from": "2.1.200",
         "description": "Idle time before Claude's questions auto-continue with any answers selected so far. Defaults to never — auto-continue only runs when explicitly set to 60s/5m/10m."
+      },
+      {
+        "from": "2.1.323",
+        "description": "Idle time before Claude's questions in the terminal auto-continue with any answers selected so far. When unset, the terminal does not auto-continue. The Claude desktop and web apps show Claude's questions in their own interface and may move on from some unanswered ones after a wait the app sets. Claude is then told that nobody answered and uses its best judgment. In sessions that read this setting, only \"never\" stops the apps from moving on. Leaving it unset does not. Cloud sessions and Cowork tasks do not read your user settings file (~/.claude/settings.json), and managed settings do not reach all of them. This setting is ignored in a project's settings files."
       }
     ],
     "config_key:attribution": [
@@ -3723,6 +3747,12 @@
         "description": "Glob patterns or absolute paths of CLAUDE.md files to exclude from loading. Patterns are matched against absolute file paths using picomatch. Only applies to User, Project, and Local memory types (Managed/policy files cannot be excluded). Examples: \"/home/user/monorepo/CLAUDE.md\", \"**/code/CLAUDE.md\", \"**/some-dir/.claude/rules/**\""
       }
     ],
+    "config_key:clawdFileProgressEnabled": [
+      {
+        "from": "2.1.323",
+        "description": "@internal Whether to show Clawd, Claude Code's mascot, carrying the file on the progress line when a file goes to or from a connector"
+      }
+    ],
     "config_key:cleanupPeriodDays": [
       {
         "from": "1.0.54",
@@ -4003,6 +4033,10 @@
       {
         "from": "2.1.133",
         "description": "Enabled plugins using plugin-id@marketplace-id format. Example: { \"formatter@anthropic-tools\": true }. Also supports extended format with version constraints. Settings precedence is user < project < local < flag < policy, so to disable a plugin that project settings enable, set it to false in .claude/settings.local.json — setting false in ~/.claude/settings.json is overridden by the project."
+      },
+      {
+        "from": "2.1.323",
+        "description": "Enabled plugins using plugin-id@marketplace-id format. Example: { \"formatter@anthropic-tools\": true }. Only true turns on a marketplace plugin: a list of versions is accepted but leaves it off. Settings precedence is user < project < local < flag < policy, so to disable a plugin that project settings enable, set it to false in .claude/settings.local.json — setting false in ~/.claude/settings.json is overridden by the project."
       }
     ],
     "config_key:enforceAvailableModels": [
@@ -4383,6 +4417,12 @@
         "description": "List of permission rules that should always prompt for confirmation"
       }
     ],
+    "config_key:permissions.blockFileToolReadsOutsideWorkingDirectories": [
+      {
+        "from": "2.1.323",
+        "description": "@internal For the program that starts Claude Code: read only from --settings at the launch; ignored in settings sent to a running session and in user, project, local and managed settings. Refuse reads outside the working directories, other than a shell command's, in every permission mode: reads by the file tools (Read, Grep, Glob, LSP) and by other built-in tools that send or publish a file, attachments, connectors' file inputs, Chrome uploads, memory recall, a project's CLAUDE.md includes and memory. No allow rule lifts it, and blockReadsExemptPaths applies to it. With it on, only the starting directory, --add-dir and the additionalDirectories of --settings or of settings sent later by that program (a full path, on Windows with its drive, or ~ or ~/…; a relative entry does not count) count as working directories, for it and for blockWritesOutsideWorkingDirectories: the user, project, local and managed settings and /add-dir add none. Claude Code's own files stay readable: this project's and this session's files in its configuration folder, this project's memory unless a user, project or local settings file, or managed settings, chose that folder, and the CLAUDE.md, rules, skills, plugins, agents and commands in its configuration folder. It is blockReadsOutsideWorkingDirectories without that setting's hold on the shell: it does not limit shell commands, sandboxed or not, nor what MCP servers and the programs that hooks run read by themselves. Like that setting, it does not stop Claude Code loading skills, commands, agents, output styles and workflows from .claude folders above the working directory (as far as the repository's root; outside a repository, the home folder or the disk's root), nor through links in a .claude folder, the working directory's own included. It does not limit writes, but Edit and Write need an existing file read first, and where Read is refused only a shell command (such as cat) can do that. Cloud sessions (Claude Code on the web), whose file tools run in a container that is itself the boundary, may not apply it."
+      }
+    ],
     "config_key:permissions.blockReadsExemptPaths": [
       {
         "from": "2.1.315",
@@ -4397,6 +4437,10 @@
       {
         "from": "2.1.314",
         "description": "Refuse file-tool reads (Read, Grep, Glob, LSP) outside the working directories in every permission mode; true in any settings source wins. No allow rule lifts it. Also set when the user picks \"block\" on the one-time auto-mode prompt for a read outside the working directories."
+      },
+      {
+        "from": "2.1.323",
+        "description": "Refuse file-tool reads (Read, Grep, Glob, LSP) outside the working directories in every permission mode; true in any settings source wins. No allow rule lifts it. Also binds shell commands: one that names a path outside them is asked about in every mode, and the sandbox, where it is on, denies such reads. Also set when the user picks \"block\" on the one-time auto-mode prompt for a read outside the working directories."
       }
     ],
     "config_key:permissions.blockWritesOutsideWorkingDirectories": [
@@ -4407,6 +4451,10 @@
       {
         "from": "2.1.315",
         "description": "Refuse file-tool writes (Write, Edit, NotebookEdit) outside the working directories in every permission mode; true in any settings source wins. No allow rule lifts it. Files that Claude Code keeps for the session are not refused: its plan files, scratchpad and background job folder, and the auto-memory of this project, unless a repository settings file points it elsewhere. Nothing runs them unless the model asks. Also refuses file-tool writes to Claude Code settings files, inside the working directories too, and takes EnterWorktree and ExitWorktree, which move the working directory, out of the tools on offer. Does not limit shell commands, MCP tools, the programs that hooks run, or the memory tools. Cloud sessions (Claude Code on the web), whose file tools run in a container that is itself the boundary, may not apply it."
+      },
+      {
+        "from": "2.1.323",
+        "description": "Refuse file-tool writes (Write, Edit, NotebookEdit) outside the working directories in every permission mode; true in any settings source wins. No allow rule lifts it. Files that Claude Code keeps for the session are not refused: its plan files, scratchpad and background job folder, and the auto-memory of this project, unless a repository settings file points it elsewhere (a setting of the program that starts Claude Code can narrow this and the working directories). Nothing runs them unless the model asks. Also refuses file-tool writes to Claude Code settings files, inside the working directories too, and takes EnterWorktree and ExitWorktree, which move the working directory, out of the tools on offer (a setting of the program that starts Claude Code can keep them). Does not limit shell commands, MCP tools, the programs that hooks run, or the memory tools. Cloud sessions (Claude Code on the web), whose file tools run in a container that is itself the boundary, may not apply it."
       }
     ],
     "config_key:permissions.defaultMode": [
@@ -4523,6 +4571,12 @@
       {
         "from": "2.1.176",
         "description": "URL template for PR links in the footer link badges and inline messages. The detected git PR is rendered as the first footer-link badge. Placeholders: {host} {owner} {repo} {number} {url}. Example: \"https://reviews.example.com/{owner}/{repo}/pull/{number}\""
+      }
+    ],
+    "config_key:precomputeArmTokens": [
+      {
+        "from": "2.1.323",
+        "description": "@internal Read from the flag settings only, for a host that sends /compact below the automatic threshold: the main conversation starts its background compaction summary at this many tokens, when that is sooner than it would by itself, so that /compact finds it ready. A window set below the billing boundary compacts without a background summary, and this does not change that."
       }
     ],
     "config_key:precomputeCompactionEnabled": [
@@ -5299,6 +5353,10 @@
       {
         "from": "2.1.105",
         "description": "Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin"
+      },
+      {
+        "from": "2.1.323",
+        "description": "Deprecated: no longer has any effect. Subagent rows always use the default look."
       }
     ],
     "config_key:switchModelsOnFlag": [
