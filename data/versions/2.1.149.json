@@ -1105,19 +1105,6 @@
       "category": "cli"
     },
     {
-      "symbol": "--global",
-      "type": "cli_flag",
-      "first_seen": "0.2.9",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Use global config",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli",
-      "description_source": "binary"
-    },
-    {
       "symbol": "--handle-uri",
       "type": "cli_flag",
       "first_seen": "2.1.83",
@@ -1174,11 +1161,11 @@
       "type": "cli_flag",
       "first_seen": "2.1.64",
       "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "Bind address",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "source_url": null,
       "category": "cli",
       "description_source": "binary"
     },
