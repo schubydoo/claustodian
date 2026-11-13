@@ -625,25 +625,41 @@ function subprocessExampleClause(bullet: string): string | null {
   return bullet.slice(open, close === -1 ? undefined : close + 1);
 }
 
+/**
+ * The options of a backticked subprocess command, written as "`<tool> …` with"
+ * or "without" a run of flags. The 2.1.323 bullet "Changed `glab config set`
+ * without `--global` or `--host`, …" names glab's own flags and has no word
+ * "flags", so SUBPROCESS_FLAG_BULLET does not engage. The run stops at the first
+ * token that is not a flag joined by a comma, "or" or "and". The tool list is
+ * SUBPROCESS_FLAG_BULLET's plus `glab`; a `claude …` or `/command` is never
+ * matched, so a Claude Code command's own options still extract.
+ */
+const SUBPROCESS_COMMAND_OPTIONS =
+  /`(?:git|gh|glab|npm|node|docker|ripgrep|rg)(?:\s[^`]*)?`\s+(?:with|without)\s+(`--[\w-]+`(?:\s*(?:,\s*(?:or\s+|and\s+)?|or\s+|and\s+)`--[\w-]+`)*)/gi;
+
 export function isSubprocessFlagBullet(bullet: string): boolean {
   return subprocessFlagExamples(bullet).size > 0;
 }
 
 /**
- * The `--flag` tokens a subprocess-flag bullet lists inside its example clause —
- * the subprocess tool's own flags, which must not be extracted as Claude Code
- * `cli_flag` symbols. Empty set for any bullet that isn't a subprocess-flag
- * bullet.
+ * The `--flag` tokens a bullet names as a subprocess tool's own flags, which
+ * must not be extracted as Claude Code `cli_flag` symbols: those inside a
+ * subprocess-flag example clause, and the options of a backticked subprocess
+ * command (SUBPROCESS_COMMAND_OPTIONS). Empty set for any other bullet.
  */
 export function subprocessFlagExamples(bullet: string): ReadonlySet<string> {
-  const flags = new Set<string>();
-  const clause = subprocessExampleClause(bullet);
-  if (clause === null) {
-    return flags;
+  /* v8 ignore next -- TS narrowing only: the capture group is non-optional, so match[1] is always set */
+  const clauses = [...bullet.matchAll(SUBPROCESS_COMMAND_OPTIONS)].map((match) => match[1] ?? '');
+  const example = subprocessExampleClause(bullet);
+  if (example !== null) {
+    clauses.push(example);
   }
-  for (const { symbol, type } of extractSymbols(clause)) {
-    if (type === 'cli_flag') {
-      flags.add(symbol);
+  const flags = new Set<string>();
+  for (const clause of clauses) {
+    for (const { symbol, type } of extractSymbols(clause)) {
+      if (type === 'cli_flag') {
+        flags.add(symbol);
+      }
     }
   }
   return flags;
@@ -690,8 +706,9 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
       for (const { symbol, type } of extractSymbols(bullet)) {
         if (type === 'cli_flag') {
           // A subprocess tool's own flags, listed in this bullet's "(e.g., …)"
-          // example clause, are not Claude Code's — skip just those (a real
-          // first-party flag elsewhere in the bullet still counts).
+          // example clause or as a backticked subprocess command's options (see
+          // subprocessFlagExamples), are not Claude Code's — skip just those (a
+          // real first-party flag elsewhere in the bullet still counts).
           if (subprocessExampleFlags.has(symbol)) {
             continue;
           }

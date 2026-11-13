@@ -663,6 +663,35 @@ describe('isSubprocessFlagBullet', () => {
     expect(keys).not.toContain('cli_flag:--cherry-pick');
   });
 
+  it('drops the options of a backticked subprocess command (`glab config set` without …)', () => {
+    // 2.1.323 — glab's own config flags. The bullet has no word "flags", so the
+    // example-clause rule above never engages. Before the fix this revived the
+    // removed Claude Code flag `--global` and re-sourced the real `--host`.
+    const glab =
+      '- Changed `glab config set` without `--global` or `--host`, and `glab config edit --local`, to fail read-only inside the Bash sandbox; run them outside it';
+    expect([...subprocessFlagExamples(glab)].sort()).toEqual(['--global', '--host']);
+    const keys = [...collectChangelogSymbols([{ version: '2.1.323', bullets: [glab] }]).keys()];
+    expect(keys).not.toContain('cli_flag:--global');
+    expect(keys).not.toContain('cli_flag:--host');
+  });
+
+  it('keeps a first-party flag outside the subprocess command options', () => {
+    const mixed = '- Fixed `git push` with `--force`, `--force-with-lease` failing; added `--foo`';
+    expect([...subprocessFlagExamples(mixed)].sort()).toEqual(['--force', '--force-with-lease']);
+    const keys = [...collectChangelogSymbols([{ version: '2.1.323', bullets: [mixed] }]).keys()];
+    expect(keys).toContain('cli_flag:--foo');
+    expect(keys).not.toContain('cli_flag:--force');
+  });
+
+  it('keeps the options of a Claude Code command', () => {
+    for (const bullet of [
+      '- Fixed `claude mcp add` with `--scope` ignoring the value',
+      '- Added `/plugin list` with `--enabled` or `--disabled` filters',
+    ]) {
+      expect(subprocessFlagExamples(bullet).size).toBe(0);
+    }
+  });
+
   it('drops the phantom `--compact` when written as prose (the /compact command)', () => {
     for (const bullet of [
       '- Fixed `--continue` not resuming after `--compact`',
