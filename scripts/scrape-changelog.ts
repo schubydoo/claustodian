@@ -706,8 +706,9 @@ export function collectChangelogSymbols(blocks: ChangelogBlock[]): Map<string, C
       for (const { symbol, type } of extractSymbols(bullet)) {
         if (type === 'cli_flag') {
           // A subprocess tool's own flags, listed in this bullet's "(e.g., …)"
-          // example clause, are not Claude Code's — skip just those (a real
-          // first-party flag elsewhere in the bullet still counts).
+          // example clause or as a backticked subprocess command's options (see
+          // subprocessFlagExamples), are not Claude Code's — skip just those (a
+          // real first-party flag elsewhere in the bullet still counts).
           if (subprocessExampleFlags.has(symbol)) {
             continue;
           }

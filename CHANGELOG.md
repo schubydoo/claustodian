@@ -22,8 +22,9 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 - **glab's own flags no longer publish as Claude Code CLI flags.** The 2.1.323 bullet
   "Changed `glab config set` without `--global` or `--host`, …" names flags of GitLab's
-  `glab` CLI. The changelog lane now ignores the flags that follow a backticked command
-  of another tool and the word "with" or "without". From the next data update,
+  `glab` CLI. The changelog lane now ignores the flags that follow a backticked `git`,
+  `gh`, `glab`, `npm`, `node`, `docker`, `ripgrep` or `rg` command and the word "with"
+  or "without". From the next data update,
   `--global` is again removed in 2.0.0 and leaves every snapshot from 2.0.0 on.
   `--host` is a real Claude Code flag. It keeps its `first_seen` of 2.1.64 and returns
   to `provenance: "binary"` and `status: "needs_review"`.
