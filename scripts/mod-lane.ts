@@ -113,6 +113,16 @@ const HOOK_EVENT_NAME = /^[A-Z][A-Za-z]*$/;
 /** A render site's name, the value of `e.component` in a `ui.render` hook. */
 const RENDER_SITE_NAME = /^[A-Z][A-Za-z]*$/;
 
+/**
+ * A site the enum's text names as left out of its array, from 2.1.323: "…one name
+ * per render site of the hooks engine (…), but `AbovePromptList`, which the engine
+ * asks itself while it draws `AbovePrompt`, and `Backdrop`, which a surface asks for
+ * as `Theme`'s `backdrop`." Only a name followed by ", which" is an exception. The
+ * clause also writes `AbovePrompt` (in the array) and `Theme` (not a site) in
+ * backticks.
+ */
+const EXCEPTED_SITE = /`([A-Z][A-Za-z]*)`, which /g;
+
 /** The text the bundle gives the render-site enum, from RENDER_SITE_ENUM_FLOOR. */
 const RENDER_SITE_DESCRIBE = /^(?:@internal )?A component a plugin may draw through `ui\.render`/;
 
@@ -225,6 +235,9 @@ function elementListsOf(node: Node): { elements: string[]; unreadable: string[] 
 /**
  * The members of a described render-site enum, or undefined when `node` is not one:
  * `B([…]).describe("@internal A component a plugin may draw through `ui.render`…")`.
+ * The members are the array's names and the exceptions its text names after ", but"
+ * (EXCEPTED_SITE). Together they are the whole list. Without the exceptions, the
+ * text's own "but" turns 2.1.323 into a removal of `Backdrop`, which still draws.
  */
 function siteEnumOf(node: Node): { sites: string[]; unreadable: string[] } | undefined {
   const callee = node.callee as Node;
@@ -253,6 +266,13 @@ function siteEnumOf(node: Node): { sites: string[]; unreadable: string[] } | und
     ) {
       sites.push(element.value);
     } else unreadable.push(element === null ? 'a hole' : `a ${element.type}`);
+  }
+  const butAt = text.value.indexOf(', but ');
+  if (butAt !== -1) {
+    const clause = text.value.slice(butAt).split(/\.(?:\s|$)/)[0] as string;
+    const excepted = [...clause.matchAll(EXCEPTED_SITE)].map((m) => m[1] as string);
+    if (excepted.length === 0) unreadable.push('a "but" clause that names no site');
+    sites.push(...excepted);
   }
   return { sites, unreadable };
 }

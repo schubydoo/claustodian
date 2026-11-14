@@ -272,6 +272,30 @@ describe('extractModRenderSites', () => {
     });
   });
 
+  it('counts the sites the enum text names as exceptions as listed members', () => {
+    // From 2.1.323 the enum leaves two sites out of its array and names them in its
+    // own text. `AbovePrompt` and `Theme` are also in backticks there, but neither is
+    // an exception: `AbovePrompt` is in the array, and `Theme` is not a site.
+    const text =
+      'one name per render site of the hooks engine (src/plugins/functionHooks/types/render/' +
+      'render-component.ts), but `AbovePromptList`, which the engine asks itself while it ' +
+      "draws `AbovePrompt`, and `Backdrop`, which a surface asks for as `Theme`'s `backdrop`.";
+    const source = SITE_ENUM(['AbovePrompt', 'Pane']).replace('one name per render site', text);
+    expect(extractModRenderSites(source, '2.1.323')).toEqual({
+      sites: ['AbovePrompt', 'AbovePromptList', 'Backdrop', 'Pane'],
+      listed: true,
+    });
+  });
+
+  it('refuses an exception clause that names no site it can read', () => {
+    // An exception it cannot read would publish as a removal of that site.
+    const source = SITE_ENUM(['Pane']).replace(
+      'one name per render site',
+      'one name per render site, but the prompt band, which the engine asks itself'
+    );
+    expect(() => extractModRenderSites(source, '2.1.323')).toThrow(/cannot read/);
+  });
+
   it('refuses a release at or after the enum floor without the enum', () => {
     expect(() => extractModRenderSites(SITE_CALLS(['Spinner']), RENDER_SITE_ENUM_FLOOR)).toThrow(
       /^mod lane: .*no described render-site enum/

@@ -34,8 +34,16 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 - **`claude purge` scopes.** `claude project purge` became `claude purge`. One scope
   list covers every version, so `--all`, `--dry-run`, `--interactive` and `--yes` list
   both names.
+- **`Backdrop` is no longer removed in 2.1.323 in
+  `data/mod-render-site-observations.json`.** From 2.1.323, the render-site enum leaves
+  `Backdrop` and `AbovePromptList` out of its array and names them in its own text as
+  exceptions. The binary lane now reads those exceptions as members of the list.
+  `Backdrop` keeps `removed_in: null`, and `AbovePromptList` gains binary evidence from
+  2.1.323. The published `mod_render_site` records do not change: the docs already
+  gave both sites the right status and date.
 
-These changes reach the published files with the next data update.
+The scope changes are in the published files. The `Backdrop` fix reaches them with the
+next data update.
 
 ## 2026-11-12
 
