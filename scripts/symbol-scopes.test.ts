@@ -14,15 +14,27 @@ describe('scopesFor', () => {
     expect(scopesFor('cli_flag', '--json')).toEqual([
       'agents',
       'auth status',
+      'plugin configure',
+      'plugin disable',
+      'plugin enable',
       'plugin eval',
+      'plugin install',
       'plugin list',
+      'plugin marketplace add',
       'plugin marketplace list',
+      'plugin marketplace remove',
+      'plugin marketplace update',
+      'plugin uninstall',
+      'plugin update',
+      'plugin validate',
       'ultrareview',
+      'worktree-hook',
     ]);
     expect(scopesFor('cli_flag', '--all')).toEqual([
       'agents',
       'plugin disable',
       'project purge',
+      'purge',
       'respawn',
     ]);
     expect(scopesFor('cli_flag', '--config')).toEqual(['gateway', 'plugin install']);
@@ -75,7 +87,7 @@ describe('scopesFor', () => {
     //   claude plugin eval init --interactive
     //   claude plugin marketplace list --json
     //   claude plugin marketplace add --scope
-    expect(scopesFor('cli_flag', '--interactive')).toEqual(['plugin eval init', 'project purge']);
+    expect(scopesFor('cli_flag', '--interactive')).toContain('plugin eval init');
     expect(scopesFor('cli_flag', '--json')).toContain('plugin marketplace list');
     expect(scopesFor('cli_flag', '--scope')).toContain('plugin marketplace add');
     expect(scopesFor('cli_flag', '--scope')).toContain('plugin marketplace remove');
@@ -94,6 +106,26 @@ describe('scopesFor', () => {
     // `--yes` was present but INCOMPLETE — the walk added `plugin install` / `update`.
     expect(scopesFor('cli_flag', '--yes')).toContain('plugin install');
     expect(scopesFor('cli_flag', '--yes')).toContain('plugin update');
+  });
+
+  it('carries the 2.1.325 walk, the hidden worktree-hook and the purge rename', () => {
+    // `--json` had gained most `plugin` subcommands since 2.1.251, so the old list
+    // was a false "no" for `claude plugin install --json`.
+    expect(scopesFor('cli_flag', '--json')).toContain('plugin install');
+    expect(scopesFor('cli_flag', '--claudeai')).toEqual(['auth login', 'plugin marketplace add']);
+    // `worktree-hook` is hidden from `claude --help`, so no walk reaches it. Its
+    // own help lists these flags. `--name` is also top-level, so it stays unscoped.
+    for (const flag of ['--event', '--path', '--trusted-folder']) {
+      expect(scopesFor('cli_flag', flag)).toEqual(['worktree-hook']);
+    }
+    expect(scopesFor('cli_flag', '--json')).toContain('worktree-hook');
+    expect(scopesFor('cli_flag', '--name')).toBeUndefined();
+    // `claude project purge` became `claude purge`. One scope covers every
+    // version, so both names stay: dropping either is a false "no" on its side.
+    for (const flag of ['--all', '--dry-run', '--interactive', '--yes']) {
+      expect(scopesFor('cli_flag', flag)).toContain('project purge');
+      expect(scopesFor('cli_flag', flag)).toContain('purge');
+    }
   });
 
   it('leaves a HIDDEN top-level flag unscoped, however a subcommand reuses the name', () => {
