@@ -107,16 +107,35 @@
  * falsely assert it is rejected on bare `claude` — the hidden-top-level trap this
  * doc warns of. The `remote-control` and `self-hosted-runner` entries stay: their
  * help is auth-gated or argv-dispatched, so a walk cannot reach them.
+ *
+ * REFRESHED again at 2.1.325. `--json` had gained most of the `plugin` subcommands,
+ * so its old list gave a false "no" for `claude plugin install --json`. The walk
+ * also added `--claudeai` under `plugin marketplace add` and scoped flags that
+ * were new since 2.1.251. Three kinds of entry come from somewhere else:
+ *
+ * - `worktree-hook` is a hidden command (Claude Desktop runs it), so `claude
+ *   --help` never names it and the walk never visits it. Its own
+ *   `claude worktree-hook --help` lists `--event`, `--path`, `--trusted-folder`,
+ *   `--json` and `--name`. `--name` is a top-level flag too, so it stays unscoped.
+ * - `claude project purge` became `claude purge`. This table applies one scope to
+ *   every version, so both names are listed: a release before the rename accepts
+ *   one and a release after it accepts the other. Dropping either would give a
+ *   false "no" for every release on that side.
+ * - `respawn` prints its own usage text, not commander's `Options:` block, so the
+ *   walk cannot see that it takes `--all`. The entry stays, from the background
+ *   parser, as the comment on `--all` says.
  */
 export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--ablation', ['plugin eval']],
+  ['--accept-command', ['plugin install', 'plugin update']],
   // `respawn` is from the background-subcommand parser, not the 2.1.226 help
   // sweep: `claude respawn <id>|--all` accepts `--all`, proved by
   // `extractBgSubcommandScopes` (scripts/argv-scopes.ts). It is curated here rather
   // than published from the binary lane because `--all` is a commander
   // registration elsewhere, and backfill-binary withholds binary scopes from a
   // strong-evidence flag; curation UNIONS, which is the only safe direction.
-  ['--all', ['agents', 'plugin disable', 'project purge', 'respawn']],
+  ['--all', ['agents', 'plugin disable', 'project purge', 'purge', 'respawn']],
+  ['--allow-real-servers', ['plugin eval']],
   ['--allow-tools', ['plugin eval']],
   ['--author', ['plugin init']],
   ['--author-email', ['plugin init']],
@@ -125,36 +144,53 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--callback-port', ['mcp add']],
   ['--capacity', ['remote-control']],
   ['--case', ['plugin eval']],
-  ['--claudeai', ['auth login']],
+  ['--claudeai', ['auth login', 'plugin marketplace add']],
   ['--client-id', ['mcp add']],
   ['--client-secret', ['mcp add', 'mcp add-json']],
+  ['--concurrency', ['plugin eval']],
   ['--config', ['gateway', 'plugin install']],
   ['--console', ['auth login']],
   ['--cwd', ['agents']],
+  ['--data-size', ['plugin list']],
   ['--description', ['plugin init']],
-  ['--dry-run', ['import', 'plugin prune', 'plugin tag', 'project purge']],
+  ['--disallow-tools', ['plugin eval']],
+  ['--discard', ['plugin restore-set-aside']],
+  ['--dry-run', ['import', 'plugin prune', 'plugin tag', 'project purge', 'purge']],
   ['--email', ['auth login']],
   ['--env', ['mcp add']],
   ['--eval-dir', ['plugin eval', 'plugin eval init']],
+  ['--event', ['worktree-hook']],
   ['--force', ['install', 'plugin init', 'plugin tag']],
   ['--header', ['mcp add']],
-  ['--interactive', ['plugin eval init', 'project purge']],
+  ['--interactive', ['plugin eval init', 'project purge', 'purge']],
   ['--interview', ['plugin eval init']],
   [
     '--json',
     [
       'agents',
       'auth status',
+      'plugin configure',
+      'plugin disable',
+      'plugin enable',
       'plugin eval',
+      'plugin install',
       'plugin list',
+      'plugin marketplace add',
       'plugin marketplace list',
+      'plugin marketplace remove',
+      'plugin marketplace update',
+      'plugin uninstall',
+      'plugin update',
+      'plugin validate',
       'ultrareview',
+      'worktree-hook',
     ],
   ],
   ['--judge-model', ['plugin eval']],
   ['--keep-data', ['plugin uninstall']],
   ['--keep-temp', ['plugin eval']],
   ['--label', ['auto-mode defaults']],
+  ['--marketplace', ['plugin install']],
   ['--max-cost-usd', ['plugin eval']],
   ['--message', ['plugin tag']],
   ['--mocks', ['plugin eval']],
@@ -164,7 +200,9 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--no-sandbox', ['remote-control']],
   ['--no-scaffold', ['plugin eval']],
   ['--output-dir', ['plugin eval']],
+  ['--path', ['worktree-hook']],
   ['--post', ['ultrareview']],
+  ['--profile', ['plugin validate']],
   ['--prune', ['plugin uninstall']],
   ['--publish-report', ['plugin eval']],
   ['--push', ['plugin tag']],
@@ -198,6 +236,10 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
   ['--threshold', ['plugin eval']],
   ['--timeout', ['ultrareview']],
   ['--transport', ['mcp add']],
+  ['--trust-plugin', ['plugin eval']],
+  ['--trust-workspace', ['ultrareview']],
+  ['--trusted-folder', ['worktree-hook']],
+  ['--values-stdin', ['plugin configure']],
   ['--with', ['plugin init']],
   [
     '--yes',
@@ -209,6 +251,7 @@ export const SYMBOL_SCOPES: ReadonlyMap<string, readonly string[]> = new Map([
       'plugin uninstall',
       'plugin update',
       'project purge',
+      'purge',
     ],
   ],
 ]);

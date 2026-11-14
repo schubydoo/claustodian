@@ -16,6 +16,27 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ---
 
+## 2026-11-14
+
+### Fixed
+
+- **Flag `scopes` match Claude Code 2.1.325.** The curated scopes came from a
+  `claude <path> --help` walk at 2.1.251. Since then, `--json` was added to most
+  `plugin` subcommands, so its `scopes` said wrongly that `claude plugin install --json`
+  is rejected. `--claudeai` now also lists `plugin marketplace add`, and flags that were
+  added after 2.1.251 now have scopes, for example `--accept-command` and
+  `--trust-workspace`. Where the docs describe such a flag per subcommand, the text is
+  in `scope_descriptions`.
+- **`worktree-hook` scopes.** `claude worktree-hook` is hidden from `claude --help`, so
+  no walk can reach it. `--event`, `--path` and `--trusted-folder` now have the scope
+  `worktree-hook`, and `--json` lists it too. `--name` stays unscoped, because it is
+  also a top-level flag.
+- **`claude purge` scopes.** `claude project purge` became `claude purge`. One scope
+  list covers every version, so `--all`, `--dry-run`, `--interactive` and `--yes` list
+  both names.
+
+These changes reach the published files with the next data update.
+
 ## 2026-11-12
 
 ### Fixed
