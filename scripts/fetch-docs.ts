@@ -864,11 +864,14 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
 /**
  * The "Render sites" table of the mods reference page. Its first cell names one site
  * or more in backticks (`` `ToolUse`, `ToolResult`, `ToolGroup` ``, sometimes as a
- * link), and nothing else. The other cells list props and apps, not what the site is,
- * so the record carries no description and the binary lane dates it. The section holds
- * one table, headed "Site". A second table, any other header, and a first cell holding
- * anything but site names stop the run. Fenced code is skipped, so an example cannot
- * open the section.
+ * link), and nothing else. One exception: a cell with one name can gloss it after a
+ * comma, in words that start lowercase (`` `AbovePromptList`, the stack of `AbovePrompt`
+ * rows ``). Only the name before the gloss is read, because the gloss can name other
+ * sites. The other cells list props and apps, not what the site is, so the record
+ * carries no description and the binary lane dates it. The section holds one table,
+ * headed "Site". A second table, any other header, and a first cell holding anything
+ * but site names stop the run. Fenced code is skipped, so an example cannot open the
+ * section.
  */
 function parseModsRenderSiteTable(page: string, markdown: string): DocEntry[] {
   const entries: DocEntry[] = [];
@@ -881,6 +884,9 @@ function parseModsRenderSiteTable(page: string, markdown: string): DocEntry[] {
   // A site name written plainly or as a link, several to a cell, joined by commas.
   const name = String.raw`(?:\[\`[A-Z][A-Za-z]*\`\]\([^)\s]*\)|\`[A-Z][A-Za-z]*\`)`;
   const cellOfNames = new RegExp(`^${name}(?:,\\s*${name})*$`);
+  // One name, then a comma and a lowercase gloss. Several names before a gloss are
+  // refused: the cell does not say which of them the gloss describes.
+  const glossedName = new RegExp(`^(${name}),\\s+[a-z]`);
   let inSection = false;
   let inFence = false;
   let tables = 0;
@@ -904,10 +910,10 @@ function parseModsRenderSiteTable(page: string, markdown: string): DocEntry[] {
         refuse('the Render sites table has a header other than "Site"', line);
       continue;
     }
-    if (!cellOfNames.test(nameCell)) {
+    const names =
+      (cellOfNames.test(nameCell) ? nameCell : glossedName.exec(nameCell)?.[1]) ??
       refuse('a row of the Render sites table holds something other than site names', line);
-    }
-    for (const match of nameCell.matchAll(/`([A-Z][A-Za-z]*)`/g)) {
+    for (const match of names.matchAll(/`([A-Z][A-Za-z]*)`/g)) {
       entries.push({
         symbol: match[1] as string,
         type: 'mod_render_site',

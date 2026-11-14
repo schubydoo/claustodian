@@ -1383,6 +1383,32 @@ describe('parseDocPage — mods reference render sites', () => {
     ).toThrow(/second table/);
   });
 
+  it('reads the one site of a row that glosses it, and not the names in the gloss', () => {
+    // The live row of 2.1.323: the gloss names `AbovePrompt`, which has its own row.
+    const page = [
+      '## Render sites',
+      '| Site | `e.props` | `e.requestId` | Rendered on |',
+      '| :- | :- | :- | :- |',
+      '| `AbovePromptList`, the stack of `AbovePrompt` rows | `rows` | One instance | Terminal, Desktop. Requires Claude Code v2.1.323 or later. |',
+    ].join('\n');
+    const entries = parseDocPage('plugins/mods/reference', page).filter(
+      (e) => e.type === 'mod_render_site'
+    );
+    expect(entries.map((e) => [e.symbol, e.doc_min_version])).toEqual([
+      ['AbovePromptList', '2.1.323'],
+    ]);
+  });
+
+  it('refuses a gloss after several names, and one that starts with a capital', () => {
+    const page = (row: string) =>
+      ['## Render sites', '| Site | What |', '| :- | :- |', row].join('\n');
+    // Which of several names a gloss belongs to is not readable from the cell.
+    expect(() => sites(page('| `ToolUse`, `ToolResult`, the tool rows | x |'))).toThrow(
+      /other than site names/
+    );
+    expect(() => sites(page('| `Pane`, The pane | x |'))).toThrow(/other than site names/);
+  });
+
   it('skips a Render sites example inside fenced code', () => {
     const page = [
       '## Elements',
