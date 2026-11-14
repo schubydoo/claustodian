@@ -1349,7 +1349,7 @@
     {
       "symbol": "--strict-mcp-config",
       "type": "cli_flag",
-      "description": "Only use MCP servers from `--mcp-config`, ignoring all other MCP configurations. See Exclusive control with managed-mcp.json for what the flag does under a managed MCP file",
+      "description": "Skip the MCP servers configured in places such as `.mcp.json`, `~/.claude.json`, or a plugin, and load the ones you pass with `--mcp-config`. See Exclusive control with managed-mcp.json for what the flag does under a managed MCP file",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -2194,7 +2194,7 @@
     {
       "symbol": "/stickers",
       "type": "command",
-      "description": "Order Claude Code stickers",
+      "description": "Check Claude Code sticker availability",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2278,7 +2278,7 @@
     {
       "symbol": "/upgrade",
       "type": "command",
-      "description": "Open the upgrade page in your browser to switch to a higher plan tier. When the browser fails to open, the command shows a sign-in prompt without printing the URL",
+      "description": "Open the upgrade page in your browser to switch to a higher plan tier. When no browser can open the page, for example over SSH, the command prints the page's URL above its sign-in prompt. Printing the URL requires Claude Code v2.1.323 or later",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2292,7 +2292,7 @@
     {
       "symbol": "/usage-credits",
       "type": "command",
-      "description": "Configure usage credits, or request them from your admin, when you hit a limit. Opens your usage-credits billing settings in the browser, except that Team and Enterprise members without billing access instead send a usage-credits request to their admin from the CLI, after confirming in a dialog that the request notifies their admins. When no browser can open the billing page, for example over SSH, the command prints the URL to visit instead; this requires Claude Code v2.1.205 or later, and earlier versions showed nothing in that case. Previously `/extra-usage`",
+      "description": "Configure usage credits, or request them from your admin, when you hit a limit. Opens your usage-credits billing settings in the browser. Team and Enterprise members without billing access instead send a usage-credits request to their admin from the CLI. At a terminal where no browser can open the page, for example over SSH, the command prints the URL. Printing it requires Claude Code v2.1.205 or later. Previously `/extra-usage`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2355,7 +2355,7 @@
     {
       "symbol": "agentPushNotifEnabled",
       "type": "config_key",
-      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. In a local session, Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**. When you change it there, Claude Code also saves the value to your account.",
+      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. In a local session, Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3148,7 +3148,7 @@
     {
       "symbol": "minimumVersion",
       "type": "config_key",
-      "description": "Keep background auto-updates and `claude update` from installing any version below this one, so moving to the `\"stable\"` channel doesn't downgrade you from a newer `\"latest\"` build. Claude Code writes this key for you when you choose to stay on your current version while switching channels in `/config`, and clears it when you switch back to `\"latest\"`.",
+      "description": "Keep background auto-updates and `claude update` from installing any version below the one you set. Claude Code writes this key for you when you choose to stay on your current version while switching channels in `/config`. Claude Code clears the key when you switch back to `\"latest\"` in `/config`.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3472,7 +3472,7 @@
     {
       "symbol": "sandbox.autoAllowBashIfSandboxed",
       "type": "config_key",
-      "description": "Let Claude Code run sandboxed Bash commands without a permission prompt. Commands that can't run in the sandbox still go through the regular permission flow, and `deny` rules and content-scoped `ask` rules such as `Bash(git push *)` still apply; a bare `Bash` ask rule is skipped for sandboxed commands. Set it to `false` to send sandboxed commands through the regular permission flow too, which the `/sandbox` **Mode** tab calls regular permissions mode.",
+      "description": "Let Claude Code run sandboxed Bash commands without a permission prompt. Commands that can't run in the sandbox still go through the regular permission flow. `deny` rules and content-scoped `ask` rules such as `Bash(git push *)` still apply, but a bare `Bash` ask rule is skipped for sandboxed commands. To set it to `true` in managed settings, add it to the `sandbox` block of your highest-ranked managed source.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3880,13 +3880,6 @@
       "type": "config_key",
       "description": "Choose how long the prompt cache holds the requests Claude Code makes outside the main conversation. This key applies to subagents, workflows, and Claude Code's own background and helper requests, such as compaction and session titles. The one-hour lifetime keeps the cache warm across longer breaks, and the API bills each cache write at a higher rate than at the five-minute lifetime. Requires Claude Code v2.1.242 or later.",
       "doc_min_version": "2.1.242",
-      "doc_page": "settings-reference"
-    },
-    {
-      "symbol": "subagentStatusLine",
-      "type": "config_key",
-      "description": "When Claude runs subagents, Claude Code lists them in a task display below the prompt, one row per subagent showing `name · description · token count`. This key lets you run your own command to rewrite those rows, for example to show each subagent's context usage as a percentage. On each refresh, Claude Code sends the visible rows as one JSON object on stdin, with a `tasks` array carrying each subagent's `id`, `name`, `status`, `model`, `tokenCount`, and more, and replaces the row for each `id` you write back as a `{\"id\", \"content\"}` line. Rows you don't write back keep the default rendering.",
-      "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
@@ -4668,6 +4661,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_AUTOMOUNT_ROOTS",
+      "type": "env_var",
+      "description": "Automount root folders for Claude Code to skip when it looks in the folders above your working directory for files such as `CLAUDE.md`, skills, and `.mcp.json`. Set it when those lookups wait on your automounter. Separate multiple paths with `:` on Unix or `;` on Windows, and give each as an absolute path with no symlink in it. Requires Claude Code v2.1.323 or later",
+      "doc_min_version": "2.1.323",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_AWS_CHAIN_RESOLVE_TIMEOUT_MS",
       "type": "env_var",
       "description": "Time in milliseconds Claude Code waits for the AWS default credential provider chain to produce credentials before the request fails with `AWS default-chain credential resolve timed out` (default: `60000`). Raise it when a step in your chain legitimately needs longer, such as a browser-based SSO sign-in with MFA through a wrapper like `aws-vault`. Applies on Amazon Bedrock, Claude Platform on AWS, and the Mantle endpoint. See credential caching and resolution timeout. Requires Claude Code v2.1.207 or later",
@@ -4971,7 +4971,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_LEGACY_MODEL_REMAP",
       "type": "env_var",
-      "description": "Set to `1` to prevent automatic remapping of Opus 4 and Opus 4.1 to the current Opus version on the Anthropic API. Use when you intentionally want to pin an older model. The remap does not run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
+      "description": "Set to `1` to prevent automatic remapping of Opus 4 and Opus 4.1 to the current Opus version on the Anthropic API. The remap doesn't run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -5280,6 +5280,13 @@
       "symbol": "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS",
       "type": "env_var",
       "description": "Set to `1` to enable agent teams. Agent teams are experimental and disabled by default",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_EXPERIMENTAL_CODE_MODE",
+      "type": "env_var",
+      "description": "Set to `1` to start sessions in Code Mode, an experimental feature. Set to `0` to keep it off, or in managed settings to block it for an organization. The variable doesn't count in every settings file. See the version and account requirements",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -5650,14 +5657,14 @@
     {
       "symbol": "CLAUDE_CODE_OVERLOADED_RETRY_BASE_DELAY_MS",
       "type": "env_var",
-      "description": "Starting delay in milliseconds, in place of the default 500, of the exponential backoff between automatic retries of a request that the API rejects with a `529` overloaded error. Raise it to spread the retries over a longer window when the API is at capacity. Give whole milliseconds from 500 to 32000 in plain digits; Claude Code treats any other value as unset. Has no effect when `CLAUDE_CODE_RETRY_WATCHDOG` is set to `1`, or when the rejected request was sent in fast mode. Requires Claude Code v2.1.292 or later",
+      "description": "Starting delay in milliseconds of the backoff between retries of a request that the API rejects with a `529` overloaded error (default: 500). Raise it to spread the retries over a longer window when the API is at capacity. Give whole milliseconds from 500 to 32000 in plain digits; Claude Code treats any other value as unset. See when it has no effect. Requires Claude Code v2.1.292 or later",
       "doc_min_version": "2.1.292",
       "doc_page": "env-vars"
     },
     {
       "symbol": "CLAUDE_CODE_OVERLOADED_RETRY_MAX_DELAY_MS",
       "type": "env_var",
-      "description": "Ceiling in milliseconds, in place of the default 32000, on the exponential backoff between automatic retries of a request that the API rejects with a `529` overloaded error. Raise it so that later retries keep spreading apart when the API is at capacity. Give whole milliseconds from 32000 to 64000 in plain digits; Claude Code treats any other value as unset. Has no effect when `CLAUDE_CODE_RETRY_WATCHDOG` is set to `1`, or when the rejected request was sent in fast mode. Requires Claude Code v2.1.296 or later",
+      "description": "Ceiling in milliseconds on the backoff between retries of a request that the API rejects with a `529` overloaded error (default: 32000). Raise it so that later retries keep spreading apart. Give whole milliseconds from 32000 to 300000 in plain digits; Claude Code treats any other value as unset. Values above 64000 require v2.1.323 or later. See when it has no effect. Requires Claude Code v2.1.296 or later",
       "doc_min_version": "2.1.296",
       "doc_page": "env-vars"
     },
@@ -5685,7 +5692,7 @@
     {
       "symbol": "CLAUDE_CODE_PLUGIN_DIR_WATCH",
       "type": "env_var",
-      "description": "Controls whether Claude Code reloads a mod when the mod's files change. Reloading applies to a mod you load from a directory with `--plugin-dir`, and it's on by default in interactive sessions. Set to `1` to turn it on in non-interactive sessions as well, or `0` to turn it off in every session. Requires Claude Code v2.1.287 or later. See mod settings and environment variables",
+      "description": "Controls whether a mod reloads when its files change. By default, mods in skills directories reload in any session that takes more than one prompt, non-interactive included. Mods in `--plugin-dir` directories reload only in interactive terminal sessions. Set to `1` to reload them as skills-directory mods do, or `0` to turn reloading off everywhere. Requires Claude Code v2.1.287 or later",
       "doc_min_version": "2.1.287",
       "doc_page": "env-vars"
     },
@@ -5834,6 +5841,13 @@
       "type": "env_var",
       "description": "Set to `1` to start the session in restricted mode, the same as passing `--restricted`. Claude Code ignores this variable in a settings file's `env` block. Requires Claude Code v2.1.248 or later",
       "doc_min_version": "2.1.248",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_RESUME_HINT_COMMAND",
+      "type": "env_var",
+      "description": "In a wrapper script that starts Claude Code, set this to the name you type to run the wrapper, such as `mytool`. A local session then prints `mytool --resume <session-id>` at exit in place of `claude --resume <session-id>`. Claude Code ignores a name that doesn't match `^\\w[\\w-]*$`. It also ignores the variable in a settings file's `env` block. Requires Claude Code v2.1.323 or later",
+      "doc_min_version": "2.1.323",
       "doc_page": "env-vars"
     },
     {
@@ -6091,7 +6105,7 @@
     {
       "symbol": "CLAUDE_CODE_SYNC_SKILLS",
       "type": "env_var",
-      "description": "Set to `1` in non-interactive mode with the `-p` flag to make Claude Code download the skills enabled for your claude.ai account in that run and wait for the list of them, up to `CLAUDE_CODE_SYNC_SKILLS_WAIT_TIMEOUT_MS`, before it runs the first query. Requires claude.ai authentication. Terminal sessions where you sign in with your claude.ai account sync these skills without this variable, so set it only when a `-p` run needs your current skills on its first query",
+      "description": "Set to `1` to make Claude Code download the skills enabled for your claude.ai account. In non-interactive mode with the `-p` flag, Claude Code also waits up to `CLAUDE_CODE_SYNC_SKILLS_WAIT_TIMEOUT_MS` for the list of skills before it runs the first query. Requires claude.ai authentication. Terminal sessions where you sign in with your claude.ai account sync these skills without this variable. In an interactive session, the variable requires v2.1.323 or later",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -7036,7 +7050,7 @@
     {
       "symbol": "OTEL_EXPORTER_OTLP_PROTOCOL",
       "type": "env_var",
-      "description": "Protocol for OTLP exporter, applies to all signals. Claude Code has no default protocol, so set this or the signal-specific protocol variable for each `otlp` exporter you enable",
+      "description": "Protocol for OTLP exporter, applies to all signals. Defaults to `http/protobuf` for a valid `http://` or `https://` endpoint. For a gRPC endpoint such as `http://localhost:4317`, set this to `grpc`. The default requires Claude Code v2.1.323 or later",
       "doc_min_version": null,
       "doc_page": "monitoring-usage"
     },
@@ -8858,6 +8872,13 @@
       "type": "mod_render_site",
       "description": "",
       "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "AbovePromptList",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": "2.1.323",
       "doc_page": "plugins/mods/reference"
     },
     {
