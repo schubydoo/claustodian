@@ -254,18 +254,39 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
+        "plugin configure": "Print the result as one JSON object on stdout.",
+        "plugin disable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`.",
+        "plugin enable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`.",
         "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
+        "plugin install": "Print the result as one JSON object on the last line of stdout instead of the human-readable message, for use in scripts. See JSON result format.",
         "plugin list": "Print the list as JSON",
+        "plugin marketplace add": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format.",
         "plugin marketplace list": "Print the list as JSON",
+        "plugin marketplace remove": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format.",
+        "plugin marketplace update": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format. Without a name, the command refuses `--json` and exits `1`.",
+        "plugin uninstall": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`.",
+        "plugin update": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`.",
+        "plugin validate": "Output the validation report as one JSON object with the same exit codes.",
         "ultrareview": "Print the raw `bugs.json` payload instead of the formatted findings"
       },
       "scopes": [
         "agents",
         "auth status",
+        "plugin configure",
+        "plugin disable",
+        "plugin enable",
         "plugin eval",
+        "plugin install",
         "plugin list",
+        "plugin marketplace add",
         "plugin marketplace list",
-        "ultrareview"
+        "plugin marketplace remove",
+        "plugin marketplace update",
+        "plugin uninstall",
+        "plugin update",
+        "plugin validate",
+        "ultrareview",
+        "worktree-hook"
       ]
     },
     {
@@ -482,7 +503,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Only use MCP servers from `--mcp-config`, ignoring all other MCP configurations. See Exclusive control with managed-mcp.json for what the flag does under a managed MCP file",
+      "description": "Skip the MCP servers configured in places such as `.mcp.json`, `~/.claude.json`, or a plugin, and load the ones you pass with `--mcp-config`. See Exclusive control with managed-mcp.json for what the flag does under a managed MCP file",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -3023,7 +3044,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Protocol for OTLP exporter, applies to all signals. Claude Code has no default protocol, so set this or the signal-specific protocol variable for each `otlp` exporter you enable",
+      "description": "Protocol for OTLP exporter, applies to all signals. Defaults to `http/protobuf` for a valid `http://` or `https://` endpoint. For a gRPC endpoint such as `http://localhost:4317`, set this to `grpc`.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"

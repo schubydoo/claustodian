@@ -601,7 +601,15 @@
       "description": "Accept the displayed install command whose `sha256` a previous `--json` run reported in `shownCommand`, in place of `-y`. Can't be combined with `-y`. See Accept a displayed install command. Requires Claude Code v2.1.271 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scope_descriptions": {
+        "plugin install": "Accept the displayed install command whose `sha256` a previous `--json` run reported in `shownCommand`, in place of `-y`. Can't be combined with `-y`. See Accept a displayed install command. Requires Claude Code v2.1.271 or later",
+        "plugin update": "Accept the marketplace-declared command whose `sha256` a previous `--json` run reported in `shownCommand`, in place of `-y`. Can't be combined with `-y`. Requires Claude Code v2.1.271 or later"
+      },
+      "scopes": [
+        "plugin install",
+        "plugin update"
+      ]
     },
     {
       "symbol": "--add-dir",
@@ -763,6 +771,7 @@
         "agents",
         "plugin disable",
         "project purge",
+        "purge",
         "respawn"
       ]
     },
@@ -803,7 +812,10 @@
       "description": "With `--mocks record`, also start the plugin's real MCP servers for servers that have no mock",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugin-evals.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin eval"
+      ]
     },
     {
       "symbol": "--allow-tools",
@@ -1222,7 +1234,8 @@
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
-        "auth login"
+        "auth login",
+        "plugin marketplace add"
       ]
     },
     {
@@ -1311,7 +1324,10 @@
       "description": "Agent sessions to run at once, 1 to 8. They share your rate limit",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin eval"
+      ]
     },
     {
       "symbol": "--config",
@@ -1470,7 +1486,10 @@
       "description": "Measure each installed plugin's saved data directory, or only the named plugin's, given as `name@marketplace`. Has no effect without `--json`. If the name has no install record, the command prints `--data-size names a plugin that is not installed` and exits `1` instead of printing the list. Requires Claude Code v2.1.285 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin list"
+      ]
     },
     {
       "symbol": "--debug",
@@ -1679,7 +1698,10 @@
       "description": "Added `--disallow-tools` and a `disallowed_tools` case field to `claude plugin eval` to keep specific built-in tools, such as Agent, out of eval runs",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin eval"
+      ]
     },
     {
       "symbol": "--disallowed-tools",
@@ -1777,7 +1799,8 @@
         "import",
         "plugin prune",
         "plugin tag",
-        "project purge"
+        "project purge",
+        "purge"
       ]
     },
     {
@@ -2467,7 +2490,8 @@
       "category": "cli",
       "scopes": [
         "plugin eval init",
-        "project purge"
+        "project purge",
+        "purge"
       ]
     },
     {
@@ -2499,18 +2523,39 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
+        "plugin configure": "Print the result as one JSON object on stdout. Without `--values-stdin`, the object carries the options' `schema` and `choices`, their starting `inputs`, and the `configured` and `unconfigured` option names. With `--values-stdin`, it carries the `saved` option names and, when they could be read back, the `unconfigured` ones",
+        "plugin disable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
+        "plugin enable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
         "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
+        "plugin install": "Print the result as one JSON object on the last line of stdout instead of the human-readable message, for use in scripts. See JSON result format. Requires Claude Code v2.1.268 or later",
         "plugin list": "Print the list as JSON",
+        "plugin marketplace add": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format. Has no effect with `--claudeai`. Requires Claude Code v2.1.287 or later",
         "plugin marketplace list": "Print the list as JSON",
+        "plugin marketplace remove": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format. Requires Claude Code v2.1.287 or later",
+        "plugin marketplace update": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format. Without a name, the command refuses `--json` and exits `1`. Requires Claude Code v2.1.287 or later",
+        "plugin uninstall": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Can't be combined with `--prune`. Requires Claude Code v2.1.268 or later",
+        "plugin update": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
+        "plugin validate": "Output the validation report as one JSON object with the same exit codes. Requires Claude Code v2.1.259 or later",
         "ultrareview": "Print the raw `bugs.json` payload instead of the formatted findings"
       },
       "scopes": [
         "agents",
         "auth status",
+        "plugin configure",
+        "plugin disable",
+        "plugin enable",
         "plugin eval",
+        "plugin install",
         "plugin list",
+        "plugin marketplace add",
         "plugin marketplace list",
-        "ultrareview"
+        "plugin marketplace remove",
+        "plugin marketplace update",
+        "plugin uninstall",
+        "plugin update",
+        "plugin validate",
+        "ultrareview",
+        "worktree-hook"
       ]
     },
     {
@@ -2692,7 +2737,10 @@
       "description": "Install `<plugin>`, given by its bare name, from the marketplace at `<source>`, adding the marketplace first if you haven't added it yet. See Add a marketplace and install in one command. Requires Claude Code v2.1.292 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin install"
+      ]
     },
     {
       "symbol": "--max-budget-usd",
@@ -3310,7 +3358,10 @@
       "description": "Also exit 1 when the plugin directory (the catalog that plugins are submitted to) would refuse a submission of the plugin on a check this command runs, such as a missing README, or when such a check could not be made: plugin.json lists more than 16 files for MCP servers or for hooks (16 of each are checked), or an MCP or hooks file is one these checks cannot use, such as one that is not valid JSON. With --strict, also fail on its warnings. The directory runs more checks.",
       "source_url": null,
       "category": "cli",
-      "description_source": "binary"
+      "description_source": "binary",
+      "scopes": [
+        "plugin validate"
+      ]
     },
     {
       "symbol": "--project-config-root",
@@ -4151,7 +4202,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Only use MCP servers from `--mcp-config`, ignoring all other MCP configurations. See Exclusive control with managed-mcp.json for what the flag does under a managed MCP file",
+      "description": "Skip the MCP servers configured in places such as `.mcp.json`, `~/.claude.json`, or a plugin, and load the ones you pass with `--mcp-config`. See Exclusive control with managed-mcp.json for what the flag does under a managed MCP file",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -4390,7 +4441,10 @@
       "description": "Skip the first-run trust prompt, for CI. See What a run can access",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin eval"
+      ]
     },
     {
       "symbol": "--trust-workspace",
@@ -4403,7 +4457,13 @@
       "description": "Seed persisted trust for each session's repository paths so repo-committed `permissions.allow` and `additionalDirectories` are honored. Set `false` to drop repo-committed permission grants and configure allow rules in the host config's `settings.json` instead; repository-committed `sandbox.*` settings still apply either way, which is why the repo-settings guard scans them regardless of this flag.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scope_descriptions": {
+        "ultrareview": "Trust the current folder for this run only, without asking, so a script or CI job can review a checkout you haven't trusted. Takes no value: put a PR number or base branch before it. Requires Claude Code v2.1.309 or later"
+      },
+      "scopes": [
+        "ultrareview"
+      ]
     },
     {
       "symbol": "--unix",
@@ -4445,7 +4505,10 @@
       "description": "Read option values from stdin as a JSON object of single-line strings and save them. Options you leave out keep their saved values",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin configure"
+      ]
     },
     {
       "symbol": "--verbose",
@@ -4608,7 +4671,8 @@
         "plugin prune",
         "plugin uninstall",
         "plugin update",
-        "project purge"
+        "project purge",
+        "purge"
       ]
     },
     {
@@ -6576,7 +6640,7 @@
       "provenance": "changelog",
       "confidence": "high",
       "description": "Order Claude Code stickers",
-      "description_source": "docs",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -6794,8 +6858,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open the upgrade page in your browser to switch to a higher plan tier. When the browser fails to open, the command shows a sign-in prompt without printing the URL",
-      "description_source": "docs",
+      "description": "Upgrade your plan for higher rate limits and more Opus",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -6820,7 +6884,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Configure usage credits, or request them from your admin, when you hit a limit. Opens your usage-credits billing settings in the browser, except that Team and Enterprise members without billing access instead send a usage-credits request to their admin from the CLI, after confirming in a dialog that the request notifies their admins. When no browser can open the billing page, for example over SSH, the command prints the URL to visit instead; this requires Claude Code v2.1.205 or later, and earlier versions showed nothing in that case. Previously `/extra-usage`",
+      "description": "Configure usage credits, or request them from your admin, when you hit a limit. Opens your usage-credits billing settings in the browser. Team and Enterprise members without billing access instead send a usage-credits request to their admin from the CLI. At a terminal where no browser can open the page, for example over SSH, the command prints the URL. Printing it requires Claude Code v2.1.205 or later. Previously `/extra-usage`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -7016,7 +7080,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. In a local session, Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**. When you change it there, Claude Code also saves the value to your account.",
+      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. In a local session, Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -7628,8 +7692,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Block plugin marketplace sources for your organization. Claude Code checks the blocklist on marketplace add and on plugin install, update, refresh, and auto-update, so a marketplace someone added before you set the policy can't be used to fetch plugins either. Blocked sources are checked before download, so they never touch the filesystem.",
-      "description_source": "docs",
+      "description": "Enterprise blocklist of marketplace sources. When set in managed settings, these sources are blocked from being added as marketplaces. Entries match exactly, except that a github entry may use the owner-wildcard form {\"source\":\"github\",\"repo\":\"owner/*\"} to block every repository under that owner. The check happens BEFORE downloading, so blocked sources never touch the filesystem.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -8038,8 +8102,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn off the claude.ai MCP connectors Claude Code fetches itself, so it neither fetches nor connects them. A `true` in any settings file applies: a checked-in project `.claude/settings.json` can opt a repository out of those connectors, but a project-level `false` can't override a user- or managed-level `true`.",
-      "description_source": "docs",
+      "description": "When true in any settings source, claude.ai MCP cloud connectors are not auto-fetched or connected, and a claudeai-proxy server passed explicitly (e.g. via --mcp-config or the SDK mcpServers option) does not connect either. Any-source-true wins: a project can opt out, but a project-level false cannot override a user-level true.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -8729,7 +8793,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Keep background auto-updates and `claude update` from installing any version below this one, so moving to the `\"stable\"` channel doesn't downgrade you from a newer `\"latest\"` build. Claude Code writes this key for you when you choose to stay on your current version while switching channels in `/config`, and clears it when you switch back to `\"latest\"`.",
+      "description": "Keep background auto-updates and `claude update` from installing any version below the one you set. Claude Code writes this key for you when you choose to stay on your current version while switching channels in `/config`. Claude Code clears the key when you switch back to `\"latest\"` in `/config`.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9262,8 +9326,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "List the managed plugins whose mods run before every mod a user installs, in the listed order. When you set this key in managed settings, name `sec-default@builtin` in the list to keep the built-in guard. In managed settings, Claude Code skips an id whose plugin doesn't count as your organization's. See Install your organization's mods and set the order for those conditions and for how the two ordering keys work together.",
-      "description_source": "docs",
+      "description": "Managed plugins (plugin@marketplace ids that managed enabledPlugins sets true) whose hooks run first, outermost, in the listed order: the first id listed sees every event before any other plugin and every result after it. Managed plugins not listed here or in appendPlugins follow the listed ones; user, project and marketplace plugins come after those; then appendPlugins; then the built-in plugins. The bundled cc-plugin-sec-default@builtin seats itself outermost (on a machine with managed settings and for Team and Enterprise organizations) unless this list is set, in which case list it where it should sit or leave it out. Name it there as sec-default@builtin, the id every release reads, for as long as any machine in the organization may run a release from before its rename; a release that knows the new id reads either. Any other id that is not an enabled managed plugin is skipped; an id listed in both keys is prepended. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -9587,8 +9651,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Let Claude Code run sandboxed Bash commands without a permission prompt. Commands that can't run in the sandbox still go through the regular permission flow, and `deny` rules and content-scoped `ask` rules such as `Bash(git push *)` still apply; a bare `Bash` ask rule is skipped for sandboxed commands. Set it to `false` to send sandboxed commands through the regular permission flow too, which the `/sandbox` **Mode** tab calls regular permissions mode.",
-      "description_source": "docs",
+      "description": "Automatically allow bash commands without prompting when they run in the sandbox. Only applies to commands that will run sandboxed.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -9743,8 +9807,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Make Claude Code exit with an error at startup when `sandbox.enabled` is `true` but the sandbox can't start because the platform doesn't support it or the dependency check fails. Without this key, Claude Code runs commands unsandboxed. Managed deployments that require sandboxing as a security gate can use this setting.",
-      "description_source": "docs",
+      "description": "Exit with an error at startup if sandbox.enabled is true but the sandbox cannot start (missing dependencies or unsupported platform). When false (default), a warning is shown and commands run unsandboxed. Intended for managed-settings deployments that require sandboxing as a hard gate. When managed settings or a --settings file set allowUnsandboxedCommands: false, or managed settings set network.allowManagedDomainsOnly: true, and managed, --settings or user settings set true, false from project settings (.claude/settings.json and .claude/settings.local.json) is ignored (true there still applies).",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -9834,8 +9898,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Skip filesystem isolation while keeping network isolation. Sandboxed commands get unrestricted read and write access to the host filesystem, and their network egress stays confined to `network.allowedDomains`. Use it when you sandbox to control where commands connect rather than what they write.",
-      "description_source": "docs",
+      "description": "macOS and Linux/WSL only: skip filesystem isolation entirely while keeping network and seccomp isolation. Ignored on native Windows, where the sandboxed process runs as a separate user with no inherent rights, so skipping the filesystem rules would withhold every access grant rather than loosen them — filesystem isolation stays on there. Sandboxed commands get unrestricted read/write access to the host filesystem; network egress is still confined to network.allowedDomains. Intended for deployments whose goal is egress control rather than filesystem containment. Does not change Bash prompting: sandbox.autoAllowBashIfSandboxed is independent and still defaults to true, so set it to false to keep prompting for sandboxed commands. Drops the read protection from filesystem.denyRead and credentials.files deny entries for sandboxed commands, since both are enforced by the filesystem layer this turns off; credentials.files mask entries (sentinel binds) and credentials.envVars deny/mask are unaffected. Only honored from user, managed/policy, or CLI (`--settings`) settings — project settings (.claude/settings.json and .claude/settings.local.json) are ignored. If managed settings configure sandbox.filesystem at all, or list any sandbox.credentials.files deny entry, only managed settings can set this: an admin who deployed filesystem restrictions must not have them switched off by a user-writable file. (sandbox.credentials.envVars and credentials.files mask entries do not pin it — env scrubbing and sentinel binds are independent of the filesystem layer and survive this setting.) When unset, filesystem isolation stays on.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -10630,13 +10694,13 @@
       "type": "config_key",
       "first_seen": "2.1.105",
       "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
     },
     {
       "symbol": "subagentStatusLine.command",
@@ -17253,7 +17317,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to prevent automatic remapping of Opus 4 and Opus 4.1 to the current Opus version on the Anthropic API. Use when you intentionally want to pin an older model. The remap does not run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
+      "description": "Set to `1` to prevent automatic remapping of Opus 4 and Opus 4.1 to the current Opus version on the Anthropic API. The remap doesn't run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -18938,7 +19002,7 @@
       "symbol": "CLAUDE_CODE_GB_REFRESH_INTERVAL_MS",
       "type": "env_var",
       "first_seen": "2.1.160",
-      "removed_in": null,
+      "removed_in": "2.1.323",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -20557,7 +20621,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Starting delay in milliseconds, in place of the default 500, of the exponential backoff between automatic retries of a request that the API rejects with a `529` overloaded error. Raise it to spread the retries over a longer window when the API is at capacity. Give whole milliseconds from 500 to 32000 in plain digits; Claude Code treats any other value as unset. Has no effect when `CLAUDE_CODE_RETRY_WATCHDOG` is set to `1`, or when the rejected request was sent in fast mode. Requires Claude Code v2.1.292 or later",
+      "description": "Starting delay in milliseconds of the backoff between retries of a request that the API rejects with a `529` overloaded error (default: 500). Raise it to spread the retries over a longer window when the API is at capacity. Give whole milliseconds from 500 to 32000 in plain digits; Claude Code treats any other value as unset. See when it has no effect. Requires Claude Code v2.1.292 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -20570,7 +20634,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Ceiling in milliseconds, in place of the default 32000, on the exponential backoff between automatic retries of a request that the API rejects with a `529` overloaded error. Raise it so that later retries keep spreading apart when the API is at capacity. Give whole milliseconds from 32000 to 64000 in plain digits; Claude Code treats any other value as unset. Has no effect when `CLAUDE_CODE_RETRY_WATCHDOG` is set to `1`, or when the rejected request was sent in fast mode. Requires Claude Code v2.1.296 or later",
+      "description": "Ceiling in milliseconds on the backoff between retries of a request that the API rejects with a `529` overloaded error (default: 32000). Raise it so that later retries keep spreading apart. Give whole milliseconds from 32000 to 300000 in plain digits; Claude Code treats any other value as unset.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -20875,7 +20939,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls whether Claude Code reloads a mod when the mod's files change. Reloading applies to a mod you load from a directory with `--plugin-dir`, and it's on by default in interactive sessions. Set to `1` to turn it on in non-interactive sessions as well, or `0` to turn it off in every session. Requires Claude Code v2.1.287 or later. See mod settings and environment variables",
+      "description": "Controls whether a mod reloads when its files change. By default, mods in skills directories reload in any session that takes more than one prompt, non-interactive included. Mods in `--plugin-dir` directories reload only in interactive terminal sessions. Set to `1` to reload them as skills-directory mods do, or `0` to turn reloading off everywhere. Requires Claude Code v2.1.287 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -23145,7 +23209,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` in non-interactive mode with the `-p` flag to make Claude Code download the skills enabled for your claude.ai account in that run and wait for the list of them, up to `CLAUDE_CODE_SYNC_SKILLS_WAIT_TIMEOUT_MS`, before it runs the first query. Requires claude.ai authentication. Terminal sessions where you sign in with your claude.ai account sync these skills without this variable, so set it only when a `-p` run needs your current skills on its first query",
+      "description": "Set to `1` to make Claude Code download the skills enabled for your claude.ai account. In non-interactive mode with the `-p` flag, Claude Code also waits up to `CLAUDE_CODE_SYNC_SKILLS_WAIT_TIMEOUT_MS` for the list of skills before it runs the first query. Requires claude.ai authentication. Terminal sessions where you sign in with your claude.ai account sync these skills without this variable.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -26438,7 +26502,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Protocol for OTLP exporter, applies to all signals. Claude Code has no default protocol, so set this or the signal-specific protocol variable for each `otlp` exporter you enable",
+      "description": "Protocol for OTLP exporter, applies to all signals. Defaults to `http/protobuf` for a valid `http://` or `https://` endpoint. For a gRPC endpoint such as `http://localhost:4317`, set this to `grpc`.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
@@ -29227,10 +29291,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "mods"
     },
     {
@@ -29569,10 +29633,10 @@
       "first_seen": "2.1.267",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "mods"
     },
     {

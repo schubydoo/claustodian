@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.323",
+  "claudeCodeVersion": "2.1.325",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -627,7 +627,15 @@
       "description": "Accept the displayed install command whose `sha256` a previous `--json` run reported in `shownCommand`, in place of `-y`. Can't be combined with `-y`. See Accept a displayed install command. Requires Claude Code v2.1.271 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scope_descriptions": {
+        "plugin install": "Accept the displayed install command whose `sha256` a previous `--json` run reported in `shownCommand`, in place of `-y`. Can't be combined with `-y`. See Accept a displayed install command. Requires Claude Code v2.1.271 or later",
+        "plugin update": "Accept the marketplace-declared command whose `sha256` a previous `--json` run reported in `shownCommand`, in place of `-y`. Can't be combined with `-y`. Requires Claude Code v2.1.271 or later"
+      },
+      "scopes": [
+        "plugin install",
+        "plugin update"
+      ]
     },
     {
       "symbol": "--add-dir",
@@ -789,6 +797,7 @@
         "agents",
         "plugin disable",
         "project purge",
+        "purge",
         "respawn"
       ]
     },
@@ -829,7 +838,10 @@
       "description": "With `--mocks record`, also start the plugin's real MCP servers for servers that have no mock",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugin-evals.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin eval"
+      ]
     },
     {
       "symbol": "--allow-tools",
@@ -1248,7 +1260,8 @@
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
-        "auth login"
+        "auth login",
+        "plugin marketplace add"
       ]
     },
     {
@@ -1337,7 +1350,10 @@
       "description": "Agent sessions to run at once, 1 to 8. They share your rate limit",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin eval"
+      ]
     },
     {
       "symbol": "--config",
@@ -1496,7 +1512,10 @@
       "description": "Measure each installed plugin's saved data directory, or only the named plugin's, given as `name@marketplace`. Has no effect without `--json`. If the name has no install record, the command prints `--data-size names a plugin that is not installed` and exits `1` instead of printing the list. Requires Claude Code v2.1.285 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin list"
+      ]
     },
     {
       "symbol": "--debug",
@@ -1705,7 +1724,10 @@
       "description": "Added `--disallow-tools` and a `disallowed_tools` case field to `claude plugin eval` to keep specific built-in tools, such as Agent, out of eval runs",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin eval"
+      ]
     },
     {
       "symbol": "--disallowed-tools",
@@ -1731,7 +1753,10 @@
       "description": "Delete what is set aside instead of restoring it",
       "source_url": null,
       "category": "cli",
-      "description_source": "binary"
+      "description_source": "binary",
+      "scopes": [
+        "plugin restore-set-aside"
+      ]
     },
     {
       "symbol": "--drain-grace-sec",
@@ -1816,7 +1841,8 @@
         "import",
         "plugin prune",
         "plugin tag",
-        "project purge"
+        "project purge",
+        "purge"
       ]
     },
     {
@@ -1939,6 +1965,22 @@
       "scopes": [
         "plugin eval",
         "plugin eval init"
+      ]
+    },
+    {
+      "symbol": "--event",
+      "type": "cli_flag",
+      "first_seen": "2.1.324",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Which hooks to run",
+      "source_url": null,
+      "category": "cli",
+      "description_source": "binary",
+      "scopes": [
+        "worktree-hook"
       ]
     },
     {
@@ -2518,7 +2560,8 @@
       "category": "cli",
       "scopes": [
         "plugin eval init",
-        "project purge"
+        "project purge",
+        "purge"
       ]
     },
     {
@@ -2550,18 +2593,39 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
+        "plugin configure": "Print the result as one JSON object on stdout. Without `--values-stdin`, the object carries the options' `schema` and `choices`, their starting `inputs`, and the `configured` and `unconfigured` option names. With `--values-stdin`, it carries the `saved` option names and, when they could be read back, the `unconfigured` ones",
+        "plugin disable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
+        "plugin enable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
         "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
+        "plugin install": "Print the result as one JSON object on the last line of stdout instead of the human-readable message, for use in scripts. See JSON result format. Requires Claude Code v2.1.268 or later",
         "plugin list": "Print the list as JSON",
+        "plugin marketplace add": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format. Has no effect with `--claudeai`. Requires Claude Code v2.1.287 or later",
         "plugin marketplace list": "Print the list as JSON",
+        "plugin marketplace remove": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format. Requires Claude Code v2.1.287 or later",
+        "plugin marketplace update": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format. Without a name, the command refuses `--json` and exits `1`. Requires Claude Code v2.1.287 or later",
+        "plugin uninstall": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Can't be combined with `--prune`. Requires Claude Code v2.1.268 or later",
+        "plugin update": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
+        "plugin validate": "Output the validation report as one JSON object with the same exit codes. Requires Claude Code v2.1.259 or later",
         "ultrareview": "Print the raw `bugs.json` payload instead of the formatted findings"
       },
       "scopes": [
         "agents",
         "auth status",
+        "plugin configure",
+        "plugin disable",
+        "plugin enable",
         "plugin eval",
+        "plugin install",
         "plugin list",
+        "plugin marketplace add",
         "plugin marketplace list",
-        "ultrareview"
+        "plugin marketplace remove",
+        "plugin marketplace update",
+        "plugin uninstall",
+        "plugin update",
+        "plugin validate",
+        "ultrareview",
+        "worktree-hook"
       ]
     },
     {
@@ -2781,7 +2845,10 @@
       "description": "Install `<plugin>`, given by its bare name, from the marketplace at `<source>`, adding the marketplace first if you haven't added it yet. See Add a marketplace and install in one command. Requires Claude Code v2.1.292 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin install"
+      ]
     },
     {
       "symbol": "--max-budget-usd",
@@ -3185,6 +3252,22 @@
       "category": "cli-internal"
     },
     {
+      "symbol": "--path",
+      "type": "cli_flag",
+      "first_seen": "2.1.324",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "remove: the real path of the worktree",
+      "source_url": null,
+      "category": "cli",
+      "description_source": "binary",
+      "scopes": [
+        "worktree-hook"
+      ]
+    },
+    {
       "symbol": "--permission-mode",
       "type": "cli_flag",
       "first_seen": "1.0.14",
@@ -3423,7 +3506,10 @@
       "description": "Also exit 1 when the plugin directory (the catalog that plugins are submitted to) would refuse a submission of the plugin on a check this command runs, such as a missing README, or when such a check could not be made: plugin.json lists more than 16 files for MCP servers or for hooks (16 of each are checked), or an MCP or hooks file is one these checks cannot use, such as one that is not valid JSON. With --strict, also fail on its warnings. The directory runs more checks.",
       "source_url": null,
       "category": "cli",
-      "description_source": "binary"
+      "description_source": "binary",
+      "scopes": [
+        "plugin validate"
+      ]
     },
     {
       "symbol": "--project-config-root",
@@ -4276,7 +4362,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Only use MCP servers from `--mcp-config`, ignoring all other MCP configurations. See Exclusive control with managed-mcp.json for what the flag does under a managed MCP file",
+      "description": "Skip the MCP servers configured in places such as `.mcp.json`, `~/.claude.json`, or a plugin, and load the ones you pass with `--mcp-config`. See Exclusive control with managed-mcp.json for what the flag does under a managed MCP file",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -4515,7 +4601,10 @@
       "description": "Skip the first-run trust prompt, for CI. See What a run can access",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin eval"
+      ]
     },
     {
       "symbol": "--trust-workspace",
@@ -4528,7 +4617,29 @@
       "description": "Seed persisted trust for each session's repository paths so repo-committed `permissions.allow` and `additionalDirectories` are honored. Set `false` to drop repo-committed permission grants and configure allow rules in the host config's `settings.json` instead; repository-committed `sandbox.*` settings still apply either way, which is why the repo-settings guard scans them regardless of this flag.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scope_descriptions": {
+        "ultrareview": "Trust the current folder for this run only, without asking, so a script or CI job can review a checkout you haven't trusted. Takes no value: put a PR number or base branch before it. Requires Claude Code v2.1.309 or later"
+      },
+      "scopes": [
+        "ultrareview"
+      ]
+    },
+    {
+      "symbol": "--trusted-folder",
+      "type": "cli_flag",
+      "first_seen": "2.1.324",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "The current directory, which the host says a person trusted",
+      "source_url": null,
+      "category": "cli",
+      "description_source": "binary",
+      "scopes": [
+        "worktree-hook"
+      ]
     },
     {
       "symbol": "--unix",
@@ -4570,7 +4681,10 @@
       "description": "Read option values from stdin as a JSON object of single-line strings and save them. Options you leave out keep their saved values",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
+      "category": "cli",
+      "scopes": [
+        "plugin configure"
+      ]
     },
     {
       "symbol": "--verbose",
@@ -4746,7 +4860,8 @@
         "plugin prune",
         "plugin uninstall",
         "plugin update",
-        "project purge"
+        "project purge",
+        "purge"
       ]
     },
     {
@@ -6726,7 +6841,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Order Claude Code stickers",
+      "description": "Check Claude Code sticker availability",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6945,7 +7060,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open the upgrade page in your browser to switch to a higher plan tier. When the browser fails to open, the command shows a sign-in prompt without printing the URL",
+      "description": "Open the upgrade page in your browser to switch to a higher plan tier. When no browser can open the page, for example over SSH, the command prints the page's URL above its sign-in prompt. Printing the URL requires Claude Code v2.1.323 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6971,7 +7086,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Configure usage credits, or request them from your admin, when you hit a limit. Opens your usage-credits billing settings in the browser, except that Team and Enterprise members without billing access instead send a usage-credits request to their admin from the CLI, after confirming in a dialog that the request notifies their admins. When no browser can open the billing page, for example over SSH, the command prints the URL to visit instead; this requires Claude Code v2.1.205 or later, and earlier versions showed nothing in that case. Previously `/extra-usage`",
+      "description": "Configure usage credits, or request them from your admin, when you hit a limit. Opens your usage-credits billing settings in the browser. Team and Enterprise members without billing access instead send a usage-credits request to their admin from the CLI. At a terminal where no browser can open the page, for example over SSH, the command prints the URL. Printing it requires Claude Code v2.1.205 or later. Previously `/extra-usage`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -7167,7 +7282,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. In a local session, Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**. When you change it there, Claude Code also saves the value to your account.",
+      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. In a local session, Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8934,7 +9049,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Keep background auto-updates and `claude update` from installing any version below this one, so moving to the `\"stable\"` channel doesn't downgrade you from a newer `\"latest\"` build. Claude Code writes this key for you when you choose to stay on your current version while switching channels in `/config`, and clears it when you switch back to `\"latest\"`.",
+      "description": "Keep background auto-updates and `claude update` from installing any version below the one you set. Claude Code writes this key for you when you choose to stay on your current version while switching channels in `/config`. Claude Code clears the key when you switch back to `\"latest\"` in `/config`.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9831,7 +9946,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Let Claude Code run sandboxed Bash commands without a permission prompt. Commands that can't run in the sandbox still go through the regular permission flow, and `deny` rules and content-scoped `ask` rules such as `Bash(git push *)` still apply; a bare `Bash` ask rule is skipped for sandboxed commands. Set it to `false` to send sandboxed commands through the regular permission flow too, which the `/sandbox` **Mode** tab calls regular permissions mode.",
+      "description": "Let Claude Code run sandboxed Bash commands without a permission prompt. Commands that can't run in the sandbox still go through the regular permission flow. `deny` rules and content-scoped `ask` rules such as `Bash(git push *)` still apply, but a bare `Bash` ask rule is skipped for sandboxed commands. To set it to `true` in managed settings, add it to the `sandbox` block of your highest-ranked managed source.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -10874,13 +10989,13 @@
       "type": "config_key",
       "first_seen": "2.1.105",
       "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
-      "description": "When Claude runs subagents, Claude Code lists them in a task display below the prompt, one row per subagent showing `name · description · token count`. This key lets you run your own command to rewrite those rows, for example to show each subagent's context usage as a percentage. On each refresh, Claude Code sends the visible rows as one JSON object on stdin, with a `tasks` array carrying each subagent's `id`, `name`, `status`, `model`, `tokenCount`, and more, and replaces the row for each `id` you write back as a `{\"id\", \"content\"}` line. Rows you don't write back keep the default rendering.",
-      "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Deprecated: no longer has any effect. Subagent rows always use the default look.",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
     },
     {
       "symbol": "subagentStatusLine.command",
@@ -11991,7 +12106,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "Requests the session's live permission rules and workspace directories — the same data /permissions lists in the terminal: rules from settings files plus session-only approvals, slash-command grants, and --allowedTools flag rules, each with its source.",
+      "description": "Requests the session's live permission rules and workspace directories — the same data /permissions lists in the terminal: rules from settings files plus session-only approvals, slash-command grants, and --allowedTools flag rules, each with its source. A connection that stores its answers cuts these: see `withheld` on the state.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -12410,7 +12525,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "@internal A replacement worker asks the attached client that serves this session's tools to announce it, when a call names a machine its roster lacks. Not addressed to an instance: the worker knows none. A client that serves the machine announces, overriding once what it believes the worker already holds; it honours one ask per epoch, another only when the announce that one made failed or went unanswered, and at most one per ten seconds, and does nothing for an ask it cannot date or read, or whose sender it would refuse a tool call from. Any other client, and a client that predates the request, does nothing or error-replies, and the worker reads no reply: it withdraws the request with control_cancel_request when its wait ends.",
+      "description": "@internal A replacement worker asks the attached client that serves this session's tools to announce it, when a call names a machine its roster lacks. Not addressed to an instance: the worker knows none. A client that serves the machine announces, overriding once what it believes the worker already holds; it honours one ask per epoch, another only when the announce that one made failed or went unanswered, and at most one per ten seconds, and does nothing for an ask it cannot date or read, or whose sender it would refuse a tool call from. Any other client, and a client that predates the request, does nothing or error-replies, and the worker reads no reply: it withdraws the request with control_cancel_request when its wait ends. A worker that the desktop app hosts also asks the app this way, as it starts and at a turn's start while it holds no host, and withdraws none of those asks. The session service answers such an ask with the error device_announce_refused where it would refuse the app's announce now, or device_stream_closed where the device's stream to it is closed; the worker reads either reply to its newest ask alone, and it ends that turn's wait for the announce.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -15860,7 +15975,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Automount root folders for Claude Code to skip when it looks in the folders above your working directory for files such as `CLAUDE.md`, skills, and `.mcp.json`. Set it when those lookups wait on your automounter. Separate multiple paths with `:` on Unix or `;` on Windows, and give each as an absolute path with no symlink in it. Requires Claude Code v2.1.323 or later",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -17575,6 +17691,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_EXPORTED_VARIABLE_PROMPT",
+      "type": "env_var",
+      "first_seen": "2.1.324",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_FAST_MODE",
       "type": "env_var",
       "first_seen": "2.1.39",
@@ -17733,7 +17861,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to prevent automatic remapping of Opus 4 and Opus 4.1 to the current Opus version on the Anthropic API. Use when you intentionally want to pin an older model. The remap does not run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
+      "description": "Set to `1` to prevent automatic remapping of Opus 4 and Opus 4.1 to the current Opus version on the Anthropic API. The remap doesn't run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -19062,11 +19190,12 @@
       "type": "env_var",
       "first_seen": "2.1.318",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `1` to start sessions in Code Mode, an experimental feature. Set to `0` to keep it off, or in managed settings to block it for an organization. The variable doesn't count in every settings file. See the version and account requirements",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -19515,18 +19644,6 @@
       "symbol": "CLAUDE_CODE_GB_DISK_CACHE_WHEN_TELEMETRY_OFF",
       "type": "env_var",
       "first_seen": "2.1.211",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_GB_REFRESH_INTERVAL_MS",
-      "type": "env_var",
-      "first_seen": "2.1.160",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -20589,6 +20706,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_MCP_APPS_NO_TOOL_ROUTE",
+      "type": "env_var",
+      "first_seen": "2.1.324",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS",
       "type": "env_var",
       "first_seen": "2.1.198",
@@ -21291,7 +21420,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Starting delay in milliseconds, in place of the default 500, of the exponential backoff between automatic retries of a request that the API rejects with a `529` overloaded error. Raise it to spread the retries over a longer window when the API is at capacity. Give whole milliseconds from 500 to 32000 in plain digits; Claude Code treats any other value as unset. Has no effect when `CLAUDE_CODE_RETRY_WATCHDOG` is set to `1`, or when the rejected request was sent in fast mode. Requires Claude Code v2.1.292 or later",
+      "description": "Starting delay in milliseconds of the backoff between retries of a request that the API rejects with a `529` overloaded error (default: 500). Raise it to spread the retries over a longer window when the API is at capacity. Give whole milliseconds from 500 to 32000 in plain digits; Claude Code treats any other value as unset. See when it has no effect. Requires Claude Code v2.1.292 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -21304,7 +21433,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Ceiling in milliseconds, in place of the default 32000, on the exponential backoff between automatic retries of a request that the API rejects with a `529` overloaded error. Raise it so that later retries keep spreading apart when the API is at capacity. Give whole milliseconds from 32000 to 64000 in plain digits; Claude Code treats any other value as unset. Has no effect when `CLAUDE_CODE_RETRY_WATCHDOG` is set to `1`, or when the rejected request was sent in fast mode. Requires Claude Code v2.1.296 or later",
+      "description": "Ceiling in milliseconds on the backoff between retries of a request that the API rejects with a `529` overloaded error (default: 32000). Raise it so that later retries keep spreading apart. Give whole milliseconds from 32000 to 300000 in plain digits; Claude Code treats any other value as unset. Values above 64000 require v2.1.323 or later. See when it has no effect. Requires Claude Code v2.1.296 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -21621,7 +21750,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls whether Claude Code reloads a mod when the mod's files change. Reloading applies to a mod you load from a directory with `--plugin-dir`, and it's on by default in interactive sessions. Set to `1` to turn it on in non-interactive sessions as well, or `0` to turn it off in every session. Requires Claude Code v2.1.287 or later. See mod settings and environment variables",
+      "description": "Controls whether a mod reloads when its files change. By default, mods in skills directories reload in any session that takes more than one prompt, non-interactive included. Mods in `--plugin-dir` directories reload only in interactive terminal sessions. Set to `1` to reload them as skills-directory mods do, or `0` to turn reloading off everywhere. Requires Claude Code v2.1.287 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -21650,6 +21779,18 @@
       "description": "Set to `1` to skip the re-clone attempt and keep using the existing marketplace checkout when a marketplace refresh can't reach or authenticate to the remote. Useful in offline or airgapped environments where re-cloning would fail the same way. See Marketplace updates fail in offline environments",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_PLUGIN_MCPB_DIR",
+      "type": "env_var",
+      "first_seen": "2.1.324",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -22569,8 +22710,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added `CLAUDE_CODE_RESUME_HINT_COMMAND`, which a program that starts Claude Code can set to have the exit hint name its own resume command",
-      "description_source": "changelog",
+      "description": "In a wrapper script that starts Claude Code, set this to the name you type to run the wrapper, such as `mytool`. A local session then prints `mytool --resume <session-id>` at exit in place of `claude --resume <session-id>`. Claude Code ignores a name that doesn't match `^\\w[\\w-]*$`. It also ignores the variable in a settings file's `env` block. Requires Claude Code v2.1.323 or later",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -24024,7 +24165,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` in non-interactive mode with the `-p` flag to make Claude Code download the skills enabled for your claude.ai account in that run and wait for the list of them, up to `CLAUDE_CODE_SYNC_SKILLS_WAIT_TIMEOUT_MS`, before it runs the first query. Requires claude.ai authentication. Terminal sessions where you sign in with your claude.ai account sync these skills without this variable, so set it only when a `-p` run needs your current skills on its first query",
+      "description": "Set to `1` to make Claude Code download the skills enabled for your claude.ai account. In non-interactive mode with the `-p` flag, Claude Code also waits up to `CLAUDE_CODE_SYNC_SKILLS_WAIT_TIMEOUT_MS` for the list of skills before it runs the first query. Requires claude.ai authentication. Terminal sessions where you sign in with your claude.ai account sync these skills without this variable. In an interactive session, the variable requires v2.1.323 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -27524,7 +27665,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Protocol for OTLP exporter, applies to all signals. Claude Code has no default protocol, so set this or the signal-specific protocol variable for each `otlp` exporter you enable",
+      "description": "Protocol for OTLP exporter, applies to all signals. Defaults to `http/protobuf` for a valid `http://` or `https://` endpoint. For a gRPC endpoint such as `http://localhost:4317`, set this to `grpc`. The default requires Claude Code v2.1.323 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
@@ -30351,10 +30492,10 @@
       "first_seen": "2.1.242",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "mods"
     },
     {
@@ -30693,10 +30834,10 @@
       "first_seen": "2.1.267",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "mods"
     },
     {
@@ -31139,6 +31280,18 @@
       "symbol": "AbovePrompt",
       "type": "mod_render_site",
       "first_seen": "2.1.257",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "AbovePromptList",
+      "type": "mod_render_site",
+      "first_seen": "2.1.323",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",

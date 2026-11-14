@@ -433,6 +433,7 @@
         "agents",
         "plugin disable",
         "project purge",
+        "purge",
         "respawn"
       ]
     },
@@ -643,7 +644,8 @@
       "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
       "scopes": [
-        "auth login"
+        "auth login",
+        "plugin marketplace add"
       ]
     },
     {
@@ -900,7 +902,8 @@
         "import",
         "plugin prune",
         "plugin tag",
-        "project purge"
+        "project purge",
+        "purge"
       ]
     },
     {
@@ -1231,7 +1234,8 @@
       "category": "cli",
       "scopes": [
         "plugin eval init",
-        "project purge"
+        "project purge",
+        "purge"
       ]
     },
     {
@@ -1247,18 +1251,39 @@
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
+        "plugin configure": "Print the result as one JSON object on stdout.",
+        "plugin disable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`.",
+        "plugin enable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`.",
         "plugin eval": "Print the result document to stdout, or write it to a `.json` path",
+        "plugin install": "Print the result as one JSON object on the last line of stdout instead of the human-readable message, for use in scripts. See JSON result format.",
         "plugin list": "Print the list as JSON",
+        "plugin marketplace add": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format. Has no effect with `--claudeai`.",
         "plugin marketplace list": "Print the list as JSON",
+        "plugin marketplace remove": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format.",
+        "plugin marketplace update": "Print whether the command succeeded, and its message, as one JSON object on the last line of stdout, in the JSON result format. Without a name, the command refuses `--json` and exits `1`.",
+        "plugin uninstall": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Can't be combined with `--prune`.",
+        "plugin update": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`.",
+        "plugin validate": "Output the validation report as one JSON object with the same exit codes.",
         "ultrareview": "Print the raw `bugs.json` payload instead of the formatted findings"
       },
       "scopes": [
         "agents",
         "auth status",
+        "plugin configure",
+        "plugin disable",
+        "plugin enable",
         "plugin eval",
+        "plugin install",
         "plugin list",
+        "plugin marketplace add",
         "plugin marketplace list",
-        "ultrareview"
+        "plugin marketplace remove",
+        "plugin marketplace update",
+        "plugin uninstall",
+        "plugin update",
+        "plugin validate",
+        "ultrareview",
+        "worktree-hook"
       ]
     },
     {
@@ -1929,7 +1954,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Only use MCP servers from `--mcp-config`, ignoring all other MCP configurations. See Exclusive control with managed-mcp.json for what the flag does under a managed MCP file",
+      "description": "Skip the MCP servers configured in places such as `.mcp.json`, `~/.claude.json`, or a plugin, and load the ones you pass with `--mcp-config`. See Exclusive control with managed-mcp.json for what the flag does under a managed MCP file",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -2215,7 +2240,8 @@
         "plugin prune",
         "plugin uninstall",
         "plugin update",
-        "project purge"
+        "project purge",
+        "purge"
       ]
     },
     {
@@ -3680,7 +3706,7 @@
       "provenance": "changelog",
       "confidence": "high",
       "description": "Order Claude Code stickers",
-      "description_source": "docs",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3976,7 +4002,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. In a local session, Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**. When you change it there, Claude Code also saves the value to your account.",
+      "description": "Allow Claude to send a push notification to your phone when it decides one is worth sending, for example when a long task finishes. In a local session, Claude can send one while Remote Control is connected. Appears in `/config` as **Push when Claude decides**.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -4884,7 +4910,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Keep background auto-updates and `claude update` from installing any version below this one, so moving to the `\"stable\"` channel doesn't downgrade you from a newer `\"latest\"` build. Claude Code writes this key for you when you choose to stay on your current version while switching channels in `/config`, and clears it when you switch back to `\"latest\"`.",
+      "description": "Keep background auto-updates and `claude update` from installing any version below the one you set. Claude Code writes this key for you when you choose to stay on your current version while switching channels in `/config`. Claude Code clears the key when you switch back to `\"latest\"` in `/config`.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -5248,8 +5274,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Let Claude Code run sandboxed Bash commands without a permission prompt. Commands that can't run in the sandbox still go through the regular permission flow, and `deny` rules and content-scoped `ask` rules such as `Bash(git push *)` still apply; a bare `Bash` ask rule is skipped for sandboxed commands. Set it to `false` to send sandboxed commands through the regular permission flow too, which the `/sandbox` **Mode** tab calls regular permissions mode.",
-      "description_source": "docs",
+      "description": "Automatically allow bash commands without prompting when they run in the sandbox. Only applies to commands that will run sandboxed.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -5938,13 +5964,13 @@
       "type": "config_key",
       "first_seen": "2.1.105",
       "removed_in": null,
-      "status": "active",
-      "provenance": "docs",
-      "confidence": "high",
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
       "description": "Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
-      "category": "settings"
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
     },
     {
       "symbol": "subagentStatusLine.command",
@@ -8588,7 +8614,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to prevent automatic remapping of Opus 4 and Opus 4.1 to the current Opus version on the Anthropic API. Use when you intentionally want to pin an older model. The remap does not run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
+      "description": "Set to `1` to prevent automatic remapping of Opus 4 and Opus 4.1 to the current Opus version on the Anthropic API. The remap doesn't run on Amazon Bedrock, Google Cloud's Agent Platform, or Microsoft Foundry",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -12084,7 +12110,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Protocol for OTLP exporter, applies to all signals. Claude Code has no default protocol, so set this or the signal-specific protocol variable for each `otlp` exporter you enable",
+      "description": "Protocol for OTLP exporter, applies to all signals. Defaults to `http/protobuf` for a valid `http://` or `https://` endpoint. For a gRPC endpoint such as `http://localhost:4317`, set this to `grpc`.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
