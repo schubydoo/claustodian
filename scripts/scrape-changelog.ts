@@ -1146,7 +1146,7 @@ export function assembleSnapshots(
    *
    * Clamping the EVIDENCE instead — dropping releases and dates above the tip out of
    * the maps — was worse. `check-new-release.yml` triggers off the GitHub Releases
-   * feed, not the changelog, so `observedVersions` can hold a version with no
+   * feed and the npm registry, not the changelog, so `observedVersions` can hold a version with no
    * `## X.Y.Z` heading yet. Dropping it would publish "From v2.1.232, …" unguarded
    * into every historical snapshot, which is the defect this guard exists to remove.
    * Skip the DECISION at the tip; keep every piece of evidence everywhere else.
