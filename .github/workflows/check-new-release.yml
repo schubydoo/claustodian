@@ -1,6 +1,13 @@
-# Task 3.4 — Hourly trigger. Polls the GitHub Releases Atom feed (unauthenticated,
-# not subject to the REST rate limit) for a new Claude Code version and, when the
-# latest tag differs from data/index.json's `latest`, triggers the update workflow.
+# Task 3.4 — Hourly trigger. It finds two kinds of release and triggers the update
+# workflow once, with all of them, oldest first:
+#
+# 1. The newest tag of the GitHub Releases Atom feed (unauthenticated, not subject
+#    to the REST rate limit), when it differs from data/index.json's `latest`. That
+#    is how a changelog update arrives for a release whose binary is already cached.
+# 2. Every stable npm release that has no binary-cache/ entry. The feed lists only
+#    releases that have a GitHub release, and only its newest tag is read, so 2.1.324
+#    (on npm, no GitHub release, superseded within the hour) was never scraped. npm
+#    is the ground truth, as scripts/check-version-sets.sh says.
 #
 # NOTE: dispatching another workflow requires a token other than GITHUB_TOKEN —
 # the default token deliberately does NOT re-trigger workflows, so it cannot
@@ -24,8 +31,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Compare latest release to tracked version
+      - name: Find releases to update
         id: compare
+        env:
+          # More missing releases than this at once is not a gap that a release
+          # makes: it is a lost cache or a registry fault, and it needs a person.
+          MAX_UNSCRAPED: '10'
         run: |
           feed="https://github.com/anthropics/claude-code/releases.atom"
           latest_tag="$(curl -sSL "$feed" \
@@ -33,9 +44,40 @@ jobs:
             | head -1 | sed 's#releases/tag/v##')"
           current="$(jq -r '.latest' data/index.json)"
           echo "latest upstream: ${latest_tag:-<none>} | tracked: ${current:-<none>}"
+          feed_new=""
           if [ -n "$latest_tag" ] && [ "$latest_tag" != "$current" ]; then
+            feed_new="$latest_tag"
+          fi
+
+          packument="$RUNNER_TEMP/packument.json"
+          if ! curl -fsSL -o "$packument" https://registry.npmjs.org/@anthropic-ai/claude-code; then
+            echo "::error::could not read the npm registry"
+            exit 1
+          fi
+          jq -r '.versions | keys[] | select(test("^[0-9]+\\.[0-9]+\\.[0-9]+$"))' \
+            "$packument" > "$RUNNER_TEMP/npm-versions.txt"
+          # An empty list is a broken read, not "nothing is missing".
+          if [ ! -s "$RUNNER_TEMP/npm-versions.txt" ]; then
+            echo "::error::the npm registry returned no stable versions"
+            exit 1
+          fi
+          unscraped=""
+          while read -r v; do
+            [ -e "binary-cache/$v.json" ] || unscraped="$unscraped $v"
+          done < "$RUNNER_TEMP/npm-versions.txt"
+          # shellcheck disable=SC2086 # word-split the space-separated list on purpose
+          set -- $unscraped
+          echo "npm releases with no binary-cache entry: ${unscraped:- <none>}"
+          if [ "$#" -gt "$MAX_UNSCRAPED" ]; then
+            echo "::error::$# npm releases have no binary-cache entry (limit $MAX_UNSCRAPED); reconcile with scripts/check-version-sets.sh"
+            exit 1
+          fi
+
+          # shellcheck disable=SC2086 # word-split the space-separated lists on purpose
+          versions="$(printf '%s\n' $unscraped $feed_new | sort -uV | paste -sd, -)"
+          if [ -n "$versions" ]; then
             echo "new=true" >> "$GITHUB_OUTPUT"
-            echo "version=$latest_tag" >> "$GITHUB_OUTPUT"
+            echo "version=$versions" >> "$GITHUB_OUTPUT"
           else
             echo "new=false" >> "$GITHUB_OUTPUT"
           fi
@@ -55,7 +97,8 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           # Via env, never interpolated into the shell command (template-injection
-          # sink). Sourced from the releases feed under a strict vX.Y.Z regex above.
+          # sink). A comma-separated list of versions, each from the releases feed or
+          # the npm registry under a strict X.Y.Z regex above.
           NEW_VERSION: ${{ steps.compare.outputs.version }}
         run: |
           if [ -z "$GH_TOKEN" ]; then
