@@ -575,6 +575,12 @@
       "removed_in": null
     },
     {
+      "symbol": "AbovePromptList",
+      "first_seen": "2.1.323",
+      "last_seen": "2.1.325",
+      "removed_in": null
+    },
+    {
       "symbol": "AskUserQuestion",
       "first_seen": "2.1.242",
       "last_seen": "2.1.325",
@@ -589,8 +595,8 @@
     {
       "symbol": "Backdrop",
       "first_seen": "2.1.317",
-      "last_seen": "2.1.322",
-      "removed_in": "2.1.323"
+      "last_seen": "2.1.325",
+      "removed_in": null
     },
     {
       "symbol": "CommandOutput",
