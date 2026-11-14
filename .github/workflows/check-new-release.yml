@@ -63,7 +63,7 @@ jobs:
           fi
           # The PERMANENT_GAPS of scripts/check-version-sets.sh never reach this
           # list: they are absent from the registry's `versions` (and `time`), so
-          # they need no exclusion here. Every npm version has a cache entry.
+          # they need no exclusion here.
           unscraped=""
           while read -r v; do
             [ -e "binary-cache/$v.json" ] || unscraped="$unscraped $v"
