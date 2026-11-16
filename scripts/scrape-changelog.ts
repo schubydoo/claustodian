@@ -791,10 +791,10 @@ export interface BinaryScopeWindow {
  * The check is self-consistency against the dataset rather than a heuristic about
  * prose. A description is anachronistic at `version` when it names either
  *   - a release later than `version` (`v2.1.223`, `2.1.223`), or
- *   - a backticked symbol of any of the four surfaces whose OWN `first_seen` is
- *     later than `version` — `/code-review` at 2.1.150 named `--post`, dated
- *     2.1.227, and `DISABLE_TELEMETRY` at 0.2.100 named `DISABLE_GROWTHBOOK`,
- *     dated 2.1.124. The span must hold the symbol ALONE: a symbol inside a
+ *   - a backticked symbol whose OWN `first_seen` is later than `version`, of a type
+ *     recordKeysFor can tell from its spelling — `/code-review` at 2.1.150 named
+ *     `--post`, dated 2.1.227, and `DISABLE_TELEMETRY` at 0.2.100 named
+ *     `DISABLE_GROWTHBOOK`, dated 2.1.124. The span must hold the symbol ALONE: a symbol inside a
  *     multi-word span such as `` `claude --cloud` `` is not matched. That gap
  *     under-corrects, since the guard only ever removes text.
  *
@@ -820,7 +820,7 @@ const TOKEN_IN_PROSE = /`([^`\s]+)`/g;
 /**
  * The record keys a backticked token could name, by its own spelling.
  *
- * All four surfaces appear in these descriptions, not just flags and commands:
+ * Every surface appears in these descriptions, not just flags and commands:
  * `DISABLE_TELEMETRY`'s docs text names `` `DISABLE_GROWTHBOOK` `` (2.1.124) and
  * publishes it at 0.2.100. Matching only `--flag` and `/command` left every env-var
  * and settings-key reference unchecked.
@@ -837,6 +837,12 @@ function recordKeysFor(token: string): string[] {
   if (/^[A-Z][A-Z0-9_]{3,}$/.test(token)) return [`env_var:${token}`];
   // Before the dotted rule below, which would read `$.ui.toast` as a config key.
   if (/^\$\.[a-z][a-zA-Z0-9]*\.[a-z][a-zA-Z0-9]*$/.test(token)) return [`mod_method:${token}`];
+  // A capitalized name can be a hook event. `/add-dir`'s docs text names
+  // `DirectoryAdded`, dated 2.1.219, and was published unguarded back to 1.0.23.
+  // Render sites and elements are spelled the same way but are not matched: the
+  // `AskUserQuestion` site shares its name with the tool that descriptions mean, and
+  // an element's date is its first element list, not its first release.
+  if (/^[A-Z][a-zA-Z]+$/.test(token)) return [`hook_event:${token}`];
   if (/[a-z][A-Z]/.test(token) || token.includes('.')) return [`config_key:${token}`];
   return [];
 }
