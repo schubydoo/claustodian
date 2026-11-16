@@ -2161,8 +2161,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Add a new working directory",
-      "description_source": "binary",
+      "description": "Add a working directory for file access. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Most `.claude/` configuration isn't discovered from the added directory. You can't add most network paths, such as `\\\\server\\share`. After a successful add, your `DirectoryAdded` hooks run. If you run `/add-dir` while Claude is responding, Claude's next tool call can access the directory once you confirm the add",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -8459,7 +8459,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable the non-streaming fallback when a streaming request fails mid-stream. Streaming errors propagate to the retry layer instead. Useful when a proxy or gateway causes the fallback to produce duplicate tool execution",
+      "description": "Set to `1` to disable the non-streaming fallback when a streaming request fails mid-stream. Useful when a proxy or gateway causes the fallback to produce duplicate tool execution",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
