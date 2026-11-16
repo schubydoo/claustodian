@@ -828,8 +828,10 @@ const TOKEN_IN_PROSE = /`([^`\s]+)`/g;
  * A BARE lowercase word is deliberately excluded. `ultracode` and `env` are real
  * settings keys and also ordinary words a description can backtick meaning
  * something else, and a false positive here truncates correct text. camelCase and
- * dotted keys carry their own evidence of being an identifier, so the rule stays
- * on tokens that cannot be mistaken for prose.
+ * dotted keys carry their own evidence of being an identifier. A capitalized word is
+ * the exception: it is read as a hook event even when it is one word, such as
+ * `Stop`. A collision must spell a hook event exactly, and none in the docs text did
+ * when this rule was added.
  */
 function recordKeysFor(token: string): string[] {
   if (/^--[a-z][a-z0-9-]*$/.test(token)) return [`cli_flag:${token}`];
