@@ -1501,7 +1501,7 @@
     {
       "symbol": "/add-dir",
       "type": "command",
-      "description": "Add a working directory for file access during the current session. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Most `.claude/` configuration isn't discovered from the added directory. You can't add most network paths, such as `\\\\server\\share`. After a successful add, your `DirectoryAdded` hooks run. When you run it while Claude is responding, Claude Code asks you to confirm the directory right away, and once you confirm, Claude's next tool call in the same turn can access it. Before v2.1.234, Claude Code queued the command until the turn finished",
+      "description": "Add a working directory for file access. Type a partial path to see matching directory suggestions; press `Tab` to accept one. Most `.claude/` configuration isn't discovered from the added directory. You can't add most network paths, such as `\\\\server\\share`. After a successful add, your `DirectoryAdded` hooks run. If you run `/add-dir` while Claude is responding, Claude's next tool call can access the directory once you confirm the add",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1655,7 +1655,7 @@
     {
       "symbol": "/config",
       "type": "command",
-      "description": "Open the Settings interface to adjust theme, model, output style, and other preferences. Pass one or more `key=value` pairs to set a setting directly without opening the interface, for example `/config thinking=false`, `/config theme=dark`, or `/config model=sonnet`. The `key=value` form also works in non-interactive mode (`-p`) and from the Claude mobile app via Remote Control. The `key=value` form can't turn on a setting that needs your confirmation in the panel, such as `autoContinueAtUsageLimit`, though it can turn one off. Run `/config --help` to list the keys it accepts. Alias: `/settings`",
+      "description": "Open the Settings interface to adjust preferences. Pass `key=value` pairs to set a setting directly, for example `/config verbose=true`, `/config theme=dark`, or `/config model=sonnet`. That form also works in non-interactive mode (`-p`) and from the Claude mobile app via Remote Control. It can't turn on a setting that needs your confirmation in the panel, such as `autoContinueAtUsageLimit`. Run `/config --help` to list the keys it accepts. Alias: `/settings`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1949,7 +1949,7 @@
     {
       "symbol": "/permissions",
       "type": "command",
-      "description": "Manage allow, ask, and deny rules for tool permissions. Opens an interactive dialog where you can view rules by scope, add or remove rules, manage working directories, and review recent auto mode denials. You can also view and edit auto mode classifier rules from the dialog's **Auto mode** tab. Alias: `/allowed-tools`",
+      "description": "Manage allow, ask, and deny rules for tool permissions. Opens an interactive dialog where you can view rules by scope, add or remove rules, manage working directories, and review recent auto mode denials. You can also view and edit auto mode classifier rules from the dialog's **Auto mode** tab. In the desktop app, edit your settings files instead. Alias: `/allowed-tools`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -4360,6 +4360,34 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "ANTHROPIC_GOOGLE_CLOUD_BASE_URL",
+      "type": "env_var",
+      "description": "Override the Claude Models on Google Cloud (Anthropic managed) endpoint URL, for example when routing through an LLM gateway",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "ANTHROPIC_GOOGLE_CLOUD_LOCATION",
+      "type": "env_var",
+      "description": "Google Cloud location that Claude Code puts in the Claude Models on Google Cloud (Anthropic managed) request URL. Defaults to `global`",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "ANTHROPIC_GOOGLE_CLOUD_PROJECT",
+      "type": "env_var",
+      "description": "Google Cloud project ID for Claude Models on Google Cloud (Anthropic managed)",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "ANTHROPIC_GOOGLE_CLOUD_WORKSPACE_ID",
+      "type": "env_var",
+      "description": "Workspace ID for Claude Models on Google Cloud (Anthropic managed). Required, unless you're on v2.1.307 or later and `ANTHROPIC_GOOGLE_CLOUD_BASE_URL` is set",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "ANTHROPIC_MODEL",
       "type": "env_var",
       "description": "Name of the model setting to use (see Model Configuration)",
@@ -5027,7 +5055,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_NONSTREAMING_FALLBACK",
       "type": "env_var",
-      "description": "Set to `1` to disable the non-streaming fallback when a streaming request fails mid-stream. Streaming errors propagate to the retry layer instead. Useful when a proxy or gateway causes the fallback to produce duplicate tool execution",
+      "description": "Set to `1` to disable the non-streaming fallback when a streaming request fails mid-stream. Useful when a proxy or gateway causes the fallback to produce duplicate tool execution",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -5106,6 +5134,13 @@
       "type": "env_var",
       "description": "Set to `1` so that `claude ultrareview` doesn't exit with `Error: Workspace not trusted` in a folder you haven't trusted when it can't ask you to trust it, such as in CI. Set it in the environment that launches Claude Code, not a settings `env` block, and only where every such run starts in a folder you trust. Runs that can ask still ask. Requires Claude Code v2.1.309 or later",
       "doc_min_version": "2.1.309",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_ULTRATHINK",
+      "type": "env_var",
+      "description": "Set to `1` to turn the `ultrathink` keyword off. Requires Claude Code v2.1.316 or later",
+      "doc_min_version": "2.1.316",
       "doc_page": "env-vars"
     },
     {
@@ -5984,6 +6019,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_SKIP_ANTHROPIC_GOOGLE_CLOUD_AUTH",
+      "type": "env_var",
+      "description": "Skip Google Cloud authentication for Claude Models on Google Cloud (Anthropic managed), for gateways that attach the credentials themselves",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_SKIP_AWS_CRED_CACHE",
       "type": "env_var",
       "description": "Set to `1` to turn off the in-process cache of credentials resolved from the AWS default credential provider chain, so Claude Code resolves the chain on every API request. With the cache off, an SSO-backed profile requests credentials from IAM Identity Center on every request. See credential caching and resolution timeout. Requires Claude Code v2.1.207 or later",
@@ -6176,6 +6218,13 @@
       "symbol": "CLAUDE_CODE_USE_ANTHROPIC_AWS",
       "type": "env_var",
       "description": "Use Claude Platform on AWS",
+      "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_USE_ANTHROPIC_GOOGLE_CLOUD",
+      "type": "env_var",
+      "description": "Use Claude Models on Google Cloud (Anthropic managed)",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
