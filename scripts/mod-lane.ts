@@ -42,7 +42,8 @@
  *   2.1.301  ZIe=[...Ve,"tool.call","tool.check", …,"engine.create",...FKn]
  *
  * Each dotted string literal in it is one event. The spreads are not read, and each
- * must be a bare identifier, as every real one is: one is
+ * must be a bare identifier, as every real one is, except `...[]`, which adds nothing
+ * and does not count as a spread (the 2.1.326 method list holds one). One is
  * the method list (every method is also an event, and those publish as methods),
  * and from 2.1.265 the other is the settings hook events as `classic.<Name>`. A
  * bare capitalized literal (`PreToolUse`, before 2.1.265) is a settings hook event
@@ -326,19 +327,25 @@ function bareCallName(node: unknown): string | undefined {
  * The object a table spread `...R_o()` adds, read as table properties. From 2.1.326 the
  * table spreads the result of a function that is `function R_o(){return{}}` in the
  * public build. The spread is readable only when `name` is a function declared at the
- * top of this chunk, nothing else in the chunk binds that name, and its body is one
- * `return` of an object literal. Every property of that object must then be readable
- * as a method key, as a table's own must.
+ * top of this chunk, its body is one `return` of an object literal, and the name
+ * occurs in the chunk exactly twice: as that function's name and as this call. Any
+ * other occurrence, such as a parameter, a destructured name, a class or catch
+ * binding, or a reassignment, could change what the call returns, so it throws.
+ * Every property of the object must then be readable as a method key, as a table's
+ * own must.
  */
 function spreadKeys(
   name: string,
   functions: ReadonlyMap<string, Node>,
-  bindings: ReadonlyMap<string, number>
+  occurrences: ReadonlyMap<string, number>
 ): { keys: string[]; unreadable: string[] } {
   const spread = `a spread of ${name}()`;
   const fn = functions.get(name);
-  if (!fn || bindings.get(name) !== 1) {
-    return { keys: [], unreadable: [`${spread}, which no single top-level function declares`] };
+  if (!fn || occurrences.get(name) !== 2) {
+    return {
+      keys: [],
+      unreadable: [`${spread}, whose name is not only one top-level function and this call`],
+    };
   }
   const body = ((fn.body as Node).body ?? []) as Node[];
   const [statement] = body;
@@ -366,12 +373,7 @@ function spreadKeys(
 export function collectModEvidence(program: Node): ModEvidence {
   const candidates: Array<ModTable & { spreads: string[] }> = [];
   const functions = new Map<string, Node>();
-  const bindings = new Map<string, number>();
-  const bind = (id: unknown) => {
-    if (isNode(id) && id.type === 'Identifier') {
-      bindings.set(String(id.name), (bindings.get(String(id.name)) ?? 0) + 1);
-    }
-  };
+  const occurrences = new Map<string, number>();
   const eventArrays: ModEventArray[] = [];
   const names: string[] = [];
   const siteEnums: ModEvidence['siteEnums'] = [];
@@ -379,19 +381,11 @@ export function collectModEvidence(program: Node): ModEvidence {
   const siteCallsUnreadable: string[] = [];
   const elementLists: ModEvidence['elementLists'] = [];
   walk(program, (node, ancestors) => {
-    if (node.type === 'VariableDeclarator') bind(node.id);
-    if (
-      node.type === 'FunctionDeclaration' ||
-      node.type === 'FunctionExpression' ||
-      node.type === 'ArrowFunctionExpression'
-    ) {
-      if (node.type === 'FunctionDeclaration') {
-        bind(node.id);
-        const id = node.id as Node | null;
-        if (id && ancestors[ancestors.length - 1] === program) functions.set(String(id.name), node);
-      }
-      for (const param of node.params as unknown[]) bind(param);
+    if (node.type === 'Identifier') {
+      occurrences.set(String(node.name), (occurrences.get(String(node.name)) ?? 0) + 1);
     }
+    const id = node.type === 'FunctionDeclaration' ? (node.id as Node | null) : null;
+    if (id && ancestors[ancestors.length - 1] === program) functions.set(String(id.name), node);
     const value = stringValue(node);
     if (value !== undefined && METHOD_KEY.test(value)) names.push(value);
     if (node.type === 'CallExpression') {
@@ -445,7 +439,7 @@ export function collectModEvidence(program: Node): ModEvidence {
     }
   });
   const tables = candidates.map(({ keys, unreadable, spreads }): ModTable => {
-    const read = spreads.map((name) => spreadKeys(name, functions, bindings));
+    const read = spreads.map((name) => spreadKeys(name, functions, occurrences));
     return {
       keys: [...keys, ...read.flatMap((r) => r.keys)],
       unreadable: [...unreadable, ...read.flatMap((r) => r.unreadable)],

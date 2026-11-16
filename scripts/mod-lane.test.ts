@@ -166,19 +166,29 @@ describe('extractModMethods', () => {
 
   it('refuses a call spread it cannot resolve to one returned object', () => {
     const spread = TABLE.replace('};', ',...R()};');
-    for (const rest of [
-      '', // declared in another chunk, or not at all
-      'function R(){return{}}function f(){function R(){return{}}}', // declared twice
-      'function R(){return{}}var g=(R)=>R;', // the name is also a parameter
-      'function f(){function R(){return{}}}', // not top-level
-      'function R(){let a=1;return{}}', // more than one statement
-      'function R(){return a}', // not an object literal
-      'function R(){return{...S}}', // a spread inside the returned object
-      'function R(){return{other:1}}', // a key that is not a method name
-    ]) {
-      expect(() => extractModMethods(spread + rest, '2.1.326'), rest).toThrow(
-        /^mod lane: .*a spread of R\(\)|^mod lane: .*cannot read/
-      );
+    const NAME = /a spread of R\(\), whose name is not only one top-level function and this call/;
+    const BODY = /a spread of R\(\), whose body is not one returned object/;
+    const fn = 'function R(){return{}}';
+    for (const [rest, reason] of [
+      ['', NAME], // declared in another chunk, or not at all
+      ['function f(){function R(){return{}}}', NAME], // not top-level
+      [`${fn}function f(){function R(){return{}}}`, NAME], // declared twice
+      [`${fn}function f(){var R=1}`, NAME], // a var of the same name
+      [`${fn}var g=(R)=>R;`, NAME], // an arrow parameter
+      [`${fn}var g=function(R){};`, NAME], // a function parameter
+      [`${fn}function f({R}){}`, NAME], // a destructured parameter
+      [`${fn}var g=(R=1)=>1;`, NAME], // a default parameter
+      [`${fn}var g=(...R)=>1;`, NAME], // a rest parameter
+      [`${fn}var{a:R}=x;`, NAME], // a destructured var
+      [`${fn}class R{}`, NAME], // a class
+      [`${fn}try{}catch(R){}`, NAME], // a catch parameter
+      [`${fn}R=()=>({"ui.x":{run:1}});`, NAME], // a reassignment
+      ['function R(){let a=1;return{}}', BODY], // more than one statement
+      ['function R(){return a}', BODY], // not an object literal
+      ['function R(){return{...S}}', /a spread in a spread of R\(\)/], // a nested spread
+      ['function R(){return{other:1}}', /a Identifier key in a spread of R\(\)/], // not a method key
+    ] as const) {
+      expect(() => extractModMethods(spread + rest, '2.1.326'), rest).toThrow(reason);
     }
     const withArgument = TABLE.replace('};', ',...R(1)};') + 'function R(){return{}}';
     expect(() => extractModMethods(withArgument, '2.1.326')).toThrow(/^mod lane: .*cannot read/);
