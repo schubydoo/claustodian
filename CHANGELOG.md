@@ -16,6 +16,17 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ---
 
+## 2026-11-16
+
+### Fixed
+
+- **A description that names a later hook event is refused at earlier versions.**
+  The `/add-dir` docs text says that your `DirectoryAdded` hooks run. That hook event
+  first appears in 2.1.219, but the text was published in every snapshot back to
+  1.0.23. Those snapshots now carry the binary text of their own version. A
+  backticked capitalized name counts only as a hook event. Render sites and elements
+  are not matched, because a tool can have the same name.
+
 ## 2026-11-14
 
 ### Fixed

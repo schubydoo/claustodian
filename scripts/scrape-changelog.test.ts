@@ -2131,6 +2131,23 @@ describe('describesFutureState', () => {
     expect(describesFutureState('Enable `ultracode` mode.', '2.1.100', wide, releases)).toBe(false);
   });
 
+  it('checks a hook event, but not a render site or element of the same spelling', () => {
+    // `/add-dir`'s docs text names `DirectoryAdded` (2.1.219) and was published back
+    // to 1.0.23. A render site shares its spelling with a tool (`AskUserQuestion`),
+    // and an element is dated by its first element list, so neither counts.
+    const named = new Map([
+      ['hook_event:DirectoryAdded', '2.1.219'],
+      ['mod_render_site:AskUserQuestion', '2.1.242'],
+      ['mod_element:Button', '2.1.260'],
+    ]);
+    const at = (text: string, version: string) =>
+      describesFutureState(text, version, named, releases);
+    expect(at('Your `DirectoryAdded` hooks run.', '2.1.200')).toBe(true);
+    expect(at('Your `DirectoryAdded` hooks run.', '2.1.219')).toBe(false);
+    expect(at('`AskUserQuestion` questions use their own flows.', '2.1.200')).toBe(false);
+    expect(at('A `Button` a mod drew is used.', '2.1.247')).toBe(false);
+  });
+
   it('treats a question mark as a sentence end', () => {
     // `?` was added as a terminator but nothing bound it; the suite stayed green
     // with the branch deleted.
