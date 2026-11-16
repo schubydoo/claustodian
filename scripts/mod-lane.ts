@@ -14,6 +14,8 @@
  * elsewhere (an identifier, a call), so the share of inline `{run}` values falls
  * from release to release. The size and the `run` share only PICK the table — see
  * collectModEvidence — and then every property in it must be a readable method key.
+ * A spread `...R()` is read as the object that `R` returns, when `R` only returns an
+ * object literal (spreadKeys). Any other spread throws.
  *
  * THE TABLE IS NOT THE WHOLE API. `ui.resolve` left it at 2.1.267 and is still a
  * method, served from the `$` client object instead. So the table proves a method
@@ -40,7 +42,8 @@
  *   2.1.301  ZIe=[...Ve,"tool.call","tool.check", …,"engine.create",...FKn]
  *
  * Each dotted string literal in it is one event. The spreads are not read, and each
- * must be a bare identifier, as every real one is: one is
+ * must be a bare identifier, as every real one is, except `...[]`, which adds nothing
+ * and does not count as a spread (the 2.1.326 method list holds one). One is
  * the method list (every method is also an event, and those publish as methods),
  * and from 2.1.265 the other is the settings hook events as `classic.<Name>`. A
  * bare capitalized literal (`PreToolUse`, before 2.1.265) is a settings hook event
@@ -284,11 +287,16 @@ function eventArrayOf(node: Node): ModEventArray | undefined {
   let spreads = 0;
   for (const element of node.elements as Array<Node | null>) {
     if (element?.type === 'SpreadElement') {
+      const argument = element.argument as Node;
+      // `...[]` adds no element. From 2.1.326 the method list holds one, and counting
+      // it as a spread would make that list a second event-array candidate.
+      if (argument.type === 'ArrayExpression' && (argument.elements as unknown[]).length === 0) {
+        continue;
+      }
       spreads += 1;
       // Every real spread names a list bound elsewhere (the methods, the classic
       // events). An inlined array or a conditional could carry events the rule never
       // reads, so it is refused rather than skipped.
-      const argument = element.argument as Node;
       if (argument.type !== 'Identifier') unreadable.push(`a spread of a ${argument.type}`);
     } else if (element?.type === 'Literal' && typeof element.value === 'string') {
       if (METHOD_KEY.test(element.value)) events.push(element.value);
@@ -306,21 +314,80 @@ function stringValue(node: Node): string | undefined {
   return typeof cooked === 'string' ? cooked : undefined;
 }
 
+/** The name of a zero-argument call to a bare identifier, `R_o()`, else undefined. */
+function bareCallName(node: unknown): string | undefined {
+  if (!isNode(node) || node.type !== 'CallExpression') return undefined;
+  const callee = node.callee as Node;
+  return callee.type === 'Identifier' && (node.arguments as unknown[]).length === 0
+    ? String(callee.name)
+    : undefined;
+}
+
+/**
+ * The object a table spread `...R_o()` adds, read as table properties. From 2.1.326 the
+ * table spreads the result of a function that is `function R_o(){return{}}` in the
+ * public build. The spread is readable only when `name` is a function declared at the
+ * top of this chunk, its body is one `return` of an object literal, and the name
+ * occurs in the chunk exactly twice: as that function's name and as this call. Any
+ * other occurrence, such as a parameter, a destructured name, a class or catch
+ * binding, or a reassignment, could change what the call returns, so it throws.
+ * Every property of the object must then be readable as a method key, as a table's
+ * own must.
+ */
+function spreadKeys(
+  name: string,
+  functions: ReadonlyMap<string, Node>,
+  occurrences: ReadonlyMap<string, number>
+): { keys: string[]; unreadable: string[] } {
+  const spread = `a spread of ${name}()`;
+  const fn = functions.get(name);
+  if (!fn || occurrences.get(name) !== 2) {
+    return {
+      keys: [],
+      unreadable: [`${spread}, whose name is not only one top-level function and this call`],
+    };
+  }
+  const body = ((fn.body as Node).body ?? []) as Node[];
+  const [statement] = body;
+  const returned = statement?.type === 'ReturnStatement' ? (statement.argument as Node) : undefined;
+  // An async or generator function returns a Promise or an iterator, not the object.
+  const plain = fn.async !== true && fn.generator !== true;
+  if (!plain || body.length !== 1 || returned?.type !== 'ObjectExpression') {
+    return { keys: [], unreadable: [`${spread}, whose body is not one returned object`] };
+  }
+  const keys: string[] = [];
+  const unreadable: string[] = [];
+  for (const property of returned.properties as Node[]) {
+    const key = literalKey(property);
+    if (key !== undefined && METHOD_KEY.test(key)) keys.push(key);
+    else unreadable.push(`${describeProperty(property)} in ${spread}`);
+  }
+  return { keys, unreadable };
+}
+
 /**
  * One walk over `program` for both kinds of evidence. A table is an object literal
  * with at least MIN_TABLE_KEYS dotted keys, at least half of them `{run}` objects.
  * Selection ignores the properties it cannot read; modEvidenceFrom refuses them in
- * the table it picks.
+ * the table it picks. A spread of a zero-argument call is resolved after the walk
+ * (spreadKeys), because the function it names can be declared after the table.
  */
 export function collectModEvidence(program: Node): ModEvidence {
-  const tables: ModTable[] = [];
+  const candidates: Array<ModTable & { spreads: string[] }> = [];
+  const functions = new Map<string, Node>();
+  const occurrences = new Map<string, number>();
   const eventArrays: ModEventArray[] = [];
   const names: string[] = [];
   const siteEnums: ModEvidence['siteEnums'] = [];
   const siteCalls: string[] = [];
   const siteCallsUnreadable: string[] = [];
   const elementLists: ModEvidence['elementLists'] = [];
-  walk(program, (node) => {
+  walk(program, (node, ancestors) => {
+    if (node.type === 'Identifier') {
+      occurrences.set(String(node.name), (occurrences.get(String(node.name)) ?? 0) + 1);
+    }
+    const id = node.type === 'FunctionDeclaration' ? (node.id as Node | null) : null;
+    if (id && ancestors[ancestors.length - 1] === program) functions.set(String(id.name), node);
     const value = stringValue(node);
     if (value !== undefined && METHOD_KEY.test(value)) names.push(value);
     if (node.type === 'CallExpression') {
@@ -352,8 +419,15 @@ export function collectModEvidence(program: Node): ModEvidence {
     if (elementList) elementLists.push(elementList);
     const keys: string[] = [];
     const unreadable: string[] = [];
+    const spreads: string[] = [];
     let runs = 0;
     for (const property of node.properties as Node[]) {
+      const spread =
+        property.type === 'SpreadElement' ? bareCallName(property.argument) : undefined;
+      if (spread !== undefined) {
+        spreads.push(spread);
+        continue;
+      }
       const key = literalKey(property);
       if (key === undefined || !METHOD_KEY.test(key)) {
         unreadable.push(describeProperty(property));
@@ -362,7 +436,16 @@ export function collectModEvidence(program: Node): ModEvidence {
       keys.push(key);
       if (hasRunMember(property.value)) runs += 1;
     }
-    if (keys.length >= MIN_TABLE_KEYS && runs * 2 >= keys.length) tables.push({ keys, unreadable });
+    if (keys.length >= MIN_TABLE_KEYS && runs * 2 >= keys.length) {
+      candidates.push({ keys, unreadable, spreads });
+    }
+  });
+  const tables = candidates.map(({ keys, unreadable, spreads }): ModTable => {
+    const read = spreads.map((name) => spreadKeys(name, functions, occurrences));
+    return {
+      keys: [...keys, ...read.flatMap((r) => r.keys)],
+      unreadable: [...unreadable, ...read.flatMap((r) => r.unreadable)],
+    };
   });
   return { tables, eventArrays, names, siteEnums, siteCalls, siteCallsUnreadable, elementLists };
 }
