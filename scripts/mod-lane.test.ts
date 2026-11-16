@@ -156,6 +156,46 @@ describe('extractModMethods', () => {
     expect(() => extractModMethods(spread, '2.1.300')).toThrow(/^mod lane: .*cannot read/);
   });
 
+  it('reads a spread of a top-level function that returns an object, as 2.1.326 writes it', () => {
+    // 2.1.326: `...R_o()` inside the table, and `function R_o(){return{}}` after it.
+    const empty = TABLE.replace('};', ',...R()};') + 'function R(){return{}}';
+    expect(extractModMethods(empty, '2.1.326')).toEqual(METHODS);
+    const extra = TABLE.replace('};', ',...R()};') + 'function R(){return{"ui.extra":{run:1}}}';
+    expect(extractModMethods(extra, '2.1.326')).toEqual([...METHODS, '$.ui.extra'].sort());
+  });
+
+  it('refuses a call spread it cannot resolve to one returned object', () => {
+    const spread = TABLE.replace('};', ',...R()};');
+    const NAME = /a spread of R\(\), whose name is not only one top-level function and this call/;
+    const BODY = /a spread of R\(\), whose body is not one returned object/;
+    const fn = 'function R(){return{}}';
+    for (const [rest, reason] of [
+      ['', NAME], // declared in another chunk, or not at all
+      ['function f(){function R(){return{}}}', NAME], // not top-level
+      [`${fn}function f(){function R(){return{}}}`, NAME], // declared twice
+      [`${fn}function f(){var R=1}`, NAME], // a var of the same name
+      [`${fn}var g=(R)=>R;`, NAME], // an arrow parameter
+      [`${fn}var g=function(R){};`, NAME], // a function parameter
+      [`${fn}function f({R}){}`, NAME], // a destructured parameter
+      [`${fn}var g=(R=1)=>1;`, NAME], // a default parameter
+      [`${fn}var g=(...R)=>1;`, NAME], // a rest parameter
+      [`${fn}var{a:R}=x;`, NAME], // a destructured var
+      [`${fn}class R{}`, NAME], // a class
+      [`${fn}try{}catch(R){}`, NAME], // a catch parameter
+      [`${fn}R=()=>({"ui.x":{run:1}});`, NAME], // a reassignment
+      ['function R(){let a=1;return{}}', BODY], // more than one statement
+      ['function R(){return a}', BODY], // not an object literal
+      ['async function R(){return{"ui.x":{run:1}}}', BODY], // returns a Promise
+      ['function* R(){return{"ui.x":{run:1}}}', BODY], // returns an iterator
+      ['function R(){return{...S}}', /a spread in a spread of R\(\)/], // a nested spread
+      ['function R(){return{other:1}}', /a Identifier key in a spread of R\(\)/], // not a method key
+    ] as const) {
+      expect(() => extractModMethods(spread + rest, '2.1.326'), rest).toThrow(reason);
+    }
+    const withArgument = TABLE.replace('};', ',...R(1)};') + 'function R(){return{}}';
+    expect(() => extractModMethods(withArgument, '2.1.326')).toThrow(/^mod lane: .*cannot read/);
+  });
+
   it('refuses two tables, because the rule can no longer tell which is the API', () => {
     expect(() => extractModMethods([TABLE, TABLE.replace('var T', 'var U')], '2.1.300')).toThrow(
       /^mod lane: .*2 tables/
@@ -365,6 +405,16 @@ describe('extractModEvents', () => {
     const noSpread = `var C=[${EVENT_NAMES.map((n) => `"${n}"`).join(',')}];`;
     const small = 'var V=[...X,"turn.step","process.spawn"];';
     expect(extractModEvents([noSpread, small, EVENTS], '2.1.301')).toEqual(EVENTS_SORTED);
+  });
+
+  it('does not count an empty array spread, as the 2.1.326 method list holds one', () => {
+    // 2.1.326 writes the method list as `["model.complete",…,...[],"ui.toast",…]`.
+    // That `...[]` adds nothing, so the list must not become a second candidate.
+    const methodList = `var J=[${EVENT_NAMES.map((n) => `"x${n}"`).join(',')},...[]];`;
+    expect(extractModEvents([methodList, EVENTS], '2.1.326')).toEqual(EVENTS_SORTED);
+    // Inside the real event list it is skipped too, not refused.
+    const withEmpty = EVENTS_OF(EVENT_NAMES, '...H,...[],', ',...M');
+    expect(extractModEvents(withEmpty, '2.1.326')).toEqual(EVENTS_SORTED);
   });
 
   it('refuses two event lists, because the rule can no longer tell which is the list', () => {
