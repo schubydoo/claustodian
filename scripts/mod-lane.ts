@@ -350,7 +350,9 @@ function spreadKeys(
   const body = ((fn.body as Node).body ?? []) as Node[];
   const [statement] = body;
   const returned = statement?.type === 'ReturnStatement' ? (statement.argument as Node) : undefined;
-  if (body.length !== 1 || returned?.type !== 'ObjectExpression') {
+  // An async or generator function returns a Promise or an iterator, not the object.
+  const plain = fn.async !== true && fn.generator !== true;
+  if (!plain || body.length !== 1 || returned?.type !== 'ObjectExpression') {
     return { keys: [], unreadable: [`${spread}, whose body is not one returned object`] };
   }
   const keys: string[] = [];

@@ -185,6 +185,8 @@ describe('extractModMethods', () => {
       [`${fn}R=()=>({"ui.x":{run:1}});`, NAME], // a reassignment
       ['function R(){let a=1;return{}}', BODY], // more than one statement
       ['function R(){return a}', BODY], // not an object literal
+      ['async function R(){return{"ui.x":{run:1}}}', BODY], // returns a Promise
+      ['function* R(){return{"ui.x":{run:1}}}', BODY], // returns an iterator
       ['function R(){return{...S}}', /a spread in a spread of R\(\)/], // a nested spread
       ['function R(){return{other:1}}', /a Identifier key in a spread of R\(\)/], // not a method key
     ] as const) {
