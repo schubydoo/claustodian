@@ -333,6 +333,10 @@
       {
         "from": "2.1.83",
         "description": "Enable the server-side advisor tool with the specified model (alias or full ID)."
+      },
+      {
+        "from": "2.1.326",
+        "description": "Turn on the advisor tool with this model (alias or full ID)"
       }
     ],
     "cli_flag:--agent": [
@@ -435,6 +439,10 @@
       {
         "from": "1.0.49",
         "description": "Append a system prompt to the default system prompt"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Add text to the end of the default system prompt"
       }
     ],
     "cli_flag:--append-system-prompt-file": [
@@ -447,6 +455,10 @@
       {
         "from": "2.1.265",
         "description": "Attach a serve-only helper to a bound cloud session (spawned by the desktop app; not for interactive use)."
+      },
+      {
+        "from": "2.1.326",
+        "description": "Attach a serve-only helper to a bound cloud session (started by the desktop app; not for interactive use)."
       }
     ],
     "cli_flag:--auth-token": [
@@ -489,6 +501,10 @@
       {
         "from": "2.1.261",
         "description": "Read the initialize control request from stdin during startup so its launch-scoped fields (plugins) apply exactly like their command-line flags. Pass it only from the process that writes that request as the first stdin line at spawn (only works with --input-format=stream-json)"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Read the initialize control request from stdin during startup so its launch-scoped fields (plugins, mcpServers) apply like their command-line flags. Pass it only from the process that writes that request as the first stdin line at spawn (only works with --input-format=stream-json)"
       }
     ],
     "cli_flag:--ax-screen-reader": [
@@ -541,6 +557,10 @@
       {
         "from": "2.1.72",
         "description": "Enable SendUserMessage tool for agent-to-user communication"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Turn on the SendUserMessage tool, which Claude uses to message you"
       }
     ],
     "cli_flag:--callback-port": [
@@ -565,6 +585,10 @@
       {
         "from": "2.0.71",
         "description": "Enable Claude in Chrome integration"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Turn on Claude in Chrome"
       }
     ],
     "cli_flag:--claudeai": [
@@ -807,6 +831,10 @@
       {
         "from": "2.1.40",
         "description": "Pre-populate email address on the login page"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Fill in the email address on the login page"
       }
     ],
     "cli_flag:--enable-architect": [
@@ -871,12 +899,20 @@
       {
         "from": "2.1.265",
         "description": "Enable automatic fallback to specified model(s) when the default model is overloaded or not available. Accepts a comma-separated list to try each in order. Re-tries the primary at the start of each user turn."
+      },
+      {
+        "from": "2.1.326",
+        "description": "Models to fall back to when the main model is busy or unavailable (comma-separated, in order). The main model is tried again at the start of each turn."
       }
     ],
     "cli_flag:--file": [
       {
         "from": "2.1.8",
         "description": "File resources to download at startup. Format: file_id:relative_path (e.g., --file file_abc:doc.txt file_def:img.png)"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Files to download at startup. Format: file_id:relative_path (e.g., --file file_abc:doc.txt file_def:img.png)"
       }
     ],
     "cli_flag:--force": [
@@ -917,6 +953,10 @@
       {
         "from": "2.1.27",
         "description": "Resume a session linked to a PR by PR number/URL, or open interactive picker with optional search term"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Resume a session linked to a PR by number or URL, or pick from a list (optionally with a search term)"
       }
     ],
     "cli_flag:--gateway-json": [
@@ -1069,6 +1109,10 @@
       {
         "from": "2.1.198",
         "description": "Preserve scaffold dirs for debugging"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Keep scaffold directories for debugging"
       }
     ],
     "cli_flag:--label": [
@@ -1143,6 +1187,10 @@
       {
         "from": "0.2.46",
         "description": "Maximum number of agentic turns in non-interactive mode. This will early exit the conversation after the specified number of turns. (only works with --print)"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Stop after this many turns (only works with --print)"
       }
     ],
     "cli_flag:--mcp-config": [
@@ -1219,12 +1267,20 @@
       {
         "from": "2.1.186",
         "description": "Print the authorization URL instead of opening a browser (for SSH/headless sessions — paste the redirect URL back when prompted)"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Print the authorization URL instead of opening a browser (for SSH or no-browser sessions — paste the redirect URL back when prompted)"
       }
     ],
     "cli_flag:--no-chrome": [
       {
         "from": "2.0.71",
         "description": "Disable Claude in Chrome integration"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Turn off Claude in Chrome"
       }
     ],
     "cli_flag:--no-home-settings": [
@@ -1237,6 +1293,10 @@
       {
         "from": "2.1.227",
         "description": "Do not post the findings to the PR (the default; accepted for parity with the /ultrareview and /code-review ultra flags)"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Don't post the findings to the PR (the default)"
       }
     ],
     "cli_flag:--no-publish": [
@@ -1255,12 +1315,20 @@
       {
         "from": "2.0.63",
         "description": "Disable session persistence - sessions will not be saved to disk and cannot be resumed (only works with --print)"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Don't save sessions to disk; they can't be resumed (only works with --print)"
       }
     ],
     "cli_flag:--on-branch": [
       {
         "from": "2.1.224",
         "description": "Work directly on <branch> in the remote session (checkout and push to it). On self-hosted environments this includes pushing to the default branch when it is not protected — use GitHub branch protection to restrict. Mutually exclusive with --ref. Requires --cloud or --environment."
+      },
+      {
+        "from": "2.1.326",
+        "description": "Work directly on <branch> in the session (check out and push to it). On self-hosted environments this includes pushing to the default branch when it is not protected — use GitHub branch protection to restrict. Can't be used with --ref. Requires --cloud or --environment."
       }
     ],
     "cli_flag:--output-dir": [
@@ -1365,6 +1433,10 @@
       {
         "from": "2.1.295",
         "description": "Port to listen on with --transport http (default 0 = kernel-assigned; bound to 127.0.0.1 only)"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Port to listen on with --transport http (default 0 picks a free port; 127.0.0.1 only)"
       }
     ],
     "cli_flag:--post": [
@@ -1419,6 +1491,10 @@
       {
         "from": "2.1.154",
         "description": "Enable prompt suggestions. In print/SDK mode, emits a prompt_suggestion message after each turn with a predicted next user prompt"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Turn on prompt suggestions. In print/SDK mode, sends a prompt_suggestion message after each turn with a predicted next user prompt"
       }
     ],
     "cli_flag:--prune": [
@@ -1453,6 +1529,10 @@
       {
         "from": "2.1.224",
         "description": "Branch, tag, or SHA to check out in the remote session; defaults to local current branch. Requires --cloud or --environment."
+      },
+      {
+        "from": "2.1.326",
+        "description": "Branch, tag, or SHA to check out in the session; defaults to your current branch. Requires --cloud or --environment."
       }
     ],
     "cli_flag:--registry": [
@@ -1539,6 +1619,10 @@
       {
         "from": "2.1.304",
         "description": "Resume a conversation by session ID or name, or open interactive picker with optional search term"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Resume a conversation by session ID or name, or pick from a list (optionally with a search term)"
       }
     ],
     "cli_flag:--resume-drops-turn": [
@@ -1561,6 +1645,10 @@
       {
         "from": "2.0.63",
         "description": "Restore files to state at the specified user message and exit (requires --resume)"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Restore files to how they were at this user message and exit (requires --resume)"
       }
     ],
     "cli_flag:--runs": [
@@ -1659,6 +1747,10 @@
       {
         "from": "2.1.40",
         "description": "Force SSO login flow"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Log in with SSO"
       }
     ],
     "cli_flag:--status": [
@@ -1747,6 +1839,10 @@
       {
         "from": "2.1.186",
         "description": "How to spawn teammates: \"tmux\", \"iterm2\", \"in-process\", or \"auto\""
+      },
+      {
+        "from": "2.1.326",
+        "description": "How to run teammates: \"tmux\", \"iterm2\", \"in-process\", or \"auto\""
       }
     ],
     "cli_flag:--teleport": [
@@ -1759,6 +1855,10 @@
       {
         "from": "2.1.40",
         "description": "Output as human-readable text"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Output as plain text"
       }
     ],
     "cli_flag:--thinking": [
@@ -1815,6 +1915,10 @@
       {
         "from": "2.1.304",
         "description": "Specify the list of available tools from the built-in set. Use \"\" to disable all tools, \"default\" to use the default set, or specify tool names (e.g. \"Bash,Edit,Read\")."
+      },
+      {
+        "from": "2.1.326",
+        "description": "Built-in tools to make available: \"\" for none, \"default\" for the default set, or tool names (e.g. \"Bash,Edit,Read\")"
       }
     ],
     "cli_flag:--transport": [
@@ -1895,6 +1999,10 @@
       {
         "from": "2.1.48",
         "description": "Create a new git worktree for this session (optionally specify a name)"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Create a git worktree for this session (optionally named)"
       }
     ],
     "cli_flag:--xaa": [
@@ -1907,6 +2015,10 @@
       {
         "from": "1.0.23",
         "description": "Add a new working directory"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Add a working directory"
       }
     ],
     "command:/advisor": [
@@ -2071,6 +2183,10 @@
       {
         "from": "2.1.6",
         "description": "Ask a quick side question without interrupting the main conversation"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Ask a side question without interrupting Claude"
       }
     ],
     "command:/buddy": [
@@ -2087,6 +2203,10 @@
       {
         "from": "2.1.212",
         "description": "Report a bug or share your conversation"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Report a bug or share your session"
       }
     ],
     "command:/cd": [
@@ -2221,6 +2341,10 @@
       {
         "from": "1.0.86",
         "description": "Visualize current context usage as a colored grid"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Show what fills the context"
       }
     ],
     "command:/copy": [
@@ -2235,6 +2359,10 @@
       {
         "from": "2.1.77",
         "description": "Copy Claude's last response to clipboard (or /copy N for the Nth-latest)"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Copy the last response to clipboard (/copy 2 for the one before)"
       }
     ],
     "command:/cost": [
@@ -2345,6 +2473,10 @@
       {
         "from": "2.1.76",
         "description": "Set effort level for model usage"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Set the model's effort level"
       }
     ],
     "command:/exit": [
@@ -2371,6 +2503,10 @@
       {
         "from": "1.0.44",
         "description": "Export the current conversation to a file or clipboard"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Export this session to a file or clipboard"
       }
     ],
     "command:/extra-usage": [
@@ -2435,6 +2571,10 @@
       {
         "from": "2.1.117",
         "description": "Spawn a background agent that inherits the full conversation"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Start a background agent with the full conversation"
       }
     ],
     "command:/goal": [
@@ -2711,6 +2851,10 @@
       {
         "from": "2.0.77",
         "description": "Enable plan mode or view the current session plan"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Turn on plan mode or view the plan"
       }
     ],
     "command:/plan-artifact": [
@@ -2753,6 +2897,10 @@
       {
         "from": "2.1.90",
         "description": "Discover Claude Code features through quick interactive lessons"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Learn Claude Code features in short lessons"
       }
     ],
     "command:/pr": [
@@ -2903,6 +3051,10 @@
       {
         "from": "2.0.8",
         "description": "Restore the code and/or conversation to a previous point"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Restore earlier code, conversation, or both"
       }
     ],
     "command:/run": [
@@ -2965,6 +3117,10 @@
       {
         "from": "2.1.128",
         "description": "Reconfigure Amazon Bedrock authentication, region, or model pins"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Change Amazon Bedrock authentication, region, or pinned models"
       }
     ],
     "command:/setup-claude": [
@@ -2983,6 +3139,10 @@
       {
         "from": "2.1.98",
         "description": "Reconfigure Google Vertex AI authentication, project, region, or model pins"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Change Google Vertex AI authentication, project, region, or pinned models"
       }
     ],
     "command:/simplify": [
@@ -3017,6 +3177,10 @@
       {
         "from": "1.0.4",
         "description": "Show Claude Code status including version, model, account, API connectivity, and tool statuses"
+      },
+      {
+        "from": "2.1.326",
+        "description": "Show version, account, model, MCP servers and setup warnings"
       }
     ],
     "command:/statusline": [
@@ -3401,6 +3565,10 @@
       {
         "from": "2.1.63",
         "description": "Allowlist of URL patterns that HTTP hooks may target. Supports * as a wildcard (e.g. \"https://hooks.example.com/*\"). When set, HTTP hooks with non-matching URLs are blocked. If undefined, all URLs are allowed. If empty array, no HTTP hooks are allowed. Arrays merge across settings sources (same semantics as allowedMcpServers)."
+      },
+      {
+        "from": "2.1.326",
+        "description": "Allowlist of URL patterns that HTTP hooks may target. Supports * as a wildcard (e.g. \"https://hooks.example.com/*\"). When set, HTTP hooks with non-matching URLs are blocked. If undefined, all URLs are allowed. If empty array, no HTTP hooks are allowed. Arrays merge across settings sources (same semantics as allowedMcpServers). Where managed settings do not set this list, a list in any other settings file does not apply to hooks that managed settings define, or that come from a plugin they enable from a local folder they name."
       }
     ],
     "config_key:allowedMarketplaces": [
@@ -3879,6 +4047,10 @@
       {
         "from": "2.1.242",
         "description": "Deprecated: use enableArtifact: false. Still honored — true disables the Artifact tool; false is ignored."
+      },
+      {
+        "from": "2.1.326",
+        "description": "Deprecated: use enableArtifact: false. Still honored — true turns Artifacts off; false is ignored."
       }
     ],
     "config_key:disableAutoMode": [
@@ -4021,6 +4193,10 @@
       {
         "from": "2.1.242",
         "description": "Turn the Artifact tool on or off. Off in any of managed, --settings, or user settings wins; project and local settings can only turn it off. Unset defaults to on once the feature is available."
+      },
+      {
+        "from": "2.1.326",
+        "description": "Turn Artifacts on or off. Off in any of managed, --settings, or user settings wins; project and local settings can only turn it off. Unset defaults to on once the feature is available."
       }
     ],
     "config_key:enableWorkflows": [
@@ -4207,6 +4383,10 @@
       {
         "from": "2.1.63",
         "description": "Allowlist of environment variable names HTTP hooks may interpolate into headers. When set, each hook's effective allowedEnvVars is the intersection with this list. If undefined, no restriction is applied. Arrays merge across settings sources (same semantics as allowedMcpServers)."
+      },
+      {
+        "from": "2.1.326",
+        "description": "Allowlist of environment variable names HTTP hooks may interpolate into headers. When set, each hook's effective allowedEnvVars is the intersection with this list. If undefined, no restriction is applied. Arrays merge across settings sources (same semantics as allowedMcpServers). Where managed settings do not set this list, a list in any other settings file does not apply to hooks that managed settings define, or that come from a plugin they enable from a local folder they name."
       }
     ],
     "config_key:idleCompaction": [
@@ -4379,6 +4559,10 @@
       {
         "from": "2.1.227",
         "description": "@internal Controls the ProposeGoal tool (model-proposed session goals). 'auto' (the default when absent) lets the model choose per proposal whether to ask for approval via its ask_user parameter; 'alwaysAsk' routes every model-proposed goal through the approval dialog; 'disabled' turns the tool off. A typed /goal is unaffected. Consent-affecting, so it is read from trusted sources only (user/policy/flag) — workspace-resident project and local settings are ignored."
+      },
+      {
+        "from": "2.1.326",
+        "description": "@internal Controls the session goal tools (model-proposed goals). 'auto' (the default when absent) lets the model choose per proposal whether to ask for approval via its ask_user parameter; 'alwaysAsk' routes every model-proposed goal through the approval dialog; 'disabled' turns the tools off. Typing /goal works under every value. Unless disabled, the model can pause any active goal until the user's next message. Consent-affecting, so it is read from trusted sources only (user/policy/flag) — workspace-resident project and local settings are ignored."
       }
     ],
     "config_key:modelSettings": [
@@ -5179,6 +5363,18 @@
         "description": "Commands that should never run in the sandbox (e.g., [\"git\", \"docker\"])"
       }
     ],
+    "config_key:sandbox.windows": [
+      {
+        "from": "2.1.326",
+        "description": "@internal Settings of the sandbox on native Windows."
+      }
+    ],
+    "config_key:sandbox.windows.backend": [
+      {
+        "from": "2.1.326",
+        "description": "Windows only: how sandboxed commands are confined. \"sandboxuser\" (default) runs them as the dedicated sandbox account that the sandbox set-up creates. \"mxc\" runs them in a Microsoft eXecution Container (BaseContainer) through the MXC SDK, with no install step; experimental. Claude Code ignores \"mxc\" and uses the sandbox account, with a note in /sandbox, when this build lacks the MXC SDK, when a higher settings tier or another managed source sets network.tlsTerminate, or when an administrator requires the sandbox or locks reads (filesystem.allowManagedReadPathsOnly) unless managed settings picked \"mxc\" and no other managed source sets network.allowManagedDomainsOnly. On \"mxc\" only the PowerShell tool is enabled and Bash commands are refused (MXC cannot run Git Bash yet); network.tlsTerminate and network.allowLocalBinding do not apply. Read from user, managed/policy or --settings settings only; a value in project settings (.claude/settings.json and .claude/settings.local.json) is ignored."
+      }
+    ],
     "config_key:secDefault": [
       {
         "from": "2.1.267",
@@ -5399,6 +5595,10 @@
       {
         "from": "2.1.323",
         "description": "Deprecated: no longer has any effect. Subagent rows always use the default look."
+      },
+      {
+        "from": "2.1.326",
+        "description": "Deprecated: still works, and will stop working in a future release. Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin"
       }
     ],
     "config_key:switchModelsOnFlag": [

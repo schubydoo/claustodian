@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.325",
+  "claudeCodeVersion": "2.1.326",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -967,7 +967,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Attach a serve-only helper to a bound cloud session (spawned by the desktop app; not for interactive use).",
+      "description": "Attach a serve-only helper to a bound cloud session (started by the desktop app; not for interactive use).",
       "source_url": null,
       "category": "cli-internal",
       "description_source": "binary"
@@ -1051,11 +1051,11 @@
       "type": "cli_flag",
       "first_seen": "2.1.261",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Read the initialize control request from stdin during startup so its launch-scoped fields (plugins) apply exactly like their command-line flags. Pass it only from the process that writes that request as the first stdin line at spawn (only works with --input-format=stream-json)",
-      "source_url": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Read the initialize control request from stdin during startup so its launch-scoped fields (plugins, mcpServers) apply like their command-line flags. Pass it only from the process that writes that request as the first stdin line at spawn (only works with --input-format=stream-json)",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli-internal",
       "description_source": "binary"
     },
@@ -3079,6 +3079,21 @@
       "category": "cli"
     },
     {
+      "symbol": "--no-clone-through-agent-proxy",
+      "type": "cli_flag",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--no-post",
       "type": "cli_flag",
       "first_seen": "2.1.227",
@@ -3407,7 +3422,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Port to listen on with --transport http (default 0 = kernel-assigned; bound to 127.0.0.1 only)",
+      "description": "Port to listen on with --transport http (default 0 picks a free port; 127.0.0.1 only)",
       "source_url": null,
       "category": "cli",
       "description_source": "binary"
@@ -3654,7 +3669,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "With `--environment`, base the new session's checkout on a named ref instead of local `HEAD`",
+      "description": "With `--environment`, base the new session's checkout on a named ref. Requires Claude Code v2.1.224 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/cli-reference.md",
       "category": "cli-internal"
@@ -3912,7 +3927,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Restore files to state at the specified user message and exit (requires --resume)",
+      "description": "Restore files to how they were at this user message and exit (requires --resume)",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli-internal",
       "description_source": "binary"
@@ -4655,6 +4670,21 @@
       "description_source": "binary"
     },
     {
+      "symbol": "--use-anthropic-gh",
+      "type": "cli_flag",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--use-anthropic-git-proxy",
       "type": "cli_flag",
       "first_seen": "2.1.224",
@@ -4843,15 +4873,15 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Accept the displayed install command without the `Run this command now?` prompt. Ignored when the command runs inside a Claude Code session, such as from the Bash tool or a hook. Requires Claude Code v2.1.229 or later",
+      "description": "Accept the displayed install command without the `Run this command now?` prompt. Ignored when the command runs inside a Claude Code session, such as from the Bash tool or a hook",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
-        "plugin install": "Accept the displayed install command without the `Run this command now?` prompt. Ignored when the command runs inside a Claude Code session, such as from the Bash tool or a hook. Requires Claude Code v2.1.229 or later",
+        "plugin install": "Accept the displayed install command without the `Run this command now?` prompt. Ignored when the command runs inside a Claude Code session, such as from the Bash tool or a hook",
         "plugin prune": "Skip the confirmation prompt. Required when stdin or stdout isn't a TTY",
         "plugin uninstall": "Skip the `--prune` confirmation prompt. Required with `--prune` when stdin or stdout isn't a TTY",
-        "plugin update": "Accept a changed install command from a command-source plugin, without the prompt. Required when stdin or stdout isn't a TTY, unless you pass `--accept-command`. Requires Claude Code v2.1.229 or later"
+        "plugin update": "Accept a changed install command from a command-source plugin, without the prompt. Required when stdin or stdout isn't a TTY, unless you pass `--accept-command`"
       },
       "scopes": [
         "auto-mode reset",
@@ -6815,7 +6845,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Open the Settings interface on the Status tab, showing version, model, account, and connectivity. A `Session kind` row reads `background job · attached` or `background job · unattended` in a background session, depending on whether a terminal is attached, and `interactive` in any other session. Before v2.1.221, `/status` didn't show this row. Works while Claude is responding",
+      "description": "Open the Settings interface on the Status tab, showing version, model, account, and connectivity. A `Session kind` row reads `background job · attached` or `background job · unattended` in a background session, depending on whether a terminal is attached, and `interactive` in any other session. Works while Claude is responding",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -7752,7 +7782,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Follow new output to the bottom of the conversation in fullscreen rendering. Turn it off to stay where you scrolled while Claude keeps working; permission prompts still scroll into view.",
+      "description": "Follow new output to the bottom of the conversation in fullscreen rendering.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -9164,7 +9194,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "@internal Controls the ProposeGoal tool (model-proposed session goals). 'auto' (the default when absent) lets the model choose per proposal whether to ask for approval via its ask_user parameter; 'alwaysAsk' routes every model-proposed goal through the approval dialog; 'disabled' turns the tool off. A typed /goal is unaffected. Consent-affecting, so it is read from trusted sources only (user/policy/flag) — workspace-resident project and local settings are ignored.",
+      "description": "@internal Controls the session goal tools (model-proposed goals). 'auto' (the default when absent) lets the model choose per proposal whether to ask for approval via its ask_user parameter; 'alwaysAsk' routes every model-proposed goal through the approval dialog; 'disabled' turns the tools off. Typing /goal works under every value. Unless disabled, the model can pause any active goal until the user's next message. Consent-affecting, so it is read from trusted sources only (user/policy/flag) — workspace-resident project and local settings are ignored.",
       "source_url": null,
       "category": "settings-internal",
       "description_source": "binary"
@@ -10442,6 +10472,32 @@
       "category": "settings"
     },
     {
+      "symbol": "sandbox.windows",
+      "type": "config_key",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "@internal Settings of the sandbox on native Windows.",
+      "source_url": null,
+      "category": "settings-internal",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "sandbox.windows.backend",
+      "type": "config_key",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Windows only: how sandboxed commands are confined. \"sandboxuser\" (default) runs them as the dedicated sandbox account that the sandbox set-up creates. \"mxc\" runs them in a Microsoft eXecution Container (BaseContainer) through the MXC SDK, with no install step; experimental. Claude Code ignores \"mxc\" and uses the sandbox account, with a note in /sandbox, when this build lacks the MXC SDK, when a higher settings tier or another managed source sets network.tlsTerminate, or when an administrator requires the sandbox or locks reads (filesystem.allowManagedReadPathsOnly) unless managed settings picked \"mxc\" and no other managed source sets network.allowManagedDomainsOnly. On \"mxc\" only the PowerShell tool is enabled and Bash commands are refused (MXC cannot run Git Bash yet); network.tlsTerminate and network.allowLocalBinding do not apply. Read from user, managed/policy or --settings settings only; a value in project settings (.claude/settings.json and .claude/settings.local.json) is ignored.",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
       "symbol": "secDefault",
       "type": "config_key",
       "first_seen": "2.1.267",
@@ -10992,7 +11048,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Deprecated: no longer has any effect. Subagent rows always use the default look.",
+      "description": "Deprecated: still works, and will stop working in a future release. Custom per-subagent status line shown in the agent panel; receives row context as JSON on stdin",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -12334,6 +12390,21 @@
       "direction": null
     },
     {
+      "symbol": "prompt_draft_activity",
+      "type": "control_message",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "@internal The person is typing a prompt for this session in the host's own composer. It carries none of the text. Send it at the first key and about every 10 seconds while typing goes on. Between turns the CLI may use the time to get the next request ready; during a turn it does nothing. Acknowledged with an empty success either way. An older CLI answers an unknown-subtype error, and a CLI that drives a cloud-hosted session refuses the request.",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": "host_to_cli"
+    },
+    {
       "symbol": "read_file",
       "type": "control_message",
       "first_seen": "2.1.116",
@@ -12715,6 +12786,21 @@
       "direction": "host_to_cli"
     },
     {
+      "symbol": "set_message_waiting",
+      "type": "control_message",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "@internal Says that the host holds a person's message until the running turn's result (true), or no longer does (false). While true, in a Claude Desktop Code session (elsewhere it changes nothing), the turn's end does not wait for the model call behind its post_turn_summary, so the result comes sooner and the summary is written without the model. The turn's end, or the next user message that the host sends, sets it back to false. Acknowledged with an empty success; an older CLI answers an unknown-subtype error.",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": "host_to_cli"
+    },
+    {
       "symbol": "set_model",
       "type": "control_message",
       "first_seen": "1.0.110",
@@ -13019,7 +13105,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "@internal A post from a `Client` instance the desktop drew: runs the owning plugin's `ui.message` chain alone (origin `client`) with `surface: \"desktop\"`. One naming a Client the latest ui_render of that instance did not carry answers `{handled: false}`; data past the bounds errors.",
+      "description": "@internal A post from a `Client` instance the desktop drew: runs the owning plugin's `ui.message` chain alone (origin `client`) with `surface: \"desktop\"`. One naming a Client the latest ui_render of that instance did not carry answers `{handled: false}`; data past the bounds errors. One whose `component` is `Theme` is a click on the backdrop instead, `data` `{ type: \"click\", x, y }` with `x` and `y` 0 to 1 from the top left: it runs the `ui.pointer` hooks of the plugin that set the theme, and answers `{handled: false}` when `plugin` is not that one.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -15598,6 +15684,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_ARTIFACT_LIVE_WATCH",
+      "type": "env_var",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_ARTIFACT_MCP",
       "type": "env_var",
       "first_seen": "2.1.172",
@@ -16716,6 +16814,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_CHILD_NOTES_DIR",
+      "type": "env_var",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_CHILD_SESSION",
       "type": "env_var",
       "first_seen": "2.1.172",
@@ -17645,6 +17755,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_EARLY_KEY_GUARD",
+      "type": "env_var",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_EMPTY_CLASSIC_DISPATCH_SKIP",
       "type": "env_var",
       "first_seen": "2.1.311",
@@ -17893,6 +18015,18 @@
       "description": "Added `CLAUDE_CODE_DISABLE_LOOPED_CROSS_CERT_DROP` to keep system cross-certificates that certify each other in a loop, for servers whose private CA needs one",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_MCP_INDEX_ROOM_COUNT",
+      "type": "env_var",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -18200,6 +18334,18 @@
       "symbol": "CLAUDE_CODE_DISABLE_POOLED_CONNECTION_IDLE_LIMIT",
       "type": "env_var",
       "first_seen": "2.1.314",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_POWERSHELL_ALIAS_SHADOW_CHECK",
+      "type": "env_var",
+      "first_seen": "2.1.326",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -19349,6 +19495,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_FIRST_CALL_THINKING_TITLES",
+      "type": "env_var",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_FIZZY_GROVE",
       "type": "env_var",
       "first_seen": "2.1.317",
@@ -20096,6 +20254,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_HOST_OWNED_SPAWN_ENV",
+      "type": "env_var",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_HOST_PLATFORM",
       "type": "env_var",
       "first_seen": "2.1.40",
@@ -20436,6 +20606,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_LAUNCHED_BY_SESSION_IDS",
+      "type": "env_var",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_LEGACY_BUNDLE",
       "type": "env_var",
       "first_seen": "2.1.242",
@@ -20590,7 +20772,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code lowers a value above a model's cap to the cap. For a model ID Claude Code can't resolve to a model it knows, the default is 32000 and the cap is 128000. Increasing this value reduces the effective context window available before auto-compaction triggers",
+      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code lowers a value above a model's cap to the cap. For a model ID Claude Code can't resolve to a model it knows, the default is 32000 and the cap is 128000",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -20786,6 +20968,18 @@
       "symbol": "CLAUDE_CODE_MCP_PREWAIT_SERVERS_MS",
       "type": "env_var",
       "first_seen": "2.1.286",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_MCP_PREWAIT_SERVERS_MS_BY_NAME",
+      "type": "env_var",
+      "first_seen": "2.1.326",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -21163,6 +21357,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_NEW_RENDERER",
+      "type": "env_var",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_NONBLOCKING_STDOUT",
       "type": "env_var",
       "first_seen": "2.1.261",
@@ -21316,6 +21522,18 @@
       "symbol": "CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR",
       "type": "env_var",
       "first_seen": "1.0.109",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_OFF_PERSONS_MACHINE",
+      "type": "env_var",
+      "first_seen": "2.1.326",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -22646,6 +22864,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_REQUIRED_PLUGINS_HOLD",
+      "type": "env_var",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_RESTRICTED",
       "type": "env_var",
       "first_seen": "2.1.248",
@@ -23280,6 +23510,18 @@
       "symbol": "CLAUDE_CODE_SHOWN_PLUGINS_DIR",
       "type": "env_var",
       "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SHOW_HIDDEN_CHARACTERS",
+      "type": "env_var",
+      "first_seen": "2.1.326",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -24665,6 +24907,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_TUI_ASKED",
+      "type": "env_var",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_TUI_JUST_SWITCHED",
       "type": "env_var",
       "first_seen": "2.1.110",
@@ -25210,6 +25464,18 @@
       "symbol": "CLAUDE_CODE_WISE_COMET",
       "type": "env_var",
       "first_seen": "2.1.260",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_WITHHOLD_PRODUCT_EVENTS",
+      "type": "env_var",
+      "first_seen": "2.1.326",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -27948,6 +28214,19 @@
       "category": "telemetry"
     },
     {
+      "symbol": "OTEL_RESOURCE_INCLUDE_HOST",
+      "type": "env_var",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `OTEL_RESOURCE_INCLUDE_HOST` to include `host.name` and `host.id` in OpenTelemetry resource attributes (off by default)",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "telemetry"
+    },
+    {
       "symbol": "OTEL_TRACES_EXPORTER",
       "type": "env_var",
       "first_seen": "2.0.18",
@@ -29496,6 +29775,18 @@
       "category": "mods"
     },
     {
+      "symbol": "Shader",
+      "type": "mod_element",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
       "symbol": "Svg",
       "type": "mod_element",
       "first_seen": "2.1.259",
@@ -29896,6 +30187,18 @@
       "category": "mods"
     },
     {
+      "symbol": "session.stop",
+      "type": "mod_event",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
       "symbol": "settings.read",
       "type": "mod_event",
       "first_seen": "2.1.267",
@@ -29984,6 +30287,30 @@
       "description": "Once for each tool, when its description is first sent to Claude. A second time for an MCP tool when Claude loads it through tool search, with `e.description` set to the text Claude reads for the loaded tool.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "tool.judge",
+      "type": "mod_event",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "tool.run",
+      "type": "mod_event",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -30091,6 +30418,18 @@
       "category": "mods"
     },
     {
+      "symbol": "ui.pointer",
+      "type": "mod_event",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
       "symbol": "ui.press",
       "type": "mod_event",
       "first_seen": "2.1.247",
@@ -30153,6 +30492,30 @@
       "description": "A `Button`, `Input`, or `Select` a mod drew is used",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "$.agent.call",
+      "type": "mod_method",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "$.agent.limits",
+      "type": "mod_method",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -30556,6 +30919,18 @@
       "category": "mods"
     },
     {
+      "symbol": "$.process.hookEnv",
+      "type": "mod_method",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
       "symbol": "$.process.run",
       "type": "mod_method",
       "first_seen": "2.1.260",
@@ -30736,6 +31111,18 @@
       "description": "Added `$.session.identity()` for mods installed by managed settings: how the session is signed in, and its organization and email when managed `forceLoginOrgUUID` lists that organization",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "$.session.info",
+      "type": "mod_method",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -31008,10 +31395,10 @@
       "first_seen": "2.1.269",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "",
-      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "mods"
     },
     {
@@ -31283,6 +31670,18 @@
       "category": "mods"
     },
     {
+      "symbol": "$.wasm.compile",
+      "type": "mod_method",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
       "symbol": "AbovePrompt",
       "type": "mod_render_site",
       "first_seen": "2.1.257",
@@ -31304,6 +31703,18 @@
       "confidence": "high",
       "description": "",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "AgentRow",
+      "type": "mod_render_site",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -31352,6 +31763,18 @@
       "confidence": "high",
       "description": "",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "ContextMenu",
+      "type": "mod_render_site",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {
