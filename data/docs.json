@@ -199,7 +199,7 @@
     {
       "symbol": "--bare",
       "type": "cli_flag",
-      "description": "Minimal mode: skip auto-discovery of hooks, skills, custom commands, subagents, installed plugins, MCP servers, auto memory, and CLAUDE.md so scripted calls start faster. Skills in a directory you pass with `--add-dir` still load. Claude has access to Bash, file read, and file edit tools. Sets `CLAUDE_CODE_SIMPLE`. See bare mode",
+      "description": "Minimal mode: skip auto-discovery of your hooks and of skills, custom commands, subagents, installed plugins, MCP servers, auto memory, and CLAUDE.md so scripted calls start faster. Skills in a directory you pass with `--add-dir` still load. Claude has access to Bash, file read, and file edit tools. Sets `CLAUDE_CODE_SIMPLE`. See bare mode",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -2383,7 +2383,7 @@
     {
       "symbol": "allowedHttpHookUrls",
       "type": "config_key",
-      "description": "Limit which URLs HTTP hooks can target. When you define this key, Claude Code runs an HTTP hook only if its URL matches one of the patterns and blocks the rest without running them; an empty array blocks every HTTP hook.",
+      "description": "Limit which URLs HTTP hooks can target. Set this key in managed settings to cover hooks your organization deploys, or in any settings file to cover other hooks. Claude Code runs a covered hook only if its URL matches a pattern in the list merged across settings files.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -2532,7 +2532,7 @@
     {
       "symbol": "autoMode",
       "type": "config_key",
-      "description": "Add your own rules to what the auto mode classifier blocks and allows. Use it to tell the classifier which repos, buckets, and domains your organization trusts, so it stops blocking routine internal operations. The classifier ships with built-in allow and deny rules. Include the literal string `\"$defaults\"` in an array to keep those built-in rules at that position and add yours around them; leave it out to replace them with yours.",
+      "description": "Add your own rules to what the auto mode classifier blocks and allows. Use it to tell the classifier which repos, buckets, and domains your organization trusts, so it stops blocking routine internal operations. The classifier has built-in allow and deny rules. Include the literal string `\"$defaults\"` in every array you set, so your rules add to the built-in ones. If you leave it out, your rules can replace them.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3056,7 +3056,7 @@
     {
       "symbol": "httpHookAllowedEnvVars",
       "type": "config_key",
-      "description": "An HTTP hook can put the value of an environment variable into a request header, for example an `Authorization: Bearer $HOOK_TOKEN` header, but only for variables the hook lists in its own `allowedEnvVars`. This key sets an outer limit on that list for every HTTP hook: a hook can use a variable only if both its own `allowedEnvVars` and this key name it. Use it to stop a hook from reading a secret it shouldn't, even when the hook's definition asks for it.",
+      "description": "An HTTP hook can put the value of an environment variable into a request header, for example an `Authorization: Bearer $HOOK_TOKEN` header, but only for variables the hook lists in its own `allowedEnvVars`.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -5629,7 +5629,7 @@
     {
       "symbol": "CLAUDE_CODE_OAUTH_REFRESH_TOKEN",
       "type": "env_var",
-      "description": "OAuth refresh token for claude.ai authentication. When set, `claude auth login` exchanges this token directly instead of opening a browser. Requires `CLAUDE_CODE_OAUTH_SCOPES`. Useful for provisioning authentication in automated environments. Ignored in project and local settings",
+      "description": "OAuth refresh token for claude.ai authentication. When set, `claude auth login` exchanges this token directly instead of opening a browser. Requires `CLAUDE_CODE_OAUTH_SCOPES`. A refresh token works once, because the exchange replaces it. Ignored in project and local settings",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -6000,7 +6000,7 @@
     {
       "symbol": "CLAUDE_CODE_SIMPLE",
       "type": "env_var",
-      "description": "Set to `1` to run with a minimal system prompt and only the Bash, file read, and file edit tools. MCP tools from `--mcp-config` are still available. Disables auto-discovery of hooks, skills, custom commands, subagents, installed plugins, MCP servers, auto memory, and CLAUDE.md. Skills in a directory you pass with `--add-dir` still load. OAuth tokens and keychain credentials are not read, so Anthropic authentication must come from `ANTHROPIC_API_KEY` or an `apiKeyHelper` in `--settings`. Equivalent to passing `--bare`",
+      "description": "Set to `1` to run with a minimal system prompt and the Bash, file read, and file edit tools. MCP tools from `--mcp-config` are still available. OAuth tokens and keychain credentials aren't read, so for the Anthropic API, set `ANTHROPIC_API_KEY` or an `apiKeyHelper` in `--settings`. Equivalent to passing `--bare`",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
