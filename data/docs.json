@@ -1087,8 +1087,8 @@
     {
       "symbol": "--ref",
       "type": "cli_flag",
-      "description": "With `--environment`, base the new session's checkout on a named ref instead of local `HEAD`",
-      "doc_min_version": null,
+      "description": "With `--environment`, base the new session's checkout on a named ref. Requires Claude Code v2.1.224 or later",
+      "doc_min_version": "2.1.224",
       "doc_page": "cli-reference"
     },
     {
@@ -1488,14 +1488,14 @@
     {
       "symbol": "--yes",
       "type": "cli_flag",
-      "description": "Accept the displayed install command without the `Run this command now?` prompt. Ignored when the command runs inside a Claude Code session, such as from the Bash tool or a hook. Requires Claude Code v2.1.229 or later",
-      "doc_min_version": "2.1.229",
+      "description": "Accept the displayed install command without the `Run this command now?` prompt. Ignored when the command runs inside a Claude Code session, such as from the Bash tool or a hook",
+      "doc_min_version": null,
       "doc_page": "plugins/cli-reference",
       "scope_descriptions": {
-        "plugin install": "Accept the displayed install command without the `Run this command now?` prompt. Ignored when the command runs inside a Claude Code session, such as from the Bash tool or a hook. Requires Claude Code v2.1.229 or later",
+        "plugin install": "Accept the displayed install command without the `Run this command now?` prompt. Ignored when the command runs inside a Claude Code session, such as from the Bash tool or a hook",
         "plugin prune": "Skip the confirmation prompt. Required when stdin or stdout isn't a TTY",
         "plugin uninstall": "Skip the `--prune` confirmation prompt. Required with `--prune` when stdin or stdout isn't a TTY",
-        "plugin update": "Accept a changed install command from a command-source plugin, without the prompt. Required when stdin or stdout isn't a TTY, unless you pass `--accept-command`. Requires Claude Code v2.1.229 or later"
+        "plugin update": "Accept a changed install command from a command-source plugin, without the prompt. Required when stdin or stdout isn't a TTY, unless you pass `--accept-command`"
       }
     },
     {
@@ -2180,7 +2180,7 @@
     {
       "symbol": "/status",
       "type": "command",
-      "description": "Open the Settings interface on the Status tab, showing version, model, account, and connectivity. A `Session kind` row reads `background job · attached` or `background job · unattended` in a background session, depending on whether a terminal is attached, and `interactive` in any other session. Before v2.1.221, `/status` didn't show this row. Works while Claude is responding",
+      "description": "Open the Settings interface on the Status tab, showing version, model, account, and connectivity. A `Session kind` row reads `background job · attached` or `background job · unattended` in a background session, depending on whether a terminal is attached, and `interactive` in any other session. Works while Claude is responding",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2546,7 +2546,7 @@
     {
       "symbol": "autoScrollEnabled",
       "type": "config_key",
-      "description": "Follow new output to the bottom of the conversation in fullscreen rendering. Turn it off to stay where you scrolled while Claude keeps working; permission prompts still scroll into view.",
+      "description": "Follow new output to the bottom of the conversation in fullscreen rendering.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -5496,7 +5496,7 @@
     {
       "symbol": "CLAUDE_CODE_MAX_OUTPUT_TOKENS",
       "type": "env_var",
-      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code lowers a value above a model's cap to the cap. For a model ID Claude Code can't resolve to a model it knows, the default is 32000 and the cap is 128000. Increasing this value reduces the effective context window available before auto-compaction triggers",
+      "description": "Set the maximum number of output tokens for most requests. Defaults and caps vary by model; see max output tokens. Claude Code lowers a value above a model's cap to the cap. For a model ID Claude Code can't resolve to a model it knows, the default is 32000 and the cap is 128000",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
