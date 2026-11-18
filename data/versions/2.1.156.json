@@ -3838,11 +3838,11 @@
       "first_seen": "1.0.72",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set up Claude Code's status line UI",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -10352,11 +10352,11 @@
       "first_seen": "2.1.59",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Space-separated OAuth scopes the refresh token was issued with, such as `\"user:profile user:inference user:sessions:claude_code\"`. Required when `CLAUDE_CODE_OAUTH_REFRESH_TOKEN` is set. Ignored in project and local settings",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {

@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.326",
+  "claudeCodeVersion": "2.1.327",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -562,6 +562,19 @@
       "description_source": "binary"
     },
     {
+      "symbol": "web-search-results-only-2026-11-15",
+      "type": "beta_header",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "web_search_results_only",
+      "source_url": null,
+      "category": "betas",
+      "description_source": "binary"
+    },
+    {
       "symbol": "x-cc-internal-mid-conv-cache-promotion",
       "type": "beta_header",
       "first_seen": "2.1.212",
@@ -1012,8 +1025,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Auto-compact window size (auto, or 100k–1M tokens)",
-      "description_source": "binary",
+      "description": "Set the auto-compact window for this session without changing your saved settings. Accepts the same values as `/autocompact`; that section covers the value forms and what overrides the flag. Requires Claude Code v2.1.221 or later",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
@@ -2534,6 +2547,19 @@
       "category": "cli-internal"
     },
     {
+      "symbol": "--initialize-fields",
+      "type": "cli_flag",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Read these fields of the initialize control request in place of their flags, by comma: settings for --settings, disallowedTools for --disallowedTools. Exit if one cannot be used (SDK use only; requires --await-initialize)",
+      "source_url": null,
+      "category": "cli-internal",
+      "description_source": "binary"
+    },
+    {
       "symbol": "--input-format",
       "type": "cli_flag",
       "first_seen": "1.0.18",
@@ -3032,6 +3058,51 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
+    },
+    {
+      "symbol": "--nested-model-access",
+      "type": "cli_flag",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--nested-model-allow",
+      "type": "cli_flag",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--nested-model-call-budget",
+      "type": "cli_flag",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
     },
     {
       "symbol": "--no-browser",
@@ -6845,8 +6916,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Show version, account, model, MCP servers and setup warnings",
-      "description_source": "binary",
+      "description": "Open the Settings interface on the Status tab, showing version, model, account, and connectivity. A `Session kind` row reads `background job · attached` or `background job · unattended` in a background session, depending on whether a terminal is attached, and `interactive` in any other session. Works while Claude is responding",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -6856,11 +6927,11 @@
       "first_seen": "1.0.72",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
-      "description": "Set up Claude Code's status line UI",
-      "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "description": "Configure Claude Code's status line. Describe what you want, or run without arguments to auto-configure from your shell prompt",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -7013,8 +7084,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the terminal UI renderer (default | fullscreen)",
-      "description_source": "binary",
+      "description": "Set the terminal UI renderer and relaunch into it with your conversation intact. `fullscreen` enables the flicker-free alt-screen renderer. With no argument, prints the active renderer",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -7383,6 +7454,19 @@
       "category": "settings"
     },
     {
+      "symbol": "allowNestedModelAccessUnderForceLogin",
+      "type": "config_key",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Self-hosted runner hosts only. Set to true to let a Claude Code started by a runner session's command use the runner's model access (--nested-model-access) when this machine's managed settings set forceLoginOrgUUID or forceLoginMethod. It asks the runner which organization the session owner's sign-in belongs to, and stops if the pin does not permit it or the runner does not answer. Without this key it is left signed out. Any program on the machine can pretend to be the runner, so with this key the pin is not a security boundary: set it on runner hosts only, never in a profile that reaches people's own computers. Honored only from this machine's own administrator sources (MDM, the managed settings file, or a policy helper that they name); ignored in server-managed, user, project, local and --settings sources.",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
       "symbol": "allowedChannelPlugins",
       "type": "config_key",
       "first_seen": "2.1.84",
@@ -7559,7 +7643,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "The claude.ai Project this session names for your organization's usage reports: the Project's ID, starting with \"claude_proj_\" or \"chan_\", or the UUID of a \"claude_proj_\" Project. An empty string names none and stops lower-precedence files from naming one; the organization default still applies. Sent only when Claude Code uses your claude.ai login, connects directly to the Anthropic API, is not in a cloud session, and CLAUDE_CODE_ATTRIBUTION_HEADER is not 0. CLAUDE_CODE_ATTRIBUTION_PROJECT takes precedence over it. Set in managed settings, it overrides people's own settings files. A project's .claude/settings.json and settings.local.json count only once the folder is trusted; for runs in a folder nobody has trusted, such as CI, use CLAUDE_CODE_ATTRIBUTION_PROJECT.",
+      "description": "The claude.ai Project this session names for your organization's usage reports: the Project's ID, starting with \"claude_proj_\" or \"chan_\", or the UUID of a \"claude_proj_\" Project. An empty string names none and stops lower-precedence files from naming one; the organization default still applies. A Project is sent only when Claude Code uses your claude.ai login, connects directly to the Anthropic API, is not in a cloud session, and CLAUDE_CODE_ATTRIBUTION_HEADER is not 0. CLAUDE_CODE_ATTRIBUTION_PROJECT takes precedence over it. Set in managed settings, it overrides people's own settings files. A project's .claude/settings.json and settings.local.json count only once the folder is trusted; for runs in a folder nobody has trusted, such as CI, use CLAUDE_CODE_ATTRIBUTION_PROJECT. Behind a Claude apps gateway that reports usage by group, name one of your groups instead, such as \"payments\"; CLAUDE_CODE_ATTRIBUTION_HEADER does not affect that.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -7585,7 +7669,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "The Project used when neither CLAUDE_CODE_ATTRIBUTION_PROJECT nor attributionProject names one: its ID, starting with \"claude_proj_\" or \"chan_\", or the UUID of a \"claude_proj_\" Project.",
+      "description": "The Project used when neither CLAUDE_CODE_ATTRIBUTION_PROJECT nor attributionProject names one: its ID, starting with \"claude_proj_\" or \"chan_\", or the UUID of a \"claude_proj_\" Project. Behind a Claude apps gateway that reports usage by group, a group name instead.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -7602,6 +7686,80 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
+    },
+    {
+      "symbol": "autoCompactOfferAnswer",
+      "type": "config_key",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "@internal Read from the flag settings only, in Claude Desktop's Code tab: the person's answer to the app's offer of a lower auto-compact window, which Claude Code records on this computer. `tokens` is the window they chose or kept, and `at` is when they answered (epoch ms)",
+      "source_url": null,
+      "category": "settings-internal",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "autoCompactOfferAnswer.at",
+      "type": "config_key",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "autoCompactOfferAnswer.choice",
+      "type": "config_key",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "autoCompactOfferAnswer.model",
+      "type": "config_key",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "autoCompactOfferAnswer.tokens",
+      "type": "config_key",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "settings"
+    },
+    {
+      "symbol": "autoCompactRaisedForLoad",
+      "type": "config_key",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "@internal Read from the flag settings only, in Claude Desktop's Code tab: true lets a conversation compact at twice what is still in each request after a summary (system prompt, tools, instruction files), where that is above its auto-compact threshold.",
+      "source_url": null,
+      "category": "settings-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "autoCompactWindow",
@@ -9040,8 +9198,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Controls how the managed settings sources compose. \"first-wins\" (default): the highest-priority source present (server-managed > MDM (managed plist / HKLM) > managed-settings.json) is the managed tier alone. \"merge\": every present source deep-merges with fixed precedence server-managed > MDM > managed-settings.json — scalars take the highest source's value (a restrictive boolean or enum — the allowManaged*Only locks, the disable* switches, the sandbox lock family — takes the strictest value any source sets) and arrays union, except fallbackModel, the restriction allowlists allowedMcpServers, allowedProviders, availableModels, strictKnownMarketplaces and allowedChannelPlugins, and sandbox.credentials.awsPairs and sandbox.ripgrep (the highest source that sets one owns it whole), modelOverrides (the whole map of the highest source that sets it, dropped when that source sits below the one that sets availableModels), managedMcpServers (server names union; a name set by two sources takes the higher source's whole entry), and the keys taken from the highest source only: the auth pins forceLoginOrgUUID, forceLoginMethod, forceLoginGatewayUrl and gatewayInternalNetworks, the credential helpers apiKeyHelper, awsAuthRefresh, awsCredentialExport, gcpAuthRefresh, otelHeadersHelper and proxyAuthHelper, modelPicker, permissions.defaultMode, parentSettingsBehavior and the policyHelper configuration (env keeps its own per-key union). In both modes, a forceLoginOrgUUID, or a forceLoginMethod of claudeai or console, that this machine's own MDM policy or managed settings file sets applies ahead of server-managed settings. Honored only from the highest-priority source present; enable it only when every lower source is admin-controlled, since lower sources then contribute entries such as permissions.allow. HKCU and --managed-settings never take part in the merge.",
-      "description_source": "binary",
+      "description": "Choose whether Claude Code applies only the highest-priority managed source your organization delivers, or combines every admin source it delivers. By default Claude Code takes the highest-priority source that carries a policy key and ignores the rest. A policy key is any settings key other than this one and `wslInheritsWindowsSettings`. Under that default, once server-managed settings or an MDM policy deliver a policy key, a `managed-settings.json` file contributes only the keys Claude Code reads from every admin source. With `\"merge\"`, every admin source you deliver contributes its keys to one combined policy. Requires Claude Code v2.1.242 or later.",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -9651,8 +9809,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Managed plugins (plugin@marketplace ids that managed enabledPlugins sets true) whose hooks run first, outermost, in the listed order: the first id listed sees every event before any other plugin and every result after it. Managed plugins read in place from a local folder managed settings name, and not listed here or in appendPlugins, follow the listed ones; user, project and marketplace plugins come after those, with a managed plugin from a remote marketplace that neither key lists; then appendPlugins; then the built-in plugins. The bundled cc-plugin-sec-default@builtin seats itself outermost (on a machine with managed settings and for Team and Enterprise organizations) unless this list is set, in which case list it where it should sit or leave it out. Name it there as sec-default@builtin, the id every release reads, for as long as any machine in the organization may run a release from before its rename; a release that knows the new id reads either. Any other id that is not an enabled managed plugin is skipped; an id listed in both keys is prepended. Only honored from managed settings (or, on a machine with none, from user settings for your own plugins); ignored in project, local and --settings sources.",
-      "description_source": "binary",
+      "description": "List the managed plugins whose mods run before every mod a user installs, in the listed order. When you set this key in managed settings, name `sec-default@builtin` in the list to keep the built-in guard. In managed settings, Claude Code skips an id whose plugin doesn't count as your organization's. See Install your organization's mods and set the order for those conditions and for how the two ordering keys work together.",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -11704,6 +11862,22 @@
       "direction": null
     },
     {
+      "symbol": "comparison_fork",
+      "type": "control_message",
+      "first_seen": "2.1.327",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "@internal From claude.ai's server to a claude-code-server worker that advertises comparison_fork: true in turn_handoff_available. The worker builds, from the inputs of the named turn's first model request, the first request a second run of that turn would send, never sends it, and answers how it compares with the request the turn did send. The answer holds counts, flags and names, never text. Stored with the session's events.",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": "host_to_cli"
+    },
+    {
       "symbol": "elicitation",
       "type": "control_message",
       "first_seen": "2.1.63",
@@ -11845,7 +12019,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "@internal Requests the title, branch and environment kind of one cloud session that the service serves to the signed-in account. Refused where list_cloud_sessions is.",
+      "description": "@internal Requests the details of one cloud session that the service serves to the signed-in account. Refused where list_cloud_sessions is.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -12444,6 +12618,21 @@
       "provenance": "binary",
       "confidence": "high",
       "description": "Add a directory as a working-directory root and optionally reload CLAUDE.md, skills, and plugins. The directory must resolve to a strict subdirectory of cwd, or of a directory passed at launch via --add-dir / the SDK additionalDirectories option. A directory that is already a registered working directory (including a duplicate of an earlier request) is denied with an error; the registration pipeline and DirectoryAdded hooks do not re-run.",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": "host_to_cli"
+    },
+    {
+      "symbol": "reload_connectors",
+      "type": "control_message",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "@internal Reads the account's claude.ai connectors again: new ones connect, removed ones close, changed and unconnected ones connect again. Read mcp_status after the reply. Only for the program that started this process, after something a person did.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -13335,6 +13524,21 @@
       "category": "control-protocol",
       "family": "control_request",
       "direction": null
+    },
+    {
+      "symbol": "update_cloud_session",
+      "type": "control_message",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "@internal Changes one cloud session at the service, with the CLI's own sign-in. Every action but ping is safe to repeat. Refused where list_cloud_sessions is.",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": "host_to_cli"
     },
     {
       "symbol": "update_settings",
@@ -17326,6 +17530,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DESKTOP_RESULT_FIRST",
+      "type": "env_var",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DESKTOP_SKILLS_PLUGIN_DIR",
       "type": "env_var",
       "first_seen": "2.1.302",
@@ -17980,6 +18196,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_LAYOUT_CHECK",
+      "type": "env_var",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_LEGACY_MODEL_REMAP",
       "type": "env_var",
       "first_seen": "2.1.68",
@@ -18392,6 +18620,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_PROXY_SCHEME_REPAIR",
+      "type": "env_var",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_QUIET_BACKGROUND_WAIT",
       "type": "env_var",
       "first_seen": "2.1.311",
@@ -18462,6 +18702,18 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_SHELL_HEAD_START",
+      "type": "env_var",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -20182,6 +20434,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_HOST_AUTH_ASK_AT_START",
+      "type": "env_var",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_HOST_AUTH_ENV_VAR",
       "type": "env_var",
       "first_seen": "2.1.145",
@@ -20609,6 +20873,18 @@
       "symbol": "CLAUDE_CODE_LAUNCHED_BY_SESSION_IDS",
       "type": "env_var",
       "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_LAUNCHER_RUNS_API_KEY_HELPER",
+      "type": "env_var",
+      "first_seen": "2.1.327",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -21075,6 +21351,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_MCP_SERVE_MACHINE_PLUGINS",
+      "type": "env_var",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_MCP_SERVE_MEMORY_WALKS_DEADLINE_MS",
       "type": "env_var",
       "first_seen": "2.1.323",
@@ -21498,11 +21786,11 @@
       "first_seen": "2.1.59",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Space-separated OAuth scopes the refresh token was issued with, such as `\"user:profile user:inference user:sessions:claude_code\"`. Required when `CLAUDE_CODE_OAUTH_REFRESH_TOKEN` is set. Ignored in project and local settings",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -22756,6 +23044,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_REMOTE_TOOLS_DESKTOP_APP_HOST",
+      "type": "env_var",
+      "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_REMOTE_TOOLS_FORWARD",
       "type": "env_var",
       "first_seen": "2.1.283",
@@ -23153,6 +23453,18 @@
       "symbol": "CLAUDE_CODE_RIPPLING_TULIP",
       "type": "env_var",
       "first_seen": "2.1.290",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_RUNNER_MODEL_SOCKET",
+      "type": "env_var",
+      "first_seen": "2.1.327",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -23943,6 +24255,18 @@
       "symbol": "CLAUDE_CODE_SORTED_OTTER",
       "type": "env_var",
       "first_seen": "2.1.315",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SPARE_DEFER_ALL_MCP",
+      "type": "env_var",
+      "first_seen": "2.1.327",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -27414,6 +27738,18 @@
       "confidence": "high",
       "description": "Set to `1` to force the 5-minute prompt cache TTL even when 1-hour TTL would otherwise apply. Overrides `CLAUDE_CODE_PROMPT_CACHE_TTL`, `CLAUDE_CODE_SUBAGENT_PROMPT_CACHE_TTL`, `ENABLE_PROMPT_CACHING_1H`, and the `promptCacheTtl` and `subagentPromptCacheTtl` settings",
       "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
+    },
+    {
+      "symbol": "GIT_CONFIG_GLOBAL",
+      "type": "env_var",
+      "first_seen": "2.1.202",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
