@@ -1476,11 +1476,11 @@
       "first_seen": "1.0.72",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set up Claude Code's status line UI",
       "description_source": "binary",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
