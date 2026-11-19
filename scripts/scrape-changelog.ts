@@ -202,14 +202,17 @@ interface PositionedSymbol extends ExtractedSymbol {
 }
 
 const SYMBOL_PATTERNS: Array<[RegExp, ExtractedSymbolType]> = [
-  [/`(--[a-z0-9][a-z0-9-]*)`/g, 'cli_flag'],
+  // A flag is also written with its argument inside the backticks, after a space:
+  // `--metadata key=value` (2.1.328), `--output-format stream-json`. Capture the
+  // flag and consume the argument, or the flag falls to the binary lane. The
+  // `--flag=value` form is deliberately not read: the only one in the changelog is
+  // git's `--ignore-revs-file=.env` (2.1.259).
+  [/`(--[a-z0-9][a-z0-9-]*)(?: [^`]*)?`/g, 'cli_flag'],
   [/`(\/[a-z][a-z0-9-]*)`/g, 'command'],
   // The changelog often documents an env var by its assignment form —
   // `set `NAME=1` to …` — with the value inside the backticks. Capture the name
   // and let an optional `=<value>` be consumed before the closing backtick, or
   // these rows fall to the binary lane and land needs_review with no description.
-  // (Flags are never written `--flag=value` in this changelog, so cli_flag above
-  // deliberately keeps the exact form.)
   [/`([A-Z][A-Z0-9_]{3,})(?:=[^`]*)?`/g, 'env_var'],
   // A mods API call, written bare (`$.ui.notify`) or as a call (`$.ui.toast({ text })`,
   // `$.session.usage().context`). Everything from the call's `(` to the closing
@@ -678,9 +681,15 @@ export function subprocessFlagExamples(bullet: string): ReadonlySet<string> {
  * The regex matches the token only when a preposition immediately precedes it,
  * so a genuine introduction ("Added `--compact`", "Expose `--compact` as a
  * flag", "`--compact`: new flag") is left untouched and keeps its first_seen.
+ *
+ * `--name`: not a phantom, but the same mechanism. The 2.1.69 bullet writes
+ * `` `--name "My Project"` `` for `claude remote-control`, the only place 2.1.69
+ * parses it. Bare `claude --name` arrived in 2.1.76, and the record has no scopes,
+ * so dating it from 2.1.69 would publish a top-level flag seven releases early.
  */
 const PHANTOM_FLAG_PROSE_USAGE: ReadonlyMap<string, RegExp> = new Map([
   ['--compact', /\b(?:after|before|during|following|upon|from|on|via)\s+`--compact`/i],
+  ['--name', /`claude remote-control`.*`--name "/],
 ]);
 
 interface CollectedSymbol {

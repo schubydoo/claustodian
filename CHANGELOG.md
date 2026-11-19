@@ -16,6 +16,17 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ---
 
+## 2026-11-19
+
+### Fixed
+
+- **A flag that the changelog writes with its argument is read from the changelog.**
+  The changelog lane read `` `--metadata` `` but not `` `--metadata key=value` ``. Such a
+  flag now gets `provenance: changelog`, for example `--output-format` and
+  `--permission-prompts`. `--metadata` and `--use-anthropic-gh` move from
+  `needs_review` to `active`. No `first_seen` changes. The `--flag=value` form is not
+  read.
+
 ## 2026-11-16
 
 ### Fixed

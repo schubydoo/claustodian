@@ -144,6 +144,19 @@ describe('extractSymbols', () => {
     expect(symbols).toEqual([{ symbol: 'OTEL_METRICS_EXPORTER', type: 'env_var' }]);
   });
 
+  it('reads a flag written with its argument after a space', () => {
+    // 2.1.328: "Added `--metadata key=value` to `claude --environment`". Without the
+    // argument handling the flag falls to the binary lane and lands needs_review.
+    expect(extractSymbols('Added `--metadata key=value` to label a session')).toEqual([
+      { symbol: '--metadata', type: 'cli_flag' },
+    ]);
+  });
+
+  it('does not read the `--flag=value` form', () => {
+    // 2.1.259 writes git's own `--ignore-revs-file=.env`; that form is not read.
+    expect(extractSymbols('a `--ignore-revs-file=.env` argument')).toEqual([]);
+  });
+
   it('still denylists an OS/shell var written in assignment form', () => {
     // The suffix handling must not resurrect a denylisted name: `PATH=…` in prose
     // still resolves to PATH, which CHANGELOG_SYMBOL_DENYLIST drops.
@@ -713,6 +726,19 @@ describe('isSubprocessFlagBullet', () => {
       const keys = [...collectChangelogSymbols([{ version: '2.1.80', bullets: [bullet] }]).keys()];
       expect(keys).toContain('cli_flag:--compact');
     }
+  });
+
+  it('does not date `--name` from its `claude remote-control` argument', () => {
+    // The 2.1.69 bullet, verbatim. Bare `claude --name` arrived in 2.1.76.
+    const remoteControl =
+      '- Added optional name argument to `/remote-control` and `claude remote-control` (`/remote-control My Project` or `--name "My Project"`) to set a custom session title visible in claude.ai/code';
+    const bare =
+      '- Added `-n` / `--name <name>` CLI flag to set a display name for the session at startup';
+    const symbols = collectChangelogSymbols([
+      { version: '2.1.76', bullets: [bare] },
+      { version: '2.1.69', bullets: [remoteControl] },
+    ]);
+    expect(symbols.get('cli_flag:--name')?.record.first_seen).toBe('2.1.76');
   });
 });
 
