@@ -201,6 +201,12 @@
         "description": "redact_thinking"
       }
     ],
+    "beta_header:resumption-2026-10-08": [
+      {
+        "from": "2.1.328",
+        "description": "resumption"
+      }
+    ],
     "beta_header:server-side-fallback-2026-06-01": [
       {
         "from": "2.1.169",
@@ -981,6 +987,12 @@
         "description": "Use global config"
       }
     ],
+    "cli_flag:--hold-repository-while-parked": [
+      {
+        "from": "2.1.328",
+        "description": "Sent by a host on a spare that names a --project-config-root. This build keeps that checkout's own MCP servers, the plugins made from its .claude/skills folders or enabled from a marketplace its settings declare, its main agent's servers, every stdio server, the settings hook handlers for session and tool events, and the credential helpers its settings name waiting until the claim. An older build that would not exits on this unknown option instead of starting. Changes nothing else (SDK-internal; requires --await-claim)"
+      }
+    ],
     "cli_flag:--host": [
       {
         "from": "2.1.64",
@@ -1243,6 +1255,12 @@
       {
         "from": "2.1.224",
         "description": "Cross-session messaging server path: a Unix domain socket on Mac/Linux, a \\\\.\\pipe\\ name on Windows (defaults to an auto-generated path)"
+      }
+    ],
+    "cli_flag:--metadata": [
+      {
+        "from": "2.1.328",
+        "description": "Label the session for the script that starts its machine (repeatable; requires --environment with a self-hosted environment's ID)."
       }
     ],
     "cli_flag:--mocks": [
@@ -2303,6 +2321,10 @@
       {
         "from": "2.1.223",
         "description": "Review the current diff or a PR for bugs and cleanups"
+      },
+      {
+        "from": "2.1.328",
+        "description": "Review the current diff or a PR for bugs"
       }
     ],
     "command:/code-walkthrough": [
@@ -3551,6 +3573,10 @@
       {
         "from": "2.1.47",
         "description": "When true (and set in managed settings), allowedMcpServers is only read from managed settings. deniedMcpServers still merges from all sources, so users can deny servers for themselves. Users can still add their own MCP servers, but only the admin-defined allowlist applies."
+      },
+      {
+        "from": "2.1.328",
+        "description": "When true (and set in managed settings), allowedMcpServers is only read from managed settings. deniedMcpServers still merges from all sources, so users can deny servers for themselves, in user settings for a server the organization provides. Users can still add their own MCP servers, but only the admin-defined allowlist applies."
       }
     ],
     "config_key:allowManagedPermissionRulesOnly": [
@@ -3623,6 +3649,10 @@
       {
         "from": "2.1.305",
         "description": "Enterprise allowlist of the MCP servers users may use. Governs servers users add (user, project and local config, --mcp-config, agent frontmatter, plugins, claude.ai connectors); servers the organization itself delivers (managedMcpServers, and managed-mcp.json entries with no ${VAR} in their command, args, url or header values) are allowed without being listed; a managed-mcp.json entry with ${VAR} in any of those must match this list. If undefined, all servers are allowed. If empty array, users can use no servers of their own. Denylist takes precedence - if a server is on both lists, it is denied."
+      },
+      {
+        "from": "2.1.328",
+        "description": "Enterprise allowlist of the MCP servers users may use. Governs servers users add (user, project and local config, --mcp-config, agent frontmatter, plugins, claude.ai connectors); servers the organization itself delivers (managedMcpServers, and managed-mcp.json entries with no ${VAR} in their command, args, url or header values) are allowed without being listed; a managed-mcp.json entry with ${VAR} in any of those must match this list. An entry found only in a project's .claude/settings.json or .claude/settings.local.json can admit a server the organization provides (managed-mcp.json, managedMcpServers, or a plugin that managed settings list in enabledPlugins) but can't keep one out. If undefined, all servers are allowed. If empty array, users can use no servers of their own. Denylist takes precedence - if a server is on both lists, it is denied."
       }
     ],
     "config_key:allowedProviders": [
@@ -3855,6 +3885,10 @@
       {
         "from": "2.1.283",
         "description": "Allowlist of models that users can select. Accepts family aliases (\"opus\" allows any opus version), version prefixes (\"opus-4-5\" allows that version and any model ID that extends it, so \"claude-opus-5\" also allows \"claude-opus-5-5\"), and full model IDs. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators."
+      },
+      {
+        "from": "2.1.328",
+        "description": "Allowlist of models that users can select. Accepts family aliases (\"opus\" allows any opus version), version prefixes (\"opus-4-5\" allows that version and any model ID that extends it, so \"claude-opus-5\" also allows \"claude-opus-5-5\"), and full model IDs. An entry with a path before the model ID (a gateway route such as \"route/claude-opus-5\") does not allow the plain ID (\"claude-opus-5\"): list the plain ID too if some sessions send requests directly to the Anthropic API. If undefined, all models are available. If empty array, only the default model is available. Typically set in managed settings by enterprise administrators."
       }
     ],
     "config_key:availableModelsMatch": [
@@ -4053,6 +4087,10 @@
       {
         "from": "2.0.22",
         "description": "Enterprise denylist of MCP servers that are explicitly blocked. If a server is on the denylist, it will be blocked across all scopes including enterprise. Denylist takes precedence over allowlist - if a server is on both lists, it is denied."
+      },
+      {
+        "from": "2.1.328",
+        "description": "Enterprise denylist of MCP servers that are explicitly blocked. If a server is on the denylist, it will be blocked across all scopes including enterprise. An entry found only in a project's .claude/settings.json or .claude/settings.local.json does not apply to a server the organization provides (managed-mcp.json, managedMcpServers, or a plugin that managed settings list in enabledPlugins). Denylist takes precedence over allowlist - if a server is on both lists, it is denied."
       }
     ],
     "config_key:deniedModels": [
@@ -4983,6 +5021,12 @@
       {
         "from": "2.1.119",
         "description": "Start Remote Control bridge automatically each session"
+      }
+    ],
+    "config_key:remoteMessageReceipts": [
+      {
+        "from": "2.1.328",
+        "description": "@internal Delivery notices for messages between this session and cloud or Remote Control sessions. 'on' (default): notices, local ones too, start at most 30 turns an hour and one for each recipient that holds. 'always': neither limit, so two sessions can keep waking each other. 'off': no notices about those sessions, and no reports on messages received through them; the limits still apply to local ones. Read only from managed and user settings; --settings counts only with 'off'."
       }
     ],
     "config_key:remoteTools": [
