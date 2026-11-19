@@ -2250,7 +2250,7 @@
     {
       "symbol": "/tui",
       "type": "command",
-      "description": "Set the terminal UI renderer and relaunch into it with your conversation intact. `fullscreen` enables the flicker-free alt-screen renderer. With no argument, prints the active renderer",
+      "description": "Set the terminal UI renderer and relaunch into it. `fullscreen` enables the flicker-free alt-screen renderer. `default`, or `classic` on v2.1.327 or later, selects the classic renderer. With no argument, prints the active renderer",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -4327,7 +4327,7 @@
     {
       "symbol": "ANTHROPIC_FEDERATION_RULE_ID",
       "type": "env_var",
-      "description": "Federation rule ID for Workload Identity Federation. When you set it together with `ANTHROPIC_ORGANIZATION_ID`, Claude Code selects federation credentials, which rank above your `/login` credential. See authentication precedence",
+      "description": "Federation rule ID for Workload Identity Federation. Set it together with `ANTHROPIC_ORGANIZATION_ID`. See authentication precedence",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -4663,7 +4663,7 @@
     {
       "symbol": "CLAUDE_CODE_AUTO_COMPACT_WINDOW",
       "type": "env_var",
-      "description": "Set the auto-compact window, how full the context gets before compaction, from `100000` to `1000000` tokens. Suffixed values such as `200k` require v2.1.304 or later. For precedence over the other ways to set the window and the effect on the status line's `used_percentage`, see Set the auto-compact window",
+      "description": "Set the auto-compact window, which is how full the context gets before compaction, to a token count of `100000` or more. Suffixed values such as `200k` require v2.1.304 or later. For precedence over the other ways to set the window and the effect on the status line's `used_percentage`, see Set the auto-compact window",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -5095,6 +5095,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_PROXY_SCHEME_REPAIR",
+      "type": "env_var",
+      "description": "Set to `1` to have Claude Code stop at startup on a plain `host:port` in `HTTPS_PROXY` or `https_proxy` even when it starts with no terminal. Claude Code ignores it in project and local settings. Requires Claude Code v2.1.327 or later",
+      "doc_min_version": "2.1.327",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_REFUSAL_FALLBACK",
       "type": "env_var",
       "description": "Set to `1` to turn off the automatic model switch when a safety classifier flags a request, the behavior the `switchModelsOnFlag` setting controls",
@@ -5132,7 +5139,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_ULTRAREVIEW_TRUST_CHECK",
       "type": "env_var",
-      "description": "Set to `1` so that `claude ultrareview` doesn't exit with `Error: Workspace not trusted` in a folder you haven't trusted when it can't ask you to trust it, such as in CI. Set it in the environment that launches Claude Code, not a settings `env` block, and only where every such run starts in a folder you trust. Runs that can ask still ask. Requires Claude Code v2.1.309 or later",
+      "description": "Set to `1` so `claude ultrareview` doesn't exit with `Error: Workspace not trusted` when run without a terminal or with `CI=true`. `claude ultrareview` still asks when it can. From v2.1.314, the variable also skips the trust check in `/ultrareview` and `/code-review ultra`. Set it in the launch environment, not a settings `env` block, and only where every review starts in a folder you trust. Requires Claude Code v2.1.309 or later",
       "doc_min_version": "2.1.309",
       "doc_page": "env-vars"
     },
@@ -6100,6 +6107,13 @@
       "type": "env_var",
       "description": "Maximum number of consecutive times a Stop or SubagentStop hook may block the turn from ending before Claude Code overrides it and ends the turn anyway (default: 8). Set to `0` to disable the cap. Raise this if your hook legitimately needs more iterations to resolve",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_STRICT_INLINE_SHELL_RM_PROMPT",
+      "type": "env_var",
+      "description": "Set to `1` to flag more of the `-c` scripts that Claude Code can't check, including ones that name neither `rm` nor `rmdir`. Set it in the environment that launches Claude Code, not a settings `env` block. Has no effect when `CLAUDE_CODE_DISABLE_INLINE_SHELL_RM_PROMPT` is `1`. Requires Claude Code v2.1.299 or later",
+      "doc_min_version": "2.1.299",
       "doc_page": "env-vars"
     },
     {
@@ -7237,6 +7251,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "OTEL_RESOURCE_INCLUDE_HOST",
+      "type": "env_var",
+      "description": "Set to `1` to add the machine's name and ID to OpenTelemetry resource attributes as `host.name` and `host.id` (default: excluded). Set it in your shell, user settings, or managed settings. Ignored in project and local settings. Requires Claude Code v2.1.326 or later. See Identify the machine a session ran on",
+      "doc_min_version": "2.1.326",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "OTEL_TRACES_EXPORT_INTERVAL",
       "type": "env_var",
       "description": "Span batch export interval in milliseconds (default: 5000)",
@@ -8318,6 +8339,20 @@
       "symbol": "ui.select",
       "type": "mod_event",
       "description": "A `Button`, `Input`, or `Select` a mod drew is used",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "$.agent.call",
+      "type": "mod_method",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "$.agent.limits",
+      "type": "mod_method",
+      "description": "",
       "doc_min_version": null,
       "doc_page": "plugins/mods/reference"
     },

@@ -1292,12 +1292,12 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Opaque id echoed back to the environment orchestrator on the work order (requires --environment).",
-      "description_source": "binary",
-      "source_url": null,
-      "category": "cli-internal"
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "--cowork",
@@ -4658,8 +4658,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "medium",
-      "description": "**Skill.** Review the current diff, or a PR number, branch, or path you pass, for correctness bugs. Depending on your model and effort level, the review also covers cleanup opportunities. Pass `--fix` to have Claude apply the findings, `--comment` to post them on the GitHub PR or GitLab merge request, or `ultra` to run a deep cloud review. Posting to a GitLab merge request requires Claude Code v2.1.257 or later. With `ultra` on a `github.com` PR target, pass `--post` to preselect posting the finished findings to the PR in the launch dialog; `--post` requires Claude Code v2.1.227 or later. See Review locally with `/code-review` for the effort levels, targeting, and how it relates to `/simplify`. Alias: `/review`",
-      "description_source": "docs",
+      "description": "Review the current diff or a PR for bugs and cleanups",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -6646,8 +6646,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Make the managed allowlist the only one that applies. Claude Code then reads `allowedMcpServers` from managed settings alone and ignores allowlists in user, project, and local settings; `deniedMcpServers` still merges from every settings scope, so users can still block servers for themselves. Administrators set it so a user's own settings can't broaden what the managed allowlist permits.",
-      "description_source": "docs",
+      "description": "When true (and set in managed settings), allowedMcpServers is only read from managed settings. deniedMcpServers still merges from all sources, so users can deny servers for themselves. Users can still add their own MCP servers, but only the admin-defined allowlist applies.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -7364,8 +7364,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Block specific MCP servers. Claude Code refuses to load a matching server wherever it's defined, including plugin servers, servers passed with `--mcp-config`, servers from `managed-mcp.json`, servers from `managedMcpServers`, and the claude.ai connectors it fetches itself. In-process `type: \"sdk\"` servers are exempt; the app that started the session registers them.",
-      "description_source": "docs",
+      "description": "Enterprise denylist of MCP servers that are explicitly blocked. If a server is on the denylist, it will be blocked across all scopes including enterprise. Denylist takes precedence over allowlist - if a server is on both lists, it is denied.",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -12083,7 +12083,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Federation rule ID for Workload Identity Federation. When you set it together with `ANTHROPIC_ORGANIZATION_ID`, Claude Code selects federation credentials, which rank above your `/login` credential. See authentication precedence",
+      "description": "Federation rule ID for Workload Identity Federation. Set it together with `ANTHROPIC_ORGANIZATION_ID`. See authentication precedence",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -13918,7 +13918,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set the auto-compact window, how full the context gets before compaction, from `100000` to `1000000` tokens.",
+      "description": "Set the auto-compact window, which is how full the context gets before compaction, to a token count of `100000` or more.",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -14603,7 +14603,7 @@
       "symbol": "CLAUDE_CODE_DECSTBM",
       "type": "env_var",
       "first_seen": "2.1.113",
-      "removed_in": null,
+      "removed_in": "2.1.326",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -17998,11 +17998,11 @@
       "first_seen": "2.1.182",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Ceiling in milliseconds on idle waiting for background work, such as subagents and workflows, after the final turn in non-interactive mode with the `-p` flag. Idle waiting starts over each time Claude takes a turn to handle a background result. Default: `600000`, or 10 minutes. When idle waiting reaches the ceiling, Claude Code stops waiting for the remaining background tasks. A running background command that the main conversation started holds the run open past it. Set to `0` to wait indefinitely. Requires Claude Code v2.1.182 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -18355,11 +18355,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "The same session ID in canonical UUID form, for systems that key on UUIDs.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-configuration.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -21014,11 +21014,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "The same session ID in canonical UUID form",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-configuration.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
