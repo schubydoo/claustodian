@@ -696,6 +696,11 @@ describe('isSubprocessFlagBullet', () => {
     expect(keys).not.toContain('cli_flag:--force');
   });
 
+  it('drops a subprocess option written with its argument', () => {
+    const bullet = '- Fixed `gh pr list` with `--json number` or `--limit 5` failing';
+    expect([...subprocessFlagExamples(bullet)].sort()).toEqual(['--json', '--limit']);
+  });
+
   it('keeps the options of a Claude Code command', () => {
     for (const bullet of [
       '- Fixed `claude mcp add` with `--scope` ignoring the value',

@@ -205,8 +205,8 @@ const SYMBOL_PATTERNS: Array<[RegExp, ExtractedSymbolType]> = [
   // A flag is also written with its argument inside the backticks, after a space:
   // `--metadata key=value` (2.1.328), `--output-format stream-json`. Capture the
   // flag and consume the argument, or the flag falls to the binary lane. The
-  // `--flag=value` form is deliberately not read: the only one in the changelog is
-  // git's `--ignore-revs-file=.env` (2.1.259).
+  // `--flag=value` form is deliberately not read: git's `--ignore-revs-file=.env`
+  // (2.1.259) is written that way.
   [/`(--[a-z0-9][a-z0-9-]*)(?: [^`]*)?`/g, 'cli_flag'],
   [/`(\/[a-z][a-z0-9-]*)`/g, 'command'],
   // The changelog often documents an env var by its assignment form —
@@ -635,10 +635,12 @@ function subprocessExampleClause(bullet: string): string | null {
  * "flags", so SUBPROCESS_FLAG_BULLET does not engage. The run stops at the first
  * token that is not a flag joined by a comma, "or" or "and". The tool list is
  * SUBPROCESS_FLAG_BULLET's plus `glab`; a `claude …` or `/command` is never
- * matched, so a Claude Code command's own options still extract.
+ * matched, so a Claude Code command's own options still extract. A flag in the
+ * run can carry its argument (`` `--json number` ``), as the cli_flag pattern
+ * reads it.
  */
 const SUBPROCESS_COMMAND_OPTIONS =
-  /`(?:git|gh|glab|npm|node|docker|ripgrep|rg)(?:\s[^`]*)?`\s+(?:with|without)\s+(`--[\w-]+`(?:\s*(?:,\s*(?:or\s+|and\s+)?|or\s+|and\s+)`--[\w-]+`)*)/gi;
+  /`(?:git|gh|glab|npm|node|docker|ripgrep|rg)(?:\s[^`]*)?`\s+(?:with|without)\s+(`--[\w-]+(?: [^`]*)?`(?:\s*(?:,\s*(?:or\s+|and\s+)?|or\s+|and\s+)`--[\w-]+(?: [^`]*)?`)*)/gi;
 
 export function isSubprocessFlagBullet(bullet: string): boolean {
   return subprocessFlagExamples(bullet).size > 0;
@@ -669,10 +671,10 @@ export function subprocessFlagExamples(bullet: string): ReadonlySet<string> {
 }
 
 /**
- * Flag tokens the changelog sometimes writes as prose rather than as a real
- * flag, and which no released binary defines. Each maps to a regex matching
- * ONLY that phantom usage, so the token is kept by default and dropped only on
- * a match — we would rather keep a real flag than mask one.
+ * Flag tokens the changelog sometimes writes in a usage that must not register
+ * the flag: as prose rather than as a real flag, or for another command. Each
+ * maps to a regex matching ONLY that usage, so the token is kept by default and
+ * dropped only on a match — we would rather keep a real flag than mask one.
  *
  * `--compact`: the changelog writes it for the `/compact` command / compaction
  * *event* ("… not resuming … after `--compact`") — always as the object of a
