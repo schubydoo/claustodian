@@ -138,6 +138,27 @@ describe('symbolFromCell', () => {
     expect(symbolFromCell('`PATH`')).toBeNull();
   });
 
+  // self-hosted-environments-configuration names a family of variables as
+  // `CLAUDE_RUNNER_META_<LABEL>`. The name stops at the `<`, so reading it as one
+  // variable published the prefix `CLAUDE_RUNNER_META_`, which no release reads.
+  it.each([
+    '`CLAUDE_RUNNER_META_<LABEL>`',
+    '`GIT_CONFIG_KEY_<n>`',
+    '`CLAUDE_CODE_REMOTE_SLACK_*`',
+    '`OTEL_${NAME}`',
+    '`ANTHROPIC_{MODEL}`',
+    '`CLAUDE_RUNNER_META_`',
+  ])('skips the templated variable name %s', (cell) => {
+    expect(symbolFromCell(cell)).toBeNull();
+  });
+
+  it('still reads a variable that a placeholder value follows', () => {
+    expect(symbolFromCell('`ANTHROPIC_MODEL <model>`')).toEqual({
+      symbol: 'ANTHROPIC_MODEL',
+      type: 'env_var',
+    });
+  });
+
   it('skips the SKILL concept-label false positive (denylist)', () => {
     expect(symbolFromCell('`SKILL`')).toBeNull();
   });

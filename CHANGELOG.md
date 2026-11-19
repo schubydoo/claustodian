@@ -26,6 +26,11 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
   `--permission-prompts`. `--metadata` and `--use-anthropic-gh` move from
   `needs_review` to `active`. No `first_seen` changes. The `--flag=value` form is not
   read.
+- **A docs name for a family of variables no longer publishes its prefix.** The docs
+  write a family as `` `CLAUDE_RUNNER_META_<LABEL>` ``. The docs lane read that as the
+  one variable `CLAUDE_RUNNER_META_`, which no release reads. That `env_var` record
+  leaves the dataset. The docs lane now skips a name that ends in `_` or that a `<`,
+  `{`, `*` or `$` follows.
 
 ## 2026-11-16
 
