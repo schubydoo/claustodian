@@ -283,10 +283,8 @@ function symbolFromInner(inner: string): { symbol: string; type: DocSymbolType }
   // `GIT_CONFIG_KEY_<n>`, `X_*`, `X_${NAME}`) names a family, not one variable. The
   // match stops at the placeholder and would publish the bare prefix. Only the
   // FIRST name is tested: scanning on would read `LABEL` out of `<LABEL>`.
-  const env = inner.match(/\b([A-Z][A-Z0-9_]{3,})\b/);
-  if (!env?.[1]) return null;
-  const next = inner[(env.index ?? 0) + env[1].length] ?? '';
-  if (env[1].endsWith('_') || /[<{*$]/.test(next)) return null;
+  const env = inner.match(/\b([A-Z][A-Z0-9_]{3,})\b([<{*$]?)/);
+  if (!env?.[1] || env[2] || env[1].endsWith('_')) return null;
   if (!ENV_DENYLIST.has(env[1])) return { symbol: env[1], type: 'env_var' };
 
   return null;
