@@ -148,6 +148,7 @@ describe('symbolFromCell', () => {
     '`OTEL_${NAME}`',
     '`ANTHROPIC_{MODEL}`',
     '`CLAUDE_RUNNER_META_`',
+    '`CLAUDE_RUNNER_META<LABEL>`',
   ])('skips the templated variable name %s', (cell) => {
     expect(symbolFromCell(cell)).toBeNull();
   });
