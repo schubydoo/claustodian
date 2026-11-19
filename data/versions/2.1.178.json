@@ -510,7 +510,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. Lets you begin in a different mode like `plan` and switch to `bypassPermissions` later. See permission modes",
+      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. While `bypassPermissions` is in the cycle of an interactive terminal session, most edits and commands Claude attempts in plan mode run with no prompt, before you approve a plan. See permission modes",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1356,11 +1356,11 @@
       "first_seen": "1.0.18",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Specify input format for print mode (options: `text`, `stream-json`)",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -1650,11 +1650,11 @@
       "first_seen": "0.2.66",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Specify output format for print mode (options: `text`, `json`, `stream-json`)",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -2124,7 +2124,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Path to a settings JSON file or an inline JSON string. Values you set here override the same keys in your `settings.json` files for this session. Keys you omit keep their file-based values. The file must be a regular file no larger than 2 MiB. See settings precedence",
+      "description": "Path to a settings JSON file or an inline JSON string. Values you set here override the same keys in your `settings.json` files for this session, but most lists merge with theirs. Keys you omit keep their file-based values. The file must be a regular file no larger than 2 MiB. See settings precedence",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -2318,12 +2318,12 @@
       "first_seen": "2.1.47",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Thinking mode: enabled (equivalent to adaptive), disabled",
-      "description_source": "binary",
-      "source_url": null,
-      "category": "cli-internal"
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "--thinking-display",
@@ -2859,8 +2859,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Start a new conversation with empty context. Pass a name to label the previous conversation in the `/resume` picker. To free up context while continuing the same conversation, use `/compact` instead. Resume the previous conversation with `/resume`, or, in the same Claude Code process, restore it from the rewind menu's previous-session entry. Aliases: `/reset`, `/new`",
-      "description_source": "docs",
+      "description": "Start a new session with empty context; previous session stays on disk (resumable with /resume)",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -3581,11 +3581,11 @@
       "first_seen": "2.0.45",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Share a free week of Claude Code with friends. Only visible if your account is eligible",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -4160,8 +4160,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "View and manage background work in the current session, including subagents that have finished. Also available as `/bashes`",
-      "description_source": "docs",
+      "description": "View and manage everything running in the background",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -4199,7 +4199,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Install a Shift+Enter keybinding for newlines in VS Code, Cursor, Devin Desktop, Alacritty, or Zed. In Apple Terminal, enable Option+Enter for newlines and turn off the audible bell instead. In iTerm2, turn on clipboard access so that `/copy` works",
+      "description": "Install a Shift+Enter keybinding for newlines in VS Code, Cursor, Devin Desktop, Alacritty, or Zed. In Apple Terminal, turn off the audible bell instead. In iTerm2, turn on clipboard access so that `/copy` works",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -5146,7 +5146,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn off Remote Control: Claude Code then refuses `claude remote-control`, the `--remote-control` flag, auto-start, and the in-session toggle, and reports that your organization's policy disabled it. Place it in managed settings for per-device MDM enforcement.",
+      "description": "Turn off Remote Control: Claude Code then refuses `claude remote-control`, the `--remote-control` flag, auto-start, and the in-session toggle. Place it in managed settings for per-device MDM enforcement.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -10295,7 +10295,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to omit the `thinking` parameter from API requests entirely. This is a compatibility option for proxies and gateways that reject the parameter. On models that think by default, omitting the parameter means the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead. Neither variable turns thinking off on Opus 5.5, Sonnet 5.5, Haiku 5.5, or the Fable models, which can't have thinking turned off. On third-party providers, `MAX_THINKING_TOKENS=0` likewise omits the parameter, so the two variables behave the same there",
+      "description": "Set to `1` to omit the `thinking` parameter from the API requests for the main conversation's turns, subagent turns, and the compaction summary. This is a compatibility option for proxies and gateways that reject the parameter. On models that think by default, the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead. See where you can't turn thinking off",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -11224,7 +11224,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Set to `1` to run one extra iteration of an interactive self-paced `/loop` when its second or later iteration ends with nothing scheduled",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },

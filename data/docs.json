@@ -80,7 +80,7 @@
     {
       "symbol": "--allow-dangerously-skip-permissions",
       "type": "cli_flag",
-      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. Lets you begin in a different mode like `plan` and switch to `bypassPermissions` later. See permission modes",
+      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. While `bypassPermissions` is in the cycle of an interactive terminal session, most edits and commands Claude attempts in plan mode run with no prompt, before you approve a plan. See permission modes",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -318,6 +318,13 @@
       "type": "cli_flag",
       "description": "Load the most recent conversation in the current directory, including a background session that has finished; opening finished background sessions requires Claude Code v2.1.257 or later. Skips sessions created with `claude -p` or the Agent SDK, and sessions whose first prompt was `/loop`. `claude -p --continue` includes `-p`, SDK, and `/loop` sessions. Includes sessions that added this directory with `/add-dir`",
       "doc_min_version": null,
+      "doc_page": "cli-reference"
+    },
+    {
+      "symbol": "--correlation-id",
+      "type": "cli_flag",
+      "description": "With `--environment`, pass an ID to the `spawn-runner` hook as `CLAUDE_RUNNER_CORRELATION_ID`. Requires Claude Code v2.1.328 or later",
+      "doc_min_version": "2.1.328",
       "doc_page": "cli-reference"
     },
     {
@@ -632,6 +639,16 @@
       ]
     },
     {
+      "symbol": "--hook-label",
+      "type": "cli_flag",
+      "description": "Pass a session's `--metadata` label to the hook as `CLAUDE_RUNNER_META_<LABEL>`. List allowed values as `size=small,large` or `cpus=1..64`. A spawn request with another value blocks the session from spawning. Fixed-fleet runners ignore labels and can take the session. Repeat per label, identically on every replica. Requires `--min-idle 0` and Claude Code v2.1.328 or later.",
+      "doc_min_version": null,
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner orchestrator"
+      ]
+    },
+    {
       "symbol": "--hook-timeout",
       "type": "cli_flag",
       "description": "Terminate the hook's process tree after this many seconds. The timeout plus its 5-second kill grace must stay below `--expected-spawn-seconds`; the orchestrator enforces this at startup.",
@@ -864,6 +881,13 @@
       "description": "Tag annotation message. `%s` stands for the version. Defaults to `<name> <version>`",
       "doc_min_version": null,
       "doc_page": "plugins/cli-reference"
+    },
+    {
+      "symbol": "--metadata",
+      "type": "cli_flag",
+      "description": "With `--environment`, label the new session for the orchestrator's `--hook-label`. Repeatable. Don't put secrets in labels. Requires Claude Code v2.1.328 or later",
+      "doc_min_version": "2.1.328",
+      "doc_page": "cli-reference"
     },
     {
       "symbol": "--min-idle",
@@ -1140,6 +1164,16 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--repository-folder",
+      "type": "cli_flag",
+      "description": "At `--capacity 1`, use `<folder>` as the clone of a repository that no `checkout` hook prepares. Repeatable; comma-separated in the variable. See Reuse a pre-warmed checkout. Requires Claude Code v2.1.328 or later.",
+      "doc_min_version": "2.1.328",
+      "doc_page": "self-hosted-environments-reference",
+      "doc_scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--restricted",
       "type": "cli_flag",
       "description": "Start in restricted mode. Use it when an evaluation harness drives `claude` on a shared machine and Claude Code must not run commands or read that machine's user and project settings. Claude Code removes the built-in tools that run commands or code, and WebFetch, unless you name them individually in `--tools`, not through the `default` preset. It also confines the built-in file tools to the working directories, loads only managed settings and `--settings`, refuses `bypassPermissions`, and refuses to create cloud sessions. Requires Claude Code v2.1.248 or later",
@@ -1298,7 +1332,7 @@
     {
       "symbol": "--settings",
       "type": "cli_flag",
-      "description": "Path to a settings JSON file or an inline JSON string. Values you set here override the same keys in your `settings.json` files for this session. Keys you omit keep their file-based values. The file must be a regular file no larger than 2 MiB. See settings precedence",
+      "description": "Path to a settings JSON file or an inline JSON string. Values you set here override the same keys in your `settings.json` files for this session, but most lists merge with theirs. Keys you omit keep their file-based values. The file must be a regular file no larger than 2 MiB. See settings precedence",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -2236,7 +2270,7 @@
     {
       "symbol": "/terminal-setup",
       "type": "command",
-      "description": "Install a Shift+Enter keybinding for newlines in VS Code, Cursor, Devin Desktop, Alacritty, or Zed. In Apple Terminal, enable Option+Enter for newlines and turn off the audible bell instead. In iTerm2, turn on clipboard access so that `/copy` works",
+      "description": "Install a Shift+Enter keybinding for newlines in VS Code, Cursor, Devin Desktop, Alacritty, or Zed. In Apple Terminal, turn off the audible bell instead. In iTerm2, turn on clipboard access so that `/copy` works",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2474,7 +2508,7 @@
     {
       "symbol": "attribution.sessionUrl",
       "type": "config_key",
-      "description": "Choose whether Claude Code appends the claude.ai session link when it commits or opens a pull request from a cloud or Remote Control session. Claude Code adds the link as a `Claude-Session` trailer on commits and as a link in pull request descriptions. Set it to `false` to omit the link.",
+      "description": "Choose whether Claude Code tells Claude to add the claude.ai session link to commits and pull requests from a cloud or Remote Control session. The setting covers a `Claude-Session` trailer on commits and a URL in pull request descriptions. Set it to `false` to omit the link.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -2775,7 +2809,7 @@
     {
       "symbol": "disableBrowserExternalNavigation",
       "type": "config_key",
-      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. HTML previews in SSH and WSL sessions still open, but they don't run scripts. The desktop app reads this key; the terminal CLI ignores it.",
+      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. The Browser pane's HTML previews in SSH and WSL sessions still open, but they don't run scripts. The desktop app reads this key; the terminal CLI ignores it.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -2831,14 +2865,14 @@
     {
       "symbol": "disableRemoteControl",
       "type": "config_key",
-      "description": "Turn off Remote Control: Claude Code then refuses `claude remote-control`, the `--remote-control` flag, auto-start, and the in-session toggle, and reports that your organization's policy disabled it. Place it in managed settings for per-device MDM enforcement.",
+      "description": "Turn off Remote Control: Claude Code then refuses `claude remote-control`, the `--remote-control` flag, auto-start, and the in-session toggle. Place it in managed settings for per-device MDM enforcement.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
     {
       "symbol": "disableRemotePreviewScripts",
       "type": "config_key",
-      "description": "Keep scripts from running when people preview an HTML file from an SSH or WSL session in the desktop app. External browsing in the Browser pane is unaffected.",
+      "description": "Keep scripts from running when people preview an HTML file in the desktop app's Browser pane from an SSH or WSL session. External browsing in that pane is unaffected.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -3204,7 +3238,7 @@
     {
       "symbol": "parentSettingsBehavior",
       "type": "config_key",
-      "description": "Choose whether Claude Code applies managed settings supplied by an embedding host process, such as the Agent SDK or an IDE extension, when an admin-deployed managed tier is also present. With `\"first-wins\"`, Claude Code drops the host-supplied settings; with `\"merge\"`, it applies them under the admin tier through a restrictive-only filter. Set `\"merge\"` when a host needs to pass its own restrictions to the sessions it launches, for example Claude Desktop delivering a gateway's egress allowlist.",
+      "description": "Choose whether Claude Code applies managed settings supplied by an embedding host process, such as the Agent SDK or an IDE extension, when an admin-deployed managed tier is also present. Set `\"merge\"` when a host needs to pass its own restrictions to the sessions it launches, for example Claude Desktop delivering a gateway's egress allowlist.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -4934,6 +4968,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_DEFERRED_TOOL_RESUME",
+      "type": "env_var",
+      "description": "Set to `1` to skip a deferred tool call when you resume or continue with `-p`. Claude can still repeat the call. Ignored in a settings `env` block. Requires Claude Code v2.1.328 or later",
+      "doc_min_version": "2.1.328",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS",
       "type": "env_var",
       "description": "Set to `1` to strip pre-release `anthropic-beta` request headers, the body fields that pair with them, and beta tool-schema fields such as `defer_loading` and `eager_input_streaming` from API requests. Use this when a proxy gateway rejects requests with an `Unexpected value(s)` error for the `anthropic-beta` header or an `Extra inputs are not permitted` error. Disable pre-release capabilities lists what the variable removes, including MCP tool search, and what Claude Code keeps sending",
@@ -5132,7 +5173,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_THINKING",
       "type": "env_var",
-      "description": "Set to `1` to omit the `thinking` parameter from API requests entirely. This is a compatibility option for proxies and gateways that reject the parameter. On models that think by default, omitting the parameter means the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead. Neither variable turns thinking off on Opus 5.5, Sonnet 5.5, Haiku 5.5, or the Fable models, which can't have thinking turned off. On third-party providers, `MAX_THINKING_TOKENS=0` likewise omits the parameter, so the two variables behave the same there",
+      "description": "Set to `1` to omit the `thinking` parameter from the API requests for the main conversation's turns, subagent turns, and the compaction summary. This is a compatibility option for proxies and gateways that reject the parameter. On models that think by default, the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead. See where you can't turn thinking off",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -5477,6 +5518,13 @@
       "type": "env_var",
       "description": "Context size, in tokens, at which idle compaction applies to a conversation (default: `200000`). Accepts a positive whole number, and anything else is ignored. Values below `100000` are raised to `100000`, the lowest threshold. Idle compaction is on by default for conversations that meet its conditions. To turn it off, set `idleCompaction` to `false`. Requires Claude Code v2.1.290 or later",
       "doc_min_version": "2.1.290",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_LOOP_KEEPALIVE",
+      "type": "env_var",
+      "description": "Set to `1` to run one extra iteration of an interactive self-paced `/loop` when its second or later iteration ends with nothing scheduled",
+      "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
@@ -6114,6 +6162,20 @@
       "type": "env_var",
       "description": "Set to `1` to flag more of the `-c` scripts that Claude Code can't check, including ones that name neither `rm` nor `rmdir`. Set it in the environment that launches Claude Code, not a settings `env` block. Has no effect when `CLAUDE_CODE_DISABLE_INLINE_SHELL_RM_PROMPT` is `1`. Requires Claude Code v2.1.299 or later",
       "doc_min_version": "2.1.299",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SUBAGENT_EFFORT",
+      "type": "env_var",
+      "description": "The default effort level for subagents and workflow agents: `low`, `medium`, `high`, `xhigh`, or `max`. It doesn't apply to forks, forked skills, or teammates. Requires Claude Code v2.1.315 or later",
+      "doc_min_version": "2.1.315",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SUBAGENT_HISTORY",
+      "type": "env_var",
+      "description": "Set to `0` to remove the `/tasks` row where you reopen subagents that have ended",
+      "doc_min_version": null,
       "doc_page": "env-vars"
     },
     {
@@ -7472,6 +7534,13 @@
       "type": "env_var",
       "description": "Remove a session's per-session directories under `<base-dir>/_sessions/` when the session ends on this runner, whatever the outcome. Reuse a pre-warmed checkout describes what they hold and who can read them when they stay. The removal is best-effort: the per-session directories stay in place when the runner is killed or reaches its drain deadline before cleanup runs. With the flag on, a failed or interrupted session's debug log isn't kept on disk. Requires Claude Code v2.1.268 or later.",
       "doc_min_version": "2.1.268",
+      "doc_page": "self-hosted-environments-reference"
+    },
+    {
+      "symbol": "SELF_HOSTED_RUNNER_REPOSITORY_FOLDER",
+      "type": "env_var",
+      "description": "At `--capacity 1`, use `<folder>` as the clone of a repository that no `checkout` hook prepares. Repeatable; comma-separated in the variable. See Reuse a pre-warmed checkout. Requires Claude Code v2.1.328 or later.",
+      "doc_min_version": "2.1.328",
       "doc_page": "self-hosted-environments-reference"
     },
     {
