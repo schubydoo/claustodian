@@ -49,7 +49,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. Lets you begin in a different mode like `plan` and switch to `bypassPermissions` later. See permission modes",
+      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. While `bypassPermissions` is in the cycle of an interactive terminal session, most edits and commands Claude attempts in plan mode run with no prompt, before you approve a plan. See permission modes",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -350,11 +350,11 @@
       "first_seen": "1.0.18",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Specify input format for print mode (options: `text`, `stream-json`)",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -515,11 +515,11 @@
       "first_seen": "0.2.66",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Specify output format for print mode (options: `text`, `json`, `stream-json`)",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -723,7 +723,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Path to a settings JSON file or an inline JSON string. Values you set here override the same keys in your `settings.json` files for this session. Keys you omit keep their file-based values. The file must be a regular file no larger than 2 MiB. See settings precedence",
+      "description": "Path to a settings JSON file or an inline JSON string. Values you set here override the same keys in your `settings.json` files for this session, but most lists merge with theirs. Keys you omit keep their file-based values. The file must be a regular file no larger than 2 MiB. See settings precedence",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1258,11 +1258,11 @@
       "first_seen": "2.0.45",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Share a free week of Claude Code with friends. Only visible if your account is eligible",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {

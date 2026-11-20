@@ -1365,6 +1365,12 @@
         "description": "Work directly on <branch> in the session (check out and push to it). On self-hosted environments this includes pushing to the default branch when it is not protected — use GitHub branch protection to restrict. Can't be used with --ref. Requires --cloud or --environment."
       }
     ],
+    "cli_flag:--organization-gateway": [
+      {
+        "from": "2.1.329",
+        "description": "Sign in to your organization's gateway through its identity provider"
+      }
+    ],
     "cli_flag:--output-dir": [
       {
         "from": "2.1.198",
@@ -2305,6 +2311,10 @@
       {
         "from": "2.1.111",
         "description": "Start a new session with empty context; previous session stays on disk (resumable with /resume)"
+      },
+      {
+        "from": "2.1.329",
+        "description": "Start a new session with empty context; loops carry over, and the old one stays in /resume"
       }
     ],
     "command:/cloud-plugins": [
@@ -3277,6 +3287,10 @@
       {
         "from": "2.1.163",
         "description": "View and manage everything running in the background"
+      },
+      {
+        "from": "2.1.329",
+        "description": "View and manage this session's background work"
       }
     ],
     "command:/team-onboarding": [
@@ -3517,6 +3531,12 @@
       {
         "from": "1.0.65",
         "description": "JSON Schema reference for Claude Code settings"
+      }
+    ],
+    "config_key:additionalDirectoryConfigRoots": [
+      {
+        "from": "2.1.329",
+        "description": "@internal For the program that starts Claude Code only: read from --settings and from settings that program sends while the session runs; ignored in settings files. Maps an added folder (--add-dir, or a claim's additional_directories) by its absolute path, also matched by its real path, to the absolute path of the checkout whose .claude skills, commands, agents and plugin settings that folder then reads instead of its own; file access stays with the folder. Full contract, with when to send it and what makes a root unusable: apps/cli/docs/desktop-host-contract.md, entry additionalDirectoryConfigRoots."
       }
     ],
     "config_key:additionalMarketplaces": [
@@ -4097,6 +4117,12 @@
       {
         "from": "2.1.283",
         "description": "Models users cannot select, even when availableModels allows them. A family alias (\"opus\") blocks that family. A model ID blocks that version in every spelling: dates, -fast and provider prefixes are ignored, so \"claude-opus-5-5\" blocks every Opus 5.5 ID but not Opus 5. An ID with no minor version (\"claude-opus-5\") also blocks later minor versions, as it allows them in availableModels. Aliases whose model depends on the release or settings (best, opusplan, default) are ignored. The Default option steps down past a blocked model; if the Default has no allowed model to step down to, Claude Code will not start. Read from managed settings only."
+      }
+    ],
+    "config_key:desktopMcpServersListScope": [
+      {
+        "from": "2.1.329",
+        "description": "Claude desktop app only. Where your allow list and deny list apply to MCP servers added in the Claude desktop app. \"code\" (default): Your allow list also governs MCP servers added in the Claude desktop app, in Code tab sessions and the Artifact pane. \"all\": Your allow list and your deny list also govern MCP servers added in the Claude desktop app, in every tab (including Chat and Cowork). \"off\": Your allow list doesn't govern MCP servers added in the Claude desktop app. Read only from managed settings. Any other value counts as `all`. Where sources are merged or mixed, `off` counts as `all`. Leave the key out, or set it only in the managed source that holds your list. `deniedMcpServers` applies in Code tab sessions and the Artifact pane with every value, and in every tab with `all`. MCP servers sent to SSH hosts are not governed by these lists in this release. The Claude Code CLI reads nothing from this key, but written alone in a higher managed source it makes that source lead, and Claude Code skips the managed sources beneath it. Write it only beside the list it scopes."
       }
     ],
     "config_key:desktopSessionCleanupPeriodDays": [
@@ -4807,6 +4833,12 @@
         "description": "For the program that starts Claude Code: read only from --settings and from settings that program sends while the session runs; ignored in user, project, local and managed settings. Absolute paths of working directories, each spelled exactly as it is passed, letter case included (the session folder, --add-dir, permissions.additionalDirectories). To decide what lies inside a listed working directory, Claude Code takes it as written and follows no link at it, so a link that later stands in its place gives the file tools no access to where the link leads. List real paths: the files of a listed path that runs through a link count as outside the working directories, because where they really are lies outside it. List a mapped network drive by its drive-letter path: Claude Code still derives the UNC form of that path by itself and adds it, as for any mapped drive. A file path that is itself spelled as a UNC path is judged as written, so a link on the share is not seen by that spelling. It adds no working directory and allows nothing. Once listed, a path stays so until the process ends, also if later settings leave it out. Ignored: an entry that is not already normalized (a relative path, one that starts with ~, a \"..\" segment, a separator at its end unless it is a filesystem root, forward slashes on Windows, white space at either end). Does not change what sandboxed commands may write."
       }
     ],
+    "config_key:permissions.workingDirectoriesExclude": [
+      {
+        "from": "2.1.329",
+        "description": "For the program that starts Claude Code: read only from --settings and from settings that program sends while the session runs; ignored in user, project, local and managed settings. Absolute paths, each a folder with all below it or one file, that blockReadsOutsideWorkingDirectories, blockFileToolReadsOutsideWorkingDirectories and blockWritesOutsideWorkingDirectories count as outside every working directory that holds them. A path is refused if it, or where its links lead, lies in a listed path, in any letter case, or above one that no Read deny rule covers (a Grep or Glob rooted there would walk into it; a deny rule keeps those two out, unless a \"!\" rule is also in force); for a search the path judged is its root, not each file found below it. Still let through: a working directory, or for reads a path of blockReadsExemptPaths, that is the listed path or lies inside it, and the files that Claude Code keeps for the session. It allows nothing, binds what those three settings bind, and does nothing with all of them off. Each path counts as written: a link in it is not followed, so list every spelling. Once listed, a path stays listed for the life of the process. Ignored: a relative path, and one that starts with ~, has a \"..\" segment or has white space at either end. Does not change what sandboxed commands may read or write."
+      }
+    ],
     "config_key:plansDirectory": [
       {
         "from": "2.1.9",
@@ -5479,6 +5511,10 @@
       {
         "from": "2.1.326",
         "description": "Windows only: how sandboxed commands are confined. \"sandboxuser\" (default) runs them as the dedicated sandbox account that the sandbox set-up creates. \"mxc\" runs them in a Microsoft eXecution Container (BaseContainer) through the MXC SDK, with no install step; experimental. Claude Code ignores \"mxc\" and uses the sandbox account, with a note in /sandbox, when this build lacks the MXC SDK, when a higher settings tier or another managed source sets network.tlsTerminate, or when an administrator requires the sandbox or locks reads (filesystem.allowManagedReadPathsOnly) unless managed settings picked \"mxc\" and no other managed source sets network.allowManagedDomainsOnly. On \"mxc\" only the PowerShell tool is enabled and Bash commands are refused (MXC cannot run Git Bash yet); network.tlsTerminate and network.allowLocalBinding do not apply. Read from user, managed/policy or --settings settings only; a value in project settings (.claude/settings.json and .claude/settings.local.json) is ignored."
+      },
+      {
+        "from": "2.1.329",
+        "description": "Windows only: how sandboxed commands are confined. There is no default: until it is set, sandboxed commands are refused. \"sandboxuser\" runs them as the dedicated sandbox account that the sandbox set-up creates. \"mxc\" runs them in a Microsoft eXecution Container (BaseContainer) through the MXC SDK, with no install step; experimental. Managed settings decide over --settings, and --settings over user settings. On \"mxc\" only the PowerShell tool is enabled and Bash commands are refused (MXC cannot run Git Bash yet); network.allowLocalBinding does not apply, and sandboxed commands are refused while network.tlsTerminate is set, or while managed settings lock reads (filesystem.allowManagedReadPathsOnly) without picking \"mxc\" themselves. Read from user, managed/policy or --settings settings only; a value in project settings (.claude/settings.json and .claude/settings.local.json) is ignored."
       }
     ],
     "config_key:secDefault": [

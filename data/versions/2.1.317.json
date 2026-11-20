@@ -596,11 +596,11 @@
       "first_seen": "2.1.271",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Accept the displayed install command whose `sha256` a previous `--json` run reported in `shownCommand`, in place of `-y`. Can't be combined with `-y`. See Accept a displayed install command. Requires Claude Code v2.1.271 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scope_descriptions": {
         "plugin install": "Accept the displayed install command whose `sha256` a previous `--json` run reported in `shownCommand`, in place of `-y`. Can't be combined with `-y`. See Accept a displayed install command. Requires Claude Code v2.1.271 or later",
@@ -783,7 +783,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. Lets you begin in a different mode like `plan` and switch to `bypassPermissions` later. See permission modes",
+      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. While `bypassPermissions` is in the cycle of an interactive terminal session, most edits and commands Claude attempts in plan mode run with no prompt, before you approve a plan. See permission modes",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1416,9 +1416,9 @@
       "provenance": "changelog",
       "confidence": "high",
       "description": "Opaque id echoed back to the environment orchestrator on the work order (requires --environment).",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli-internal",
-      "description_source": "binary"
+      "category": "cli-internal"
     },
     {
       "symbol": "--cowork",
@@ -2336,11 +2336,11 @@
       "first_seen": "2.1.271",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Where the runner keeps the startup snapshot of the host config directory that it seeds each session from. `disk` copies the snapshot into a runner-owned directory under `--base-dir` and, at each session start, verifies every file against an in-memory digest. If a file in the copy has been modified, the session fails and the runner refuses sessions until you restart it. `memory` holds the whole snapshot on the heap, capped at 64 MiB; over the cap, sessions start without host config and show a notice saying so. When the runner can't write the disk snapshot, it logs the failure and uses `memory` for that run. Requires Claude Code v2.1.271 or later.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "self-hosted-runner"
@@ -2469,11 +2469,11 @@
       "first_seen": "1.0.18",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Specify input format for print mode (options: `text`, `stream-json`)",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -2732,11 +2732,11 @@
       "first_seen": "2.1.292",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Install `<plugin>`, given by its bare name, from the marketplace at `<source>`, adding the marketplace first if you haven't added it yet. See Add a marketplace and install in one command. Requires Claude Code v2.1.292 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "plugin install"
@@ -3086,11 +3086,11 @@
       "first_seen": "0.2.66",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Specify output format for print mode (options: `text`, `json`, `stream-json`)",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -3151,11 +3151,11 @@
       "first_seen": "2.1.259",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Set who answers permission prompts in print mode. With the default `host`, Claude Code sends them to the Agent SDK host or the `--permission-prompt-tool` tool. Pass `none` when nobody can answer, and Claude Code denies them instead. See Turn off permission prompts in unattended runs. Requires Claude Code v2.1.259 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -3475,11 +3475,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "On a runner-initiated session end such as a drain or idle release, the runner pushes primary session branches with new commits to `origin` before deleting the workspace. Best-effort; adds 30 seconds to the shutdown budget. Requires git 2.29 or later to resume from them. Restrict push access to `claude/*` refs; see Resumed sessions lose unpushed work. A `checkout` hook's repositories aren't pushed; snapshot those from the `post-session` hook.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "self-hosted-runner"
@@ -4065,7 +4065,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Path to a settings JSON file or an inline JSON string. Values you set here override the same keys in your `settings.json` files for this session. Keys you omit keep their file-based values. The file must be a regular file no larger than 2 MiB. See settings precedence",
+      "description": "Path to a settings JSON file or an inline JSON string. Values you set here override the same keys in your `settings.json` files for this session, but most lists merge with theirs. Keys you omit keep their file-based values. The file must be a regular file no larger than 2 MiB. See settings precedence",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -4336,12 +4336,12 @@
       "first_seen": "2.1.47",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Thinking mode: enabled (equivalent to adaptive), disabled",
-      "description_source": "binary",
-      "source_url": null,
-      "category": "cli-internal"
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "--thinking-display",
@@ -5079,8 +5079,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Start a new conversation with empty context. Pass a name to label the previous conversation in the `/resume` picker. To free up context while continuing the same conversation, use `/compact` instead. Resume the previous conversation with `/resume`, or, in the same Claude Code process, restore it from the rewind menu's previous-session entry. Aliases: `/reset`, `/new`",
-      "description_source": "docs",
+      "description": "Start a new session with empty context; previous session stays on disk (resumable with /resume)",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -5932,11 +5932,11 @@
       "first_seen": "2.0.45",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Share a free week of Claude Code with friends. Only visible if your account is eligible",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -6678,8 +6678,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "View and manage background work in the current session, including subagents that have finished. Also available as `/bashes`",
-      "description_source": "docs",
+      "description": "View and manage everything running in the background",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -6717,7 +6717,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Install a Shift+Enter keybinding for newlines in VS Code, Cursor, Devin Desktop, Alacritty, or Zed. In Apple Terminal, enable Option+Enter for newlines and turn off the audible bell instead. In iTerm2, turn on clipboard access so that `/copy` works",
+      "description": "Install a Shift+Enter keybinding for newlines in VS Code, Cursor, Devin Desktop, Alacritty, or Zed. In Apple Terminal, turn off the audible bell instead. In iTerm2, turn on clipboard access so that `/copy` works",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -7314,7 +7314,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose whether Claude Code appends the claude.ai session link when it commits or opens a pull request from a cloud or Remote Control session. Claude Code adds the link as a `Claude-Session` trailer on commits and as a link in pull request descriptions. Set it to `false` to omit the link.",
+      "description": "Choose whether Claude Code tells Claude to add the claude.ai session link to commits and pull requests from a cloud or Remote Control session. The setting covers a `Claude-Session` trailer on commits and a URL in pull request descriptions. Set it to `false` to omit the link.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8076,7 +8076,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. HTML previews in SSH and WSL sessions still open, but they don't run scripts. The desktop app reads this key; the terminal CLI ignores it.",
+      "description": "Turn off external browsing in the desktop app's Browser pane for people and Claude alike. Localhost dev server previews keep working. The Browser pane's HTML previews in SSH and WSL sessions still open, but they don't run scripts. The desktop app reads this key; the terminal CLI ignores it.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8169,7 +8169,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Turn off Remote Control: Claude Code then refuses `claude remote-control`, the `--remote-control` flag, auto-start, and the in-session toggle, and reports that your organization's policy disabled it. Place it in managed settings for per-device MDM enforcement.",
+      "description": "Turn off Remote Control: Claude Code then refuses `claude remote-control`, the `--remote-control` flag, auto-start, and the in-session toggle. Place it in managed settings for per-device MDM enforcement.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -8960,7 +8960,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Choose whether Claude Code applies managed settings supplied by an embedding host process, such as the Agent SDK or an IDE extension, when an admin-deployed managed tier is also present. With `\"first-wins\"`, Claude Code drops the host-supplied settings; with `\"merge\"`, it applies them under the admin tier through a restrictive-only filter. Set `\"merge\"` when a host needs to pass its own restrictions to the sessions it launches, for example Claude Desktop delivering a gateway's egress allowlist.",
+      "description": "Choose whether Claude Code applies managed settings supplied by an embedding host process, such as the Agent SDK or an IDE extension, when an admin-deployed managed tier is also present. Set `\"merge\"` when a host needs to pass its own restrictions to the sessions it launches, for example Claude Desktop delivering a gateway's egress allowlist.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -16447,7 +16447,7 @@
       "symbol": "CLAUDE_CODE_CONSENT_POINTERLESS",
       "type": "env_var",
       "first_seen": "2.1.305",
-      "removed_in": null,
+      "removed_in": "2.1.327",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -17833,7 +17833,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `1` to omit the `thinking` parameter from API requests entirely. This is a compatibility option for proxies and gateways that reject the parameter. On models that think by default, omitting the parameter means the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead. Neither variable turns thinking off on Opus 5.5, Sonnet 5.5, Haiku 5.5, or the Fable models, which can't have thinking turned off. On third-party providers, `MAX_THINKING_TOKENS=0` likewise omits the parameter, so the two variables behave the same there",
+      "description": "Set to `1` to omit the `thinking` parameter from the API requests for the main conversation's turns, subagent turns, and the compaction summary. This is a compatibility option for proxies and gateways that reject the parameter. On models that think by default, the model may still think. To explicitly disable extended thinking on the Anthropic API, use `MAX_THINKING_TOKENS=0` instead. See where you can't turn thinking off",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -19764,7 +19764,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Set to `1` to run one extra iteration of an interactive self-paced `/loop` when its second or later iteration ends with nothing scheduled",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -22968,8 +22969,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added `CLAUDE_CODE_SUBAGENT_EFFORT` to set the effort level subagents run at when nothing else names one, instead of inheriting the session's",
-      "description_source": "changelog",
+      "description": "The default effort level for subagents and workflow agents: `low`, `medium`, `high`, `xhigh`, or `max`. It doesn't apply to forks, forked skills, or teammates. Requires Claude Code v2.1.315 or later",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -22978,11 +22979,12 @@
       "type": "env_var",
       "first_seen": "2.1.307",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Set to `0` to remove the `/tasks` row where you reopen subagents that have ended",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
     },
     {
@@ -25324,7 +25326,7 @@
       "symbol": "CLAUDE_TEST_ESSENTIAL_TRAFFIC",
       "type": "env_var",
       "first_seen": "2.1.310",
-      "removed_in": null,
+      "removed_in": "2.1.327",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -25336,7 +25338,7 @@
       "symbol": "CLAUDE_TEST_NO_OPEN",
       "type": "env_var",
       "first_seen": "2.1.282",
-      "removed_in": null,
+      "removed_in": "2.1.327",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -25348,7 +25350,7 @@
       "symbol": "CLAUDE_TEST_PROJECT_DIR",
       "type": "env_var",
       "first_seen": "2.1.274",
-      "removed_in": null,
+      "removed_in": "2.1.327",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
