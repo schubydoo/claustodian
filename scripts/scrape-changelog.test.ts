@@ -1509,6 +1509,159 @@ describe('assertCanonicalSourcesForCommittedData', () => {
   });
 });
 
+describe('assembleSnapshots — the docs description timeline', () => {
+  const OLD = 'A hooks module is about to load.';
+  const NEW = 'A hooks module is about to load, or, on v2.1.326 or later, a plugin without one.';
+  const rec = (over: Partial<SymbolRecord>): SymbolRecord => ({
+    symbol: 'plugin.register',
+    type: 'mod_event',
+    first_seen: '2.1.269',
+    removed_in: null,
+    status: 'active',
+    provenance: 'docs',
+    confidence: 'high',
+    description: NEW,
+    description_source: 'docs',
+    source_url: null,
+    category: 'mods',
+    ...over,
+  });
+  const blocks = ['2.1.269', '2.1.310', '2.1.325', '2.1.326', '2.1.330'].map((version) => ({
+    version,
+    bullets: [],
+  }));
+  const history = {
+    'mod_event:plugin.register': [
+      { from: '2.1.306', description: OLD },
+      { from: '2.1.330', description: NEW },
+    ],
+  };
+  const textAt = (
+    snaps: ReturnType<typeof assembleSnapshots>,
+    v: string,
+    sym = 'plugin.register'
+  ) => snaps.find((s) => s.version === v)?.symbols.find((x) => x.symbol === sym);
+  const build = (records: SymbolRecord[]) =>
+    assembleSnapshots(
+      records,
+      blocks,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      history
+    );
+
+  it('empties the record without a timeline, which is the defect', () => {
+    const snaps = assembleSnapshots([rec({})], blocks);
+    expect(textAt(snaps, '2.1.310')?.description).toBe('');
+  });
+
+  it('publishes the docs text of each era, and the newer text once the docs caught up', () => {
+    const snaps = build([rec({})]);
+    // Before the first capture: the earliest text on record, which names nothing later.
+    expect(textAt(snaps, '2.1.269')?.description).toBe(OLD);
+    expect(textAt(snaps, '2.1.310')?.description).toBe(OLD);
+    expect(textAt(snaps, '2.1.325')?.description).toBe(OLD);
+    // The docs changed at 2.1.330 to describe a 2.1.326 change.
+    expect(textAt(snaps, '2.1.326')?.description).toBe(NEW);
+    expect(textAt(snaps, '2.1.330')?.description).toBe(NEW);
+    expect(textAt(snaps, '2.1.310')?.description_source).toBe('docs');
+  });
+
+  it('leaves a record alone when its tip text is not the newest docs era', () => {
+    // Another rule rewrote the primary text, and the timeline knows nothing of it.
+    const snaps = build([
+      rec({ description: 'A changelog bullet.', description_source: undefined }),
+    ]);
+    expect(textAt(snaps, '2.1.310')?.description).toBe('A changelog bullet.');
+  });
+
+  it('keeps an emptied era text empty instead of falling back to the tip text', () => {
+    // The era in effect names 2.1.326 in its first sentence, so nothing of it can
+    // publish at 2.1.310. The tip text names nothing and would pass the guard.
+    const snaps = assembleSnapshots(
+      [rec({ symbol: 'X_VAR', type: 'env_var', category: 'claude-code', description: 'Tip.' })],
+      blocks,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      {
+        'env_var:X_VAR': [
+          { from: '2.1.306', description: 'As of v2.1.326, it does X.' },
+          { from: '2.1.330', description: 'Tip.' },
+        ],
+      }
+    );
+    expect(textAt(snaps, '2.1.310', 'X_VAR')?.description).toBe('');
+    expect(textAt(snaps, '2.1.326', 'X_VAR')?.description).toBe('As of v2.1.326, it does X.');
+  });
+
+  it('leaves a docs record alone when its text is not the newest era', () => {
+    // docs.json moved without an append: the timeline does not describe this text.
+    const snaps = build([rec({ description: 'Current docs text.' })]);
+    expect(textAt(snaps, '2.1.310')?.description).toBe('Current docs text.');
+  });
+
+  it('publishes the record text at the tip, whatever release a capture is dated', () => {
+    // The binary lane is ahead of the changelog: the newest capture is dated 2.1.331.
+    const snaps = assembleSnapshots(
+      [rec({ description: 'Newest docs text.' })],
+      blocks,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      {
+        'mod_event:plugin.register': [
+          { from: '2.1.306', description: OLD },
+          { from: '2.1.331', description: 'Newest docs text.' },
+        ],
+      }
+    );
+    expect(textAt(snaps, '2.1.330')?.description).toBe('Newest docs text.');
+  });
+
+  it('falls back to the tip rules when the binary changed after the docs capture', () => {
+    const TIP = 'Newer docs text.';
+    const snaps = (moves: string, withHistory: boolean) =>
+      assembleSnapshots(
+        [rec({ symbol: '/x', type: 'command', category: 'command', description: TIP })],
+        blocks,
+        {
+          'command:/x': [
+            { from: '2.1.269', description: 'Binary one' },
+            { from: moves, description: 'Binary two' },
+          ],
+        },
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        withHistory
+          ? {
+              'command:/x': [
+                { from: '2.1.306', description: OLD },
+                { from: '2.1.330', description: TIP },
+              ],
+            }
+          : undefined
+      );
+    // Captured at 2.1.306; the binary moved at 2.1.310, so the docs had not caught
+    // up, and the snapshot is what it would be without the timeline.
+    expect(textAt(snaps('2.1.310', true), '2.1.310', '/x')).toEqual(
+      textAt(snaps('2.1.310', false), '2.1.310', '/x')
+    );
+    expect(textAt(snaps('2.1.310', true), '2.1.310', '/x')?.description).toBe(TIP);
+    // The binary moved before the capture, so the docs text already reflects it.
+    expect(textAt(snaps('2.1.300', true), '2.1.310', '/x')?.description).toBe(OLD);
+  });
+});
+
 describe('assembleSnapshots — per-version deprecation status', () => {
   const rec = (over: Partial<SymbolRecord>): SymbolRecord => ({
     symbol: '/output-style',

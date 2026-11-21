@@ -5,6 +5,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { emptyDocsHistory, type DocsHistory } from './docs-history.js';
 import {
   assertDocsCoverage,
   assertOfficialDocs,
@@ -525,6 +526,39 @@ describe('main (mocked fetch)', () => {
       ).toBe(true);
     } finally {
       process.chdir(prev);
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('appends to a docs history beside the output, and creates none', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => ({ ok: true, text: async () => mockPageBody(url) }))
+    );
+    const dir = await mkdtemp(join(tmpdir(), 'claustodian-docs-history-'));
+    const binary = join(dir, 'binary-observations.json');
+    await writeFile(
+      binary,
+      JSON.stringify({
+        observedVersions: ['2.1.6', '2.1.4'],
+        symbols: [{ type: 'config_key', symbol: 'advisorModel' }],
+      }),
+      'utf-8'
+    );
+    await writeFile(join(dir, 'index.json'), JSON.stringify({ latest: '2.1.5' }), 'utf-8');
+    const history = join(dir, 'docs-history.json');
+    try {
+      await main([join(dir, 'docs.json'), binary]);
+      // No seed, no history: a one-era file would hide that the seed never ran.
+      await expect(readFile(history, 'utf8')).rejects.toThrow(/ENOENT/);
+      await writeFile(history, JSON.stringify(emptyDocsHistory()), 'utf-8');
+      await main([join(dir, 'docs.json'), binary]);
+      const written = JSON.parse(await readFile(history, 'utf8')) as DocsHistory;
+      // Dated by the newest release either lane knows: the binary's 2.1.6.
+      expect(written.descriptions['cli_flag:--cli-reference-mock-0']).toEqual([
+        { from: '2.1.6', description: expect.any(String) },
+      ]);
+    } finally {
       await rm(dir, { recursive: true, force: true });
     }
   });

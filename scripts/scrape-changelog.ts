@@ -59,6 +59,13 @@ import {
   loadBinaryObservations,
   promotionFor,
 } from './binary-lane.js';
+import {
+  DOCS_HISTORY_PATH,
+  docsTextAt,
+  loadDocsHistory,
+  type DocsHistory,
+  type DocsText,
+} from './docs-history.js';
 import { assertOfficialDocs, DOCS_BASE, type DocsIndex } from './fetch-docs.js';
 import { applyChangelogDeprecations, applyChangelogRemovals } from './removals.js';
 import { compareVersionsAsc, type ExtractedSymbolType, runCli, loadChangelog } from './lib.js';
@@ -792,9 +799,10 @@ export interface BinaryScopeWindow {
 /**
  * A description that names state the snapshot cannot have yet.
  *
- * `docs.json` is ONE capture of the current documentation — there is no
- * per-version docs history — so a docs-sourced description is evidence about the
- * tip and nothing else. Publishing it unchanged into every historical snapshot
+ * `docs.json` is ONE capture of the current documentation, so a docs-sourced
+ * description is evidence about the tip and nothing else. `data/docs-history.json`
+ * gives a snapshot older captures instead (see `docsTextFor`), but each of those can
+ * still name a release later than the snapshot. Publishing one unchanged into every historical snapshot
  * backfills today's answer into the past, which is the thing invariant 4 exists
  * to forbid, and it produces text that refutes itself: `data/versions/2.1.200.json`
  * described `/review` with "Before v2.1.223, `/review` was a separate command".
@@ -1026,7 +1034,8 @@ export function assembleSnapshots(
   binaryScopes?: ReadonlyMap<string, BinaryScopeWindow>,
   binaryHidden?: ReadonlyMap<string, readonly HiddenEra[]>,
   observedVersions?: readonly string[],
-  docScopes?: ReadonlyMap<string, readonly string[]>
+  docScopes?: ReadonlyMap<string, readonly string[]>,
+  docsHistory?: DocsHistory['descriptions']
 ): VersionSnapshot[] {
   const versionsOldestFirst = blocks
     .map((block) => block.version)
@@ -1221,27 +1230,76 @@ export function assembleSnapshots(
     return next;
   };
 
-  // Resolve the description from the binary timeline: a curated (non-empty)
-  // description wins in the current era; a HISTORICAL snapshot takes the text
-  // observed in that version's binary (de-anachronized), and a previously-EMPTY
-  // description is filled from the binary at every version. Symbols with no
-  // timeline, or versions before the first binary observation, are untouched.
+  /**
+   * The docs text nearest to the version, from the docs description timeline.
+   *
+   * Only for a record whose description IS the current docs text, verbatim. That is
+   * the case the timeline describes: a record whose primary text another rule
+   * rewrote (the scope rule empties it, a changelog bullet replaces it) keeps that
+   * rule's answer, because the timeline knows nothing about it.
+   *
+   * Never at the newest snapshot. A capture is dated by the newest release either
+   * lane knows, which can be a release with no changelog heading yet, and the tip
+   * would then read the era before it instead of the current docs text.
+   */
+  const docsTextFor = (record: SymbolRecord, version: string): DocsText | undefined => {
+    if (version === newestSnapshot) return undefined;
+    if (record.description_source !== 'docs' || record.description === '') return undefined;
+    const eras = docsHistory?.[`${record.type}:${record.symbol}`];
+    if (eras?.[eras.length - 1]?.description !== record.description) return undefined;
+    return docsTextAt(eras, version, (text) =>
+      latestVersionNamed(text, firstSeenByKey, releases, namedMemo)
+    );
+  };
+
+  // Resolve the description from the docs timeline, then the binary timeline: a
+  // curated (non-empty) description wins in the current era; a HISTORICAL snapshot
+  // takes the docs text of its own time, else the text observed in that version's
+  // binary (de-anachronized), and a previously-EMPTY description is filled from the
+  // binary at every version.
   const describeAt = (record: SymbolRecord, version: string): SymbolRecord => {
     const eras = binaryDescriptions?.[`${record.type}:${record.symbol}`];
-    // Runs even with no binary timeline: the anachronism guard below is the only
-    // thing standing between a docs-sourced description and every snapshot the
-    // symbol is live at, and a record with no binary timeline has nothing else to
-    // fall back on — `MCP_OAUTH_CALLBACK_PORT` is that shape.
-    if (!eras || eras.length === 0) return deanachronize(record, version);
     // A config key's category is per-version for the same reason its description
     // is: the `@internal` marker lives IN the description and moves. enrichWithBinary
     // can only pick one value for the record, so without resolving it here every
     // historical snapshot would carry the tip's category — publishing a key as
     // ordinary `settings` in the very versions where it was internal.
-    const categorized =
-      record.type === 'config_key'
-        ? withCategory(record, binaryConfigCategory(eras, version))
-        : record;
+    const categorize = (r: SymbolRecord): SymbolRecord =>
+      r.type === 'config_key' && eras && eras.length > 0
+        ? withCategory(r, binaryConfigCategory(eras, version))
+        : r;
+    const docsText = docsTextFor(record, version);
+    // Text the docs carried while this version was the newest release describes this
+    // version, so it needs no binary-era proxy, only the guard: the docs can already
+    // describe a release that is out but not yet in the dataset. One exception: the
+    // binary help text changed after the docs captured this text and no later than
+    // this version, so the docs had not caught up with a change this version carries.
+    const binaryMovedSince =
+      docsText !== undefined &&
+      (eras ?? []).some(
+        (era) =>
+          compareVersionsAsc(era.from, docsText.from) > 0 &&
+          compareVersionsAsc(era.from, version) <= 0
+      );
+    if (docsText?.contemporaneous && !binaryMovedSince) {
+      const guarded = deanachronize({ ...record, description: docsText.text }, version);
+      if (guarded.description !== '') return categorize(guarded);
+    }
+    // Every other docs text from the timeline takes the tip text's place, and the
+    // checks below apply to it unchanged. Text from before the timeline is the
+    // earliest capture on record: later than this version, as the tip text is, but
+    // closer to it. A contemporaneous text that the guard emptied stays the candidate
+    // too, so the checks can only swap it for this version's binary text. Falling
+    // back to the tip text would publish today's answer where the docs of the time
+    // show that nothing survives.
+    const nearest =
+      docsText && !binaryMovedSince ? { ...record, description: docsText.text } : record;
+    // Runs even with no binary timeline: the anachronism guard below is the only
+    // thing standing between a docs-sourced description and every snapshot the
+    // symbol is live at, and a record with no binary timeline has nothing else to
+    // fall back on — `MCP_OAUTH_CALLBACK_PORT` is that shape.
+    if (!eras || eras.length === 0) return deanachronize(nearest, version);
+    const categorized = categorize(nearest);
     // `isCurrentDescriptionEra` asks whether the BINARY help text has changed since
     // this version, and was used as a proxy for whether the docs text still
     // applies. It is not a sound one: `/review`'s binary text is unchanged since
@@ -1760,7 +1818,8 @@ export function buildEnrichedSnapshots(
   modElements?: readonly ModObservation[],
   hookEvents?: readonly ModObservation[],
   models?: readonly ModObservation[],
-  betaHeaders?: readonly ModObservation[]
+  betaHeaders?: readonly ModObservation[],
+  docsHistory?: DocsHistory['descriptions']
 ): VersionSnapshot[] {
   const collected = collectChangelogSymbols(blocks);
   const latest =
@@ -1854,7 +1913,8 @@ export function buildEnrichedSnapshots(
       docs.symbols.flatMap((entry) =>
         entry.doc_scopes ? [[`${entry.type}:${entry.symbol}`, entry.doc_scopes] as const] : []
       )
-    )
+    ),
+    docsHistory
   );
 
   // Control records join at SNAPSHOT level, not in the flat record list the other
@@ -2400,6 +2460,8 @@ export async function main(): Promise<number> {
   assertBinaryObservations(binary, BINARY_OBSERVATIONS_PATH);
   const binaryDescriptions = await loadBinaryDescriptions(BINARY_DESCRIPTIONS_PATH);
   assertBinaryDescriptions(binaryDescriptions, BINARY_DESCRIPTIONS_PATH);
+  // Absent until its seed data PR lands; every snapshot then uses the tip docs text.
+  const docsHistory = await loadDocsHistory(DOCS_HISTORY_PATH);
   // Freeze floating first_seen estimates against the snapshot already at the
   // output location (the committed latest.json when regenerating data/).
   const priorFirstSeen = await loadPriorFirstSeen(join(options.outDir, 'latest.json'));
@@ -2480,7 +2542,8 @@ export async function main(): Promise<number> {
     modElements.present ? modElements.observations : undefined,
     hookEvents.present ? hookEvents.observations : undefined,
     models.present ? models.observations : undefined,
-    betaHeaders.present ? betaHeaders.observations : undefined
+    betaHeaders.present ? betaHeaders.observations : undefined,
+    docsHistory?.descriptions
   );
   const index = buildIndex(snapshots);
 
