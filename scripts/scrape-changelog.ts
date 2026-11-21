@@ -1257,6 +1257,17 @@ export function assembleSnapshots(
   // takes the docs text of its own time, else the text observed in that version's
   // binary (de-anachronized), and a previously-EMPTY description is filled from the
   // binary at every version.
+  /**
+   * The record with a docs text from the timeline in place of its own. An empty one
+   * drops `description_source`, which the schema says is absent when the
+   * description is empty, and which every later path keeps as it finds it.
+   */
+  const withDocsText = (record: SymbolRecord, text: string): SymbolRecord => {
+    const next: SymbolRecord = { ...record, description: text };
+    if (text === '') delete next.description_source;
+    return next;
+  };
+
   const describeAt = (record: SymbolRecord, version: string): SymbolRecord => {
     const eras = binaryDescriptions?.[`${record.type}:${record.symbol}`];
     // A config key's category is per-version for the same reason its description
@@ -1292,8 +1303,7 @@ export function assembleSnapshots(
     // too, so the checks can only swap it for this version's binary text. Falling
     // back to the tip text would publish today's answer where the docs of the time
     // show that nothing survives.
-    const nearest =
-      docsText && !binaryMovedSince ? { ...record, description: docsText.text } : record;
+    const nearest = docsText && !binaryMovedSince ? withDocsText(record, docsText.text) : record;
     // Runs even with no binary timeline: the anachronism guard below is the only
     // thing standing between a docs-sourced description and every snapshot the
     // symbol is live at, and a record with no binary timeline has nothing else to

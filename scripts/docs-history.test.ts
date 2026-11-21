@@ -99,7 +99,8 @@ describe('docsTextAt', () => {
       from: '2.1.10',
       contemporaneous: false,
     });
-    expect(docsTextAt(eras, '2.1.25')).toBeUndefined();
+    // A null era is an answer too: the docs of that time had no text.
+    expect(docsTextAt(eras, '2.1.25')).toEqual({ text: '', from: '2.1.20', contemporaneous: true });
     expect(docsTextAt(eras, '2.1.40')?.text).toBe('new');
     expect(docsTextAt([], '2.1.1')).toBeUndefined();
   });

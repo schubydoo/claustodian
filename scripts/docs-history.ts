@@ -14,8 +14,8 @@
  *
  * Each era holds from its `from` release until the next era. A `null` description
  * means the docs did not document the symbol from that release on, so the
- * resolver answers "no docs text then" instead of carrying an older text across
- * the gap.
+ * resolver answers "no docs text then" instead of carrying an older or a newer
+ * text across the gap.
  *
  * ⚠️ Unlike `data/binary-descriptions.json`, this file is SELF-REFERENTIAL: each
  * `fetch-docs` run reads the committed file and appends to it. There is no archive
@@ -148,8 +148,11 @@ export interface DocsText {
 
 /**
  * The docs text nearest to `version`: the era in effect then, or the first era
- * when `version` predates the timeline. Undefined when the docs did not document
- * the symbol at `version` (a `null` era) or the timeline is empty.
+ * when `version` predates the timeline. Undefined only when the timeline is empty.
+ *
+ * An era with no docs text, a `null` one or an empty string, answers with an empty
+ * `text`. That is evidence too: the docs of that time had nothing to say, so the
+ * caller must not reach for the tip text instead.
  *
  * The docs often trail a release. `plugin.register` changed in 2.1.326, but its
  * docs text changed only when 2.1.330 was the newest release, and the new text says
@@ -185,9 +188,7 @@ export function docsTextAt(
     }
   }
   const era = eras[Math.max(activeIndex, 0)]!;
-  return era.description === null
-    ? undefined
-    : { text: era.description, from: era.from, contemporaneous: activeIndex >= 0 };
+  return { text: era.description ?? '', from: era.from, contemporaneous: activeIndex >= 0 };
 }
 
 /**

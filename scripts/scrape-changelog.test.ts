@@ -1600,6 +1600,57 @@ describe('assembleSnapshots — the docs description timeline', () => {
     expect(textAt(snaps, '2.1.326', 'X_VAR')?.description).toBe('As of v2.1.326, it does X.');
   });
 
+  it('publishes no docs text where the docs of the time had none', () => {
+    const snaps = (binary: boolean) =>
+      assembleSnapshots(
+        [
+          rec({
+            symbol: 'EMPTY_ERA',
+            type: 'env_var',
+            category: 'claude-code',
+            description: 'Tip.',
+          }),
+          rec({
+            symbol: 'NULL_ERA',
+            type: 'env_var',
+            category: 'claude-code',
+            description: 'Tip.',
+          }),
+        ],
+        blocks,
+        binary
+          ? {
+              'env_var:EMPTY_ERA': [{ from: '2.1.269', description: 'Binary text' }],
+              'env_var:NULL_ERA': [{ from: '2.1.269', description: 'Binary text' }],
+            }
+          : undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        {
+          'env_var:EMPTY_ERA': [
+            { from: '2.1.306', description: '' },
+            { from: '2.1.330', description: 'Tip.' },
+          ],
+          'env_var:NULL_ERA': [
+            { from: '2.1.269', description: 'Tip.' },
+            { from: '2.1.306', description: null },
+            { from: '2.1.330', description: 'Tip.' },
+          ],
+        }
+      );
+    for (const sym of ['EMPTY_ERA', 'NULL_ERA']) {
+      const bare = textAt(snaps(false), '2.1.310', sym);
+      expect(bare?.description).toBe('');
+      // The schema: description_source is absent when the description is empty.
+      expect(bare).not.toHaveProperty('description_source');
+      const withBinary = textAt(snaps(true), '2.1.310', sym);
+      expect(withBinary?.description).toBe('Binary text');
+      expect(withBinary?.description_source).toBe('binary');
+    }
+  });
+
   it('leaves a docs record alone when its text is not the newest era', () => {
     // docs.json moved without an append: the timeline does not describe this text.
     const snaps = build([rec({ description: 'Current docs text.' })]);
