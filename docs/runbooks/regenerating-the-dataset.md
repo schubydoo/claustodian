@@ -164,6 +164,13 @@ Step 3 must come after step 2. `fetch-docs` resolves settings-page key paths aga
 JSON nesting — a "Permission settings" table can list a key the schema holds flat.
 Run the docs lane first and it resolves against a stale schema without complaining.
 
+Step 3 also appends to `data/docs-history.json`, the docs description timeline, if that
+file exists. Do not delete the file before a regeneration. It holds docs text that no
+fetch can bring back. If you must rebuild it, run
+`npx tsx scripts/backfill-docs-history.ts` in a full clone, not a shallow one. The script
+reads the git history of `data/docs.json`, so a rebuild loses every capture that was
+never committed.
+
 Skip step 1 if you are not changing extraction; skip steps 1–2 if you are only
 refreshing docs.
 

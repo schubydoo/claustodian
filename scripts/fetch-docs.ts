@@ -17,6 +17,13 @@
  * fixture markdown with no network.
  */
 import { readFile, writeFile } from 'node:fs/promises';
+import { basename, dirname, join } from 'node:path';
+import {
+  DOCS_HISTORY_PATH,
+  appendDocsCapture,
+  captureRelease,
+  loadDocsHistory,
+} from './docs-history.js';
 import { runCli } from './lib.js';
 
 export const DOCS_BASE = 'https://code.claude.com/docs/en/';
@@ -1424,9 +1431,41 @@ export async function knownSettingsKeys(path: string): Promise<ReadonlySet<strin
   return keys;
 }
 
+/**
+ * Appends this capture to the docs description timeline beside `outPath`, when
+ * that file exists. Its presence is the opt-in: `scripts/backfill-docs-history.ts`
+ * seeds it from git history, and a file this run created would hold one era and
+ * hide that the seed never ran.
+ */
+async function appendToDocsHistory(
+  outPath: string,
+  index: DocsIndex,
+  binaryPath: string
+): Promise<void> {
+  const historyPath = join(dirname(outPath), basename(DOCS_HISTORY_PATH));
+  const history = await loadDocsHistory(historyPath);
+  if (!history) return;
+  const latest = (
+    JSON.parse(await readFile(join(dirname(outPath), 'index.json'), 'utf-8')) as {
+      latest?: string;
+    }
+  ).latest;
+  const observed =
+    (JSON.parse(await readFile(binaryPath, 'utf-8')) as { observedVersions?: string[] })
+      .observedVersions ?? [];
+  const release = captureRelease([latest, ...observed]);
+  await writeFile(
+    historyPath,
+    `${JSON.stringify(appendDocsCapture(history, index, release), null, 2)}\n`,
+    'utf-8'
+  );
+  console.log(`Appended the capture to ${historyPath} as of ${release}.`);
+}
+
 export async function main(argv: string[]): Promise<void> {
   const outPath = argv[0] ?? 'data/docs.json';
-  const known = await knownSettingsKeys(argv[1] ?? 'data/binary-observations.json');
+  const binaryPath = argv[1] ?? 'data/binary-observations.json';
+  const known = await knownSettingsKeys(binaryPath);
   const pages = await Promise.all(DOC_PAGES.map(fetchPage));
   const index = buildDocsIndex(pages, known);
   assertDocsCoverage(index);
@@ -1435,6 +1474,7 @@ export async function main(argv: string[]): Promise<void> {
   console.log(
     `Wrote ${outPath}: ${index.symbols.length} documented symbols (${withMin} with a min-version).`
   );
+  await appendToDocsHistory(outPath, index, binaryPath);
 }
 
 runCli(import.meta.url, 'fetching docs', main);

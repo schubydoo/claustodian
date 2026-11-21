@@ -16,6 +16,25 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ---
 
+## 2026-11-21
+
+### Changed
+
+- **A historical snapshot carries the docs text of its own time.** Before, every
+  snapshot took the current docs text, and the anachronism guard cut what named a later
+  release or symbol. When the first sentence named one, the description was empty. For
+  example, `plugin.register` was empty from 2.1.269 to 2.1.325. A snapshot now takes the
+  docs text that was current when its release was the newest. It takes a later text when
+  that text names a change the release already has. Before the earliest capture on
+  record, it takes that capture. The guard still applies to all of these texts. If the
+  binary help text changed after the docs text was captured, the snapshot keeps the
+  earlier rules. `latest.json` does not change. Old snapshots can now carry shorter or
+  different docs text, and some of them now carry binary text or no text. That happens
+  when the older docs text names a later release that the current text no longer names.
+- **New file `data/docs-history.json`.** It records each symbol's docs text each time
+  the docs lane ran, dated by the newest release known then. It is a build input and is
+  not part of the record schema.
+
 ## 2026-11-19
 
 ### Fixed
