@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.329",
+  "claudeCodeVersion": "2.1.330",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -1773,13 +1773,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.321",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Delete what is set aside instead of restoring it",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Delete the set-aside options and secrets instead of restoring them",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
-      "description_source": "binary",
       "scopes": [
         "plugin restore-set-aside"
       ]
@@ -2358,11 +2358,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Maximum `spawn-runner` hooks running in parallel. Also caps how many spawn requests are claimed per poll. The orchestrator checks for new spawn requests only after every hook it started has finished, so one slow hook delays that orchestrator's next hooks.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "self-hosted-runner orchestrator"
@@ -4480,6 +4480,21 @@
       ]
     },
     {
+      "symbol": "--start-dir",
+      "type": "cli_flag",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
       "symbol": "--startup-timeout-min",
       "type": "cli_flag",
       "first_seen": "2.1.224",
@@ -5048,6 +5063,19 @@
         "project purge",
         "purge"
       ]
+    },
+    {
+      "symbol": "/access",
+      "type": "command",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "View the verification programs your account is in",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/add-dir",
@@ -7091,7 +7119,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Pull a cloud session into this terminal. Opens a picker, then fetches the branch and conversation. Also available as `/tp`. Requires a claude.ai subscription",
+      "description": "Pull a cloud session into this terminal. Opens a picker, then loads the conversation. Also available as `/tp`. Requires a claude.ai subscription",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -8898,6 +8926,19 @@
       "category": "settings"
     },
     {
+      "symbol": "enforceAnthropicSignIn",
+      "type": "config_key",
+      "first_seen": "2.1.329",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Require a claude.ai login on Anthropic's API, or an Enterprise Admin Console sign-in. An Enterprise Admin Console sign-in counts only when `forceLoginOrgUUID` names your organization and you set no `policyHelper`. Requires Claude Code v2.1.329 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
+    },
+    {
       "symbol": "enforceAvailableModels",
       "type": "config_key",
       "first_seen": "2.1.175",
@@ -9112,7 +9153,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "From a managed source, require claude.ai account logins to belong to one Anthropic organization, given as a single UUID, or to any of several organizations, given as an array. From any settings file, Claude Code also uses a single UUID to pre-select that organization during a claude.ai or Claude Console login, and pre-selects nothing for an array. If you set the key in any settings file, Claude Code also stops offering the keyless Console sign-in in the sessions that file applies to and creates an API key instead.",
+      "description": "From a managed source, require claude.ai account logins to belong to one Anthropic organization, given as a single UUID, or to any of several organizations, given as an array. From any settings file, Claude Code also uses a single UUID to pre-select that organization during a claude.ai or Claude Console login, and pre-selects nothing for an array.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -12014,6 +12055,21 @@
       "direction": "host_to_cli"
     },
     {
+      "symbol": "dictate",
+      "type": "control_message",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "@internal Turns speech that the host recorded into text, with the service and the sign-in of /voice. A reply holds text (finished words), interim (the current guess, shown after text) and done, or a reason why not. The reply to stop holds all the words. A dictation ends after two minutes of audio, and is dropped with its words after 15 seconds with no request. Answered only for the program that started the CLI on the same machine, over its stdin; in a public build only for the VS Code extension, behind a flag.",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": "host_to_cli"
+    },
+    {
       "symbol": "elicitation",
       "type": "control_message",
       "first_seen": "2.1.63",
@@ -12473,6 +12529,21 @@
       "provenance": "binary",
       "confidence": "high",
       "description": "Requests the session's live permission rules and workspace directories — the same data /permissions lists in the terminal: rules from settings files plus session-only approvals, slash-command grants, and --allowedTools flag rules, each with its source. A connection that stores its answers cuts these: see `withheld` on the state.",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": "host_to_cli"
+    },
+    {
+      "symbol": "log_host_events",
+      "type": "control_message",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "@internal Sent by the VS Code extension's host: its own telemetry events, for the CLI to send to Anthropic with the CLI's own sign-in, in one request. Refused where list_cloud_sessions is.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -17119,18 +17190,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_CCR_SKIP_NEEDLESS_STARTUP_READS",
-      "type": "env_var",
-      "first_seen": "2.1.323",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_CCR_SLOW_SKILLS_WATCH",
       "type": "env_var",
       "first_seen": "2.1.317",
@@ -17453,6 +17512,18 @@
       "symbol": "CLAUDE_CODE_COWORK_PLUGIN_SKILL",
       "type": "env_var",
       "first_seen": "2.1.319",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_COWORK_SHELL_CHECK",
+      "type": "env_var",
+      "first_seen": "2.1.330",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -18026,7 +18097,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "On macOS with the native installer, set to `1` to run each background session's host process from the installed binary, not `~/.local/share/claude/ClaudeCode.app`. macOS may then ask again for permissions such as folder access, including after each update. Set it in the `env` block of user settings, a managed settings file, or an MDM policy, not your shell. To remove `ClaudeCode.app`, delete it yourself. Requires Claude Code v2.1.295 or later",
+      "description": "On macOS with the native installer, set to `1` to run each background session's host process from the installed binary, not `~/.local/share/claude/ClaudeCode.app`. macOS may then ask again for permissions such as folder access, including after each update. Set it in the `env` block of user settings, a managed settings file, or an MDM policy, not your shell. Requires Claude Code v2.1.295 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -18799,6 +18870,18 @@
       "symbol": "CLAUDE_CODE_DISABLE_QUIET_BACKGROUND_WAIT",
       "type": "env_var",
       "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_REDIRECT_DENY_RECHECK",
+      "type": "env_var",
+      "first_seen": "2.1.330",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -20114,7 +20197,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls fork mode, which is on by default and lets Claude start forks on its own. While fork mode is on, Claude also can't wait for a subagent in interactive terminal, VS Code, or desktop sessions on your machine. Set to `0` to turn fork mode off. For versions, see Turn fork mode off",
+      "description": "Controls fork mode, which is on by default and lets Claude start forks on its own. Set to `0` to turn fork mode off, for example to let Claude wait for a subagent. For versions, see Turn fork mode off",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -20166,6 +20249,19 @@
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_FULL_SIGN_IN_LINK",
+      "type": "env_var",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Set to `1` to print the full claude.ai login URL instead of a short one. Use it when the short URL shows an error or your script reads values from the URL. Set it in your shell or user settings. Requires Claude Code v2.1.330 or later",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
     {
@@ -20586,6 +20682,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_HOST_ALLOW_RESETS_DENIAL_STREAK",
+      "type": "env_var",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_HOST_ARTIFACT_TYPE_COMMANDS",
       "type": "env_var",
       "first_seen": "2.1.323",
@@ -20721,6 +20829,18 @@
       "symbol": "CLAUDE_CODE_HOST_PROMPT_SUPERSEDES_RECORD",
       "type": "env_var",
       "first_seen": "2.1.285",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_HOST_READS_NO_BASH_EDIT_DIFF",
+      "type": "env_var",
+      "first_seen": "2.1.330",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -21796,6 +21916,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_MODEL_NOBODY_CHOSE",
+      "type": "env_var",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_NANKEEN_KESTREL",
       "type": "env_var",
       "first_seen": "2.1.212",
@@ -22762,6 +22894,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_PROJECTS_FEATURE_FLAGS",
+      "type": "env_var",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_PROJECTS_SESSION",
       "type": "env_var",
       "first_seen": "2.1.282",
@@ -22962,6 +23106,18 @@
       "symbol": "CLAUDE_CODE_REFUSAL_FALLBACK_CATCH_ALL",
       "type": "env_var",
       "first_seen": "2.1.206",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_RELAUNCH_BYPASS_SWITCH",
+      "type": "env_var",
+      "first_seen": "2.1.330",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -23714,6 +23870,18 @@
       "symbol": "CLAUDE_CODE_RUNNER_MODEL_SOCKET",
       "type": "env_var",
       "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_RUNNER_START_NOTES",
+      "type": "env_var",
+      "first_seen": "2.1.330",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -24585,6 +24753,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_STARTER_MAY_HOLD_CONNECTOR_FILE",
+      "type": "env_var",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_STARTUP_FAILURE_RESULTS",
       "type": "env_var",
       "first_seen": "2.1.274",
@@ -24620,6 +24800,18 @@
       "description": "Maximum number of consecutive times a Stop or SubagentStop hook may block the turn from ending before Claude Code overrides it and ends the turn anyway (default: 8). Set to `0` to disable the cap. Raise this if your hook legitimately needs more iterations to resolve",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_STOP_ON_UNUSABLE_PROFILE",
+      "type": "env_var",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -25920,7 +26112,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to the number of milliseconds WebFetch keeps each fetched URL's response cached. The default is `900000`, which is 15 minutes. Takes plain digits only; `0`, a decimal, or any other spelling keeps the default. Claude Code reads the value once per launch, so a change in a settings `env` block applies when you next launch `claude`. Requires Claude Code v2.1.233 or later",
+      "description": "Set to the number of milliseconds WebFetch keeps each fetched page cached. The default is `900000`, which is 15 minutes. Takes plain digits only; `0`, a decimal, or any other spelling keeps the default. Claude Code reads the value once per launch, so a change in a settings `env` block applies when you next launch `claude`. Requires Claude Code v2.1.233 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -27146,6 +27338,18 @@
       "description": "Why Anthropic sent this spawn request, such as `runner_lost` or `resumed`. Unset when the request carries no well-formed reason, so read it as `\"${CLAUDE_RUNNER_SPAWN_REASON:-}\"`. Requires Claude Code v2.1.318 or later on the orchestrator",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_RUNNER_START_FOLDER",
+      "type": "env_var",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -29320,6 +29524,18 @@
       "category": "other"
     },
     {
+      "symbol": "SELF_HOSTED_RUNNER_START_DIR",
+      "type": "env_var",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
+    },
+    {
       "symbol": "SELF_HOSTED_RUNNER_TRUST_WORKSPACE",
       "type": "env_var",
       "first_seen": "2.1.224",
@@ -30534,7 +30750,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "A hooks module is about to load. `e.uses` lists its events, mods API calls, environment variables, and state, as `claude plugin validate` prints them. Each call is written without the `$.` prefix, such as `fs.read`.",
+      "description": "A hooks module is about to load, or, on v2.1.326 or later, a plugin without one. `e.uses` lists the module's events, mods API calls, environment variables, and state, as `claude plugin validate` prints them. Each call is written without the `$.` prefix, such as `fs.read`.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
@@ -30804,10 +31020,11 @@
       "first_seen": "2.1.326",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "The user stops Claude, such as with Esc during a turn. Requires Claude Code v2.1.326 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -30907,10 +31124,11 @@
       "first_seen": "2.1.326",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Auto mode is about to ask its classifier about a call. Requires Claude Code v2.1.326 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -30931,10 +31149,11 @@
       "first_seen": "2.1.326",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "An allowed call is about to run. Requires Claude Code v2.1.326 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -31116,6 +31335,78 @@
       "description": "A `Button`, `Input`, or `Select` a mod drew is used",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "vcs.detect",
+      "type": "mod_event",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "vcs.diff",
+      "type": "mod_event",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "vcs.isolate",
+      "type": "mod_event",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "vcs.list",
+      "type": "mod_event",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "vcs.release",
+      "type": "mod_event",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "vcs.status",
+      "type": "mod_event",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -31548,10 +31839,10 @@
       "first_seen": "2.1.326",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -31743,10 +32034,10 @@
       "first_seen": "2.1.326",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -32306,15 +32597,87 @@
       "category": "mods"
     },
     {
-      "symbol": "$.wasm.compile",
+      "symbol": "$.vcs.detect",
       "type": "mod_method",
-      "first_seen": "2.1.326",
+      "first_seen": "2.1.330",
       "removed_in": null,
       "status": "active",
       "provenance": "binary",
       "confidence": "medium",
       "description": "",
       "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "$.vcs.diff",
+      "type": "mod_method",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "$.vcs.isolate",
+      "type": "mod_method",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "$.vcs.list",
+      "type": "mod_method",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "$.vcs.release",
+      "type": "mod_method",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "$.vcs.status",
+      "type": "mod_method",
+      "first_seen": "2.1.330",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "$.wasm.compile",
+      "type": "mod_method",
+      "first_seen": "2.1.326",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -32347,10 +32710,10 @@
       "first_seen": "2.1.326",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {

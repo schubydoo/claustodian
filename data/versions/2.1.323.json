@@ -1747,13 +1747,13 @@
       "type": "cli_flag",
       "first_seen": "2.1.321",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Delete what is set aside instead of restoring it",
-      "source_url": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Delete the set-aside options and secrets instead of restoring them",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins/cli-reference.md",
       "category": "cli",
-      "description_source": "binary",
       "scopes": [
         "plugin restore-set-aside"
       ]
@@ -2303,11 +2303,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Maximum `spawn-runner` hooks running in parallel. Also caps how many spawn requests are claimed per poll. The orchestrator checks for new spawn requests only after every hook it started has finished, so one slow hook delays that orchestrator's next hooks.",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
         "self-hosted-runner orchestrator"
@@ -5482,8 +5482,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "**Skill.** Convert your repo's React design system and upload it to Claude Design, so designs it produces use your real components. Optionally name the design system, for example `/design-sync Acme DS`. A first-time sync verifies every component and can take a few hours on a large repo. Available on the Anthropic API. It needs claude.ai, which the CLI doesn't contact on Amazon Bedrock, Google Cloud's Agent Platform, Microsoft Foundry, or Claude Platform on AWS, or through a Claude apps gateway. The command is unavailable there. This command uploads to the standalone claude.ai/design site, which closes by December 14, 2026; see Migrate from standalone Claude Design to Claude",
-      "description_source": "docs",
+      "description": "Push your design system components to claude.ai/design",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -6858,7 +6858,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Pull a cloud session into this terminal. Opens a picker, then fetches the branch and conversation. Also available as `/tp`. Requires a claude.ai subscription",
+      "description": "Pull a cloud session into this terminal. Opens a picker, then loads the conversation. Also available as `/tp`. Requires a claude.ai subscription",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -8766,7 +8766,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "From a managed source, require claude.ai account logins to belong to one Anthropic organization, given as a single UUID, or to any of several organizations, given as an array. From any settings file, Claude Code also uses a single UUID to pre-select that organization during a claude.ai or Claude Console login, and pre-selects nothing for an array. If you set the key in any settings file, Claude Code also stops offering the keyless Console sign-in in the sessions that file applies to and creates an API key instead.",
+      "description": "From a managed source, require claude.ai account logins to belong to one Anthropic organization, given as a single UUID, or to any of several organizations, given as an array. From any settings file, Claude Code also uses a single UUID to pre-select that organization during a claude.ai or Claude Console login, and pre-selects nothing for an array.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -16610,7 +16610,7 @@
       "symbol": "CLAUDE_CODE_CCR_SKIP_NEEDLESS_STARTUP_READS",
       "type": "env_var",
       "first_seen": "2.1.323",
-      "removed_in": null,
+      "removed_in": "2.1.328",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
@@ -17502,7 +17502,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "On macOS with the native installer, set to `1` to run each background session's host process from the installed binary, not `~/.local/share/claude/ClaudeCode.app`. macOS may then ask again for permissions such as folder access, including after each update. Set it in the `env` block of user settings, a managed settings file, or an MDM policy, not your shell. To remove `ClaudeCode.app`, delete it yourself. Requires Claude Code v2.1.295 or later",
+      "description": "On macOS with the native installer, set to `1` to run each background session's host process from the installed binary, not `~/.local/share/claude/ClaudeCode.app`. macOS may then ask again for permissions such as folder access, including after each update. Set it in the `env` block of user settings, a managed settings file, or an MDM policy, not your shell. Requires Claude Code v2.1.295 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -19480,7 +19480,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls fork mode, which is on by default and lets Claude start forks on its own. While fork mode is on, Claude also can't wait for a subagent in interactive terminal, VS Code, or desktop sessions on your machine. Set to `0` to turn fork mode off. For versions, see Turn fork mode off",
+      "description": "Controls fork mode, which is on by default and lets Claude start forks on its own. Set to `0` to turn fork mode off, for example to let Claude wait for a subagent. For versions, see Turn fork mode off",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -24998,7 +24998,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to the number of milliseconds WebFetch keeps each fetched URL's response cached. The default is `900000`, which is 15 minutes. Takes plain digits only; `0`, a decimal, or any other spelling keeps the default. Claude Code reads the value once per launch, so a change in a settings `env` block applies when you next launch `claude`. Requires Claude Code v2.1.233 or later",
+      "description": "Set to the number of milliseconds WebFetch keeps each fetched page cached. The default is `900000`, which is 15 minutes. Takes plain digits only; `0`, a decimal, or any other spelling keeps the default. Claude Code reads the value once per launch, so a change in a settings `env` block applies when you next launch `claude`. Requires Claude Code v2.1.233 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -29562,8 +29562,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "A hooks module is about to load. `e.uses` lists its events, mods API calls, environment variables, and state, as `claude plugin validate` prints them. Each call is written without the `$.` prefix, such as `fs.read`.",
-      "description_source": "docs",
+      "description": "",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },

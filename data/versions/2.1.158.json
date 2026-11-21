@@ -5161,7 +5161,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "From a managed source, require claude.ai account logins to belong to one Anthropic organization, given as a single UUID, or to any of several organizations, given as an array. From any settings file, Claude Code also uses a single UUID to pre-select that organization during a claude.ai or Claude Console login, and pre-selects nothing for an array. If you set the key in any settings file, Claude Code also stops offering the keyless Console sign-in in the sessions that file applies to and creates an API key instead.",
+      "description": "From a managed source, require claude.ai account logins to belong to one Anthropic organization, given as a single UUID, or to any of several organizations, given as an array. From any settings file, Claude Code also uses a single UUID to pre-select that organization during a claude.ai or Claude Console login, and pre-selects nothing for an array.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
@@ -10007,7 +10007,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Controls fork mode, which is on by default and lets Claude start forks on its own. While fork mode is on, Claude also can't wait for a subagent in interactive terminal, VS Code, or desktop sessions on your machine. Set to `0` to turn fork mode off. For versions, see Turn fork mode off",
+      "description": "Controls fork mode, which is on by default and lets Claude start forks on its own. Set to `0` to turn fork mode off, for example to let Claude wait for a subagent. For versions, see Turn fork mode off",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
