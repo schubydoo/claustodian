@@ -421,6 +421,13 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--discard",
+      "type": "cli_flag",
+      "description": "Delete the set-aside options and secrets instead of restoring them",
+      "doc_min_version": null,
+      "doc_page": "plugins/cli-reference"
+    },
+    {
       "symbol": "--drain-grace-sec",
       "type": "cli_flag",
       "description": "Until the runner receives a shutdown signal or reaches its retire time, controls when the runner exits after its active sessions finish: `0` exits immediately without polling for more, and a positive value keeps the runner alive and re-polling the locked owner's queue for that many seconds first, at the cost of the per-session container isolation described in the hardening section. After a first signal you deferred with `--defer-shutdown-max-min`, the runner exits as soon as it holds no sessions, whatever you set here.",
@@ -2263,7 +2270,7 @@
     {
       "symbol": "/teleport",
       "type": "command",
-      "description": "Pull a cloud session into this terminal. Opens a picker, then fetches the branch and conversation. Also available as `/tp`. Requires a claude.ai subscription",
+      "description": "Pull a cloud session into this terminal. Opens a picker, then loads the conversation. Also available as `/tp`. Requires a claude.ai subscription",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2954,6 +2961,13 @@
       "doc_page": "settings-reference"
     },
     {
+      "symbol": "enforceAnthropicSignIn",
+      "type": "config_key",
+      "description": "Require a claude.ai login on Anthropic's API, or an Enterprise Admin Console sign-in. An Enterprise Admin Console sign-in counts only when `forceLoginOrgUUID` names your organization and you set no `policyHelper`. Requires Claude Code v2.1.329 or later.",
+      "doc_min_version": "2.1.329",
+      "doc_page": "settings-reference"
+    },
+    {
       "symbol": "enforceAvailableModels",
       "type": "config_key",
       "description": "The `/model` picker has a **Default** option, and `default` model setting describes the model it resolves to. An `availableModels` allowlist limits the models you can name, but with the default prefix matching it doesn't remap your account type's default, so **Default** can still resolve to a model outside the list. This key closes that gap. Requires Claude Code v2.1.175 or later.",
@@ -3055,7 +3069,7 @@
     {
       "symbol": "forceLoginOrgUUID",
       "type": "config_key",
-      "description": "From a managed source, require claude.ai account logins to belong to one Anthropic organization, given as a single UUID, or to any of several organizations, given as an array. From any settings file, Claude Code also uses a single UUID to pre-select that organization during a claude.ai or Claude Console login, and pre-selects nothing for an array. If you set the key in any settings file, Claude Code also stops offering the keyless Console sign-in in the sessions that file applies to and creates an API key instead.",
+      "description": "From a managed source, require claude.ai account logins to belong to one Anthropic organization, given as a single UUID, or to any of several organizations, given as an array. From any settings file, Claude Code also uses a single UUID to pre-select that organization during a claude.ai or Claude Console login, and pre-selects nothing for an array.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -4928,7 +4942,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_BG_STABLE_PATH",
       "type": "env_var",
-      "description": "On macOS with the native installer, set to `1` to run each background session's host process from the installed binary, not `~/.local/share/claude/ClaudeCode.app`. macOS may then ask again for permissions such as folder access, including after each update. Set it in the `env` block of user settings, a managed settings file, or an MDM policy, not your shell. To remove `ClaudeCode.app`, delete it yourself. Requires Claude Code v2.1.295 or later",
+      "description": "On macOS with the native installer, set to `1` to run each background session's host process from the installed binary, not `~/.local/share/claude/ClaudeCode.app`. macOS may then ask again for permissions such as folder access, including after each update. Set it in the `env` block of user settings, a managed settings file, or an MDM policy, not your shell. Requires Claude Code v2.1.295 or later",
       "doc_min_version": "2.1.295",
       "doc_page": "env-vars"
     },
@@ -5418,7 +5432,7 @@
     {
       "symbol": "CLAUDE_CODE_FORK_SUBAGENT",
       "type": "env_var",
-      "description": "Controls fork mode, which is on by default and lets Claude start forks on its own. While fork mode is on, Claude also can't wait for a subagent in interactive terminal, VS Code, or desktop sessions on your machine. Set to `0` to turn fork mode off. For versions, see Turn fork mode off",
+      "description": "Controls fork mode, which is on by default and lets Claude start forks on its own. Set to `0` to turn fork mode off, for example to let Claude wait for a subagent. For versions, see Turn fork mode off",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -5427,6 +5441,13 @@
       "type": "env_var",
       "description": "Set to `1` to emit subagent text and thinking blocks in `claude -p --output-format stream-json` output, the same behavior as the `--forward-subagent-text` flag. Use the variable when a harness invokes `claude` and can't pass the flag itself. Unlike the flag, which exits with an error outside non-interactive mode with stream-json output, the variable is ignored there so that nested invocations keep working when it's set process-wide. Requires Claude Code v2.1.211 or later",
       "doc_min_version": "2.1.211",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_FULL_SIGN_IN_LINK",
+      "type": "env_var",
+      "description": "Set to `1` to print the full claude.ai login URL instead of a short one. Use it when the short URL shows an error or your script reads values from the URL. Set it in your shell or user settings. Requires Claude Code v2.1.330 or later",
+      "doc_min_version": "2.1.330",
       "doc_page": "env-vars"
     },
     {
@@ -6370,7 +6391,7 @@
     {
       "symbol": "CLAUDE_CODE_WEBFETCH_CACHE_TTL_MS",
       "type": "env_var",
-      "description": "Set to the number of milliseconds WebFetch keeps each fetched URL's response cached. The default is `900000`, which is 15 minutes. Takes plain digits only; `0`, a decimal, or any other spelling keeps the default. Claude Code reads the value once per launch, so a change in a settings `env` block applies when you next launch `claude`. Requires Claude Code v2.1.233 or later",
+      "description": "Set to the number of milliseconds WebFetch keeps each fetched page cached. The default is `900000`, which is 15 minutes. Takes plain digits only; `0`, a decimal, or any other spelling keeps the default. Claude Code reads the value once per launch, so a change in a settings `env` block applies when you next launch `claude`. Requires Claude Code v2.1.233 or later",
       "doc_min_version": "2.1.233",
       "doc_page": "env-vars"
     },
@@ -8134,7 +8155,7 @@
     {
       "symbol": "plugin.register",
       "type": "mod_event",
-      "description": "A hooks module is about to load. `e.uses` lists its events, mods API calls, environment variables, and state, as `claude plugin validate` prints them. Each call is written without the `$.` prefix, such as `fs.read`.",
+      "description": "A hooks module is about to load, or, on v2.1.326 or later, a plugin without one. `e.uses` lists the module's events, mods API calls, environment variables, and state, as `claude plugin validate` prints them. Each call is written without the `$.` prefix, such as `fs.read`.",
       "doc_min_version": null,
       "doc_page": "plugins/mods/reference"
     },
@@ -8272,6 +8293,13 @@
       "doc_page": "plugins/mods/reference"
     },
     {
+      "symbol": "session.stop",
+      "type": "mod_event",
+      "description": "The user stops Claude, such as with Esc during a turn. Requires Claude Code v2.1.326 or later.",
+      "doc_min_version": "2.1.326",
+      "doc_page": "plugins/mods/reference"
+    },
+    {
       "symbol": "settings.read",
       "type": "mod_event",
       "description": "A mod calls `$.settings.read`, or Claude Code builds the session's merged settings. Requires Claude Code v2.1.304 or later on Claude Code's own read and for `e.layers`",
@@ -8318,6 +8346,20 @@
       "type": "mod_event",
       "description": "Once for each tool, when its description is first sent to Claude. A second time for an MCP tool when Claude loads it through tool search, with `e.description` set to the text Claude reads for the loaded tool.",
       "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "tool.judge",
+      "type": "mod_event",
+      "description": "Auto mode is about to ask its classifier about a call. Requires Claude Code v2.1.326 or later.",
+      "doc_min_version": "2.1.326",
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "tool.run",
+      "type": "mod_event",
+      "description": "An allowed call is about to run. Requires Claude Code v2.1.326 or later.",
+      "doc_min_version": "2.1.326",
       "doc_page": "plugins/mods/reference"
     },
     {
@@ -8636,6 +8678,13 @@
       "doc_page": "plugins/mods/reference"
     },
     {
+      "symbol": "$.process.hookEnv",
+      "type": "mod_method",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
       "symbol": "$.process.run",
       "type": "mod_method",
       "description": "",
@@ -8714,6 +8763,13 @@
     },
     {
       "symbol": "$.session.id",
+      "type": "mod_method",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "$.session.info",
       "type": "mod_method",
       "description": "",
       "doc_min_version": null,
@@ -9021,6 +9077,13 @@
       "doc_page": "plugins/mods/reference"
     },
     {
+      "symbol": "$.wasm.compile",
+      "type": "mod_method",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
       "symbol": "AbovePrompt",
       "type": "mod_render_site",
       "description": "",
@@ -9032,6 +9095,13 @@
       "type": "mod_render_site",
       "description": "",
       "doc_min_version": "2.1.323",
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "AgentRow",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": null,
       "doc_page": "plugins/mods/reference"
     },
     {

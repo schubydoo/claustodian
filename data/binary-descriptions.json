@@ -2051,6 +2051,12 @@
         "description": "Enable XAA (SEP-990) for this server. Requires 'claude mcp xaa setup' first. Also requires --client-id and --client-secret (for the MCP server's AS)."
       }
     ],
+    "command:/access": [
+      {
+        "from": "2.1.330",
+        "description": "View the verification programs your account is in"
+      }
+    ],
     "command:/add-dir": [
       {
         "from": "1.0.23",
@@ -2473,6 +2479,10 @@
       {
         "from": "2.1.163",
         "description": "Push your design system components to claude.ai/design"
+      },
+      {
+        "from": "2.1.330",
+        "description": "Sync your design system to Claude Design"
       }
     ],
     "command:/desktop": [
