@@ -2231,6 +2231,10 @@
       {
         "from": "2.1.201",
         "description": "Export the current conversation as plain text. With a filename, writes directly to that file. Without, opens a dialog to copy to clipboard or save to a file"
+      },
+      {
+        "from": "2.1.330",
+        "description": "Export the current conversation as plain text. With a filename, writes directly to that file, and on v2.1.327 or later refuses one that already exists. Without, opens a dialog to copy to clipboard or save to a file"
       }
     ],
     "command:/fast": [
@@ -7691,6 +7695,12 @@
       {
         "from": "2.1.289",
         "description": "Set to `1` to turn off the automatic model switch when a safety classifier flags a request, the behavior the `switchModelsOnFlag` setting controls"
+      }
+    ],
+    "env_var:CLAUDE_CODE_DISABLE_SHELL_HEAD_START": [
+      {
+        "from": "2.1.330",
+        "description": "Set to `1` to turn off the head start that can run your shell startup files while Claude writes the session's first Bash command, before that command's permission prompt. Requires Claude Code v2.1.327 or later"
       }
     ],
     "env_var:CLAUDE_CODE_DISABLE_STRUCTURED_OUTPUTS": [

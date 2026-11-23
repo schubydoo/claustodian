@@ -5664,8 +5664,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Export the current conversation as plain text. With a filename, writes directly to that file. Without, opens a dialog to copy to clipboard or save to a file",
-      "description_source": "docs",
+      "description": "Export this session to a file or clipboard",
+      "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
