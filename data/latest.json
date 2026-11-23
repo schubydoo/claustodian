@@ -5847,7 +5847,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Export the current conversation as plain text. With a filename, writes directly to that file. Without, opens a dialog to copy to clipboard or save to a file",
+      "description": "Export the current conversation as plain text. With a filename, writes directly to that file, and on v2.1.327 or later refuses one that already exists. Without, opens a dialog to copy to clipboard or save to a file",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6162,19 +6162,6 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
-    },
-    {
-      "symbol": "/loops",
-      "type": "command",
-      "first_seen": "2.1.101",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "List, create, and delete loops",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
     },
     {
       "symbol": "/marketplace",
@@ -6956,6 +6943,20 @@
       "category": "command"
     },
     {
+      "symbol": "/ship",
+      "type": "command",
+      "first_seen": "2.1.330",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Skill.** Commit and push your work and open a GitHub pull request, if your branch has none. Then review the change. Claude then watches the pull request in this session and pushes fixes for review feedback and failing checks. `/ship stop` ends the watch. See Get a pull request ready with `/ship`. If the command is missing, see Troubleshooting",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "category": "command"
+    },
+    {
       "symbol": "/simplify",
       "type": "command",
       "first_seen": "2.1.63",
@@ -7044,6 +7045,20 @@
       "description": "Configure Claude Code's status line. Describe what you want, or run without arguments to auto-configure from your shell prompt",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/steward",
+      "type": "command",
+      "first_seen": "2.1.330",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "medium",
+      "description": "**Skill.** Watch your open GitHub pull request in this session and push fixes for review feedback and failing checks, without the review that `/ship` runs first. `/steward stop` ends the watch. See Watch without a review using `/steward`. If the command is missing, see Troubleshooting. Alias: `/ship:steward`",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
     },
     {
@@ -9064,8 +9079,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Have Claude Code snapshot files before each edit so `/rewind` can restore them. Appears in `/config` as **Rewind code (checkpoints)**, and toggling it there writes this key to your user settings.",
-      "description_source": "docs",
+      "description": "Snapshot files before edits so /rewind can restore them",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -18959,7 +18974,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Set to `1` to turn off the head start that can run your shell startup files while Claude writes the session's first Bash command, before that command's permission prompt. Requires Claude Code v2.1.327 or later",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -20259,7 +20275,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to print the full claude.ai login URL instead of a short one. Use it when the short URL shows an error or your script reads values from the URL. Set it in your shell or user settings. Requires Claude Code v2.1.330 or later",
+      "description": "Set to `1` to print the full login URL. Use it when a short login URL shows an error or your script reads values from the URL. Set it in your shell or user settings. Requires Claude Code v2.1.330 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -21857,18 +21873,6 @@
     },
     {
       "symbol": "CLAUDE_CODE_MOCK_REMOTE_SETTINGS",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_MOCK_TRIAL",
       "type": "env_var",
       "first_seen": "2.1.160",
       "removed_in": null,
@@ -25345,66 +25349,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_TEST_ALLOW_REAL_NETWORK",
-      "type": "env_var",
-      "first_seen": "2.1.239",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_TEST_FIXTURES_ROOT",
-      "type": "env_var",
-      "first_seen": "1.0.109",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_TEST_FORCE_DENY",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_TEST_NO_GIT_BASH",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_TEST_NO_PWSH",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_TETHER_LIVE",
       "type": "env_var",
       "first_seen": "2.1.281",
@@ -25758,33 +25702,9 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_ULTRAREVIEW_PREFLIGHT_FIXTURE",
-      "type": "env_var",
-      "first_seen": "2.1.105",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_ULTRAREVIEW_PR_AS_MERGED",
       "type": "env_var",
       "first_seen": "2.1.321",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_ULTRAREVIEW_QUOTA_FIXTURE",
-      "type": "env_var",
-      "first_seen": "2.1.224",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -26743,18 +26663,6 @@
       "confidence": "high",
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_MOCK_HEADERLESS_429",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -28209,6 +28117,19 @@
       "category": "other"
     },
     {
+      "symbol": "GIT_SSH",
+      "type": "env_var",
+      "first_seen": "2.1.285",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "medium",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
+    },
+    {
       "symbol": "GOOGLE_APPLICATION_CREDENTIALS",
       "type": "env_var",
       "first_seen": "0.2.9",
@@ -29620,18 +29541,6 @@
       "description": "Removed in v2.1.277 and now a no-op, together with the `TaskOutput` tool it sized. Previously set the maximum number of characters of a background task's output that the `TaskOutput` tool kept. Claude reads a background task's output file with `Read` instead",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
-      "symbol": "TEST_ENABLE_SESSION_PERSISTENCE",
-      "type": "env_var",
-      "first_seen": "1.0.106",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "other"
     },
     {

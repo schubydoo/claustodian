@@ -5819,7 +5819,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Export the current conversation as plain text. With a filename, writes directly to that file. Without, opens a dialog to copy to clipboard or save to a file",
+      "description": "Export the current conversation as plain text. With a filename, writes directly to that file, and on v2.1.327 or later refuses one that already exists. Without, opens a dialog to copy to clipboard or save to a file",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6134,19 +6134,6 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
-    },
-    {
-      "symbol": "/loops",
-      "type": "command",
-      "first_seen": "2.1.101",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "List, create, and delete loops",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
     },
     {
       "symbol": "/marketplace",
@@ -18877,7 +18864,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "",
+      "description": "Set to `1` to turn off the head start that can run your shell startup files while Claude writes the session's first Bash command, before that command's permission prompt. Requires Claude Code v2.1.327 or later",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -21738,18 +21726,6 @@
     },
     {
       "symbol": "CLAUDE_CODE_MOCK_REMOTE_SETTINGS",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_MOCK_TRIAL",
       "type": "env_var",
       "first_seen": "2.1.160",
       "removed_in": null,
@@ -25154,66 +25130,6 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_TEST_ALLOW_REAL_NETWORK",
-      "type": "env_var",
-      "first_seen": "2.1.239",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_TEST_FIXTURES_ROOT",
-      "type": "env_var",
-      "first_seen": "1.0.109",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_TEST_FORCE_DENY",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_TEST_NO_GIT_BASH",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_TEST_NO_PWSH",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_TETHER_LIVE",
       "type": "env_var",
       "first_seen": "2.1.281",
@@ -25567,33 +25483,9 @@
       "category": "claude-code"
     },
     {
-      "symbol": "CLAUDE_CODE_ULTRAREVIEW_PREFLIGHT_FIXTURE",
-      "type": "env_var",
-      "first_seen": "2.1.105",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
       "symbol": "CLAUDE_CODE_ULTRAREVIEW_PR_AS_MERGED",
       "type": "env_var",
       "first_seen": "2.1.321",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_CODE_ULTRAREVIEW_QUOTA_FIXTURE",
-      "type": "env_var",
-      "first_seen": "2.1.224",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -26552,18 +26444,6 @@
       "confidence": "high",
       "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "claude-code"
-    },
-    {
-      "symbol": "CLAUDE_MOCK_HEADERLESS_429",
-      "type": "env_var",
-      "first_seen": "2.1.160",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -28006,6 +27886,19 @@
       "category": "other"
     },
     {
+      "symbol": "GIT_SSH",
+      "type": "env_var",
+      "first_seen": "2.1.285",
+      "first_seen_estimated": true,
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "medium",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "other"
+    },
+    {
       "symbol": "GOOGLE_APPLICATION_CREDENTIALS",
       "type": "env_var",
       "first_seen": "0.2.9",
@@ -29405,18 +29298,6 @@
       "description": "Removed in v2.1.277 and now a no-op, together with the `TaskOutput` tool it sized. Previously set the maximum number of characters of a background task's output that the `TaskOutput` tool kept. Claude reads a background task's output file with `Read` instead",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "other"
-    },
-    {
-      "symbol": "TEST_ENABLE_SESSION_PERSISTENCE",
-      "type": "env_var",
-      "first_seen": "1.0.106",
-      "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
       "category": "other"
     },
     {

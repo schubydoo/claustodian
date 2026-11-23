@@ -225,6 +225,12 @@
         "description": "structured_outputs"
       }
     ],
+    "beta_header:subagent-review-2026-11-17": [
+      {
+        "from": "2.1.331",
+        "description": "subagent_review"
+      }
+    ],
     "beta_header:summarize-connector-text-2026-03-13": [
       {
         "from": "2.1.159",
@@ -2289,6 +2295,12 @@
         "description": "Build and debug apps that use the Claude API"
       }
     ],
+    "command:/claude-approvals": [
+      {
+        "from": "2.1.331",
+        "description": "Edit, explain, or tune a Claude Approvals policy file or classifier"
+      }
+    ],
     "command:/claude-code-docs": [
       {
         "from": "2.1.163",
@@ -4281,6 +4293,12 @@
         "description": "@internal When true, Claude keeps working until the PR is ready for you to merge, a cron/Monitor is armed to resume later, or it hands you a self-contained next step."
       }
     ],
+    "config_key:downloadsMirrorUrl": [
+      {
+        "from": "2.1.331",
+        "description": "Anthropic-run mirror from which native installs download Claude Code releases (claude install, claude update, and auto-updates), instead of https://downloads.claude.ai. Must be exactly https://claude.fedstart.com/claude-downloads (Claude for Government). Any other value stops installs and updates with an error. CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC normally turns auto-updates off, but not with this mirror set. Only read from managed (policy) settings."
+      }
+    ],
     "config_key:editorMode": [
       {
         "from": "2.1.119",
@@ -4431,6 +4449,10 @@
       {
         "from": "2.1.119",
         "description": "Snapshot files before edits so /rewind can restore them"
+      },
+      {
+        "from": "2.1.331",
+        "description": "Snapshot files before edits so /rewind can restore them. In a session an SDK starts, only an administrator's false applies"
       }
     ],
     "config_key:fileSuggestion": [
@@ -4647,6 +4669,18 @@
       {
         "from": "1.0.54",
         "description": "Override the default model used by Claude Code"
+      }
+    ],
+    "config_key:modelCatalogPublicKey": [
+      {
+        "from": "2.1.331",
+        "description": "@internal PEM-encoded RSA public key (SubjectPublicKeyInfo, \"-----BEGIN PUBLIC KEY-----\", at least 2048 bits) that a self-hosted model-catalog document named by modelCatalogUrl must be signed with: the \".raw-sig.json\" sidecar next to the document (the same format Claude Code release manifests use, RSASSA-PKCS1-v1_5 / SHA-512 over the context prefix and the exact document bytes) is verified against this key. Consulted only for a modelCatalogUrl set in the same managed settings — not for the hosted URL and not for a URL set only by CLAUDE_CODE_MODEL_CATALOG_URL, which are verified against the keys built into Claude Code. A value that is not such a key disables the self-hosted source. Only honored from managed settings."
+      }
+    ],
+    "config_key:modelCatalogUrl": [
+      {
+        "from": "2.1.331",
+        "description": "@internal URL of the published model-catalog document Claude Code reads for sessions the model-selector service does not serve per user: first-party sessions with no claude.ai login (an API key or Console key, an apiKeyHelper, workload identity — unless the service accepts that credential directly); Bedrock, Vertex, Foundry and Mantle sessions where the release turns the document on for the provider or CLAUDE_CODE_MODEL_CATALOG=1 opts the session in; and ANTHROPIC_BASE_URL gateway sessions and Claude Platform on AWS / Google Cloud sessions once Anthropic enables the document for them (a release that opens them, then GrowthBook tengu_delegated_quail at shadow or primary, or at any value for a file:// URL behind an ANTHROPIC_BASE_URL gateway; until that release they do not read the hosted document). Until then there, and always on the Claude apps gateway provider (its own /v1/models is the model list), a URL of the organization’s own set here is read whatever the flag says, only for what a row states about its own model: it moves no picker row, alias or default. What a row states includes a new model’s settings and, from an in-date copy that Anthropic signed, its prompt text. Sessions with a claude.ai login (the service serves them) never read it. The document is the signed JSON document Anthropic publishes at https://downloads.claude.ai/model-catalog/v1/catalog.json, or a mirror of it. Defaults to that hosted URL; a self-hosted mirror is any other https:// or http:// URL, or a file:// URL naming a local path for devices without egress. The hosted document is verified against the signing keys built into Claude Code; a self-hosted one is verified against those keys or against modelCatalogPublicKey. Only honored from managed settings (server-managed, MDM / OS policy, or managed-settings.json); also settable with the CLAUDE_CODE_MODEL_CATALOG_URL environment variable, which managed settings override and which is verified against the built-in keys only. Reading the document at all is controlled by Anthropic per release; CLAUDE_CODE_MODEL_CATALOG=off disables it locally."
       }
     ],
     "config_key:modelOverrides": [

@@ -1801,7 +1801,7 @@
     {
       "symbol": "/export",
       "type": "command",
-      "description": "Export the current conversation as plain text. With a filename, writes directly to that file. Without, opens a dialog to copy to clipboard or save to a file",
+      "description": "Export the current conversation as plain text. With a filename, writes directly to that file, and on v2.1.327 or later refuses one that already exists. Without, opens a dialog to copy to clipboard or save to a file",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2184,6 +2184,13 @@
       "doc_page": "commands"
     },
     {
+      "symbol": "/ship",
+      "type": "command",
+      "description": "**Skill.** Commit and push your work and open a GitHub pull request, if your branch has none. Then review the change. Claude then watches the pull request in this session and pushes fixes for review feedback and failing checks. `/ship stop` ends the watch. See Get a pull request ready with `/ship`. If the command is missing, see Troubleshooting",
+      "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
       "symbol": "/simplify",
       "type": "command",
       "description": "**Skill.** Review the changed code for cleanup opportunities and apply the fixes. Four review agents run in parallel, covering reuse of existing helpers, simplification, efficiency, and whether the change is at the right level of abstraction. The review doesn't look for correctness bugs. Use `/code-review` to find bugs. Pass a path or PR reference to review a specific target",
@@ -2229,6 +2236,13 @@
       "symbol": "/statusline",
       "type": "command",
       "description": "Configure Claude Code's status line. Describe what you want, or run without arguments to auto-configure from your shell prompt",
+      "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
+      "symbol": "/steward",
+      "type": "command",
+      "description": "**Skill.** Watch your open GitHub pull request in this session and push fixes for review feedback and failing checks, without the review that `/ship` runs first. `/steward stop` ends the watch. See Watch without a review using `/steward`. If the command is missing, see Troubleshooting. Alias: `/ship:steward`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -5164,6 +5178,13 @@
       "doc_page": "env-vars"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_SHELL_HEAD_START",
+      "type": "env_var",
+      "description": "Set to `1` to turn off the head start that can run your shell startup files while Claude writes the session's first Bash command, before that command's permission prompt. Requires Claude Code v2.1.327 or later",
+      "doc_min_version": "2.1.327",
+      "doc_page": "env-vars"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_STRUCTURED_OUTPUTS",
       "type": "env_var",
       "description": "Set to `1` to stop Claude Code from sending the structured-output `output_config.format` field and the `anthropic-beta` value that pairs with it, for an LLM gateway whose upstream rejects them. This leaves on the other pre-release capabilities that `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` turns off. Requires Claude Code v2.1.288 or later",
@@ -5446,7 +5467,7 @@
     {
       "symbol": "CLAUDE_CODE_FULL_SIGN_IN_LINK",
       "type": "env_var",
-      "description": "Set to `1` to print the full claude.ai login URL instead of a short one. Use it when the short URL shows an error or your script reads values from the URL. Set it in your shell or user settings. Requires Claude Code v2.1.330 or later",
+      "description": "Set to `1` to print the full login URL. Use it when a short login URL shows an error or your script reads values from the URL. Set it in your shell or user settings. Requires Claude Code v2.1.330 or later",
       "doc_min_version": "2.1.330",
       "doc_page": "env-vars"
     },
