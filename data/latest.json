@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.330",
+  "claudeCodeVersion": "2.1.331",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -453,6 +453,19 @@
       "provenance": "binary",
       "confidence": "medium",
       "description": "structured_outputs",
+      "source_url": null,
+      "category": "betas",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "subagent-review-2026-11-17",
+      "type": "beta_header",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "subagent_review",
       "source_url": null,
       "category": "betas",
       "description_source": "binary"
@@ -2659,7 +2672,7 @@
       "description": "Print the result as one JSON object on the last line of stdout instead of the human-readable message, for use in scripts. See JSON result format. Requires Claude Code v2.1.268 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli",
+      "category": "cli-internal",
       "scope_descriptions": {
         "plugin configure": "Print the result as one JSON object on stdout. Without `--values-stdin`, the object carries the options' `schema` and `choices`, their starting `inputs`, and the `configured` and `unconfigured` option names. With `--values-stdin`, it carries the `saved` option names and, when they could be read back, the `unconfigured` ones",
         "plugin disable": "Print the result as one JSON object on the last line of stdout, in the same format as `plugin install --json`. Requires Claude Code v2.1.268 or later",
@@ -2841,6 +2854,21 @@
       "description": "Mirror runner logs to a file in addition to stdout and stderr, created with `0600` permissions. Required for `self-hosted-runner doctor` to tail logs locally.",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/self-hosted-environments-reference.md",
+      "category": "cli",
+      "scopes": [
+        "self-hosted-runner"
+      ]
+    },
+    {
+      "symbol": "--log-file-no-follow",
+      "type": "cli_flag",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "cli",
       "scopes": [
         "self-hosted-runner"
@@ -5446,6 +5474,19 @@
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
+    },
+    {
+      "symbol": "/claude-approvals",
+      "type": "command",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Edit, explain, or tune a Claude Approvals policy file or classifier",
+      "source_url": null,
+      "category": "command",
+      "description_source": "binary"
     },
     {
       "symbol": "/claude-code-docs",
@@ -8837,6 +8878,19 @@
       "description_source": "binary"
     },
     {
+      "symbol": "downloadsMirrorUrl",
+      "type": "config_key",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Anthropic-run mirror from which native installs download Claude Code releases (claude install, claude update, and auto-updates), instead of https://downloads.claude.ai. Must be exactly https://claude.fedstart.com/claude-downloads (Claude for Government). Any other value stops installs and updates with an error. CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC normally turns auto-updates off, but not with this mirror set. Only read from managed (policy) settings.",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
       "symbol": "editorMode",
       "type": "config_key",
       "first_seen": "2.1.119",
@@ -9079,8 +9133,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Snapshot files before edits so /rewind can restore them",
-      "description_source": "binary",
+      "description": "Have Claude Code snapshot files before each edit so `/rewind` can restore them. Appears in `/config` as **Rewind code (checkpoints)**, and toggling it there writes this key to your user settings.",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -9420,6 +9474,32 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
+    },
+    {
+      "symbol": "modelCatalogPublicKey",
+      "type": "config_key",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "@internal PEM-encoded RSA public key (SubjectPublicKeyInfo, \"-----BEGIN PUBLIC KEY-----\", at least 2048 bits) that a self-hosted model-catalog document named by modelCatalogUrl must be signed with: the \".raw-sig.json\" sidecar next to the document (the same format Claude Code release manifests use, RSASSA-PKCS1-v1_5 / SHA-512 over the context prefix and the exact document bytes) is verified against this key. Consulted only for a modelCatalogUrl set in the same managed settings — not for the hosted URL and not for a URL set only by CLAUDE_CODE_MODEL_CATALOG_URL, which are verified against the keys built into Claude Code. A value that is not such a key disables the self-hosted source. Only honored from managed settings.",
+      "source_url": null,
+      "category": "settings-internal",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "modelCatalogUrl",
+      "type": "config_key",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "@internal URL of the published model-catalog document Claude Code reads for sessions the model-selector service does not serve per user: first-party sessions with no claude.ai login (an API key or Console key, an apiKeyHelper, workload identity — unless the service accepts that credential directly); Bedrock, Vertex, Foundry and Mantle sessions where the release turns the document on for the provider or CLAUDE_CODE_MODEL_CATALOG=1 opts the session in; and ANTHROPIC_BASE_URL gateway sessions and Claude Platform on AWS / Google Cloud sessions once Anthropic enables the document for them (a release that opens them, then GrowthBook tengu_delegated_quail at shadow or primary, or at any value for a file:// URL behind an ANTHROPIC_BASE_URL gateway; until that release they do not read the hosted document). Until then there, and always on the Claude apps gateway provider (its own /v1/models is the model list), a URL of the organization’s own set here is read whatever the flag says, only for what a row states about its own model: it moves no picker row, alias or default. What a row states includes a new model’s settings and, from an in-date copy that Anthropic signed, its prompt text. Sessions with a claude.ai login (the service serves them) never read it. The document is the signed JSON document Anthropic publishes at https://downloads.claude.ai/model-catalog/v1/catalog.json, or a mirror of it. Defaults to that hosted URL; a self-hosted mirror is any other https:// or http:// URL, or a file:// URL naming a local path for devices without egress. The hosted document is verified against the signing keys built into Claude Code; a self-hosted one is verified against those keys or against modelCatalogPublicKey. Only honored from managed settings (server-managed, MDM / OS policy, or managed-settings.json); also settable with the CLAUDE_CODE_MODEL_CATALOG_URL environment variable, which managed settings override and which is verified against the built-in keys only. Reading the document at all is controlled by Anthropic per release; CLAUDE_CODE_MODEL_CATALOG=off disables it locally.",
+      "source_url": null,
+      "category": "settings-internal",
+      "description_source": "binary"
     },
     {
       "symbol": "modelOverrides",
@@ -12316,7 +12396,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "@internal Requests the state the terminal's /sandbox dialog shows, for a host that draws the dialog with its own widgets: platform support, the policy lock, the mode and its choices, the unsandboxed-fallback override, the dependency check, the excluded commands and the configured restrictions. Read-only; a host writes through the CLI's edit-sandbox-settings subcommand.",
+      "description": "@internal Requests the state the terminal's /sandbox dialog shows, for a host that draws the dialog with its own widgets: platform support, the policy lock, the mode and its choices, the unsandboxed-fallback override, the dependency check, the excluded commands and the configured restrictions. It changes no setting; a host writes through the CLI's edit-sandbox-settings subcommand.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -12960,7 +13040,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "@internal One leg of a tool call this session forwards to the attached machine that announced it serves the tool: the first leg, the approval leg (envelope.approval), a detached decline, or an outcome query (envelope.op = 'outcome_of'). Answered with a control_response whose success payload is the served CallToolResult; cancelled with control_cancel_request. An error-shaped control_response is not an answer (an older attached client error-replies subtypes it does not know); the worker keeps waiting.",
+      "description": "@internal One leg of a tool call this session forwards to the attached machine that announced it serves the tool: the first leg, the approval leg (envelope.approval), a detached decline, or an outcome query (envelope.op = 'outcome_of', or the name ReadCalls). Answered with a control_response whose success payload is the served CallToolResult; cancelled with control_cancel_request. An error-shaped control_response is not an answer (an older attached client error-replies subtypes it does not know); the worker keeps waiting.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -14439,6 +14519,18 @@
       "description": "Workspace ID for Claude Models on Google Cloud (Anthropic managed). Required, unless you're on v2.1.307 or later and `ANTHROPIC_GOOGLE_CLOUD_BASE_URL` is set",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "ANTHROPIC_IDENTITY_TOKEN_FILE",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -16843,6 +16935,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_BRIDGE_CHILD_HELD_TO_AUTO",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_BRIDGE_CHILD_MACHINE_SETTINGS",
       "type": "env_var",
       "first_seen": "2.1.273",
@@ -17306,6 +17410,18 @@
       "symbol": "CLAUDE_CODE_CHROME_MCP_ORG_DENIED",
       "type": "env_var",
       "first_seen": "2.1.260",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_CHROME_SIDE_PANEL",
+      "type": "env_var",
+      "first_seen": "2.1.331",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -18220,6 +18336,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_DESKTOP_SHIP",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_EARLY_KEY_GUARD",
       "type": "env_var",
       "first_seen": "2.1.326",
@@ -18894,6 +19022,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_REDIRECT_CHECK",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_REDIRECT_DENY_RECHECK",
       "type": "env_var",
       "first_seen": "2.1.330",
@@ -18943,6 +19083,19 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_RESPONSE_COMPRESSION",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `CLAUDE_CODE_DISABLE_RESPONSE_COMPRESSION` to ask for uncompressed model responses behind a proxy that cuts compressed ones off; not advised yet for self-hosted runners or Remote Control",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_RESUME_LOAD_GOODBYE_SKIP",
       "type": "env_var",
       "first_seen": "2.1.319",
@@ -18977,6 +19130,18 @@
       "description": "Set to `1` to turn off the head start that can run your shell startup files while Claude writes the session's first Bash command, before that command's permission prompt. Requires Claude Code v2.1.327 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_SHIP",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -19296,6 +19461,18 @@
       "symbol": "CLAUDE_CODE_ELEGANT_MEADOW",
       "type": "env_var",
       "first_seen": "2.1.282",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_ELEGANT_MIST",
+      "type": "env_var",
+      "first_seen": "2.1.331",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -19964,6 +20141,18 @@
       "symbol": "CLAUDE_CODE_FEDERATION_CACHE_DIR",
       "type": "env_var",
       "first_seen": "2.1.242",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_FETCH_PERSONAL_CLOUD_CONFIGURATION",
+      "type": "env_var",
+      "first_seen": "2.1.331",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -20926,6 +21115,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_HOST_STARTED_AHEAD",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_HOST_WORKTREE",
       "type": "env_var",
       "first_seen": "2.1.288",
@@ -21209,6 +21410,18 @@
       "symbol": "CLAUDE_CODE_LAUNCHER_RUNS_API_KEY_HELPER",
       "type": "env_var",
       "first_seen": "2.1.327",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_LAZY_WORKTREE",
+      "type": "env_var",
+      "first_seen": "2.1.331",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -24066,6 +24279,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SENDS_VIA_SESSION_SERVICE",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SEND_FEEDBACK",
       "type": "env_var",
       "first_seen": "2.1.212",
@@ -24249,6 +24474,18 @@
       "description": "Command prefix that wraps shell commands Claude Code spawns: Bash tool calls, hook commands, status line commands, and stdio MCP server startup commands. PowerShell hooks and exec-form hooks run without the prefix. Useful for logging or auditing. Setting a bare executable path such as `/path/to/logger.sh` runs each command as `/path/to/logger.sh '<command>'`. The wrapper receives the command line as a single shell-quoted argument in `$1`, so the wrapper must re-evaluate `$1` with a shell, for example `exec bash -c \"$1\"`. Treating `$1` as a bare executable path breaks stdio MCP servers that pass arguments such as `npx -y <package>`. For Bash tool calls, `$1` contains the full shell invocation Claude Code assembles, including environment setup, not only the command Claude ran",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_SHINY_FOUNTAIN",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -25810,6 +26047,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_USER_DELEGATED_SESSION_SERVER_CHECK_PROVIDERS",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_USER_DIALOG_TIMEOUT_MS",
       "type": "env_var",
       "first_seen": "2.1.169",
@@ -26519,6 +26768,19 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_GATEWAY_IDP_CONNECT_BY_HOSTNAME",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "Added `CLAUDE_GATEWAY_IDP_CONNECT_BY_HOSTNAME=1` for Claude apps gateways: with `oidc.use_proxy: true`, sign-in requests hand the proxy an `https` IdP's hostname even with `NO_PROXY` set",
+      "description_source": "changelog",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_GATEWAY_LOG_FORMAT",
       "type": "env_var",
       "first_seen": "2.1.319",
@@ -26554,6 +26816,18 @@
       "description": "Added `CLAUDE_GATEWAY_PROXY_IS_EGRESS_BOUNDARY=1` for Claude apps gateways whose only egress is a forward proxy: every outbound request hands the proxy the hostname instead of resolving it locally",
       "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_HELPER_CONTEXT",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "claude-code"
     },
     {
@@ -31986,6 +32260,18 @@
       "category": "mods"
     },
     {
+      "symbol": "$.session.redact",
+      "type": "mod_method",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
       "symbol": "$.session.repo",
       "type": "mod_method",
       "first_seen": "2.1.242",
@@ -32662,6 +32948,30 @@
       "category": "mods"
     },
     {
+      "symbol": "BesidePrompt",
+      "type": "mod_render_site",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
+      "symbol": "BesidePromptList",
+      "type": "mod_render_site",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
       "symbol": "CommandOutput",
       "type": "mod_render_site",
       "first_seen": "2.1.271",
@@ -32815,6 +33125,18 @@
       "confidence": "high",
       "description": "",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "Underlay",
+      "type": "mod_render_site",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {

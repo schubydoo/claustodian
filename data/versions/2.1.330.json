@@ -9079,8 +9079,8 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Snapshot files before edits so /rewind can restore them",
-      "description_source": "binary",
+      "description": "Have Claude Code snapshot files before each edit so `/rewind` can restore them. Appears in `/config` as **Rewind code (checkpoints)**, and toggling it there writes this key to your user settings.",
+      "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },
@@ -20275,7 +20275,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to print the full login URL. Use it when a short login URL shows an error or your script reads values from the URL. Set it in your shell or user settings. Requires Claude Code v2.1.330 or later",
+      "description": "Set to `1` to print the full claude.ai login URL instead of a short one. Use it when the short URL shows an error or your script reads values from the URL. Set it in your shell or user settings. Requires Claude Code v2.1.330 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
