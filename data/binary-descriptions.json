@@ -2291,6 +2291,10 @@
     ],
     "command:/claude-api": [
       {
+        "from": "2.1.69",
+        "description": "Build apps with the Claude API or Anthropic SDK.\nTRIGGER when: code imports `anthropic`/`@anthropic-ai/sdk`/`claude_agent_sdk`, or user asks to use Claude API, Anthropic SDKs, or Agent SDK.\nDO NOT TRIGGER when: code imports `openai`/other AI SDK, general programming, or ML/data-science tasks."
+      },
+      {
         "from": "2.1.163",
         "description": "Build and debug apps that use the Claude API"
       }
@@ -2342,6 +2346,14 @@
       }
     ],
     "command:/code-review": [
+      {
+        "from": "2.1.146",
+        "description": "Review changed code for reuse, quality, and efficiency, then fix any issues found."
+      },
+      {
+        "from": "2.1.147",
+        "description": "Review the current diff for correctness bugs at the given effort level (low/medium: fewer, high-confidence findings; high→max: broader coverage, may include uncertain findings). Pass --comment to post findings as inline PR comments."
+      },
       {
         "from": "2.1.163",
         "description": "Review the current diff for bugs and cleanups"
@@ -2454,6 +2466,14 @@
       }
     ],
     "command:/debug": [
+      {
+        "from": "2.1.30",
+        "description": "Debug your current Claude Code session by reading the session debug log."
+      },
+      {
+        "from": "2.1.71",
+        "description": "Enable debug logging for this session and help diagnose issues"
+      },
       {
         "from": "2.1.163",
         "description": "Turn on debug logging and investigate problems"
@@ -2613,6 +2633,10 @@
     ],
     "command:/fewer-permission-prompts": [
       {
+        "from": "2.1.113",
+        "description": "Scan your transcripts for common read-only Bash and MCP tool calls, then add a prioritized allowlist to project .claude/settings.json to reduce permission prompts."
+      },
+      {
         "from": "2.1.163",
         "description": "Pre-approve safe read-only commands based on your usage"
       }
@@ -2743,6 +2767,12 @@
       {
         "from": "2.1.163",
         "description": "Open your keyboard shortcuts file"
+      }
+    ],
+    "command:/less-permission-prompts": [
+      {
+        "from": "2.1.111",
+        "description": "Scan your transcripts for common read-only Bash and MCP tool calls, then add a prioritized allowlist to project .claude/settings.json to reduce permission prompts."
       }
     ],
     "command:/list-agents": [
@@ -3129,6 +3159,10 @@
     ],
     "command:/run": [
       {
+        "from": "2.1.145",
+        "description": "Launch and drive this project's app to see a change working."
+      },
+      {
         "from": "2.1.163",
         "description": "Launch this project’s app to see your change working"
       }
@@ -3216,6 +3250,18 @@
       }
     ],
     "command:/simplify": [
+      {
+        "from": "2.1.63",
+        "description": "Review changed code for reuse, quality, and efficiency, then fix any issues found."
+      },
+      {
+        "from": "2.1.152",
+        "description": "Review the current diff and apply the fixes — equivalent to /code-review --fix."
+      },
+      {
+        "from": "2.1.154",
+        "description": "Review the changed code for reuse, simplification, efficiency, and altitude cleanups, then apply the fixes. Quality only — it does not hunt for bugs; use /code-review for that."
+      },
       {
         "from": "2.1.163",
         "description": "Clean up the changed code without changing behavior"
@@ -3436,6 +3482,10 @@
       }
     ],
     "command:/verify": [
+      {
+        "from": "2.1.145",
+        "description": "Verify a code change does what it should by running the app."
+      },
       {
         "from": "2.1.312",
         "description": "Try your change and report if it works"

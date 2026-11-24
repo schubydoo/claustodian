@@ -20,6 +20,13 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ### Fixed
 
+- **The binary lane reads skills that a user can invoke by name.** Some bundled skills
+  carry only `userInvocable`, with no menu text. Seven `command` records get an earlier
+  `first_seen`: `/fewer-permission-prompts` (2.1.113), `/verify`, `/run` and
+  `/run-skill-generator` (2.1.145), `/code-review` (2.1.146), `/claude-code-docs`
+  (2.1.154) and `/design-sync` (2.1.160). Older snapshots of `/debug`, `/simplify`,
+  `/claude-api` and `/code-review` now carry the skill text of their own release
+  instead of the current docs text.
 - **The binary lane sees more env var reads.** It now follows the arrow helpers that the
   bundled SDK uses to read a variable, and an object that spreads a configuration's
   `env` member. Six `env_var` records are added: `ANTHROPIC_IDENTITY_TOKEN`,
@@ -41,6 +48,9 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 - **`GIT_SSH` and `GIT_CONFIG_GLOBAL` leave the dataset.** Both are git's variables. A
   changelog mention published them after the binary lane observed Claude Code setting
   them for a child process. They now follow the same rule as git's other variables.
+- **`/less-permission-prompts` ends at 2.1.113.** Claude Code renamed it to
+  `/fewer-permission-prompts` in that release, without a changelog entry. The old name
+  is in 2.1.111 and 2.1.112 only, so it leaves every snapshot from 2.1.113 on.
 
 ## 2026-11-21
 
