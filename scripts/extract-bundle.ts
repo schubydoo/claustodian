@@ -1058,6 +1058,12 @@ function paramReadsIn(
   return { reads, resolved };
 }
 
+/** The text of an arrow reader up to its `process.env`, in the shapes the SDK has used. */
+const ARROW_READER_HEAD =
+  /(?<![\w$.])([A-Za-z_$][\w$]*)=\(?([A-Za-z_$][\w$]*)\)?=>(?:\{if\(typeof (?:globalThis\.)?process(?:<"u"|!=="undefined")\)return (?:globalThis\.)?)?$/;
+/** How far back from `process.env` the arrow head can start. */
+const ARROW_READER_LOOKBACK = 120;
+
 /**
  * Env vars read through a NAME-taking helper: `function St(e){let n=process.env[e];…}`
  * called as `St("SELF_HOSTED_RUNNER_SIGKILL_GRACE_MS")`. The literal argument
@@ -1077,6 +1083,15 @@ function paramReadsIn(
  * same text, the rule extractParamEnvVars uses. A call through an imported
  * alias in another chunk is not followed, so it yields nothing rather than a
  * guess.
+ *
+ * The bundled SDK writes the same helper as an arrow: a concise
+ * `S=(e)=>process.env[e]?.trim()||void 0`, or a guarded
+ * `U=(e)=>{if(typeof globalThis.process<"u")return globalThis.process.env?.[e]…`.
+ * Older SDKs spell the guard `!=="undefined"` and can omit `globalThis`. The read
+ * comes first in every shape, so it is the arrow's own parameter. An arrow name
+ * counts only when the chunk assigns it exactly once. A call through an imported
+ * alias is not followed, so a release that moves the helper to another chunk can
+ * stop proving a name without removing it.
  */
 export function extractNameReaderEnvVars(chunks: readonly string[]): Map<string, string> {
   const out = new Map<string, string>();
@@ -1112,6 +1127,21 @@ export function extractNameReaderEnvVars(chunks: readonly string[]): Map<string,
         '(?<![\\w$.])(?<!\\bdelete\\s+)process\\.env\\[\\s*' + safe + '\\s*\\](?!\\s*=(?!=))'
       );
       if (read.test(body)) readers.add(name);
+    }
+    for (const m of chunk.matchAll(/process\.env(?:\?\.)?\[([A-Za-z_$][\w$]*)\](?!\s*=(?!=))/g)) {
+      const at = m.index as number;
+      const head = chunk
+        .slice(Math.max(0, at - ARROW_READER_LOOKBACK), at)
+        .match(ARROW_READER_HEAD);
+      if (!head || head[2] !== m[1]) continue;
+      const name = head[1] as string;
+      const safe = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const bindings = chunk.match(new RegExp(`(?<![\\w$.])${safe}\\s*=(?![=>])`, 'g'));
+      if (bindings?.length !== 1) continue;
+      const texts = defTexts.get(name) ?? new Set<string>();
+      texts.add(`\0arrow${at}`);
+      defTexts.set(name, texts);
+      readers.add(name);
     }
     for (const m of chunk.matchAll(
       /(?<![\w$.])([A-Za-z_$][\w$]*)\(\s*["'`]([A-Z][A-Z0-9_]{2,})["'`]\s*[,)]/g
