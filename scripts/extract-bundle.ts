@@ -1085,9 +1085,7 @@ const ARROW_READER_LOOKBACK = 120;
  * its own scope, because from 2.1.242 every chunk minifies its own names: 2.1.301 has
  * three unrelated functions named `St`, and only one of them reads the env. A
  * call is trusted only when every definition of the name in that chunk has the
- * same text, the rule extractParamEnvVars uses. A call through an imported
- * alias in another chunk is not followed, so it yields nothing rather than a
- * guess.
+ * same text, the rule extractParamEnvVars uses.
  *
  * The bundled SDK writes the same helper as an arrow: a concise
  * `S=(e)=>process.env[e]?.trim()||void 0`, or a guarded
@@ -1099,7 +1097,9 @@ const ARROW_READER_LOOKBACK = 120;
  * From 2.1.285 the SDK's helper and its callers can sit in different chunks. A call
  * through `import{jg as T}from"m"` counts when `m` resolves to the one chunk that
  * exports `jg`, that export is a reader there, and the calling chunk does not also
- * define or assign `T`. A re-export facade is not followed.
+ * define or assign `T`. Chunks carry no file names, so `m` resolves by the names
+ * imported from it. A re-export facade exports nothing of its own in that match, so
+ * a call through one resolves to the one chunk that defines the export.
  */
 export function extractNameReaderEnvVars(chunks: readonly string[]): Map<string, string> {
   const out = new Map<string, string>();

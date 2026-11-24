@@ -1250,9 +1250,11 @@ describe('extractNameReaderEnvVars — env vars read by name through a helper', 
       expect(names(home, home, caller('T("AMBIGUOUS_MODULE")'))).toEqual([]);
     });
 
-    it('does not follow a re-export facade', () => {
+    it('resolves past a re-export facade to the chunk that defines the export', () => {
       const facade = 'export{jg}from"/other.js";';
-      expect(names(facade, caller('T("THROUGH_FACADE")'))).toEqual([]);
+      expect(names(home, facade, caller('T("THROUGH_FACADE")'))).toEqual(['THROUGH_FACADE']);
+      // A facade alone defines nothing, so it proves no read.
+      expect(names(facade, caller('T("FACADE_ONLY")'))).toEqual([]);
     });
   });
 
