@@ -164,7 +164,10 @@ export function collectChildEnvNames(program: Node): Set<string> {
       const arg = p.argument as Node;
       if (memberName(arg) !== 'env') return false;
       const object = arg.object as Node;
-      return !(object.type === 'Identifier' && object.name === 'process');
+      return !(
+        (object.type === 'Identifier' && object.name === 'process') ||
+        memberName(object) === 'process'
+      );
     });
     if (spreadsEnv) addKeys(n);
   });

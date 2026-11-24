@@ -34,6 +34,7 @@ describe('collectChildEnvNames', () => {
     for (const src of [
       // The 2.1.64 shape: a process.env copy with no env site.
       'class A{buildEnv(){return{...process.env,CLAUDE_CODE_SPAWNED_BY_SERVER:"1"}}}',
+      'x={...globalThis.process.env,CLAUDE_GLOBAL_PROCESS:1}',
       'x={...e.environment,CLAUDE_OTHER_MEMBER:1}',
       'x={...env,CLAUDE_BARE_SPREAD:1}',
       'x={...e.env.nested,CLAUDE_DEEPER_SPREAD:1}',

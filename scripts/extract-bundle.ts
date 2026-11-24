@@ -1089,7 +1089,7 @@ const ARROW_READER_LOOKBACK = 120;
  * `U=(e)=>{if(typeof globalThis.process<"u")return globalThis.process.env?.[e]…`.
  * Older SDKs spell the guard `!=="undefined"` and can omit `globalThis`. The read
  * comes first in every shape, so it is the arrow's own parameter. An arrow name
- * counts only when the chunk binds it exactly once. A call through an imported
+ * counts only when the chunk assigns it exactly once. A call through an imported
  * alias is not followed, so a release that moves the helper to another chunk can
  * stop proving a name without removing it.
  */
