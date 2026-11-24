@@ -6165,6 +6165,19 @@
       "category": "command"
     },
     {
+      "symbol": "/motion",
+      "type": "command",
+      "first_seen": "2.1.323",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "**Skill.** Make a new animation from your brief as a Claude Motion artifact, for example `/motion an explainer of how our deploy pipeline works`. Available in local sessions in the Desktop app and in Anthropic-hosted cloud sessions, not in the terminal or IDE extensions. Requires Claude Code v2.1.323 or later and a Team or Enterprise account where the Motion template is available",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "category": "command"
+    },
+    {
       "symbol": "/name",
       "type": "command",
       "first_seen": "2.1.116",
@@ -7261,13 +7274,13 @@
       "type": "command",
       "first_seen": "2.1.218",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "Pair on a whiteboard artifact — you draw, Claude answers on it",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "**Skill.** Make a new whiteboard from your brief as a Claude Whiteboards artifact, for example `/whiteboard a service map of the checkout flow`. Requires Claude Code v2.1.323 or later, a session where artifacts are available, and an account where the Whiteboards template is available. When your organization has that template off, the command doesn't appear, so ask an Owner to turn it on",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "category": "command"
     },
     {
       "symbol": "/workflow-authoring",
@@ -14520,7 +14533,7 @@
       "symbol": "BAT_THEME",
       "type": "env_var",
       "first_seen": "2.1.85",
-      "removed_in": null,
+      "removed_in": "2.1.330",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",

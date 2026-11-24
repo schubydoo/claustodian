@@ -9852,7 +9852,7 @@
       "symbol": "BAT_THEME",
       "type": "env_var",
       "first_seen": "2.1.85",
-      "removed_in": null,
+      "removed_in": "2.1.330",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
