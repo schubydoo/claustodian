@@ -1221,6 +1221,43 @@ describe('extractNameReaderEnvVars — env vars read by name through a helper', 
     expect(names(arrow, 'S("OTHER_CHUNK")')).toEqual([]);
   });
 
+  describe('a helper imported from another chunk', () => {
+    const home = 'var jg=(e)=>process.env[e]?.trim()||void 0;export{jg};';
+    const caller = (body: string) => `import{jg as T}from"/m.js";${body}`;
+
+    it('reads a call through an imported reader', () => {
+      expect(names(home, caller('T("IMPORTED_READ")'))).toEqual(['IMPORTED_READ']);
+      expect(names(home, 'import{jg}from"/m.js";jg("SAME_NAME_IMPORT")')).toEqual([
+        'SAME_NAME_IMPORT',
+      ]);
+    });
+
+    it('follows the export to its local name', () => {
+      const renamed = 'var q=(e)=>process.env[e];export{q as jg};';
+      expect(names(renamed, caller('T("RENAMED_EXPORT")'))).toEqual(['RENAMED_EXPORT']);
+    });
+
+    it('refuses an import whose export is not a reader', () => {
+      expect(names('var jg=(e)=>e;export{jg};', caller('T("NOT_A_READER")'))).toEqual([]);
+    });
+
+    it('refuses a name the calling chunk also defines or assigns', () => {
+      expect(names(home, caller('function T(e){return e}T("LOCAL_FUNCTION")'))).toEqual([]);
+      expect(names(home, caller('T=g;T("LOCAL_ASSIGNMENT")'))).toEqual([]);
+    });
+
+    it('refuses a source that two chunks could be', () => {
+      expect(names(home, home, caller('T("AMBIGUOUS_MODULE")'))).toEqual([]);
+    });
+
+    it('resolves past a re-export facade to the chunk that defines the export', () => {
+      const facade = 'export{jg}from"/other.js";';
+      expect(names(home, facade, caller('T("THROUGH_FACADE")'))).toEqual(['THROUGH_FACADE']);
+      // A facade alone defines nothing, so it proves no read.
+      expect(names(facade, caller('T("FACADE_ONLY")'))).toEqual([]);
+    });
+  });
+
   it('requires a read of the FIRST parameter, not a write or another parameter', () => {
     expect(names('function W(e,t){process.env[e]=t}W("WRITTEN_NAME","1")')).toEqual([]);
     expect(names('function U(e){delete process.env[e]}U("DELETED_NAME")')).toEqual([]);

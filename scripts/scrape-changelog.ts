@@ -352,6 +352,11 @@ export const CHANGELOG_SYMBOL_DENYLIST: ReadonlySet<string> = new Set([
   // since 2.1.296 when a git credential helper or askpass program reads its
   // settings through `GIT_CONFIG`". git reads it; the 2.1.305 binary does not.
   'GIT_CONFIG',
+  // From the 2.1.285 bullet "ignoring the ssh program set in `GIT_SSH`" and a runner
+  // bullet that names `GIT_CONFIG_GLOBAL`. Claude Code sets or clears both for a child
+  // process, so the binary lane observes them, but git defines them.
+  'GIT_SSH',
+  'GIT_CONFIG_GLOBAL',
   // The `gh` CLI / GitHub Actions auth-token convention, from the 2.1.251 bullet
   // "call the GitHub API directly (via `gh auth token`, `GH_TOKEN`, or
   // `GITHUB_TOKEN`)". Claude Code's GitHub integration reads these, but they are
