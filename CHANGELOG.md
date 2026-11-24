@@ -16,6 +16,23 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ---
 
+## 2026-11-24
+
+### Fixed
+
+- **The binary lane sees more env var reads.** It now follows the arrow helpers that the
+  bundled SDK uses to read a variable, and an object that spreads a configuration's
+  `env` member. Six `env_var` records are added: `ANTHROPIC_IDENTITY_TOKEN`,
+  `ANTHROPIC_SCOPE`, `ANTHROPIC_SERVICE_ACCOUNT_ID`, `ANTHROPIC_SESSION_ID`,
+  `ANTHROPIC_WEBHOOK_SIGNING_KEY` and `ANTHROPIC_WORK_ID`. Seven records get an earlier
+  `first_seen`: `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL`, `ANTHROPIC_BEDROCK_BASE_URL`,
+  `ANTHROPIC_VERTEX_BASE_URL`, `ANTHROPIC_VERTEX_PROJECT_ID`,
+  `ANTHROPIC_IDENTITY_TOKEN_FILE` and `CLAUDE_HELPER_CONTEXT`. A date at the oldest
+  archived release means that the variable is at least that old. Because
+  `ANTHROPIC_VERTEX_BASE_URL` is now dated earlier, the
+  `CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING` description keeps its full text in
+  snapshots from 2.1.41 to 2.1.96. No record is removed.
+
 ## 2026-11-21
 
 ### Changed
