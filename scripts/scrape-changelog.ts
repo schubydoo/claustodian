@@ -1579,15 +1579,18 @@ export const CHANGELOG_ONLY_SYMBOLS: ReadonlySet<string> = new Set<string>([]);
  * observation of the same `type:symbol`, never the token appearing somewhere in the
  * bundle, because nearly every token does. A withheld symbol is not lost: it publishes
  * once a binary shows it. check-coverage applies the same test, so the two agree.
+ * `audited` defaults to CHANGELOG_ONLY_SYMBOLS. Tests pass their own set, so the
+ * audited path stays tested while the list is empty.
  */
 export function uncorroboratedBy(
   docs: DocsIndex,
-  binary: BinaryObservations
+  binary: BinaryObservations,
+  audited: ReadonlySet<string> = CHANGELOG_ONLY_SYMBOLS
 ): (type: string, symbol: string) => boolean {
   const corroborated = new Set([
     ...docs.symbols.map((entry) => `${entry.type}:${entry.symbol}`),
     ...binary.symbols.map((obs) => `${obs.type}:${obs.symbol}`),
-    ...CHANGELOG_ONLY_SYMBOLS,
+    ...audited,
   ]);
   return (type, symbol) =>
     CORROBORATED_TYPES.has(type as ExtractedSymbolType) && !corroborated.has(`${type}:${symbol}`);

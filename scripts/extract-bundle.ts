@@ -262,7 +262,7 @@ const COMMAND_DESC = /description:\s*(["'`])((?:(?!\1)[^\\]|\\.)*)\1/;
  * `FACTORY({name:"x", menuDescription|whenToUse, …})`; the minified factory name
  * varies every release, so we key on the object SHAPE: a `name:` literal (same
  * slash-less grammar as COMMAND_NAME) co-located with a `menuDescription:` or
- * `whenToUse:` marker, or with `userInvocable:!0`. A bundled skill the user can call
+ * `whenToUse:` marker, or with a true `userInvocable` (`!0` or `true`). A bundled skill the user can call
  * by name sets that flag, and some have no other marker: 2.1.111 registers
  * `{name:"less-permission-prompts",description:"…",userInvocable:!0,…}`. The false
  * form `userInvocable:!1` is a skill the user cannot invoke, so it is not a marker.

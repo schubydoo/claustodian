@@ -3789,12 +3789,17 @@ describe('the changelog-only gate', () => {
   });
 
   it('lets an audited changelog-only symbol through', () => {
-    const uncorroborated = uncorroboratedBy(docsIndex([]), binary([]));
+    const audited = new Set(['command:/audited-skill']);
+    const uncorroborated = uncorroboratedBy(docsIndex([]), binary([]), audited);
+    expect(uncorroborated('command', '/audited-skill')).toBe(false);
+    expect(uncorroborated('command', '/proc')).toBe(true);
+    // The default is the shipped list, and every entry in it passes.
+    const shipped = uncorroboratedBy(docsIndex([]), binary([]));
     for (const key of CHANGELOG_ONLY_SYMBOLS) {
       const [type, symbol] = [key.slice(0, key.indexOf(':')), key.slice(key.indexOf(':') + 1)];
-      expect(uncorroborated(type, symbol), key).toBe(false);
+      expect(shipped(type, symbol), key).toBe(false);
     }
-    expect(uncorroborated('command', '/proc')).toBe(true);
+    expect(shipped('command', '/audited-skill')).toBe(true);
   });
 
   it('never gates a type the binary lane does not extract from prose names', () => {
