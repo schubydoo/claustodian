@@ -17,7 +17,8 @@
  *
  * THE OBJECT IS THE EVIDENCE, AS BEFORE. An entry is an object literal with a `name`
  * property whose value is an identifier, and a `menuDescription` or `whenToUse`
- * property: the same marker the literal rule needs. Only the name moves.
+ * property, or `userInvocable` set to `!0` or `true`: the same markers the literal
+ * rule needs. Only the name moves.
  *
  * A workflow is not a skill. Built-in workflows register as
  * `VG(script,{name:te7,description:…,whenToUse:…,phases:[…]})`, which adds them to
@@ -135,7 +136,12 @@ export function collectSkillEvidence(program: Node): SkillEvidence {
       if (value?.type !== 'Identifier' || !nameIsFinal(props, index)) return;
       const marked = props.some((p) => {
         const k = keyName(p);
-        return k === 'menuDescription' || k === 'whenToUse';
+        if (k === 'menuDescription' || k === 'whenToUse') return true;
+        if (k !== 'userInvocable' || p.kind !== 'init') return false;
+        const v = p.value as Node;
+        if (v.type === 'Literal') return v.value === true;
+        const arg = v.argument as Node | undefined;
+        return v.type === 'UnaryExpression' && v.operator === '!' && arg?.value === 0;
       });
       if (!marked || props.some((p) => keyName(p) === 'phases')) return;
       const list = props.find((p) => keyName(p) === 'aliases')?.value as Node | undefined;

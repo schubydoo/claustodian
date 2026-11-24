@@ -41,6 +41,18 @@ describe('resolveVariableSkills', () => {
     ]);
   });
 
+  it('takes a true userInvocable as the marker, the 2.1.152 /verify shape', () => {
+    expect(skills('var T="verify";nY({name:T,description:"Try it",userInvocable:!0})')).toEqual([
+      { symbol: '/verify', alias: false, description: 'Try it' },
+    ]);
+    expect(skills('var T="spelled";nY({name:T,userInvocable:true})')).toEqual([
+      { symbol: '/spelled', alias: false },
+    ]);
+    for (const flag of ['!1', 'false', 'q', '!q', '-0', '!"0"']) {
+      expect(skills(`var T="hidden";nY({name:T,userInvocable:${flag}})`), flag).toEqual([]);
+    }
+  });
+
   it('refuses a name that is reassigned, bound to a non-literal, or off-grammar', () => {
     const marker = 'menuDescription:"m"';
     expect(skills(`var a="one";a="two";x({name:a,${marker}})`)).toEqual([]);

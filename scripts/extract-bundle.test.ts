@@ -606,6 +606,26 @@ describe('extractSkillCommands — skill/menu registry', () => {
     expect(extractSkillCommands(src).get('/schedule')).toBe('Create and manage scheduled agents');
   });
 
+  it('reads a user-invocable skill that has no other marker', () => {
+    // The 2.1.111 shape of /less-permission-prompts.
+    const src =
+      'MA({name:"less-permission-prompts",description:"Scan your transcripts",userInvocable:!0,async getPromptForCommand(q){}})';
+    expect(extractSkillCommands(src).get('/less-permission-prompts')).toBe('Scan your transcripts');
+    expect(
+      extractSkillCommands('MA({name:"spelled-out",userInvocable:true})').has('/spelled-out')
+    ).toBe(true);
+  });
+
+  it('does not read userInvocable as a marker when it is false or a variable', () => {
+    for (const src of [
+      'MA({name:"keybindings-help",description:"x",userInvocable:!1})',
+      'MA({name:"set-elsewhere",description:"x",userInvocable:q})',
+      'MA({name:"not-a-literal",description:"x",userInvocable:!0x})',
+    ]) {
+      expect(extractSkillCommands(src).size).toBe(0);
+    }
+  });
+
   it('prefers the menuDescription string over a plain description', () => {
     const src =
       'Fc({name:"design",menuDescription:"menu string",description:"long form",whenToUse:"x"})';
