@@ -31,7 +31,16 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
   archived release means that the variable is at least that old. Because
   `ANTHROPIC_VERTEX_BASE_URL` is now dated earlier, the
   `CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING` description keeps its full text in
-  snapshots from 2.1.41 to 2.1.96. No record is removed.
+  snapshots from 2.1.41 to 2.1.96. This fix removes no record.
+- **The binary lane follows an SDK env helper into another chunk.** From 2.1.285 the
+  helper and its callers can sit in different chunks. `ANTHROPIC_WORK_SECRET` is added,
+  with `first_seen` 2.1.285, its first read in code.
+
+### Removed
+
+- **`GIT_SSH` and `GIT_CONFIG_GLOBAL` leave the dataset.** Both are git's variables. A
+  changelog mention published them after the binary lane observed Claude Code setting
+  them for a child process. They now follow the same rule as git's other variables.
 
 ## 2026-11-21
 

@@ -7899,14 +7899,14 @@
       "symbol": "ANTHROPIC_ENVIRONMENT_ID",
       "type": "env_var",
       "first_seen": "2.1.145",
-      "last_seen": "2.1.284",
+      "last_seen": "2.1.331",
       "removed_in": null
     },
     {
       "symbol": "ANTHROPIC_ENVIRONMENT_KEY",
       "type": "env_var",
       "first_seen": "2.1.145",
-      "last_seen": "2.1.284",
+      "last_seen": "2.1.331",
       "removed_in": null
     },
     {
@@ -8032,7 +8032,7 @@
       "symbol": "ANTHROPIC_SESSION_ID",
       "type": "env_var",
       "first_seen": "2.1.228",
-      "last_seen": "2.1.284",
+      "last_seen": "2.1.331",
       "removed_in": null
     },
     {
@@ -8081,7 +8081,7 @@
       "symbol": "ANTHROPIC_WEBHOOK_SIGNING_KEY",
       "type": "env_var",
       "first_seen": "2.1.228",
-      "last_seen": "2.1.284",
+      "last_seen": "2.1.331",
       "removed_in": null
     },
     {
@@ -8095,7 +8095,14 @@
       "symbol": "ANTHROPIC_WORK_ID",
       "type": "env_var",
       "first_seen": "2.1.228",
-      "last_seen": "2.1.284",
+      "last_seen": "2.1.331",
+      "removed_in": null
+    },
+    {
+      "symbol": "ANTHROPIC_WORK_SECRET",
+      "type": "env_var",
+      "first_seen": "2.1.285",
+      "last_seen": "2.1.331",
       "removed_in": null
     },
     {
@@ -8501,7 +8508,7 @@
       "symbol": "BASH_ENV",
       "type": "env_var",
       "first_seen": "2.1.242",
-      "last_seen": "2.1.263",
+      "last_seen": "2.1.331",
       "removed_in": null
     },
     {
@@ -17990,6 +17997,13 @@
       "removed_in": null
     },
     {
+      "symbol": "ENV",
+      "type": "env_var",
+      "first_seen": "2.1.330",
+      "last_seen": "2.1.331",
+      "removed_in": null
+    },
+    {
       "symbol": "ENVIRONMENT_SERVICE_KEY",
       "type": "env_var",
       "first_seen": "2.1.160",
@@ -18669,6 +18683,13 @@
       "removed_in": null
     },
     {
+      "symbol": "GIT_SSL_NO_VERIFY",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "last_seen": "2.1.331",
+      "removed_in": null
+    },
+    {
       "symbol": "GIT_TERMINAL_PROMPT",
       "type": "env_var",
       "first_seen": "0.2.115",
@@ -18735,7 +18756,7 @@
       "symbol": "GNUPGHOME",
       "type": "env_var",
       "first_seen": "2.1.242",
-      "last_seen": "2.1.263",
+      "last_seen": "2.1.331",
       "removed_in": null
     },
     {
