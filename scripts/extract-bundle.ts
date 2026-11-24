@@ -37,7 +37,12 @@ import { isAccessorEvidenceEnv } from './binary-lane.js';
 import { extractRegistryEnvVars } from './env-registry.js';
 import { compareVersionsAsc } from './lib.js';
 import { categorize, SYMBOL_DENYLIST, type ExtractedSymbolType } from './scrape-changelog.js';
-import { extractSettingsKeys, settingsKeyCategory } from './settings-schema.js';
+import {
+  extractSettingsKeys,
+  moduleGraph,
+  moduleOf,
+  settingsKeyCategory,
+} from './settings-schema.js';
 import type { VariableSkill } from './skill-lane.js';
 
 /** How a candidate earned inclusion — recorded so the review queue can triage. */
@@ -1089,13 +1094,16 @@ const ARROW_READER_LOOKBACK = 120;
  * `U=(e)=>{if(typeof globalThis.process<"u")return globalThis.process.env?.[e]…`.
  * Older SDKs spell the guard `!=="undefined"` and can omit `globalThis`. The read
  * comes first in every shape, so it is the arrow's own parameter. An arrow name
- * counts only when the chunk assigns it exactly once. A call through an imported
- * alias is not followed, so a release that moves the helper to another chunk can
- * stop proving a name without removing it.
+ * counts only when the chunk assigns it exactly once.
+ *
+ * From 2.1.285 the SDK's helper and its callers can sit in different chunks. A call
+ * through `import{jg as T}from"m"` counts when `m` resolves to the one chunk that
+ * exports `jg`, that export is a reader there, and the calling chunk does not also
+ * define or assign `T`. A re-export facade is not followed.
  */
 export function extractNameReaderEnvVars(chunks: readonly string[]): Map<string, string> {
   const out = new Map<string, string>();
-  for (const chunk of chunks) {
+  const perChunk = chunks.map((chunk) => {
     const defTexts = new Map<string, Set<string>>();
     const readers = new Set<string>();
     for (const m of chunk.matchAll(/\bfunction\s+([A-Za-z_$][\w$]*)\s*\(/g)) {
@@ -1143,16 +1151,39 @@ export function extractNameReaderEnvVars(chunks: readonly string[]): Map<string,
       defTexts.set(name, texts);
       readers.add(name);
     }
+    return { defTexts, readers };
+  });
+  const isLocalReader = (index: number, name: string): boolean => {
+    const { defTexts, readers } = perChunk[index]!;
+    return readers.has(name) && defTexts.get(name)?.size === 1;
+  };
+  const graph = moduleGraph(chunks);
+  const isImportedReader = (index: number, name: string): boolean => {
+    const imported = graph.scopes[index]!.imports.get(name);
+    if (!imported || perChunk[index]!.defTexts.has(name)) return false;
+    const home = moduleOf(imported.source, graph);
+    const local = home?.exports.get(imported.name);
+    if (!home || local === undefined || !isLocalReader(home.index, local)) return false;
+    const safe = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return !new RegExp(`(?<![\\w$.])${safe}\\s*=(?![=>])`).test(chunks[index]!);
+  };
+  chunks.forEach((chunk, index) => {
+    const verdicts = new Map<string, boolean>();
     for (const m of chunk.matchAll(
       /(?<![\w$.])([A-Za-z_$][\w$]*)\(\s*["'`]([A-Z][A-Z0-9_]{2,})["'`]\s*[,)]/g
     )) {
       const helper = m[1] as string;
-      if (!readers.has(helper) || defTexts.get(helper)?.size !== 1) continue;
+      let reads = verdicts.get(helper);
+      if (reads === undefined) {
+        reads = isLocalReader(index, helper) || isImportedReader(index, helper);
+        verdicts.set(helper, reads);
+      }
+      if (!reads) continue;
       const name = m[2] as string;
       if (SYMBOL_DENYLIST.has(name)) continue;
       out.set(name, categorize(name, 'env_var'));
     }
-  }
+  });
   return out;
 }
 

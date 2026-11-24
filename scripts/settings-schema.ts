@@ -1019,7 +1019,7 @@ function aliasPair(spec: string): [string, string] | undefined {
   return [left, right ?? left];
 }
 
-function moduleGraph(chunks: readonly string[]): ModuleGraph {
+export function moduleGraph(chunks: readonly string[]): ModuleGraph {
   const scopes = chunks.map((src, index): Scope => {
     const imports = new Map<string, { source: string; name: string }>();
     const exports = new Map<string, string>();
@@ -1057,7 +1057,7 @@ function moduleGraph(chunks: readonly string[]): ModuleGraph {
  * every name imported from a given source is that source. Zero or several
  * matches is an unidentifiable module, and the caller refuses rather than guesses.
  */
-function moduleOf(source: string, graph: ModuleGraph): Scope | null {
+export function moduleOf(source: string, graph: ModuleGraph): Scope | null {
   const cached = graph.sourceCache.get(source);
   if (cached !== undefined) return cached;
   const wanted = [...(graph.namesBySource.get(source) as Set<string>)];

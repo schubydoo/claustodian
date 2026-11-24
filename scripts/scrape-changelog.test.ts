@@ -351,6 +351,8 @@ describe('extractSymbols', () => {
       'GIT_SSL_CAINFO',
       'GIT_SSL_NO_VERIFY',
       'GIT_CONFIG',
+      'GIT_SSH',
+      'GIT_CONFIG_GLOBAL',
       'GH_HOST',
       'GH_REPO',
       'SHELLOPTS',
@@ -3732,13 +3734,13 @@ describe('the changelog-only gate', () => {
       removed_in: null,
     })),
   });
-  // Real bullets: 2.1.285 names git's `GIT_SSH`, 2.1.309 a Linux path, 2.1.300 a
-  // signal. Nothing but the changelog supports any of them.
+  // Real bullets: 2.1.331 names Electron's `ELECTRON_RUN_AS_NODE`, 2.1.309 a Linux
+  // path. Nothing but the changelog supports either of them.
   const blocks = [
     {
       version: '2.1.10',
       bullets: [
-        "- Fixed plugin and marketplace installs and updates over SSH ignoring the ssh program set in `GIT_SSH` or in your git config's `core.sshCommand`",
+        '- [VSCode] Fixed Electron apps and extension tests failing to start from Claude, a hook or an MCP server; a wrapper, hook or server that runs VS Code as Node must now set `ELECTRON_RUN_AS_NODE=1`',
         '- Fixed Read reporting "File does not exist" for PDF page ranges in Linux sandboxes that share the parent\'s `/proc`',
         '- Added `--turbo` flag for faster runs.',
         '- Added `CLAUDE_CODE_TURBO` environment variable to control it.',
@@ -3764,7 +3766,7 @@ describe('the changelog-only gate', () => {
     );
     expect(keys).toContain('cli_flag:--turbo');
     expect(keys).toContain('command:/turbo-docs');
-    expect(keys).not.toContain('env_var:GIT_SSH');
+    expect(keys).not.toContain('env_var:ELECTRON_RUN_AS_NODE');
     expect(keys).not.toContain('command:/proc');
     expect(keys).not.toContain('env_var:CLAUDE_CODE_TURBO');
   });
@@ -3781,7 +3783,9 @@ describe('the changelog-only gate', () => {
   });
 
   it('leaves the changelog+docs contract alone when no binary lane is supplied', () => {
-    expect(published(buildEnrichedSnapshots(blocks, docs))).toContain('env_var:GIT_SSH');
+    expect(published(buildEnrichedSnapshots(blocks, docs))).toContain(
+      'env_var:ELECTRON_RUN_AS_NODE'
+    );
   });
 
   it('lets an audited changelog-only symbol through', () => {
