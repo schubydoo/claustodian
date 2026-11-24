@@ -35,10 +35,14 @@ export interface ConfirmedRemoval {
 }
 
 /**
- * The audited retirements (see scratch/needs-review-audit.md workflow). Only
- * symbols where the changelog explicitly retires the symbol itself belong here.
- * Both current entries are corroborated by the binary lane (last observed 2.1.91,
- * i.e. gone at 2.1.92). Judgment calls left out pending review: the `/agents`
+ * The audited retirements (see scratch/needs-review-audit.md workflow). A symbol
+ * belongs here when the changelog explicitly retires it, or when the binary lane
+ * proves an unannounced rename: the old name leaves every release from `removed_in`
+ * on, and the new name appears in that same release. `/vim` and `/tag` are
+ * announced and corroborated by the binary lane (last observed 2.1.91, i.e. gone at
+ * 2.1.92). `/less-permission-prompts` is a rename: 2.1.111 and 2.1.112 register it,
+ * and 2.1.113 registers `/fewer-permission-prompts` with the same description.
+ * Judgment calls left out pending review: the `/agents`
  * command (only its wizard was removed — still in the 2.1.201 binary), the
  * `CLAUDE_CODE_OPUS_4_6_FAST_MODE_OVERRIDE` no-op stub (changelog "Removed" at
  * 2.1.160 but the binary still carries the inert var), and `/output-style`
@@ -47,6 +51,7 @@ export interface ConfirmedRemoval {
 export const CONFIRMED_REMOVALS: readonly ConfirmedRemoval[] = [
   { type: 'command', symbol: '/vim', removed_in: '2.1.92' },
   { type: 'command', symbol: '/tag', removed_in: '2.1.92' },
+  { type: 'command', symbol: '/less-permission-prompts', removed_in: '2.1.113' },
 ];
 
 /**

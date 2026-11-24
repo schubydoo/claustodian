@@ -1568,12 +1568,7 @@ const CORROBORATED_TYPES: ReadonlySet<ExtractedSymbolType> = new Set([
  * observed them. Each one is audited: a real Claude Code symbol that the extractor
  * cannot see. Fix the extractor rather than add an entry when the miss is a pattern.
  */
-export const CHANGELOG_ONLY_SYMBOLS: ReadonlySet<string> = new Set<string>([
-  // A bundled skill. The 2.1.111 bundle has `name:"less-permission-prompts"` with a
-  // plain `description:`, and the skill registry needs a `menuDescription:` or
-  // `whenToUse:` marker.
-  'command:/less-permission-prompts',
-]);
+export const CHANGELOG_ONLY_SYMBOLS: ReadonlySet<string> = new Set<string>([]);
 
 /**
  * Returns a test for a changelog symbol that nothing but the changelog supports. A
