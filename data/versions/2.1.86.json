@@ -5103,7 +5103,7 @@
     {
       "symbol": "ANTHROPIC_API_KEY",
       "type": "env_var",
-      "first_seen": "0.2.54",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -5129,7 +5129,7 @@
     {
       "symbol": "ANTHROPIC_BASE_URL",
       "type": "env_var",
-      "first_seen": "0.2.56",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -5142,7 +5142,7 @@
     {
       "symbol": "ANTHROPIC_BEDROCK_BASE_URL",
       "type": "env_var",
-      "first_seen": "2.0.71",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -5437,9 +5437,22 @@
       "category": "claude-code"
     },
     {
+      "symbol": "ANTHROPIC_VERTEX_BASE_URL",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Override Google Cloud's Agent Platform endpoint URL. Use for custom Google Cloud's Agent Platform endpoints or when routing through an LLM gateway. See Google Cloud's Agent Platform",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "category": "claude-code"
+    },
+    {
       "symbol": "ANTHROPIC_VERTEX_PROJECT_ID",
       "type": "env_var",
-      "first_seen": "0.2.106",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -6550,7 +6563,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Controls whether tool call inputs stream from the API as Claude generates them. With this off, a large tool input such as a long file write arrives only after Claude finishes generating it, which can look like it's hanging. Enabled by default on the Anthropic API. On Amazon Bedrock and Google Cloud's Agent Platform, enabled per model where the deployed container supports it. Set to `0` to opt out.",
+      "description": "Controls whether tool call inputs stream from the API as Claude generates them. With this off, a large tool input such as a long file write arrives only after Claude finishes generating it, which can look like it's hanging. Enabled by default on the Anthropic API. On Amazon Bedrock and Google Cloud's Agent Platform, enabled per model where the deployed container supports it. Set to `0` to opt out. Set to `1` to force on when routing through a proxy via `ANTHROPIC_BASE_URL`, `ANTHROPIC_VERTEX_BASE_URL`, or `ANTHROPIC_BEDROCK_BASE_URL`. Off by default on Microsoft Foundry and gateway connections",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"

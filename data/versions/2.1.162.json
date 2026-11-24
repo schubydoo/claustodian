@@ -7633,7 +7633,7 @@
     {
       "symbol": "ANTHROPIC_API_KEY",
       "type": "env_var",
-      "first_seen": "0.2.54",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -7698,7 +7698,7 @@
     {
       "symbol": "ANTHROPIC_BASE_URL",
       "type": "env_var",
-      "first_seen": "0.2.56",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -7711,7 +7711,7 @@
     {
       "symbol": "ANTHROPIC_BEDROCK_BASE_URL",
       "type": "env_var",
-      "first_seen": "2.0.71",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -8018,6 +8018,30 @@
       "category": "claude-code"
     },
     {
+      "symbol": "ANTHROPIC_IDENTITY_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.116",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "ANTHROPIC_IDENTITY_TOKEN_FILE",
+      "type": "env_var",
+      "first_seen": "2.1.116",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "ANTHROPIC_LOG",
       "type": "env_var",
       "first_seen": "0.2.125",
@@ -8069,6 +8093,30 @@
       "category": "claude-code"
     },
     {
+      "symbol": "ANTHROPIC_SCOPE",
+      "type": "env_var",
+      "first_seen": "2.1.116",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "ANTHROPIC_SERVICE_ACCOUNT_ID",
+      "type": "env_var",
+      "first_seen": "2.1.116",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "ANTHROPIC_SMALL_FAST_MODEL",
       "type": "env_var",
       "first_seen": "0.2.46",
@@ -8109,7 +8157,7 @@
     {
       "symbol": "ANTHROPIC_VERTEX_BASE_URL",
       "type": "env_var",
-      "first_seen": "2.1.97",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -8122,7 +8170,7 @@
     {
       "symbol": "ANTHROPIC_VERTEX_PROJECT_ID",
       "type": "env_var",
-      "first_seen": "0.2.106",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",

@@ -5509,7 +5509,7 @@
     {
       "symbol": "ANTHROPIC_API_KEY",
       "type": "env_var",
-      "first_seen": "0.2.54",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -5574,7 +5574,7 @@
     {
       "symbol": "ANTHROPIC_BASE_URL",
       "type": "env_var",
-      "first_seen": "0.2.56",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -5587,7 +5587,7 @@
     {
       "symbol": "ANTHROPIC_BEDROCK_BASE_URL",
       "type": "env_var",
-      "first_seen": "2.0.71",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -5897,7 +5897,7 @@
     {
       "symbol": "ANTHROPIC_VERTEX_BASE_URL",
       "type": "env_var",
-      "first_seen": "2.1.97",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -5910,7 +5910,7 @@
     {
       "symbol": "ANTHROPIC_VERTEX_PROJECT_ID",
       "type": "env_var",
-      "first_seen": "0.2.106",
+      "first_seen": "0.2.9",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",

@@ -7695,7 +7695,7 @@
     {
       "symbol": "ANTHROPIC_API_KEY",
       "type": "env_var",
-      "first_seen": "0.2.54",
+      "first_seen": "0.2.9",
       "last_seen": "2.1.331",
       "removed_in": null
     },
@@ -7730,14 +7730,14 @@
     {
       "symbol": "ANTHROPIC_BASE_URL",
       "type": "env_var",
-      "first_seen": "0.2.56",
+      "first_seen": "0.2.9",
       "last_seen": "2.1.331",
       "removed_in": null
     },
     {
       "symbol": "ANTHROPIC_BEDROCK_BASE_URL",
       "type": "env_var",
-      "first_seen": "2.0.71",
+      "first_seen": "0.2.9",
       "last_seen": "2.1.331",
       "removed_in": null
     },
@@ -7899,14 +7899,14 @@
       "symbol": "ANTHROPIC_ENVIRONMENT_ID",
       "type": "env_var",
       "first_seen": "2.1.145",
-      "last_seen": "2.1.245",
+      "last_seen": "2.1.284",
       "removed_in": null
     },
     {
       "symbol": "ANTHROPIC_ENVIRONMENT_KEY",
       "type": "env_var",
       "first_seen": "2.1.145",
-      "last_seen": "2.1.245",
+      "last_seen": "2.1.284",
       "removed_in": null
     },
     {
@@ -7973,9 +7973,16 @@
       "removed_in": null
     },
     {
+      "symbol": "ANTHROPIC_IDENTITY_TOKEN",
+      "type": "env_var",
+      "first_seen": "2.1.116",
+      "last_seen": "2.1.331",
+      "removed_in": null
+    },
+    {
       "symbol": "ANTHROPIC_IDENTITY_TOKEN_FILE",
       "type": "env_var",
-      "first_seen": "2.1.331",
+      "first_seen": "2.1.116",
       "last_seen": "2.1.331",
       "removed_in": null
     },
@@ -8005,6 +8012,27 @@
       "type": "env_var",
       "first_seen": "2.1.116",
       "last_seen": "2.1.331",
+      "removed_in": null
+    },
+    {
+      "symbol": "ANTHROPIC_SCOPE",
+      "type": "env_var",
+      "first_seen": "2.1.116",
+      "last_seen": "2.1.331",
+      "removed_in": null
+    },
+    {
+      "symbol": "ANTHROPIC_SERVICE_ACCOUNT_ID",
+      "type": "env_var",
+      "first_seen": "2.1.116",
+      "last_seen": "2.1.331",
+      "removed_in": null
+    },
+    {
+      "symbol": "ANTHROPIC_SESSION_ID",
+      "type": "env_var",
+      "first_seen": "2.1.228",
+      "last_seen": "2.1.284",
       "removed_in": null
     },
     {
@@ -8038,15 +8066,22 @@
     {
       "symbol": "ANTHROPIC_VERTEX_BASE_URL",
       "type": "env_var",
-      "first_seen": "2.1.97",
+      "first_seen": "0.2.9",
       "last_seen": "2.1.331",
       "removed_in": null
     },
     {
       "symbol": "ANTHROPIC_VERTEX_PROJECT_ID",
       "type": "env_var",
-      "first_seen": "0.2.106",
+      "first_seen": "0.2.9",
       "last_seen": "2.1.331",
+      "removed_in": null
+    },
+    {
+      "symbol": "ANTHROPIC_WEBHOOK_SIGNING_KEY",
+      "type": "env_var",
+      "first_seen": "2.1.228",
+      "last_seen": "2.1.284",
       "removed_in": null
     },
     {
@@ -8054,6 +8089,13 @@
       "type": "env_var",
       "first_seen": "2.1.141",
       "last_seen": "2.1.331",
+      "removed_in": null
+    },
+    {
+      "symbol": "ANTHROPIC_WORK_ID",
+      "type": "env_var",
+      "first_seen": "2.1.228",
+      "last_seen": "2.1.284",
       "removed_in": null
     },
     {
@@ -16557,7 +16599,7 @@
     {
       "symbol": "CLAUDE_HELPER_CONTEXT",
       "type": "env_var",
-      "first_seen": "2.1.331",
+      "first_seen": "2.1.329",
       "last_seen": "2.1.331",
       "removed_in": null
     },
