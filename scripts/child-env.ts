@@ -152,6 +152,22 @@ export function collectChildEnvNames(program: Node): Set<string> {
       if (name !== undefined && ENV_NAME.test(name)) out.add(name);
     }
   };
+  // An object that spreads a config's `env` member is an environment by construction,
+  // even when it leaves through a thunk or a positional argument no site can follow.
+  // A `process.env` spread does not count here: without a site it can be a short-lived
+  // copy, and it dated CLAUDE_CODE_SPAWNED_BY_SERVER to an early appearance that later
+  // releases do not carry.
+  walkScopes(program, (n) => {
+    if (n.type !== 'ObjectExpression') return;
+    const spreadsEnv = (n.properties as Node[]).some((p) => {
+      if (p.type !== 'SpreadElement') return false;
+      const arg = p.argument as Node;
+      if (memberName(arg) !== 'env') return false;
+      const object = arg.object as Node;
+      return !(object.type === 'Identifier' && object.name === 'process');
+    });
+    if (spreadsEnv) addKeys(n);
+  });
   for (const site of collectSites(program)) {
     // Each step holds an expression and the scope its names resolve in. A name in a
     // declaration's initialiser resolves where that declaration is, not at the site.

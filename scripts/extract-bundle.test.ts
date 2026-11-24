@@ -1184,6 +1184,43 @@ describe('extractNameReaderEnvVars — env vars read by name through a helper', 
     expect(names(ST + ST + 'St("EMBEDDED_TWICE")')).toEqual(['EMBEDDED_TWICE']);
   });
 
+  it('reads through the two arrow helper shapes the bundled SDK uses', () => {
+    expect(names('var S=(e)=>process.env[e]?.trim()||void 0;S("ARROW_CONCISE")')).toEqual([
+      'ARROW_CONCISE',
+    ]);
+    const guarded =
+      'var U=(e)=>{if(typeof globalThis.process<"u")return globalThis.process.env?.[e]?.trim()' +
+      '||void 0;if(typeof globalThis.Deno<"u")return globalThis.Deno.env?.get?.(e)?.trim()' +
+      '||void 0;return};U("ARROW_GUARDED")';
+    expect(names(guarded)).toEqual(['ARROW_GUARDED']);
+    // The older SDK guards: 1.0.117 and 0.2.50.
+    expect(
+      names(
+        'var V=(A)=>{if(typeof globalThis.process!=="undefined")return globalThis.process.env?.' +
+          '[A]?.trim()??void 0;return};V("ARROW_OLD_GLOBAL")'
+      )
+    ).toEqual(['ARROW_OLD_GLOBAL']);
+    expect(
+      names(
+        'var W=(A)=>{if(typeof process!=="undefined")return process.env?.[A]?.trim()??void 0;' +
+          'return};W("ARROW_OLD_BARE")'
+      )
+    ).toEqual(['ARROW_OLD_BARE']);
+  });
+
+  it('refuses an arrow helper whose name or read is not unambiguous', () => {
+    const arrow = 'var S=(e)=>process.env[e];';
+    // Another binding of the name in the chunk.
+    expect(names(arrow + 'S=g;S("REASSIGNED_NAME")')).toEqual([]);
+    expect(names(arrow + 'function S(e){return e}S("ALSO_A_FUNCTION")')).toEqual([]);
+    // The index is not the arrow's own parameter.
+    expect(names('var S=(e)=>process.env[t];S("OTHER_PARAMETER")')).toEqual([]);
+    // A write through the parameter is not a read.
+    expect(names('var S=(e)=>process.env[e]=1;S("ARROW_WRITE")')).toEqual([]);
+    // Another chunk does not see the helper.
+    expect(names(arrow, 'S("OTHER_CHUNK")')).toEqual([]);
+  });
+
   it('requires a read of the FIRST parameter, not a write or another parameter', () => {
     expect(names('function W(e,t){process.env[e]=t}W("WRITTEN_NAME","1")')).toEqual([]);
     expect(names('function U(e){delete process.env[e]}U("DELETED_NAME")')).toEqual([]);

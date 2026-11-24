@@ -22,6 +22,27 @@ describe('collectChildEnvNames', () => {
     expect(names('o["env"]={CLAUDE_QUOTED_MEMBER:1}')).toEqual(['CLAUDE_QUOTED_MEMBER']);
   });
 
+  it('reads an object that spreads an `env` member, with no env site in sight', () => {
+    // The 2.1.329 credential helper: the object leaves through a memoized thunk
+    // and a positional argument into another chunk.
+    expect(names('p=dH(()=>{return{...s,...e.env,CLAUDE_HELPER_CONTEXT:r}})')).toEqual([
+      'CLAUDE_HELPER_CONTEXT',
+    ]);
+  });
+
+  it('does not treat a spread of anything but a config `env` member as an environment', () => {
+    for (const src of [
+      // The 2.1.64 shape: a process.env copy with no env site.
+      'class A{buildEnv(){return{...process.env,CLAUDE_CODE_SPAWNED_BY_SERVER:"1"}}}',
+      'x={...e.environment,CLAUDE_OTHER_MEMBER:1}',
+      'x={...env,CLAUDE_BARE_SPREAD:1}',
+      'x={...e.env.nested,CLAUDE_DEEPER_SPREAD:1}',
+      'x={...e[k],CLAUDE_COMPUTED_SPREAD:1}',
+    ]) {
+      expect(names(src)).toEqual([]);
+    }
+  });
+
   it('reads no assignment that is not a plain `=` to an env member', () => {
     for (const src of [
       'o.environment={CLAUDE_NOT_ENV:1}',
