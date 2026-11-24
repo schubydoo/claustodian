@@ -3929,7 +3929,7 @@
     {
       "symbol": "/claude-api",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.69",
       "last_seen": "2.1.331",
       "removed_in": null
     },
@@ -3943,7 +3943,7 @@
     {
       "symbol": "/claude-code-docs",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.154",
       "last_seen": "2.1.331",
       "removed_in": null
     },
@@ -3971,7 +3971,7 @@
     {
       "symbol": "/code-review",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.146",
       "last_seen": "2.1.331",
       "removed_in": null
     },
@@ -4063,7 +4063,7 @@
     {
       "symbol": "/debug",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.30",
       "last_seen": "2.1.331",
       "removed_in": null
     },
@@ -4098,7 +4098,7 @@
     {
       "symbol": "/design-sync",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.160",
       "last_seen": "2.1.331",
       "removed_in": null
     },
@@ -4197,7 +4197,7 @@
     {
       "symbol": "/fewer-permission-prompts",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.113",
       "last_seen": "2.1.331",
       "removed_in": null
     },
@@ -4328,6 +4328,13 @@
       "last_seen": "2.1.145",
       "removed_in": "2.1.146",
       "named_first_seen": null
+    },
+    {
+      "symbol": "/less-permission-prompts",
+      "type": "command",
+      "first_seen": "2.1.111",
+      "last_seen": "2.1.112",
+      "removed_in": "2.1.113"
     },
     {
       "symbol": "/list-agents",
@@ -4765,14 +4772,14 @@
     {
       "symbol": "/run",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.145",
       "last_seen": "2.1.331",
       "removed_in": null
     },
     {
       "symbol": "/run-skill-generator",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.145",
       "last_seen": "2.1.331",
       "removed_in": null
     },
@@ -4865,7 +4872,7 @@
     {
       "symbol": "/simplify",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.63",
       "last_seen": "2.1.331",
       "removed_in": null
     },
@@ -5084,7 +5091,7 @@
     {
       "symbol": "/verify",
       "type": "command",
-      "first_seen": "2.1.312",
+      "first_seen": "2.1.145",
       "last_seen": "2.1.331",
       "removed_in": null
     },

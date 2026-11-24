@@ -3080,7 +3080,7 @@
     {
       "symbol": "/claude-code-docs",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.154",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -3119,12 +3119,11 @@
     {
       "symbol": "/code-review",
       "type": "command",
-      "first_seen": "2.1.147",
-      "first_seen_estimated": true,
+      "first_seen": "2.1.146",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
-      "confidence": "medium",
+      "confidence": "high",
       "description": "Review the current diff for bugs and cleanups",
       "description_source": "binary",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
@@ -3368,7 +3367,7 @@
     {
       "symbol": "/design-sync",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.160",
       "removed_in": null,
       "status": "active",
       "provenance": "changelog",
@@ -3511,7 +3510,7 @@
     {
       "symbol": "/fewer-permission-prompts",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.113",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -3699,19 +3698,6 @@
       "confidence": "high",
       "description": "Open your keyboard shortcuts file",
       "description_source": "docs",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "command"
-    },
-    {
-      "symbol": "/less-permission-prompts",
-      "type": "command",
-      "first_seen": "2.1.111",
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "high",
-      "description": "Added `/less-permission-prompts` skill — scans transcripts for common read-only Bash and MCP tool calls and proposes a prioritized allowlist for `.claude/settings.json`",
-      "description_source": "changelog",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -4305,7 +4291,7 @@
     {
       "symbol": "/run",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.145",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -4318,7 +4304,7 @@
     {
       "symbol": "/run-skill-generator",
       "type": "command",
-      "first_seen": "2.1.163",
+      "first_seen": "2.1.145",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -4776,6 +4762,19 @@
       "provenance": "changelog",
       "confidence": "high",
       "description": "Configure usage credits to keep working when you hit a limit. Previously `/extra-usage`",
+      "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "command"
+    },
+    {
+      "symbol": "/verify",
+      "type": "command",
+      "first_seen": "2.1.145",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "**Skill.** Confirm a code change does what it should by building your project's app, running it, and observing the result, rather than relying on tests or type checks. See Run and verify your app. Requires Claude Code v2.1.145 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
