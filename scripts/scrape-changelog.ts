@@ -700,10 +700,17 @@ export function subprocessFlagExamples(bullet: string): ReadonlySet<string> {
  * `` `--name "My Project"` `` for `claude remote-control`, the only place 2.1.69
  * parses it. Bare `claude --name` arrived in 2.1.76, and the record has no scopes,
  * so dating it from 2.1.69 would publish a top-level flag seven releases early.
+ *
+ * `--hostname`: a flag of the built-in `gh api` that cloud sessions provide, as the
+ * 2.1.290 bullet writes it ("Changed the built-in `gh api` … (use `--hostname` …)").
+ * The bundle parses it only in that command's argument switch, and `claude
+ * --hostname` fails with "unknown option". Its `GH_HOST` and `GH_REPO` are denylisted
+ * for the same reason.
  */
 const PHANTOM_FLAG_PROSE_USAGE: ReadonlyMap<string, RegExp> = new Map([
   ['--compact', /\b(?:after|before|during|following|upon|from|on|via)\s+`--compact`/i],
   ['--name', /`claude remote-control`.*`--name "/],
+  ['--hostname', /`gh api`.*`--hostname`/],
 ]);
 
 interface CollectedSymbol {

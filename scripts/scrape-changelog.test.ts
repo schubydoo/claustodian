@@ -172,8 +172,8 @@ describe('extractSymbols', () => {
         'call the GitHub API directly (via `gh auth token`, `GH_TOKEN`, or `GITHUB_TOKEN`)'
       )
     ).toEqual([]);
-    // `--hostname` is gh api's flag, not Claude Code's. It is still published, and
-    // its removal is deferred to a later decision. This pin is not proof of ownership.
+    // `--hostname` is gh api's flag, not Claude Code's. The token still extracts here;
+    // collectChangelogSymbols drops it (PHANTOM_FLAG_PROSE_USAGE).
     expect(
       extractSymbols(
         'Changed the built-in `gh api` in cloud sessions: a host other than github.com set in `GH_HOST` or `GH_REPO` is now refused (use `--hostname` or a full URL), and stderr notes requests to other hosts'
@@ -746,6 +746,19 @@ describe('isSubprocessFlagBullet', () => {
       { version: '2.1.69', bullets: [remoteControl] },
     ]);
     expect(symbols.get('cli_flag:--name')?.record.first_seen).toBe('2.1.76');
+  });
+
+  it("does not register the built-in `gh api`'s `--hostname` as a Claude Code flag", () => {
+    // The 2.1.290 bullet, verbatim. `claude --hostname` fails with "unknown option".
+    const bullet =
+      '- Changed the built-in `gh api` in cloud sessions: a host other than github.com set in `GH_HOST` or `GH_REPO` is now refused (use `--hostname` or a full URL), and stderr notes requests to other hosts';
+    const keys = [...collectChangelogSymbols([{ version: '2.1.290', bullets: [bullet] }]).keys()];
+    expect(keys).not.toContain('cli_flag:--hostname');
+    // A bullet that introduces a real `--hostname` flag still registers it.
+    const real = collectChangelogSymbols([
+      { version: '2.1.400', bullets: ['- Added `--hostname` flag to set the host'] },
+    ]);
+    expect([...real.keys()]).toContain('cli_flag:--hostname');
   });
 });
 
