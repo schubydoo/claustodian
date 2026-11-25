@@ -1191,8 +1191,19 @@ export function parseDocPage(
       envIndex > 0
         ? symbolsFromCell(cells[envIndex] ?? '').filter((sym) => sym.type === 'env_var')
         : [];
+    const firstCell = symbolsFromCell(symbolCell);
+    // A section a page allows is evidence already, so a variable under another
+    // header there means the header changed. Skipping it would read downstream as
+    // a removal, so it throws, like assertReadableRow.
+    if (sections && !variableTable && firstCell.some((sym) => sym.type === 'env_var')) {
+      throw new Error(
+        `Docs page "${page}": a table in "${section}" names an env var under the header ` +
+          `| ${header.join(' | ')} |, which does not name variables. Read the page and fix ` +
+          'parseDocPage.'
+      );
+    }
     const syms = [
-      ...symbolsFromCell(symbolCell).filter((sym) => sym.type !== 'env_var' || variableTable),
+      ...firstCell.filter((sym) => sym.type !== 'env_var' || variableTable),
       ...envSyms,
     ];
     if (syms.length === 0) continue;

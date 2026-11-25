@@ -313,6 +313,19 @@ describe('parseDocPage', () => {
       expect(parseDocPage('cli-reference', table(head))).toEqual([]);
   });
 
+  it('throws when an allowed section names an env var under another header', () => {
+    // A renamed header must not drop a whole table of variables without a word.
+    const page = [
+      '## Variables',
+      '| Variables | Description |',
+      '| :- | :- |',
+      '| `CLAUDE_CONFIG_DIR` | Override the configuration directory |',
+    ].join('\n');
+    expect(() => parseDocPage('env-vars', page)).toThrow(
+      /names an env var under the header \| Variables \| Description \|/
+    );
+  });
+
   it('reads no symbol from a table of tools, but reads the next table', () => {
     // The live tools-reference row of 2.1.332: `REPL` is a tool, not an env var.
     const page = [
