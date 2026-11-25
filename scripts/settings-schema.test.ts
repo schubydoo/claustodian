@@ -85,6 +85,26 @@ describe('extractSettingsKeys — thunked era (2.1.284 →)', () => {
     expect(keys[2]?.description).toBeUndefined();
   });
 
+  it('reads thunked keys spread into the root, with their descriptions', () => {
+    // The 2.1.330 shape: `disableDirectMcpSkills` arrives in a spread literal
+    // after a sibling, and `xaaIdp` in a spread behind an environment check.
+    const src =
+      builders +
+      'function la(e){return{...s.CLAUDE_CODE_ENABLE_XAA&&{xaaIdp:()=>u({issuer:o()})},' +
+      'apiKeyHelper:()=>o(),' +
+      '...{disableDirectMcpSkills:()=>k().optional().describe("No MCP skills")},' +
+      'cleanupPeriodDays:()=>k()}}';
+    const keys = extractSettingsKeys(src);
+    expect(keys.map((k) => k.path)).toEqual([
+      'xaaIdp',
+      'xaaIdp.issuer',
+      'apiKeyHelper',
+      'disableDirectMcpSkills',
+      'cleanupPeriodDays',
+    ]);
+    expect(keys[3]?.description).toBe('No MCP skills');
+  });
+
   it("reads a block-bodied thunk's own return, not its first child's description", () => {
     // At 2.1.284 `attribution` builds its object inside the block and returns a
     // union, so the first `.describe()` in the value is `commit`'s. The nested
@@ -426,8 +446,50 @@ describe('extractSettingsKeys — depth accounting at the object top level', () 
     expect(paths(src)).toEqual(['attribution', 'attribution.commit', 'cleanupPeriodDays']);
   });
 
-  it('steps over a nested object literal at the top level', () => {
-    const src = 'Q=v.object({...{legacy:1},apiKeyHelper:v.string()})';
+  it('reads the keys of an object literal spread at the top level', () => {
+    // A spread literal adds its keys to the object that holds it.
+    const src = 'Q=v.object({...{legacy:v.string()},apiKeyHelper:v.string()})';
+    expect(paths(src)).toEqual(['legacy', 'apiKeyHelper']);
+  });
+
+  it('reads the keys of a spread literal behind a condition', () => {
+    const src =
+      'Q=v.object({...s.CLAUDE_CODE_ENABLE_XAA&&{xaaIdp:v.object({issuer:v.string()})},' +
+      'apiKeyHelper:v.string()})';
+    expect(paths(src)).toEqual(['xaaIdp', 'xaaIdp.issuer', 'apiKeyHelper']);
+  });
+
+  it('reads a spread literal behind a called condition, in both forms', () => {
+    // 2.1.89 to 2.1.211 use `&&`, and 2.1.83 to 2.1.87 a ternary with `{}`.
+    const cond = 'r6(process.env.CLAUDE_CODE_ENABLE_XAA)';
+    const and = `Q=v.object({...${cond}&&{xaaIdp:v.string()},apiKeyHelper:v.string()})`;
+    const ternary = `Q=v.object({...${cond}?{xaaIdp:v.string()}:{},apiKeyHelper:v.string()})`;
+    expect(paths(and)).toEqual(['xaaIdp', 'apiKeyHelper']);
+    expect(paths(ternary)).toEqual(['xaaIdp', 'apiKeyHelper']);
+  });
+
+  it('throws on a conditional spread whose else branch is not empty', () => {
+    const src = 'Q=v.object({...c?{xaaIdp:v.string()}:{other:v.string()},apiKeyHelper:v.string()})';
+    expect(() => extractSettingsKeys(src)).toThrow(/else branch other than \{\}/);
+  });
+
+  it.each([
+    ['two conditions', '...a&&b&&{xaaIdp:v.string()}'],
+    ['a quoted call argument', '...r6("X")&&{xaaIdp:v.string()}'],
+    ['a grouped condition', '...(a||b)?{xaaIdp:v.string()}:{}'],
+  ])('throws on a conditional spread with %s rather than drop its keys', (_, spread) => {
+    const src = `Q=v.object({${spread},apiKeyHelper:v.string()})`;
+    expect(() => extractSettingsKeys(src)).toThrow(/condition this walk does not read/);
+  });
+
+  it('throws on a spread literal that never closes', () => {
+    const src = 'Q=v.object({apiKeyHelper:v.string(),...{legacy:v.string()';
+    expect(() => extractSettingsKeys(src)).toThrow(/spread object literal never closes/);
+  });
+
+  it('steps over a spread that is not an object literal', () => {
+    // `...!1` is what the minifier leaves of a condition it folded to false.
+    const src = 'Q=v.object({...!1,...f(e),...{},apiKeyHelper:v.string()})';
     expect(paths(src)).toEqual(['apiKeyHelper']);
   });
 
