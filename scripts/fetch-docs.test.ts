@@ -80,6 +80,13 @@ function mockPageBody(url: string): string {
     return `--${page.replace('/', '-')}-mock-${i}`;
   };
   const table = rows.map((i) => `| \`${cell(i)}\` | A mocked symbol |`).join('\n');
+  // A real page heads each table, and an env var counts only in a table headed for
+  // variables.
+  const headed = [
+    page === 'env-vars' ? '| Variable | Description |' : '| Flag | Description |',
+    '| :- | :- |',
+    table,
+  ].join('\n');
   if (page === 'self-hosted-environments-reference') {
     // The runner section, plus the orchestrator paragraph SCOPE_INHERITANCE reads
     // and a runner row for each flag it names.
@@ -109,7 +116,7 @@ function mockPageBody(url: string): string {
     'self-hosted-environments-configuration': 'Wrapper scripts',
     mcp: 'Use dynamic headers for custom authentication',
   }[page];
-  return section ? `## ${section}\n\n${table}` : table;
+  return section ? `## ${section}\n\n${headed}` : headed;
 }
 
 describe('symbolFromCell', () => {
@@ -291,6 +298,21 @@ describe('parseDocPage', () => {
     expect(flags.map((e) => e.symbol)).toEqual(['--continue', '--advisor']);
   });
 
+  it('reads an all-caps first cell as an env var only in a table headed for variables', () => {
+    const table = (head: string) =>
+      [
+        `| ${head} | Description |`,
+        '| :- | :- |',
+        '| `OTEL_RESOURCE_ATTRIBUTES` | Set by it |',
+      ].join('\n');
+    for (const head of ['Variable', 'Env var', 'Environment Variable'])
+      expect(parseDocPage('cli-reference', table(head)).map((e) => e.symbol)).toEqual([
+        'OTEL_RESOURCE_ATTRIBUTES',
+      ]);
+    for (const head of ['Attribute', 'Mode', 'Example variable'])
+      expect(parseDocPage('cli-reference', table(head))).toEqual([]);
+  });
+
   it('reads no symbol from a table of tools, but reads the next table', () => {
     // The live tools-reference row of 2.1.332: `REPL` is a tool, not an env var.
     const page = [
@@ -332,8 +354,8 @@ describe('parseDocPage', () => {
 
   it('unescapes markdown backslash escapes so the literal backslash never surfaces', () => {
     const entry = parseDocPage(
-      'cli-reference',
-      '| `ANTHROPIC_SMALL_FAST_MODEL` | \\[DEPRECATED] a\\_b |'
+      'env-vars',
+      '## Variables\n| Variable | Description |\n| :- | :- |\n| `ANTHROPIC_SMALL_FAST_MODEL` | \\[DEPRECATED] a\\_b |'
     )[0];
     expect(entry?.description).toBe('[DEPRECATED] a_b');
   });
@@ -403,8 +425,10 @@ describe('parseDocPage', () => {
     expect(buildDocsIndex([{ page: 'env-vars', markdown: page }]).symbols).toMatchObject([
       { symbol: 'CLAUDE_CONFIG_DIR', doc_min_version: null },
     ]);
-    // The same rows on a page with no section list still publish.
-    expect(parseDocPage('cli-reference', page).map((e) => e.symbol)).toContain('NPM_TOKEN');
+    // On a page with no section list, the header alone keeps the example out.
+    const unlisted = parseDocPage('cli-reference', page).map((e) => e.symbol);
+    expect(unlisted).toContain('CLAUDE_CONFIG_DIR');
+    expect(unlisted).not.toContain('NPM_TOKEN');
   });
 
   it('does not resurrect a deliberately-escaped link into active markdown', () => {
@@ -1752,6 +1776,8 @@ describe('parseDocPage — the runner and MCP env-var pages', () => {
       '| :- | :- |',
       '| `CLAUDE_RUNNER_CLAUDE_BIN` | Path to the runner binary. |',
       '### post-session',
+      '| Variable | Description |',
+      '| :- | :- |',
       '| `CLAUDE_RUNNER_EXIT_REASON` | How the session ended. |',
       '| `GIT_CONFIG_COUNT`, `GIT_CONFIG_KEY_n`, `GIT_CONFIG_VALUE_n` | Git settings. |',
       '## Troubleshooting',

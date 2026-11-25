@@ -1139,6 +1139,11 @@ export function parseDocPage(
   // are skipped, or an all-caps tool name reads as an env var: `REPL` on
   // tools-reference did from 2.1.332.
   let toolTable = false;
+  // An all-caps word in a first cell is an env var only in a table headed for
+  // variables (`Variable`, `Env var`, `Environment Variable`). Elsewhere it is
+  // a mode, a status, an attribute or a tool. Every docs env var on record
+  // comes from such a table, and the header is what a table says it lists.
+  let variableTable = false;
   for (const raw of markdown.split('\n')) {
     // A table inside a tab or a callout is quoted (`> | --flag | … |`). Unquote it
     // only when what follows is a table row, so a quoted heading still counts as
@@ -1172,6 +1177,7 @@ export function parseDocPage(
       descIndex = descriptionColumn(cells);
       envIndex = envVarColumn(cells);
       toolTable = /^tool$/i.test(cells[0] ?? '');
+      variableTable = /^(?:env(?:ironment)?\s+)?var(?:iable)?$/i.test(cells[0] ?? '');
     }
     if (toolTable) continue;
     if (sections && !sections.has(section)) continue;
@@ -1185,7 +1191,10 @@ export function parseDocPage(
       envIndex > 0
         ? symbolsFromCell(cells[envIndex] ?? '').filter((sym) => sym.type === 'env_var')
         : [];
-    const syms = [...symbolsFromCell(symbolCell), ...envSyms];
+    const syms = [
+      ...symbolsFromCell(symbolCell).filter((sym) => sym.type !== 'env_var' || variableTable),
+      ...envSyms,
+    ];
     if (syms.length === 0) continue;
     const description = cleanCell(descCell);
     if (description.length < 3) continue;
