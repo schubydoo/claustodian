@@ -894,7 +894,7 @@ function parseModsRenderSiteTable(page: string, markdown: string): DocEntry[] {
         'parseModsRenderSiteTable.'
     );
   };
-  // A site name written plainly or as a link, several to a cell, joined by commas.
+  // A site name written plainly or as a link, several to a cell, joined by commas or "and".
   const name = String.raw`(?:\[\`[A-Z][A-Za-z]*\`\]\([^)\s]*\)|\`[A-Z][A-Za-z]*\`)`;
   const names = `${name}(?:(?:,\\s*|,?\\s+and\\s+)${name})*`;
   const cellOfNames = new RegExp(`^${names}$`);
