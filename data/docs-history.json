@@ -11217,6 +11217,12 @@
         "description": "Before Claude Code applies a model switch that you or a client requested. Can block the switch"
       }
     ],
+    "hook_event:PreSkillShellCommand": [
+      {
+        "from": "2.1.332",
+        "description": "Before a skill's injected shell command runs. Can block the command"
+      }
+    ],
     "hook_event:PreToolUse": [
       {
         "from": "2.1.316",
@@ -11364,6 +11370,12 @@
     "mod_element:Select": [
       {
         "from": "2.1.306",
+        "description": ""
+      }
+    ],
+    "mod_element:Shader": [
+      {
+        "from": "2.1.332",
         "description": ""
       }
     ],
@@ -11671,6 +11683,12 @@
       {
         "from": "2.1.306",
         "description": "A `Client` element posts data to its mod"
+      }
+    ],
+    "mod_event:ui.pointer": [
+      {
+        "from": "2.1.332",
+        "description": "The user clicks a part of your mod's backdrop that the app doesn't cover. Requires Claude Code v2.1.326 or later."
       }
     ],
     "mod_event:ui.press": [
