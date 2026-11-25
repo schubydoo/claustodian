@@ -550,6 +550,19 @@ const ROOT_WINDOW = 400_000;
  */
 const MAX_DEPTH = 6;
 
+/**
+ * A spread of an object literal at an object's top level, up to just inside its
+ * `{`: `...{key:…}`, `...cond&&{key:…}` or `...cond?{key:…}:{}`. Its keys are
+ * keys of the object that holds the spread. The condition is a name, a member
+ * chain or a call on one (`r6(process.env.CLAUDE_CODE_ENABLE_XAA)`). Counting
+ * the brace as nesting dropped `disableDirectMcpSkills` from 2.1.330, `xaaIdp`
+ * from 2.1.83, and the gated keys that 2.1.59 to 2.1.107 inline this way. Any
+ * other spread (`...!1`, `...f(e)`) is stepped over. Group 1 is `?` for the
+ * ternary form, whose other branch must be `{}`.
+ */
+const SPREAD_LITERAL =
+  /^\.\.\.(?:!?[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*(?:\([\w$.!]*\))?(&&|\?))?\{/;
+
 export interface SettingsKey {
   /** Dotted path, e.g. `permissions.allow` or `sandbox.network.httpProxyPort`. */
   path: string;
@@ -670,6 +683,31 @@ function scanLevel(
       depth--;
       i++;
       continue;
+    }
+    if (depth === 0 && src.startsWith('...', i) && (i === start || src[i - 1] === ',')) {
+      const literal = SPREAD_LITERAL.exec(src.slice(i, i + 200));
+      if (literal) {
+        const body = i + literal[0].length;
+        out.push(...scanLevel(src, body));
+        const end = objectEnd(src, body);
+        if (end === -1) {
+          throw new SettingsSchemaError(
+            'settings schema: a spread object literal never closes. ' +
+              'Refusing to emit a key set that may be missing its keys.'
+          );
+        }
+        i = end;
+        if (literal[1] === '?') {
+          if (!src.startsWith(':{}', i)) {
+            throw new SettingsSchemaError(
+              'settings schema: a conditional spread has an else branch other than {}. ' +
+                'Refusing to emit a key set that may be missing its keys.'
+            );
+          }
+          i += 3;
+        }
+        continue;
+      }
     }
     if (depth === 0) {
       const m = /^([A-Za-z_$][\w$]*)\s*:/.exec(src.slice(i, i + 60));
