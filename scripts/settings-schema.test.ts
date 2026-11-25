@@ -473,6 +473,15 @@ describe('extractSettingsKeys — depth accounting at the object top level', () 
     expect(() => extractSettingsKeys(src)).toThrow(/else branch other than \{\}/);
   });
 
+  it.each([
+    ['two conditions', '...a&&b&&{xaaIdp:v.string()}'],
+    ['a quoted call argument', '...r6("X")&&{xaaIdp:v.string()}'],
+    ['a grouped condition', '...(a||b)?{xaaIdp:v.string()}:{}'],
+  ])('throws on a conditional spread with %s rather than drop its keys', (_, spread) => {
+    const src = `Q=v.object({${spread},apiKeyHelper:v.string()})`;
+    expect(() => extractSettingsKeys(src)).toThrow(/condition this walk does not read/);
+  });
+
   it('throws on a spread literal that never closes', () => {
     const src = 'Q=v.object({apiKeyHelper:v.string(),...{legacy:v.string()';
     expect(() => extractSettingsKeys(src)).toThrow(/spread object literal never closes/);
