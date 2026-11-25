@@ -875,11 +875,12 @@ function parseModsReferencePage(page: string, markdown: string): DocEntry[] {
 
 /**
  * The "Render sites" table of the mods reference page. Its first cell names one site
- * or more in backticks (`` `ToolUse`, `ToolResult`, `ToolGroup` ``, sometimes as a
- * link), and nothing else. One exception: a cell with one name can gloss it after a
- * comma, in words that start lowercase (`` `AbovePromptList`, the stack of `AbovePrompt`
- * rows ``). Only the name before the gloss is read, because the gloss can name other
- * sites. The other cells list props and apps, not what the site is, so the record
+ * or more in backticks, joined by commas or "and" (`` `ToolUse`, `ToolResult`, `ToolGroup` ``,
+ * sometimes as a link), and nothing else. One exception: the names can be followed by a
+ * gloss after a comma, in words that start lowercase (`` `AbovePromptList`, the stack of
+ * `AbovePrompt` rows ``, or from 2.1.331 `` `BesidePromptList` and `UnderlayList`, the
+ * order of … ``). Only the names before the gloss are read, because the gloss can name
+ * other sites. Which name the gloss describes does not matter, as no record keeps it. The other cells list props and apps, not what the site is, so the record
  * carries no description and the binary lane dates it. The section holds one table,
  * headed "Site". A second table, any other header, and a first cell holding anything
  * but site names stop the run. Fenced code is skipped, so an example cannot open the
@@ -893,12 +894,12 @@ function parseModsRenderSiteTable(page: string, markdown: string): DocEntry[] {
         'parseModsRenderSiteTable.'
     );
   };
-  // A site name written plainly or as a link, several to a cell, joined by commas.
+  // A site name written plainly or as a link, several to a cell, joined by commas or "and".
   const name = String.raw`(?:\[\`[A-Z][A-Za-z]*\`\]\([^)\s]*\)|\`[A-Z][A-Za-z]*\`)`;
-  const cellOfNames = new RegExp(`^${name}(?:,\\s*${name})*$`);
-  // One name, then a comma and a lowercase gloss. Several names before a gloss are
-  // refused: the cell does not say which of them the gloss describes.
-  const glossedName = new RegExp(`^(${name}),\\s+[a-z]`);
+  const names = `${name}(?:(?:,\\s*|,?\\s+and\\s+)${name})*`;
+  const cellOfNames = new RegExp(`^${names}$`);
+  // The names, then a comma and a lowercase gloss.
+  const glossedNames = new RegExp(`^(${names}),\\s+[a-z]`);
   let inSection = false;
   let inFence = false;
   let tables = 0;
@@ -922,10 +923,10 @@ function parseModsRenderSiteTable(page: string, markdown: string): DocEntry[] {
         refuse('the Render sites table has a header other than "Site"', line);
       continue;
     }
-    const names =
-      (cellOfNames.test(nameCell) ? nameCell : glossedName.exec(nameCell)?.[1]) ??
+    const siteNames =
+      (cellOfNames.test(nameCell) ? nameCell : glossedNames.exec(nameCell)?.[1]) ??
       refuse('a row of the Render sites table holds something other than site names', line);
-    for (const match of names.matchAll(/`([A-Z][A-Za-z]*)`/g)) {
+    for (const match of siteNames.matchAll(/`([A-Z][A-Za-z]*)`/g)) {
       entries.push({
         symbol: match[1] as string,
         type: 'mod_render_site',
@@ -1134,6 +1135,10 @@ export function parseDocPage(
   let descIndex = 1;
   let envIndex = -1;
   let header: string[] = [];
+  // A table headed "Tool" names tools, which no published type covers. Its rows
+  // are skipped, or an all-caps tool name reads as an env var: `REPL` on
+  // tools-reference did from 2.1.332.
+  let toolTable = false;
   for (const raw of markdown.split('\n')) {
     // A table inside a tab or a callout is quoted (`> | --flag | … |`). Unquote it
     // only when what follows is a table row, so a quoted heading still counts as
@@ -1166,7 +1171,9 @@ export function parseDocPage(
       header = cells;
       descIndex = descriptionColumn(cells);
       envIndex = envVarColumn(cells);
+      toolTable = /^tool$/i.test(cells[0] ?? '');
     }
+    if (toolTable) continue;
     if (sections && !sections.has(section)) continue;
     if (sections) assertReadableRow(page, section, cells, header, isHeader);
     if (cells.length < 2) continue;

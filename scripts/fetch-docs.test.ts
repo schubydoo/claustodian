@@ -291,6 +291,22 @@ describe('parseDocPage', () => {
     expect(flags.map((e) => e.symbol)).toEqual(['--continue', '--advisor']);
   });
 
+  it('reads no symbol from a table of tools, but reads the next table', () => {
+    // The live tools-reference row of 2.1.332: `REPL` is a tool, not an env var.
+    const page = [
+      '| Tool | Description | Permission required |',
+      '| :--- | :--- | :--- |',
+      '| `REPL` | Runs the JavaScript that Claude writes in Code Mode | No |',
+      '',
+      '| Variable | Description |',
+      '| :--- | :--- |',
+      '| `CLAUDE_CODE_ENABLE_TASKS` | Set to `0` to re-enable the checklist |',
+    ].join('\n');
+    expect(parseDocPage('tools-reference', page).map((e) => e.symbol)).toEqual([
+      'CLAUDE_CODE_ENABLE_TASKS',
+    ]);
+  });
+
   it('skips a table row with a single cell', () => {
     const entries = parseDocPage(
       'cli-reference',
@@ -1455,14 +1471,35 @@ describe('parseDocPage — mods reference render sites', () => {
     ]);
   });
 
-  it('refuses a gloss after several names, and one that starts with a capital', () => {
+  it('reads several sites before a gloss, joined by "and" or commas', () => {
+    // The live row of 2.1.331: the gloss names `BesidePrompt` and `Underlay`, which
+    // have their own rows.
+    const page = [
+      '## Render sites',
+      '| Site | `e.props` | `e.requestId` | Rendered on |',
+      '| :- | :- | :- | :- |',
+      '| `BesidePromptList` and `UnderlayList`, the order of the `BesidePrompt` cells and `Underlay` layers | `plugins` | One instance | The same apps as the site it orders. Requires Claude Code v2.1.331 or later. |',
+      '| `ToolUse`, `ToolResult`, the tool rows | x | y | Terminal |',
+      '| `CommandOutput` and `UserMessage` | x | y | Terminal |',
+    ].join('\n');
+    const entries = parseDocPage('plugins/mods/reference', page).filter(
+      (e) => e.type === 'mod_render_site'
+    );
+    expect(entries.map((e) => [e.symbol, e.doc_min_version])).toEqual([
+      ['BesidePromptList', '2.1.331'],
+      ['UnderlayList', '2.1.331'],
+      ['ToolUse', null],
+      ['ToolResult', null],
+      ['CommandOutput', null],
+      ['UserMessage', null],
+    ]);
+  });
+
+  it('refuses a gloss that starts with a capital, and words between the names', () => {
     const page = (row: string) =>
       ['## Render sites', '| Site | What |', '| :- | :- |', row].join('\n');
-    // Which of several names a gloss belongs to is not readable from the cell.
-    expect(() => sites(page('| `ToolUse`, `ToolResult`, the tool rows | x |'))).toThrow(
-      /other than site names/
-    );
     expect(() => sites(page('| `Pane`, The pane | x |'))).toThrow(/other than site names/);
+    expect(() => sites(page('| `Pane` and the `Spinner` | x |'))).toThrow(/other than site names/);
   });
 
   it('skips a Render sites example inside fenced code', () => {
