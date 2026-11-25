@@ -3095,6 +3095,58 @@
       "category": "settings"
     },
     {
+      "symbol": "autoMode",
+      "type": "config_key",
+      "first_seen": "2.1.71",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Auto mode classifier prompt customization",
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
+    },
+    {
+      "symbol": "autoMode.allow",
+      "type": "config_key",
+      "first_seen": "2.1.71",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Rules for the auto mode classifier allow section",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "autoMode.environment",
+      "type": "config_key",
+      "first_seen": "2.1.71",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Entries for the auto mode classifier environment section",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "autoMode.soft_deny",
+      "type": "config_key",
+      "first_seen": "2.1.78",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Rules for the auto mode classifier deny section",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
       "symbol": "autoUpdatesChannel",
       "type": "config_key",
       "first_seen": "2.0.66",
@@ -3199,6 +3251,19 @@
       "category": "settings"
     },
     {
+      "symbol": "defaultView",
+      "type": "config_key",
+      "first_seen": "2.1.72",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Default transcript view: chat (SendUserMessage checkpoints only) or transcript (full)",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
       "symbol": "deniedMcpServers",
       "type": "config_key",
       "first_seen": "2.0.22",
@@ -3227,7 +3292,7 @@
     {
       "symbol": "disableAutoMode",
       "type": "config_key",
-      "first_seen": "2.1.74",
+      "first_seen": "2.1.72",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -3654,7 +3719,7 @@
     {
       "symbol": "permissions.disableAutoMode",
       "type": "config_key",
-      "first_seen": "2.1.73",
+      "first_seen": "2.1.71",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -4118,6 +4183,19 @@
       "category": "settings"
     },
     {
+      "symbol": "skipAutoPermissionPrompt",
+      "type": "config_key",
+      "first_seen": "2.1.71",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Skip the one-time notice describing auto mode that Claude Code shows when you first enter auto mode yourself, for example through your own settings or the mode selector, rather than when the built-in default starts a session in it. Claude Code shows that notice once and then records that it was shown, so this key only matters where the notice hasn't appeared yet.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
+    },
+    {
       "symbol": "skipDangerousModePermissionPrompt",
       "type": "config_key",
       "first_seen": "2.1.40",
@@ -4328,6 +4406,19 @@
       "confidence": "high",
       "description": "Claude Code sets your terminal tab's title. By default it uses a title it generates from the conversation, and once you give the session a name with `/rename` or `--name`, the tab shows that name instead. Set this key to `false` to keep the generated title on the tab even after you name the session. The name itself still applies, so `/resume <name>` and the session picker find it.",
       "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
+    },
+    {
+      "symbol": "voiceEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.59",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Enable voice mode (hold-to-talk dictation)",
+      "description_source": "binary",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
     },

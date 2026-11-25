@@ -3905,13 +3905,13 @@
     ],
     "config_key:autoMode": [
       {
-        "from": "2.1.108",
+        "from": "2.1.71",
         "description": "Auto mode classifier prompt customization"
       }
     ],
     "config_key:autoMode.allow": [
       {
-        "from": "2.1.108",
+        "from": "2.1.71",
         "description": "Rules for the auto mode classifier allow section"
       },
       {
@@ -3925,9 +3925,15 @@
         "description": "When true, every Bash/PowerShell allow rule is suspended while auto mode is active so all shell commands are routed through the classifier (higher safety, more classifier calls). Default: false."
       }
     ],
+    "config_key:autoMode.deny": [
+      {
+        "from": "2.1.71",
+        "description": "Rules for the auto mode classifier deny section"
+      }
+    ],
     "config_key:autoMode.environment": [
       {
-        "from": "2.1.108",
+        "from": "2.1.71",
         "description": "Entries for the auto mode classifier environment section"
       },
       {
@@ -3943,7 +3949,7 @@
     ],
     "config_key:autoMode.soft_deny": [
       {
-        "from": "2.1.108",
+        "from": "2.1.78",
         "description": "Rules for the auto mode classifier deny section"
       },
       {
@@ -4095,7 +4101,7 @@
     ],
     "config_key:channelsEnabled": [
       {
-        "from": "2.1.84",
+        "from": "2.1.81",
         "description": "Teams/Enterprise opt-in for channel notifications (MCP servers with the claude/channel capability pushing inbound messages). Default off. Set true to allow; users then select servers via --channels."
       },
       {
@@ -4175,7 +4181,7 @@
     ],
     "config_key:defaultView": [
       {
-        "from": "2.1.108",
+        "from": "2.1.72",
         "description": "Default transcript view: chat (SendUserMessage checkpoints only) or transcript (full)"
       }
     ],
@@ -4253,7 +4259,7 @@
     ],
     "config_key:disableAutoMode": [
       {
-        "from": "2.1.74",
+        "from": "2.1.72",
         "description": "Disable auto mode"
       }
     ],
@@ -4291,8 +4297,14 @@
     ],
     "config_key:disableDeepLinkRegistration": [
       {
-        "from": "2.1.108",
+        "from": "2.1.83",
         "description": "Prevent claude-cli:// protocol handler registration with the OS"
+      }
+    ],
+    "config_key:disableDirectMcpSkills": [
+      {
+        "from": "2.1.330",
+        "description": "When true in managed settings, Claude Code lists and loads no skill of an MCP server that it connects to directly, reads no listed file of a loaded one, and lists no directory of the server. On the Team and Enterprise plans these skills are off unless an administrator sets it to false. Connectors that Claude Code reaches through Anthropic keep their skills, and each server keeps its tools. In a user, project or local settings file it has no effect."
       }
     ],
     "config_key:disableRemoteControl": [
@@ -4919,7 +4931,7 @@
     ],
     "config_key:permissions.disableAutoMode": [
       {
-        "from": "2.1.73",
+        "from": "2.1.71",
         "description": "Disable auto mode"
       }
     ],
@@ -5677,7 +5689,7 @@
     ],
     "config_key:skipAutoPermissionPrompt": [
       {
-        "from": "2.1.108",
+        "from": "2.1.71",
         "description": "Whether the user has accepted the auto mode opt-in dialog"
       }
     ],
@@ -5997,7 +6009,7 @@
     ],
     "config_key:useAutoModeDuringPlan": [
       {
-        "from": "2.1.108",
+        "from": "2.1.83",
         "description": "Whether plan mode uses auto mode semantics when auto mode is available (default: true)"
       }
     ],
@@ -6047,7 +6059,11 @@
     ],
     "config_key:voiceEnabled": [
       {
-        "from": "2.1.108",
+        "from": "2.1.59",
+        "description": "Enable voice mode (hold Space to dictate)"
+      },
+      {
+        "from": "2.1.71",
         "description": "Enable voice mode (hold-to-talk dictation)"
       }
     ],
@@ -6125,6 +6141,30 @@
       {
         "from": "2.1.118",
         "description": "When set to true in either admin-only Windows source — the HKLM SOFTWARE/Policies/ClaudeCode registry key or C:/Program Files/ClaudeCode/managed-settings.json — WSL reads managed settings from the full Windows policy chain (HKLM, C:/Program Files/ClaudeCode via DrvFs, HKCU) in addition to /etc/claude-code. Windows sources take priority. The flag is also required in HKCU itself for HKCU policy to apply on WSL (double opt-in: admin enables the chain, user confirms HKCU). On native Windows the flag has no effect."
+      }
+    ],
+    "config_key:xaaIdp": [
+      {
+        "from": "2.1.83",
+        "description": "XAA (SEP-990) IdP connection. Configure once; all XAA-enabled MCP servers reuse this."
+      }
+    ],
+    "config_key:xaaIdp.callbackPort": [
+      {
+        "from": "2.1.83",
+        "description": "Fixed loopback callback port for the IdP OIDC login. Only needed if the IdP does not honor RFC 8252 port-any matching."
+      }
+    ],
+    "config_key:xaaIdp.clientId": [
+      {
+        "from": "2.1.83",
+        "description": "Claude Code's client_id registered at the IdP"
+      }
+    ],
+    "config_key:xaaIdp.issuer": [
+      {
+        "from": "2.1.83",
+        "description": "IdP issuer URL for OIDC discovery"
       }
     ],
     "model:claude-3-5-haiku-20241022": [

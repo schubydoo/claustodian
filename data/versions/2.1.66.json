@@ -3957,6 +3957,19 @@
       "category": "settings"
     },
     {
+      "symbol": "voiceEnabled",
+      "type": "config_key",
+      "first_seen": "2.1.59",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Enable voice mode (hold Space to dictate)",
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/settings-reference.md",
+      "category": "settings"
+    },
+    {
       "symbol": "worktree",
       "type": "config_key",
       "first_seen": "2.1.38",
