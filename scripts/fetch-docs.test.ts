@@ -313,6 +313,12 @@ describe('parseDocPage', () => {
       expect(parseDocPage('cli-reference', table(head))).toEqual([]);
   });
 
+  it('reads a table under an empty header row as neither tools nor variables', () => {
+    const page =
+      '|\n| `--kept` | A flag under an empty header |\n| `KEPT_OUT` | Not a variable here |';
+    expect(parseDocPage('cli-reference', page).map((e) => e.symbol)).toEqual(['--kept']);
+  });
+
   it('throws when an allowed section names an env var under another header', () => {
     // A renamed header must not drop a whole table of variables without a word.
     const page = [
