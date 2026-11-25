@@ -2389,19 +2389,6 @@
       ]
     },
     {
-      "symbol": "--hostname",
-      "type": "cli_flag",
-      "first_seen": "2.1.290",
-      "first_seen_estimated": true,
-      "removed_in": null,
-      "status": "active",
-      "provenance": "changelog",
-      "confidence": "medium",
-      "description": "",
-      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
-      "category": "cli"
-    },
-    {
       "symbol": "--id-token",
       "type": "cli_flag",
       "first_seen": "2.1.83",
