@@ -848,7 +848,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. While `bypassPermissions` is in the cycle of an interactive terminal session, most edits and commands Claude attempts in plan mode can run with no prompt, before you approve a plan. See permission modes",
+      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. While `bypassPermissions` is in the cycle of an interactive terminal session, most edits and commands Claude attempts in plan mode run with no prompt, before you approve a plan. See permission modes",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
@@ -1760,8 +1760,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added `--disallow-tools` and a `disallowed_tools` case field to `claude plugin eval` to keep specific built-in tools, such as Agent, out of eval runs",
-      "description_source": "changelog",
+      "description": "Remove built-in tools from every case. See Remove a built-in tool from runs",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
@@ -1961,11 +1961,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Create a new cloud session that runs on the self-hosted environment with the given ID. Environment IDs start with `ccpool_`. See `--environment` dispatch behavior for dispatch behavior and the flag combinations it rejects. Requires Claude Code v2.1.224 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -5280,7 +5280,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Detach the current session to run as a background agent and free this terminal. Pass a prompt to send one more instruction before detaching. Monitor the session with `claude agents`. To copy the conversation into a new background session while this one keeps running, use `/fork`. While a `/ship` or `/steward` watch is on, see Messages during a watch. Alias: `/bg`",
+      "description": "Detach the current session to run as a background agent and free this terminal. Pass a prompt to send one more instruction before detaching. Monitor the session with `claude agents`. To copy the conversation into a new background session while this one keeps running, use `/fork`. Alias: `/bg`",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6795,11 +6795,11 @@
       "type": "command",
       "first_seen": "2.1.111",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -6849,8 +6849,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Create and manage routines: cloud agents on a schedule",
-      "description_source": "binary",
+      "description": "Create, update, list, or run cloud scheduled tasks, formerly routines. Claude walks you through the setup conversationally. You can also ask about a scheduled task's recent runs. Alias: `/routines`",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -6991,7 +6991,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "medium",
-      "description": "**Skill.** Commit and push your work where `/ship` can, open a GitHub pull request for your branch if it has none, then review the change. Claude then watches the pull request in this session and pushes fixes for review feedback and failing checks. `/ship stop` ends the watch. See Get a pull request ready with `/ship`. If the command is missing, see Troubleshooting",
+      "description": "**Skill.** Commit and push your work and open a GitHub pull request, if your branch has none. Then review the change. Claude then watches the pull request in this session and pushes fixes for review feedback and failing checks. `/ship stop` ends the watch. See Get a pull request ready with `/ship`. If the command is missing, see Troubleshooting",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
@@ -18789,7 +18789,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` so that Claude waits for the result of an MCP task in an interactive terminal session. While automatic backgrounding is on, it still moves the call to the background after two minutes by default. Requires Claude Code v2.1.304 or later",
+      "description": "Set to `1` so that Claude waits for the result of an MCP task in an interactive session. While automatic backgrounding is on, it still moves the call to the background after two minutes by default. Requires Claude Code v2.1.304 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -19225,8 +19225,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added `CLAUDE_CODE_DISABLE_RESPONSE_COMPRESSION` to ask for uncompressed model responses behind a proxy that cuts compressed ones off; not advised yet for self-hosted runners or Remote Control",
-      "description_source": "changelog",
+      "description": "Set to `1` to request uncompressed model responses if your proxy leaves compressed ones unfinished. Not recommended for self-hosted runners or Remote Control. Ignored in project and local settings. Requires Claude Code v2.1.331 or later",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -21873,7 +21873,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Elapsed time in milliseconds before a still-running MCP tool call moves to a background task (default: 120000, or 2 minutes). Set to `0` to turn automatic backgrounding off. In an interactive terminal session, `0` also makes Claude wait for MCP tasks. Requires Claude Code v2.1.212 or later",
+      "description": "Elapsed time in milliseconds before a still-running MCP tool call moves to a background task (default: 120000, or 2 minutes). Set to `0` to turn automatic backgrounding off and, in an interactive session, to make Claude wait for MCP tasks. Requires Claude Code v2.1.212 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -24151,7 +24151,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` for unattended sessions. Keeps retrying `429` and `529` capacity errors past `CLAUDE_CODE_MAX_RETRIES`. Spend limits and exhausted usage credits can end the retries. See retry limits and fast mode. Requires Claude Code v2.1.186 or later",
+      "description": "Set to `1` for unattended sessions such as eval harnesses, CI jobs, or remote workers. Retries `429` and `529` capacity errors indefinitely instead of failing after `CLAUDE_CODE_MAX_RETRIES` attempts. Claude Code fails at once when a standard-speed request gets a `429` that reports a spend limit or exhausted usage credits, even one from a gateway spend cap that resets on a schedule. Before v2.1.239, the watchdog retried these indefinitely. For fast mode requests, see Handle rate limits. The watchdog backs off up to 5 minutes between attempts, or until the limit resets when the response carries a rate-limit reset time, so a session that hits a usage limit waits out the remaining window. On v2.1.199 or later it also raises the default retry count for other transient errors, such as server errors, timeouts, and dropped connections, to 300, roughly three hours of backoff, and removes the cap of 15 on `CLAUDE_CODE_MAX_RETRIES` if you set that variable explicitly. Requires Claude Code v2.1.186 or later",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
@@ -27918,6 +27918,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLOUD_ML_REGION",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cloud"
+    },
+    {
       "symbol": "COMPUTER_USE_SWIFT_NODE_PATH",
       "type": "env_var",
       "first_seen": "2.1.84",
@@ -29324,6 +29336,18 @@
       "category": "telemetry"
     },
     {
+      "symbol": "OTEL_SERVICE_NAME",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "telemetry"
+    },
+    {
       "symbol": "OTEL_TRACES_EXPORTER",
       "type": "env_var",
       "first_seen": "2.0.18",
@@ -30195,11 +30219,11 @@
       "first_seen_estimated": true,
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "medium",
       "description": "Override region for Claude Sonnet 5.5 when using Google Cloud's Agent Platform. Added in v2.1.284",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -31431,10 +31455,11 @@
       "first_seen": "2.1.328",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Claude Code builds Claude's tool list, and again when Claude calls a tool. Requires Claude Code v2.1.328 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -32376,10 +32401,10 @@
       "first_seen": "2.1.331",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -33064,10 +33089,10 @@
       "first_seen": "2.1.331",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -33076,10 +33101,10 @@
       "first_seen": "2.1.331",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -33244,10 +33269,22 @@
       "first_seen": "2.1.331",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "UnderlayList",
+      "type": "mod_render_site",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {

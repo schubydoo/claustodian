@@ -1,5 +1,5 @@
 {
-  "claudeCodeVersion": "2.1.331",
+  "claudeCodeVersion": "2.1.332",
   "schemaVersion": "1.0.0",
   "symbols": [
     {
@@ -1760,8 +1760,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added `--disallow-tools` and a `disallowed_tools` case field to `claude plugin eval` to keep specific built-in tools, such as Agent, out of eval runs",
-      "description_source": "changelog",
+      "description": "Remove built-in tools from every case. See Remove a built-in tool from runs",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli",
       "scopes": [
@@ -1961,11 +1961,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Create a new cloud session that runs on the self-hosted environment with the given ID. Environment IDs start with `ccpool_`. See `--environment` dispatch behavior for dispatch behavior and the flag combinations it rejects. Requires Claude Code v2.1.224 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -5189,7 +5189,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "**Skill.** Load the reference for the runtime capabilities a published artifact can use, such as calling your connectors or offering a file download, including which ones your account has. Claude normally loads it on its own before building a page that uses one. Available where artifacts are",
+      "description": "**Skill.** Load the reference for the runtime capabilities a published artifact can use, such as calling your connectors or offering a file download, including which ones your account has. Requires artifacts",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/commands.md",
       "category": "command"
@@ -6517,7 +6517,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "View and update your privacy settings. Only available for Pro, Max, and Ultra plan subscribers",
+      "description": "View and update your privacy settings or get a link to them on claude.ai. Only available for Pro, Max, and Ultra plan subscribers",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
@@ -6795,11 +6795,11 @@
       "type": "command",
       "first_seen": "2.1.111",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -6849,8 +6849,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Create and manage routines: cloud agents on a schedule",
-      "description_source": "binary",
+      "description": "Create, update, list, or run cloud scheduled tasks, formerly routines. Claude walks you through the setup conversationally. You can also ask about a scheduled task's recent runs. Alias: `/routines`",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
@@ -8566,7 +8566,7 @@
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",
-      "description": "Claude desktop app only. Where your allow list and deny list apply to MCP servers added in the Claude desktop app. \"code\" (default): Your allow list also governs MCP servers added in the Claude desktop app, in Code tab sessions and the Artifact pane. \"all\": Your allow list and your deny list also govern MCP servers added in the Claude desktop app, in every tab (including Chat and Cowork). \"off\": Your allow list doesn't govern MCP servers added in the Claude desktop app. Read only from managed settings. Any other value counts as `all`. Where sources are merged or mixed, `off` counts as `all`. Leave the key out, or set it only in the managed source that holds your list. `deniedMcpServers` applies in Code tab sessions and the Artifact pane with every value, and in every tab with `all`. MCP servers sent to SSH hosts are not governed by these lists in this release. The Claude Code CLI reads nothing from this key, but written alone in a higher managed source it makes that source lead, and Claude Code skips the managed sources beneath it. Write it only beside the list it scopes.",
+      "description": "Claude desktop app only. Where your allow list and deny list apply to MCP servers added in the Claude desktop app. \"code\" (default): Your allow list also governs MCP servers added in the Claude desktop app, in local Code tab sessions and the Artifact pane. \"all\": Same as \"code\". Your allow list and deny list also govern MCP servers in the app's config file (Settings > Developer > Edit config), in every tab (including Chat and Cowork) and when the app sends them to an SSH host. \"off\": Your allow list doesn't govern MCP servers added in the Claude desktop app. Read only from managed settings. Any other value counts as `all`. Where sources are merged or mixed, `off` counts as `all`. Leave the key out, or set it only in the managed source that holds your list. `deniedMcpServers` applies in local Code tab sessions and the Artifact pane with every value. MCP servers that the app sends to SSH hosts are governed by these lists, and by `strictPluginOnlyCustomization` for MCP, only with `all`, and not by older versions of the app. The Claude Code CLI reads nothing from this key, but written alone in a higher managed source it makes that source lead, and Claude Code skips the managed sources beneath it. Write it only beside the list it scopes.",
       "source_url": null,
       "category": "settings",
       "description_source": "binary"
@@ -12213,6 +12213,21 @@
       "direction": "host_to_cli"
     },
     {
+      "symbol": "decide_held_peer_message",
+      "type": "control_message",
+      "first_seen": "2.1.332",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "@internal A person's answer to a held message from another session. Send it only for a person's own press. Accepted on stdin from the host that started this process, and refused over a remote transport.",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": "host_to_cli"
+    },
+    {
       "symbol": "dictate",
       "type": "control_message",
       "first_seen": "2.1.330",
@@ -12220,7 +12235,7 @@
       "status": "active",
       "provenance": "binary",
       "confidence": "high",
-      "description": "@internal Turns speech that the host recorded into text, with the service and the sign-in of /voice. A reply holds text (finished words), interim (the current guess, shown after text) and done, or a reason why not. The reply to stop holds all the words. A dictation ends after two minutes of audio, and is dropped with its words after 15 seconds with no request. Answered only for the program that started the CLI on the same machine, over its stdin; in a public build only for the VS Code extension, behind a flag.",
+      "description": "@internal Turns speech that the host recorded into text, with the service and the sign-in of /voice. A reply holds text (finished words), interim (the current guess, shown after text) and done, or a reason why not. The reply to stop holds all the words. A dictation ends after two minutes of audio, or after max_seconds, and is dropped with its words after 15 seconds with no request. Answered only for the program that started the CLI on the same machine, over its stdin; in a public build only for the VS Code extension, behind a flag.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -13363,6 +13378,21 @@
       "provenance": "binary",
       "confidence": "high",
       "description": "Sets the model to use for subsequent conversation turns.",
+      "description_source": "binary",
+      "source_url": null,
+      "category": "control-protocol",
+      "family": "control_request",
+      "direction": "host_to_cli"
+    },
+    {
+      "symbol": "set_peer_delivery",
+      "type": "control_message",
+      "first_seen": "2.1.332",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "high",
+      "description": "@internal What the host knows about delivering messages from other sessions. A field that is left out stays as it is. Both choices lift only holds on mismatched permission modes. Accepted on stdin from the host that started this process, and refused over a remote transport.",
       "description_source": "binary",
       "source_url": null,
       "category": "control-protocol",
@@ -16224,7 +16254,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `0` to stop Claude reading and replying to comments on an artifact. Has no effect when `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` has turned artifacts off. Requires Claude Code v2.1.221 or later",
+      "description": "Set to `0` to stop the `Artifact` tool from reading and replying to comments on an artifact. Has no effect when `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` has turned artifacts off. Requires Claude Code v2.1.221 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -16478,7 +16508,7 @@
       "status": "active",
       "provenance": "docs",
       "confidence": "high",
-      "description": "Set to `0` to stop Claude from applying small changes to an artifact's file as part of publishing it. Claude then edits the file with its file-editing tools and publishes it as a separate step. Requires Claude Code v2.1.300 or later",
+      "description": "Set to `0` to stop Claude from applying small changes to an artifact's local file as part of publishing it. Requires Claude Code v2.1.300 or later",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/env-vars.md",
       "category": "claude-code"
@@ -19108,6 +19138,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_DISABLE_POWERSHELL_LIBRARY_LOAD_GUARD",
+      "type": "env_var",
+      "first_seen": "2.1.332",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_DISABLE_PRECOMPACT_SKIP",
       "type": "env_var",
       "first_seen": "2.1.69",
@@ -19225,8 +19267,8 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Added `CLAUDE_CODE_DISABLE_RESPONSE_COMPRESSION` to ask for uncompressed model responses behind a proxy that cuts compressed ones off; not advised yet for self-hosted runners or Remote Control",
-      "description_source": "changelog",
+      "description": "Set to `1` to request uncompressed model responses if your proxy leaves compressed ones unfinished. Not recommended for self-hosted runners or Remote Control. Ignored in project and local settings. Requires Claude Code v2.1.331 or later",
+      "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "claude-code"
     },
@@ -21215,6 +21257,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_HOST_SHORT_SCRATCHPAD",
+      "type": "env_var",
+      "first_seen": "2.1.332",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_HOST_SHORT_TEMP_DIRS",
       "type": "env_var",
       "first_seen": "2.1.317",
@@ -21438,6 +21492,18 @@
       "symbol": "CLAUDE_CODE_INCREMENTAL_REQUEST_BODY",
       "type": "env_var",
       "first_seen": "2.1.311",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_INDEXED_SALAMANDER",
+      "type": "env_var",
+      "first_seen": "2.1.332",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -23564,6 +23630,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_RELAUNCH_SEAT_LAUNCH",
+      "type": "env_var",
+      "first_seen": "2.1.332",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_RELAUNCH_TERMINAL_SIZE",
       "type": "env_var",
       "first_seen": "2.1.203",
@@ -25106,6 +25184,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLAUDE_CODE_SPEND_PROJECT",
+      "type": "env_var",
+      "first_seen": "2.1.332",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
       "symbol": "CLAUDE_CODE_SSE_PORT",
       "type": "env_var",
       "first_seen": "0.2.106",
@@ -26174,6 +26264,18 @@
       "symbol": "CLAUDE_CODE_USER_DELEGATED_SESSION_DIRECT_API",
       "type": "env_var",
       "first_seen": "2.1.321",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "claude-code"
+    },
+    {
+      "symbol": "CLAUDE_CODE_USER_DELEGATED_SESSION_ROUTINE_SERVER_CHECK_PROVIDERS",
+      "type": "env_var",
+      "first_seen": "2.1.332",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -27918,6 +28020,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLOUD_ML_REGION",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cloud"
+    },
+    {
       "symbol": "COMPUTER_USE_SWIFT_NODE_PATH",
       "type": "env_var",
       "first_seen": "2.1.84",
@@ -28036,7 +28150,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Set to `1` to disable all compaction: both automatic compaction and the manual `/compact` command",
+      "description": "Set to `1` to disable all compaction, including `/compact` and the rewind menu's summarize options",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
@@ -29150,7 +29264,7 @@
       "status": "active",
       "provenance": "changelog",
       "confidence": "high",
-      "description": "Emit Anthropic Messages API request and response JSON as `api_request_body` / `api_response_body` log events. Set to `1` for inline bodies truncated at the content limit, or `file:<dir>` to write untruncated bodies to disk and emit a `body_ref` path instead. `CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH` configures the content limit, 60 KB by default. Disabled by default; bodies include the entire conversation history. Set it in your shell, user settings, or managed settings. Ignored in project and local settings. See Monitoring",
+      "description": "Emit Anthropic Messages API request and response JSON as `api_request_body` / `api_response_body` log events. Set to `1` for inline bodies truncated at the content limit, or `file:<dir>` to write untruncated bodies to disk and emit a `body_ref` path instead. Disabled by default; bodies can include the entire conversation history. Set it in your shell, user settings, or managed settings. Ignored in project and local settings. See Monitoring",
       "description_source": "docs",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
@@ -29320,6 +29434,18 @@
       "confidence": "high",
       "description": "Set to `1` to add the machine's name and ID to OpenTelemetry resource attributes as `host.name` and `host.id` (default: excluded). Set it in your shell, user settings, or managed settings. Ignored in project and local settings. Requires Claude Code v2.1.326 or later. See Identify the machine a session ran on",
       "description_source": "docs",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "telemetry"
+    },
+    {
+      "symbol": "OTEL_SERVICE_NAME",
+      "type": "env_var",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
       "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "telemetry"
     },
@@ -30195,11 +30321,11 @@
       "first_seen_estimated": true,
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "medium",
       "description": "Override region for Claude Sonnet 5.5 when using Google Cloud's Agent Platform. Added in v2.1.284",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
@@ -30555,6 +30681,18 @@
       "description": "Before Claude Code applies a model switch that you or a client requested. Can block the switch",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/hooks.md",
+      "category": "hooks"
+    },
+    {
+      "symbol": "PreSkillShellCommand",
+      "type": "hook_event",
+      "first_seen": "2.1.332",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "hooks"
     },
     {
@@ -31431,10 +31569,11 @@
       "first_seen": "2.1.328",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
-      "description": "",
-      "source_url": null,
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "Claude Code builds Claude's tool list, and again when Claude calls a tool. Requires Claude Code v2.1.328 or later.",
+      "description_source": "docs",
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -31555,6 +31694,18 @@
       "category": "mods"
     },
     {
+      "symbol": "ui.offer",
+      "type": "mod_event",
+      "first_seen": "2.1.332",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
       "symbol": "ui.pointer",
       "type": "mod_event",
       "first_seen": "2.1.326",
@@ -31629,6 +31780,18 @@
       "description": "A `Button`, `Input`, or `Select` a mod drew is used",
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "ui.tip",
+      "type": "mod_event",
+      "first_seen": "2.1.332",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {
@@ -32376,10 +32539,10 @@
       "first_seen": "2.1.331",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -33064,16 +33227,28 @@
       "first_seen": "2.1.331",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
       "symbol": "BesidePromptList",
       "type": "mod_render_site",
       "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "CodeBlock",
+      "type": "mod_render_site",
+      "first_seen": "2.1.332",
       "removed_in": null,
       "status": "active",
       "provenance": "binary",
@@ -33179,6 +33354,18 @@
       "category": "mods"
     },
     {
+      "symbol": "StatusLine",
+      "type": "mod_render_site",
+      "first_seen": "2.1.332",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
+      "category": "mods"
+    },
+    {
       "symbol": "ToolGroup",
       "type": "mod_render_site",
       "first_seen": "2.1.242",
@@ -33244,10 +33431,22 @@
       "first_seen": "2.1.331",
       "removed_in": null,
       "status": "active",
-      "provenance": "binary",
-      "confidence": "medium",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "UnderlayList",
+      "type": "mod_render_site",
+      "first_seen": "2.1.331",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
       "category": "mods"
     },
     {
@@ -33260,6 +33459,18 @@
       "confidence": "high",
       "description": "",
       "source_url": "https://code.claude.com/docs/en/plugins/mods/reference.md",
+      "category": "mods"
+    },
+    {
+      "symbol": "Welcome",
+      "type": "mod_render_site",
+      "first_seen": "2.1.332",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "",
+      "source_url": null,
       "category": "mods"
     },
     {

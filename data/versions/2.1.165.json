@@ -3774,11 +3774,11 @@
       "type": "command",
       "first_seen": "2.1.111",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -13370,6 +13370,18 @@
       "description": "",
       "source_url": null,
       "category": "claude-code"
+    },
+    {
+      "symbol": "CLOUD_ML_REGION",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cloud"
     },
     {
       "symbol": "COMPUTER_USE_SWIFT_NODE_PATH",
