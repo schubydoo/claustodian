@@ -6525,13 +6525,13 @@
       "type": "command",
       "first_seen": "2.1.218",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "docs",
+      "confidence": "high",
       "description": "Pair on a whiteboard artifact — you draw, Claude answers on it",
-      "source_url": null,
-      "category": "command",
-      "description_source": "binary"
+      "description_source": "binary",
+      "source_url": "https://code.claude.com/docs/en/commands.md",
+      "category": "command"
     },
     {
       "symbol": "/workflow-authoring",
@@ -12782,7 +12782,7 @@
       "symbol": "BAT_THEME",
       "type": "env_var",
       "first_seen": "2.1.85",
-      "removed_in": null,
+      "removed_in": "2.1.330",
       "status": "needs_review",
       "provenance": "binary",
       "confidence": "medium",

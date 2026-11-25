@@ -80,7 +80,7 @@
     {
       "symbol": "--allow-dangerously-skip-permissions",
       "type": "cli_flag",
-      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. While `bypassPermissions` is in the cycle of an interactive terminal session, most edits and commands Claude attempts in plan mode run with no prompt, before you approve a plan. See permission modes",
+      "description": "Add `bypassPermissions` to the `Shift+Tab` mode cycle without starting in it. While `bypassPermissions` is in the cycle of an interactive terminal session, most edits and commands Claude attempts in plan mode can run with no prompt, before you approve a plan. See permission modes",
       "doc_min_version": null,
       "doc_page": "cli-reference"
     },
@@ -1605,7 +1605,7 @@
     {
       "symbol": "/background",
       "type": "command",
-      "description": "Detach the current session to run as a background agent and free this terminal. Pass a prompt to send one more instruction before detaching. Monitor the session with `claude agents`. To copy the conversation into a new background session while this one keeps running, use `/fork`. Alias: `/bg`",
+      "description": "Detach the current session to run as a background agent and free this terminal. Pass a prompt to send one more instruction before detaching. Monitor the session with `claude agents`. To copy the conversation into a new background session while this one keeps running, use `/fork`. While a `/ship` or `/steward` watch is on, see Messages during a watch. Alias: `/bg`",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -1656,6 +1656,13 @@
       "type": "command",
       "description": "**Skill.** Load Claude API and Managed Agents reference material for your project's language. Also activates automatically when your code imports `anthropic` or `@anthropic-ai/sdk`. For what each subcommand does and the version it requires, see Work on Claude API projects",
       "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
+      "symbol": "/claude-approvals",
+      "type": "command",
+      "description": "**Skill.** Edit, explain, or tune a Claude Approvals policy file or classifier. Requires Claude Code v2.1.331 or later and feature-flag fetching",
+      "doc_min_version": "2.1.331",
       "doc_page": "commands"
     },
     {
@@ -1974,6 +1981,13 @@
       "doc_page": "commands"
     },
     {
+      "symbol": "/motion",
+      "type": "command",
+      "description": "**Skill.** Make a new animation from your brief as a Claude Motion artifact, for example `/motion an explainer of how our deploy pipeline works`. Available in local sessions in the Desktop app and in Anthropic-hosted cloud sessions, not in the terminal or IDE extensions. Requires Claude Code v2.1.323 or later and a Team or Enterprise account where the Motion template is available",
+      "doc_min_version": "2.1.323",
+      "doc_page": "commands"
+    },
+    {
       "symbol": "/output-style",
       "type": "command",
       "description": "List output styles or switch to one, for example `/output-style concise`. See Change your output style. Requires Claude Code v2.1.269 or later",
@@ -2186,7 +2200,7 @@
     {
       "symbol": "/ship",
       "type": "command",
-      "description": "**Skill.** Commit and push your work and open a GitHub pull request, if your branch has none. Then review the change. Claude then watches the pull request in this session and pushes fixes for review feedback and failing checks. `/ship stop` ends the watch. See Get a pull request ready with `/ship`. If the command is missing, see Troubleshooting",
+      "description": "**Skill.** Commit and push your work where `/ship` can, open a GitHub pull request for your branch if it has none, then review the change. Claude then watches the pull request in this session and pushes fixes for review feedback and failing checks. `/ship stop` ends the watch. See Get a pull request ready with `/ship`. If the command is missing, see Troubleshooting",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2377,6 +2391,13 @@
       "type": "command",
       "description": "Connect your GitHub account for cloud sessions using your local `gh` CLI credentials",
       "doc_min_version": null,
+      "doc_page": "commands"
+    },
+    {
+      "symbol": "/whiteboard",
+      "type": "command",
+      "description": "**Skill.** Make a new whiteboard from your brief as a Claude Whiteboards artifact, for example `/whiteboard a service map of the checkout flow`. Requires Claude Code v2.1.323 or later, a session where artifacts are available, and an account where the Whiteboards template is available. When your organization has that template off, the command doesn't appear, so ask an Owner to turn it on",
+      "doc_min_version": "2.1.323",
       "doc_page": "commands"
     },
     {
@@ -2866,6 +2887,13 @@
       "symbol": "disableDesktopLocalSessions",
       "type": "config_key",
       "description": "Turn off Code sessions that run on the device in the desktop app, for deployments where developers should work on remote machines over SSH. With the key set to `true`, users see this in the Code tab:",
+      "doc_min_version": null,
+      "doc_page": "settings-reference"
+    },
+    {
+      "symbol": "disableDirectMcpSkills",
+      "type": "config_key",
+      "description": "Turn skills from MCP servers on or off for your organization. This key covers every server except claude.ai connectors. For connectors, an Owner uses the **Skills over MCP** switch in **Organization settings > Connectors** instead. Skills from MCP servers require Claude Code v2.1.331 or later.",
       "doc_min_version": null,
       "doc_page": "settings-reference"
     },
@@ -5075,7 +5103,7 @@
     {
       "symbol": "CLAUDE_CODE_DISABLE_MCP_TASK_BACKGROUND",
       "type": "env_var",
-      "description": "Set to `1` so that Claude waits for the result of an MCP task in an interactive session. While automatic backgrounding is on, it still moves the call to the background after two minutes by default. Requires Claude Code v2.1.304 or later",
+      "description": "Set to `1` so that Claude waits for the result of an MCP task in an interactive terminal session. While automatic backgrounding is on, it still moves the call to the background after two minutes by default. Requires Claude Code v2.1.304 or later",
       "doc_min_version": "2.1.304",
       "doc_page": "env-vars"
     },
@@ -5182,6 +5210,13 @@
       "type": "env_var",
       "description": "Set to `1` to turn off the head start that can run your shell startup files while Claude writes the session's first Bash command, before that command's permission prompt. Requires Claude Code v2.1.327 or later",
       "doc_min_version": "2.1.327",
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_SHIP",
+      "type": "env_var",
+      "description": "Set to `1` to turn off `/ship` and `/steward`. Requires Claude Code v2.1.331 or later",
+      "doc_min_version": "2.1.331",
       "doc_page": "env-vars"
     },
     {
@@ -5642,7 +5677,7 @@
     {
       "symbol": "CLAUDE_CODE_MCP_AUTO_BACKGROUND_MS",
       "type": "env_var",
-      "description": "Elapsed time in milliseconds before a still-running MCP tool call moves to a background task (default: 120000, or 2 minutes). Set to `0` to turn automatic backgrounding off and, in an interactive session, to make Claude wait for MCP tasks. Requires Claude Code v2.1.212 or later",
+      "description": "Elapsed time in milliseconds before a still-running MCP tool call moves to a background task (default: 120000, or 2 minutes). Set to `0` to turn automatic backgrounding off. In an interactive terminal session, `0` also makes Claude wait for MCP tasks. Requires Claude Code v2.1.212 or later",
       "doc_min_version": "2.1.212",
       "doc_page": "env-vars"
     },
@@ -6013,7 +6048,7 @@
     {
       "symbol": "CLAUDE_CODE_RETRY_WATCHDOG",
       "type": "env_var",
-      "description": "Set to `1` for unattended sessions such as eval harnesses, CI jobs, or remote workers. Retries `429` and `529` capacity errors indefinitely instead of failing after `CLAUDE_CODE_MAX_RETRIES` attempts. Claude Code fails at once when a standard-speed request gets a `429` that reports a spend limit or exhausted usage credits, even one from a gateway spend cap that resets on a schedule. Before v2.1.239, the watchdog retried these indefinitely. For fast mode requests, see Handle rate limits. The watchdog backs off up to 5 minutes between attempts, or until the limit resets when the response carries a rate-limit reset time, so a session that hits a usage limit waits out the remaining window. On v2.1.199 or later it also raises the default retry count for other transient errors, such as server errors, timeouts, and dropped connections, to 300, roughly three hours of backoff, and removes the cap of 15 on `CLAUDE_CODE_MAX_RETRIES` if you set that variable explicitly. Requires Claude Code v2.1.186 or later",
+      "description": "Set to `1` for unattended sessions. Keeps retrying `429` and `529` capacity errors past `CLAUDE_CODE_MAX_RETRIES`. Spend limits and exhausted usage credits can end the retries. See retry limits and fast mode. Requires Claude Code v2.1.186 or later",
       "doc_min_version": "2.1.186",
       "doc_page": "env-vars"
     },
