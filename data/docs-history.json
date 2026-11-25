@@ -477,6 +477,12 @@
         "description": "Disable all skills and commands for this session"
       }
     ],
+    "cli_flag:--disallow-tools": [
+      {
+        "from": "2.1.332",
+        "description": "Remove built-in tools from every case. See Remove a built-in tool from runs"
+      }
+    ],
     "cli_flag:--disallowed": [
       {
         "from": "2.1.201",
@@ -1761,6 +1767,10 @@
       {
         "from": "2.1.285",
         "description": "**Skill.** Load the reference for the runtime capabilities a published artifact can use, such as calling your connectors or offering a file download, including which ones your account has. Claude normally loads it on its own before building a page that uses one. Available where artifacts are"
+      },
+      {
+        "from": "2.1.332",
+        "description": "**Skill.** Load the reference for the runtime capabilities a published artifact can use, such as calling your connectors or offering a file download, including which ones your account has. Requires artifacts"
       }
     ],
     "command:/artifact-diagramming": [
@@ -2651,6 +2661,10 @@
       {
         "from": "2.1.314",
         "description": "View and update your privacy settings. Only available for Pro, Max, and Ultra plan subscribers"
+      },
+      {
+        "from": "2.1.332",
+        "description": "View and update your privacy settings or get a link to them on claude.ai. Only available for Pro, Max, and Ultra plan subscribers"
       }
     ],
     "command:/radio": [
@@ -7087,6 +7101,10 @@
       {
         "from": "2.1.250",
         "description": "Set to `0` to stop Claude reading and replying to comments on an artifact. Has no effect when `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` has turned artifacts off. Requires Claude Code v2.1.221 or later"
+      },
+      {
+        "from": "2.1.332",
+        "description": "Set to `0` to stop the `Artifact` tool from reading and replying to comments on an artifact. Has no effect when `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` has turned artifacts off. Requires Claude Code v2.1.221 or later"
       }
     ],
     "env_var:CLAUDE_CODE_ARTIFACT_COMMENTS_AUTOREACT": [
@@ -7103,6 +7121,10 @@
       {
         "from": "2.1.301",
         "description": "Set to `0` to stop Claude from applying small changes to an artifact's file as part of publishing it. Claude then edits the file with its file-editing tools and publishes it as a separate step. Requires Claude Code v2.1.300 or later"
+      },
+      {
+        "from": "2.1.332",
+        "description": "Set to `0` to stop Claude from applying small changes to an artifact's local file as part of publishing it. Requires Claude Code v2.1.300 or later"
       }
     ],
     "env_var:CLAUDE_CODE_ATTRIBUTION_HEADER": [
@@ -7747,6 +7769,12 @@
       {
         "from": "2.1.289",
         "description": "Set to `1` to turn off the automatic model switch when a safety classifier flags a request, the behavior the `switchModelsOnFlag` setting controls"
+      }
+    ],
+    "env_var:CLAUDE_CODE_DISABLE_RESPONSE_COMPRESSION": [
+      {
+        "from": "2.1.332",
+        "description": "Set to `1` to request uncompressed model responses if your proxy leaves compressed ones unfinished. Not recommended for self-hosted runners or Remote Control. Ignored in project and local settings. Requires Claude Code v2.1.331 or later"
       }
     ],
     "env_var:CLAUDE_CODE_DISABLE_SHELL_HEAD_START": [
@@ -9815,6 +9843,10 @@
       {
         "from": "2.1.201",
         "description": "Set to `1` to disable all compaction: both automatic compaction and the manual `/compact` command"
+      },
+      {
+        "from": "2.1.332",
+        "description": "Set to `1` to disable all compaction, including `/compact` and the rewind menu's summarize options"
       }
     ],
     "env_var:DISABLE_COST_WARNINGS": [
@@ -10533,6 +10565,10 @@
       {
         "from": "2.1.251",
         "description": "Emit Anthropic Messages API request and response JSON as `api_request_body` / `api_response_body` log events. Set to `1` for inline bodies truncated at the content limit, or `file:<dir>` to write untruncated bodies to disk and emit a `body_ref` path instead. `CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH` configures the content limit, 60 KB by default. Disabled by default; bodies include the entire conversation history. Set it in your shell, user settings, or managed settings. Ignored in project and local settings. See Monitoring"
+      },
+      {
+        "from": "2.1.332",
+        "description": "Emit Anthropic Messages API request and response JSON as `api_request_body` / `api_response_body` log events. Set to `1` for inline bodies truncated at the content limit, or `file:<dir>` to write untruncated bodies to disk and emit a `body_ref` path instead. Disabled by default; bodies can include the entire conversation history. Set it in your shell, user settings, or managed settings. Ignored in project and local settings. See Monitoring"
       }
     ],
     "env_var:OTEL_LOG_TOOL_CONTENT": [
@@ -11577,6 +11613,12 @@
         "description": "Auto mode is about to ask its classifier about a call. Requires Claude Code v2.1.326 or later."
       }
     ],
+    "mod_event:tool.offer": [
+      {
+        "from": "2.1.332",
+        "description": "Claude Code builds Claude's tool list, and again when Claude calls a tool. Requires Claude Code v2.1.328 or later."
+      }
+    ],
     "mod_event:tool.run": [
       {
         "from": "2.1.330",
@@ -11949,6 +11991,12 @@
         "description": ""
       }
     ],
+    "mod_method:$.session.redact": [
+      {
+        "from": "2.1.332",
+        "description": ""
+      }
+    ],
     "mod_method:$.session.repo": [
       {
         "from": "2.1.301",
@@ -12237,6 +12285,18 @@
         "description": ""
       }
     ],
+    "mod_render_site:BesidePrompt": [
+      {
+        "from": "2.1.332",
+        "description": ""
+      }
+    ],
+    "mod_render_site:BesidePromptList": [
+      {
+        "from": "2.1.332",
+        "description": ""
+      }
+    ],
     "mod_render_site:CommandOutput": [
       {
         "from": "2.1.306",
@@ -12306,6 +12366,18 @@
     "mod_render_site:TurnDuration": [
       {
         "from": "2.1.306",
+        "description": ""
+      }
+    ],
+    "mod_render_site:Underlay": [
+      {
+        "from": "2.1.332",
+        "description": ""
+      }
+    ],
+    "mod_render_site:UnderlayList": [
+      {
+        "from": "2.1.332",
         "description": ""
       }
     ],

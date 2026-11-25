@@ -1780,11 +1780,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "Create a new cloud session that runs on the self-hosted environment with the given ID. Environment IDs start with `ccpool_`. See `--environment` dispatch behavior for dispatch behavior and the flag combinations it rejects. Requires Claude Code v2.1.224 or later",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -6000,11 +6000,11 @@
       "type": "command",
       "first_seen": "2.1.111",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -22724,6 +22724,18 @@
       "category": "claude-code"
     },
     {
+      "symbol": "CLOUD_ML_REGION",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cloud"
+    },
+    {
       "symbol": "COMPUTER_USE_SWIFT_NODE_PATH",
       "type": "env_var",
       "first_seen": "2.1.84",
@@ -24935,11 +24947,11 @@
       "first_seen_estimated": true,
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "medium",
       "description": "Override region for Claude Sonnet 5.5 when using Google Cloud's Agent Platform. Added in v2.1.284",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/env-vars.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "other"
     },
     {
