@@ -5471,14 +5471,14 @@
     {
       "symbol": "autoMode",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.71",
       "last_seen": "2.1.332",
       "removed_in": null
     },
     {
       "symbol": "autoMode.allow",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.71",
       "last_seen": "2.1.332",
       "removed_in": null
     },
@@ -5490,9 +5490,16 @@
       "removed_in": null
     },
     {
+      "symbol": "autoMode.deny",
+      "type": "config_key",
+      "first_seen": "2.1.71",
+      "last_seen": "2.1.77",
+      "removed_in": "2.1.78"
+    },
+    {
       "symbol": "autoMode.environment",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.71",
       "last_seen": "2.1.332",
       "removed_in": null
     },
@@ -5506,7 +5513,7 @@
     {
       "symbol": "autoMode.soft_deny",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.78",
       "last_seen": "2.1.332",
       "removed_in": null
     },
@@ -5632,7 +5639,7 @@
     {
       "symbol": "channelsEnabled",
       "type": "config_key",
-      "first_seen": "2.1.84",
+      "first_seen": "2.1.81",
       "last_seen": "2.1.332",
       "removed_in": null
     },
@@ -5702,7 +5709,7 @@
     {
       "symbol": "defaultView",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.72",
       "last_seen": "2.1.332",
       "removed_in": null
     },
@@ -5765,7 +5772,7 @@
     {
       "symbol": "disableAutoMode",
       "type": "config_key",
-      "first_seen": "2.1.74",
+      "first_seen": "2.1.72",
       "last_seen": "2.1.332",
       "removed_in": null
     },
@@ -5800,7 +5807,14 @@
     {
       "symbol": "disableDeepLinkRegistration",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.83",
+      "last_seen": "2.1.332",
+      "removed_in": null
+    },
+    {
+      "symbol": "disableDirectMcpSkills",
+      "type": "config_key",
+      "first_seen": "2.1.330",
       "last_seen": "2.1.332",
       "removed_in": null
     },
@@ -6367,7 +6381,7 @@
     {
       "symbol": "permissions.disableAutoMode",
       "type": "config_key",
-      "first_seen": "2.1.73",
+      "first_seen": "2.1.71",
       "last_seen": "2.1.332",
       "removed_in": null
     },
@@ -7137,7 +7151,7 @@
     {
       "symbol": "skipAutoPermissionPrompt",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.71",
       "last_seen": "2.1.332",
       "removed_in": null
     },
@@ -7494,7 +7508,7 @@
     {
       "symbol": "useAutoModeDuringPlan",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.83",
       "last_seen": "2.1.332",
       "removed_in": null
     },
@@ -7550,7 +7564,7 @@
     {
       "symbol": "voiceEnabled",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.59",
       "last_seen": "2.1.332",
       "removed_in": null
     },
@@ -7621,6 +7635,34 @@
       "symbol": "wslInheritsWindowsSettings",
       "type": "config_key",
       "first_seen": "2.1.118",
+      "last_seen": "2.1.332",
+      "removed_in": null
+    },
+    {
+      "symbol": "xaaIdp",
+      "type": "config_key",
+      "first_seen": "2.1.83",
+      "last_seen": "2.1.332",
+      "removed_in": null
+    },
+    {
+      "symbol": "xaaIdp.callbackPort",
+      "type": "config_key",
+      "first_seen": "2.1.83",
+      "last_seen": "2.1.332",
+      "removed_in": null
+    },
+    {
+      "symbol": "xaaIdp.clientId",
+      "type": "config_key",
+      "first_seen": "2.1.83",
+      "last_seen": "2.1.332",
+      "removed_in": null
+    },
+    {
+      "symbol": "xaaIdp.issuer",
+      "type": "config_key",
+      "first_seen": "2.1.83",
       "last_seen": "2.1.332",
       "removed_in": null
     },

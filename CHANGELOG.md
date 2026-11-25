@@ -20,6 +20,18 @@ change instead. Check this file, not `schema-version.json`, to find out what is 
 
 ### Fixed
 
+- **The binary lane reads settings keys that the schema spreads in.** Keys inside a
+  spread object literal, including one behind a condition, were skipped. Four
+  `config_key` records are added at 2.1.83: `xaaIdp`, `xaaIdp.issuer`,
+  `xaaIdp.clientId` and `xaaIdp.callbackPort`. Without `CLAUDE_CODE_ENABLE_XAA`, the
+  schema does not have them. `autoMode.deny` appears in the 2.1.71 to 2.1.77
+  snapshots, with `removed_in` 2.1.78. Thirteen records get an earlier `first_seen`.
+  `voiceEnabled` moves to 2.1.59. `autoMode`, `autoMode.allow`, `autoMode.environment`,
+  `skipAutoPermissionPrompt` and `permissions.disableAutoMode` move to 2.1.71.
+  `defaultView` and `disableAutoMode` move to 2.1.72, and `autoMode.soft_deny` to
+  2.1.78. `channelsEnabled` moves to 2.1.81. `disableDeepLinkRegistration` and
+  `useAutoModeDuringPlan` move to 2.1.83. `disableDirectMcpSkills` moves to 2.1.330 and
+  is no longer an estimate.
 - **The binary lane reads skills that a user can invoke by name.** Some bundled skills
   carry only `userInvocable`, with no menu text. Seven `command` records get an earlier
   `first_seen`: `/fewer-permission-prompts` (2.1.113), `/verify`, `/run` and

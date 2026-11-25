@@ -6407,7 +6407,7 @@
     {
       "symbol": "autoMode",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.71",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -6420,7 +6420,7 @@
     {
       "symbol": "autoMode.allow",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.71",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -6446,7 +6446,7 @@
     {
       "symbol": "autoMode.environment",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.71",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -6472,7 +6472,7 @@
     {
       "symbol": "autoMode.soft_deny",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.78",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -6681,7 +6681,7 @@
     {
       "symbol": "channelsEnabled",
       "type": "config_key",
-      "first_seen": "2.1.84",
+      "first_seen": "2.1.81",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -6785,7 +6785,7 @@
     {
       "symbol": "defaultView",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.72",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -6877,7 +6877,7 @@
     {
       "symbol": "disableAutoMode",
       "type": "config_key",
-      "first_seen": "2.1.74",
+      "first_seen": "2.1.72",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -6943,7 +6943,7 @@
     {
       "symbol": "disableDeepLinkRegistration",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.83",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -7672,7 +7672,7 @@
     {
       "symbol": "permissions.disableAutoMode",
       "type": "config_key",
-      "first_seen": "2.1.73",
+      "first_seen": "2.1.71",
       "removed_in": null,
       "status": "needs_review",
       "provenance": "binary",
@@ -8682,7 +8682,7 @@
     {
       "symbol": "skipAutoPermissionPrompt",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.71",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -9155,7 +9155,7 @@
     {
       "symbol": "useAutoModeDuringPlan",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.83",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -9258,7 +9258,7 @@
     {
       "symbol": "voiceEnabled",
       "type": "config_key",
-      "first_seen": "2.1.108",
+      "first_seen": "2.1.59",
       "removed_in": null,
       "status": "active",
       "provenance": "docs",
@@ -9384,6 +9384,58 @@
       "description_source": "docs",
       "source_url": "https://code.claude.com/docs/en/settings-reference.md",
       "category": "settings"
+    },
+    {
+      "symbol": "xaaIdp",
+      "type": "config_key",
+      "first_seen": "2.1.83",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "XAA (SEP-990) IdP connection. Configure once; all XAA-enabled MCP servers reuse this.",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "xaaIdp.callbackPort",
+      "type": "config_key",
+      "first_seen": "2.1.83",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Fixed loopback callback port for the IdP OIDC login. Only needed if the IdP does not honor RFC 8252 port-any matching.",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "xaaIdp.clientId",
+      "type": "config_key",
+      "first_seen": "2.1.83",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "Claude Code's client_id registered at the IdP",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
+    },
+    {
+      "symbol": "xaaIdp.issuer",
+      "type": "config_key",
+      "first_seen": "2.1.83",
+      "removed_in": null,
+      "status": "needs_review",
+      "provenance": "binary",
+      "confidence": "medium",
+      "description": "IdP issuer URL for OIDC discovery",
+      "source_url": null,
+      "category": "settings",
+      "description_source": "binary"
     },
     {
       "symbol": "add_directory",
