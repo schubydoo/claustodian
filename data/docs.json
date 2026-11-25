@@ -414,6 +414,16 @@
       "doc_page": "cli-reference"
     },
     {
+      "symbol": "--disallow-tools",
+      "type": "cli_flag",
+      "description": "Remove built-in tools from every case. See Remove a built-in tool from runs",
+      "doc_min_version": null,
+      "doc_page": "plugin-evals",
+      "doc_scopes": [
+        "plugin eval"
+      ]
+    },
+    {
       "symbol": "--disallowed-tools",
       "type": "cli_flag",
       "description": "Deny rules. A bare tool name removes the matching tools from Claude's context: `\"Edit\"` removes Edit, `\"*\"` removes every tool, and `\"mcp__*\"` removes every MCP tool. A scoped rule such as `Bash(rm *)` leaves the tool available and denies only calls that match as written. A rule naming `EndConversation` can't remove it while any other tool remains",
@@ -1563,7 +1573,7 @@
     {
       "symbol": "/artifact-capabilities",
       "type": "command",
-      "description": "**Skill.** Load the reference for the runtime capabilities a published artifact can use, such as calling your connectors or offering a file download, including which ones your account has. Claude normally loads it on its own before building a page that uses one. Available where artifacts are",
+      "description": "**Skill.** Load the reference for the runtime capabilities a published artifact can use, such as calling your connectors or offering a file download, including which ones your account has. Requires artifacts",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -2046,7 +2056,7 @@
     {
       "symbol": "/privacy-settings",
       "type": "command",
-      "description": "View and update your privacy settings. Only available for Pro, Max, and Ultra plan subscribers",
+      "description": "View and update your privacy settings or get a link to them on claude.ai. Only available for Pro, Max, and Ultra plan subscribers",
       "doc_min_version": null,
       "doc_page": "commands"
     },
@@ -4718,7 +4728,7 @@
     {
       "symbol": "CLAUDE_CODE_ARTIFACT_COMMENTS",
       "type": "env_var",
-      "description": "Set to `0` to stop Claude reading and replying to comments on an artifact. Has no effect when `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` has turned artifacts off. Requires Claude Code v2.1.221 or later",
+      "description": "Set to `0` to stop the `Artifact` tool from reading and replying to comments on an artifact. Has no effect when `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` has turned artifacts off. Requires Claude Code v2.1.221 or later",
       "doc_min_version": "2.1.221",
       "doc_page": "env-vars"
     },
@@ -4732,7 +4742,7 @@
     {
       "symbol": "CLAUDE_CODE_ARTIFACT_PUBLISH_EDITS",
       "type": "env_var",
-      "description": "Set to `0` to stop Claude from applying small changes to an artifact's file as part of publishing it. Claude then edits the file with its file-editing tools and publishes it as a separate step. Requires Claude Code v2.1.300 or later",
+      "description": "Set to `0` to stop Claude from applying small changes to an artifact's local file as part of publishing it. Requires Claude Code v2.1.300 or later",
       "doc_min_version": "2.1.300",
       "doc_page": "env-vars"
     },
@@ -5203,6 +5213,13 @@
       "type": "env_var",
       "description": "Set to `1` to turn off the automatic model switch when a safety classifier flags a request, the behavior the `switchModelsOnFlag` setting controls",
       "doc_min_version": null,
+      "doc_page": "env-vars"
+    },
+    {
+      "symbol": "CLAUDE_CODE_DISABLE_RESPONSE_COMPRESSION",
+      "type": "env_var",
+      "description": "Set to `1` to request uncompressed model responses if your proxy leaves compressed ones unfinished. Not recommended for self-hosted runners or Remote Control. Ignored in project and local settings. Requires Claude Code v2.1.331 or later",
+      "doc_min_version": "2.1.331",
       "doc_page": "env-vars"
     },
     {
@@ -6832,7 +6849,7 @@
     {
       "symbol": "DISABLE_COMPACT",
       "type": "env_var",
-      "description": "Set to `1` to disable all compaction: both automatic compaction and the manual `/compact` command",
+      "description": "Set to `1` to disable all compaction, including `/compact` and the rewind menu's summarize options",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -7294,7 +7311,7 @@
     {
       "symbol": "OTEL_LOG_RAW_API_BODIES",
       "type": "env_var",
-      "description": "Emit Anthropic Messages API request and response JSON as `api_request_body` / `api_response_body` log events. Set to `1` for inline bodies truncated at the content limit, or `file:<dir>` to write untruncated bodies to disk and emit a `body_ref` path instead. `CLAUDE_CODE_OTEL_CONTENT_MAX_LENGTH` configures the content limit, 60 KB by default. Disabled by default; bodies include the entire conversation history. Set it in your shell, user settings, or managed settings. Ignored in project and local settings. See Monitoring",
+      "description": "Emit Anthropic Messages API request and response JSON as `api_request_body` / `api_response_body` log events. Set to `1` for inline bodies truncated at the content limit, or `file:<dir>` to write untruncated bodies to disk and emit a `body_ref` path instead. Disabled by default; bodies can include the entire conversation history. Set it in your shell, user settings, or managed settings. Ignored in project and local settings. See Monitoring",
       "doc_min_version": null,
       "doc_page": "env-vars"
     },
@@ -8412,6 +8429,13 @@
       "doc_page": "plugins/mods/reference"
     },
     {
+      "symbol": "tool.offer",
+      "type": "mod_event",
+      "description": "Claude Code builds Claude's tool list, and again when Claude calls a tool. Requires Claude Code v2.1.328 or later.",
+      "doc_min_version": "2.1.328",
+      "doc_page": "plugins/mods/reference"
+    },
+    {
       "symbol": "tool.run",
       "type": "mod_event",
       "description": "An allowed call is about to run. Requires Claude Code v2.1.326 or later.",
@@ -8846,6 +8870,13 @@
       "doc_page": "plugins/mods/reference"
     },
     {
+      "symbol": "$.session.redact",
+      "type": "mod_method",
+      "description": "",
+      "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
       "symbol": "$.session.repo",
       "type": "mod_method",
       "description": "",
@@ -9182,6 +9213,20 @@
       "doc_page": "plugins/mods/reference"
     },
     {
+      "symbol": "BesidePrompt",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": "2.1.331",
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "BesidePromptList",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": "2.1.331",
+      "doc_page": "plugins/mods/reference"
+    },
+    {
       "symbol": "CommandOutput",
       "type": "mod_render_site",
       "description": "",
@@ -9263,6 +9308,20 @@
       "type": "mod_render_site",
       "description": "",
       "doc_min_version": null,
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "Underlay",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": "2.1.331",
+      "doc_page": "plugins/mods/reference"
+    },
+    {
+      "symbol": "UnderlayList",
+      "type": "mod_render_site",
+      "description": "",
+      "doc_min_version": "2.1.331",
       "doc_page": "plugins/mods/reference"
     },
     {

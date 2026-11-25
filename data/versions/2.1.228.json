@@ -1454,11 +1454,11 @@
       "first_seen": "2.1.224",
       "removed_in": null,
       "status": "active",
-      "provenance": "docs",
+      "provenance": "changelog",
       "confidence": "high",
       "description": "With `-p`, create a new cloud session on the named environment and exit without waiting for a reply; self-hosted environment IDs have the form `ccpool_...`. Can't be combined with `--cloud`. See dispatch from a script",
       "description_source": "docs",
-      "source_url": "https://code.claude.com/docs/en/cli-reference.md",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "cli"
     },
     {
@@ -5398,11 +5398,11 @@
       "type": "command",
       "first_seen": "2.1.111",
       "removed_in": null,
-      "status": "needs_review",
-      "provenance": "binary",
-      "confidence": "medium",
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
       "description": "",
-      "source_url": null,
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
       "category": "command"
     },
     {
@@ -18085,6 +18085,18 @@
       "description": "",
       "source_url": null,
       "category": "claude-code"
+    },
+    {
+      "symbol": "CLOUD_ML_REGION",
+      "type": "env_var",
+      "first_seen": "0.2.9",
+      "removed_in": null,
+      "status": "active",
+      "provenance": "changelog",
+      "confidence": "high",
+      "description": "",
+      "source_url": "https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md",
+      "category": "cloud"
     },
     {
       "symbol": "COMPUTER_USE_SWIFT_NODE_PATH",
